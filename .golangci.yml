@@ -1,0 +1,23 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+
+linters-settings:
+  govet:
+    enable-all: false
+
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1019"
+
+run:
+  go: "1.25"
