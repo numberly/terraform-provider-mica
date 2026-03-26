@@ -28,7 +28,13 @@ Building the provider in five phases: establish the shared HTTP client and corre
   3. `terraform destroy` on a file system completes the two-phase soft-delete without name-collision failures on re-creation
   4. `terraform import flashblade_file_system.x name` populates all attributes; subsequent `plan` shows 0 diff
   5. Drift detection produces structured `tflog` output listing changed fields when `terraform refresh` detects API-side divergence
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Project scaffold, build tooling, and shared HTTP client layer (auth, TLS, retry, version negotiation)
+- [ ] 01-02-PLAN.md — Provider schema, Configure with env var fallback, and client injection
+- [ ] 01-03-PLAN.md — File system client CRUD methods and reusable mock HTTP server
+- [ ] 01-04-PLAN.md — flashblade_file_system resource (CRUD, import, soft-delete, drift) and data source
 
 ### Phase 2: Object Store Resources
 **Goal**: Operators can manage the complete object store resource chain — accounts, buckets, and access keys — through Terraform with full lifecycle and dependency ordering
@@ -81,7 +87,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/4 | Planning complete | - |
 | 2. Object Store Resources | 0/TBD | Not started | - |
 | 3. File-Based Policy Resources | 0/TBD | Not started | - |
 | 4. Object/Network/Quota Policies and Array Admin | 0/TBD | Not started | - |
