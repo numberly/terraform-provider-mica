@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-26T15:24:28.515Z"
+stopped_at: Completed 01-foundation/01-01-PLAN.md
+last_updated: "2026-03-26T15:59:55.452Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 4
+  completed_plans: 1
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-foundation P01 | 35 | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - [Roadmap]: terraform-plugin-framework over SDK/v2 — modern API, plan modifiers, diagnostics
 - [Roadmap]: Three-tier testing — unit + mocked integration (CI-safe) + acceptance (real array)
 - [Roadmap]: All 6 policy families in v1 — avoids click-ops fallback for ops team
+- [Phase 01-foundation]: Client layer is pure Go with zero terraform-plugin-framework imports — testable with httptest.NewServer
+- [Phase 01-foundation]: OAuth2 uses custom FlashBladeTokenSource (token-exchange grant) not standard clientcredentials.Config
+- [Phase 01-foundation]: HTTPClient() exported on FlashBladeClient for transport-layer testing without mocking internals
 
 ### Pending Todos
 
@@ -76,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T15:24:28.509Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-foundation/01-CONTEXT.md
+Last session: 2026-03-26T15:59:55.448Z
+Stopped at: Completed 01-foundation/01-01-PLAN.md
+Resume file: None

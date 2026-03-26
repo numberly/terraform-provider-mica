@@ -9,13 +9,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Provider Foundation
 
-- [ ] **PROV-01**: Provider accepts endpoint URL, API token, and TLS CA certificate via config block
-- [ ] **PROV-02**: Provider accepts OAuth2 client_id, key_id, and issuer for client_credentials auth
+- [x] **PROV-01**: Provider accepts endpoint URL, API token, and TLS CA certificate via config block
+- [x] **PROV-02**: Provider accepts OAuth2 client_id, key_id, and issuer for client_credentials auth
 - [ ] **PROV-03**: Provider falls back to FLASHBLADE_ENDPOINT, FLASHBLADE_API_TOKEN, FLASHBLADE_OAUTH2_* environment variables when config block values are absent
-- [ ] **PROV-04**: Provider negotiates API version on startup via GET /api/api_version and targets v2.22
-- [ ] **PROV-05**: Provider marks api_token, oauth2 private key, and access key secrets as Sensitive in schema
+- [x] **PROV-04**: Provider negotiates API version on startup via GET /api/api_version and targets v2.22
+- [x] **PROV-05**: Provider marks api_token, oauth2 private key, and access key secrets as Sensitive in schema
 - [ ] **PROV-06**: Provider logs all operations with structured tflog output (resource name, operation, API path)
-- [ ] **PROV-07**: Provider supports custom CA certificate for TLS verification (ca_cert_file or inline ca_cert)
+- [x] **PROV-07**: Provider supports custom CA certificate for TLS verification (ca_cert_file or inline ca_cert)
 
 ### File System
 
@@ -184,13 +184,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROV-01 | Phase 1 | Pending |
-| PROV-02 | Phase 1 | Pending |
+| PROV-01 | Phase 1 | Complete |
+| PROV-02 | Phase 1 | Complete |
 | PROV-03 | Phase 1 | Pending |
-| PROV-04 | Phase 1 | Pending |
-| PROV-05 | Phase 1 | Pending |
+| PROV-04 | Phase 1 | Complete |
+| PROV-05 | Phase 1 | Complete |
 | PROV-06 | Phase 1 | Pending |
-| PROV-07 | Phase 1 | Pending |
+| PROV-07 | Phase 1 | Complete |
 | FS-01 | Phase 1 | Pending |
 | FS-02 | Phase 1 | Pending |
 | FS-03 | Phase 1 | Pending |
