@@ -184,13 +184,107 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| PROV-01 | Phase 1 | Pending |
+| PROV-02 | Phase 1 | Pending |
+| PROV-03 | Phase 1 | Pending |
+| PROV-04 | Phase 1 | Pending |
+| PROV-05 | Phase 1 | Pending |
+| PROV-06 | Phase 1 | Pending |
+| PROV-07 | Phase 1 | Pending |
+| FS-01 | Phase 1 | Pending |
+| FS-02 | Phase 1 | Pending |
+| FS-03 | Phase 1 | Pending |
+| FS-04 | Phase 1 | Pending |
+| FS-05 | Phase 1 | Pending |
+| FS-06 | Phase 1 | Pending |
+| FS-07 | Phase 1 | Pending |
+| OSA-01 | Phase 2 | Pending |
+| OSA-02 | Phase 2 | Pending |
+| OSA-03 | Phase 2 | Pending |
+| OSA-04 | Phase 2 | Pending |
+| OSA-05 | Phase 2 | Pending |
+| BKT-01 | Phase 2 | Pending |
+| BKT-02 | Phase 2 | Pending |
+| BKT-03 | Phase 2 | Pending |
+| BKT-04 | Phase 2 | Pending |
+| BKT-05 | Phase 2 | Pending |
+| BKT-06 | Phase 2 | Pending |
+| OAK-01 | Phase 2 | Pending |
+| OAK-02 | Phase 2 | Pending |
+| OAK-03 | Phase 2 | Pending |
+| OAK-04 | Phase 2 | Pending |
+| OAK-05 | Phase 2 | Pending |
+| NFP-01 | Phase 3 | Pending |
+| NFP-02 | Phase 3 | Pending |
+| NFP-03 | Phase 3 | Pending |
+| NFP-04 | Phase 3 | Pending |
+| NFP-05 | Phase 3 | Pending |
+| NFR-01 | Phase 3 | Pending |
+| NFR-02 | Phase 3 | Pending |
+| NFR-03 | Phase 3 | Pending |
+| NFR-04 | Phase 3 | Pending |
+| SMP-01 | Phase 3 | Pending |
+| SMP-02 | Phase 3 | Pending |
+| SMP-03 | Phase 3 | Pending |
+| SMP-04 | Phase 3 | Pending |
+| SMP-05 | Phase 3 | Pending |
+| SMR-01 | Phase 3 | Pending |
+| SMR-02 | Phase 3 | Pending |
+| SMR-03 | Phase 3 | Pending |
+| SMR-04 | Phase 3 | Pending |
+| SNP-01 | Phase 3 | Pending |
+| SNP-02 | Phase 3 | Pending |
+| SNP-03 | Phase 3 | Pending |
+| SNP-04 | Phase 3 | Pending |
+| SNP-05 | Phase 3 | Pending |
+| SNR-01 | Phase 3 | Pending |
+| SNR-02 | Phase 3 | Pending |
+| SNR-03 | Phase 3 | Pending |
+| SNR-04 | Phase 3 | Pending |
+| OAP-01 | Phase 4 | Pending |
+| OAP-02 | Phase 4 | Pending |
+| OAP-03 | Phase 4 | Pending |
+| OAP-04 | Phase 4 | Pending |
+| OAP-05 | Phase 4 | Pending |
+| OAR-01 | Phase 4 | Pending |
+| OAR-02 | Phase 4 | Pending |
+| OAR-03 | Phase 4 | Pending |
+| OAR-04 | Phase 4 | Pending |
+| NAP-01 | Phase 4 | Pending |
+| NAP-02 | Phase 4 | Pending |
+| NAP-03 | Phase 4 | Pending |
+| NAP-04 | Phase 4 | Pending |
+| NAP-05 | Phase 4 | Pending |
+| NAR-01 | Phase 4 | Pending |
+| NAR-02 | Phase 4 | Pending |
+| NAR-03 | Phase 4 | Pending |
+| NAR-04 | Phase 4 | Pending |
+| QTP-01 | Phase 4 | Pending |
+| QTP-02 | Phase 4 | Pending |
+| QTP-03 | Phase 4 | Pending |
+| QTP-04 | Phase 4 | Pending |
+| QTP-05 | Phase 4 | Pending |
+| QTR-01 | Phase 4 | Pending |
+| QTR-02 | Phase 4 | Pending |
+| QTR-03 | Phase 4 | Pending |
+| QTR-04 | Phase 4 | Pending |
+| ADM-01 | Phase 4 | Pending |
+| ADM-02 | Phase 4 | Pending |
+| ADM-03 | Phase 4 | Pending |
+| ADM-04 | Phase 4 | Pending |
+| ADM-05 | Phase 4 | Pending |
+| QUA-01 | Phase 5 | Pending |
+| QUA-02 | Phase 5 | Pending |
+| QUA-03 | Phase 5 | Pending |
+| QUA-04 | Phase 5 | Pending |
+| QUA-05 | Phase 5 | Pending |
+| QUA-06 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 76 total
-- Mapped to phases: 0
-- Unmapped: 76 ⚠️
+- v1 requirements: 95 total (recount from requirement IDs — REQUIREMENTS.md header had 76 which was incorrect)
+- Mapped to phases: 95
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-03-26 after initial definition*
+*Last updated: 2026-03-26 — traceability populated after roadmap creation*
