@@ -10,6 +10,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"math/big"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -19,17 +20,21 @@ import (
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
 )
 
-// generateTestCACert generates a self-signed CA certificate for tests.
-// Returns the PEM-encoded certificate and the TLS certificate.
-func generateTestCACert(t *testing.T) (pemBytes []byte, tlsCert tls.Certificate) {
+// generateTestCerts generates a self-signed CA and a server certificate signed
+// by that CA (with 127.0.0.1 as SAN). Returns:
+//   - caPEM: PEM-encoded CA certificate for client trust configuration
+//   - serverTLSCert: TLS certificate to use on the test server
+func generateTestCerts(t *testing.T) (caPEM []byte, serverTLSCert tls.Certificate) {
 	t.Helper()
 
-	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	// Generate CA key.
+	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		t.Fatalf("generate key: %v", err)
+		t.Fatalf("generate CA key: %v", err)
 	}
 
-	template := &x509.Certificate{
+	// Self-signed CA certificate.
+	caTemplate := &x509.Certificate{
 		SerialNumber:          big.NewInt(1),
 		Subject:               pkix.Name{CommonName: "Test CA"},
 		NotBefore:             time.Now().Add(-time.Hour),
@@ -38,37 +43,62 @@ func generateTestCACert(t *testing.T) (pemBytes []byte, tlsCert tls.Certificate)
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
 		BasicConstraintsValid: true,
 	}
-
-	certDER, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	caCertDER, err := x509.CreateCertificate(rand.Reader, caTemplate, caTemplate, &caKey.PublicKey, caKey)
 	if err != nil {
-		t.Fatalf("create certificate: %v", err)
+		t.Fatalf("create CA cert: %v", err)
+	}
+	caCert, err := x509.ParseCertificate(caCertDER)
+	if err != nil {
+		t.Fatalf("parse CA cert: %v", err)
+	}
+	caPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: caCertDER})
+
+	// Generate server key.
+	serverKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("generate server key: %v", err)
 	}
 
-	pemBytes = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
-
-	keyDER, err := x509.MarshalECPrivateKey(key)
-	if err != nil {
-		t.Fatalf("marshal key: %v", err)
+	// Server certificate signed by the CA — with 127.0.0.1 as IP SAN.
+	serverTemplate := &x509.Certificate{
+		SerialNumber: big.NewInt(2),
+		Subject:      pkix.Name{CommonName: "127.0.0.1"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(24 * time.Hour),
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		IPAddresses:  []net.IP{net.ParseIP("127.0.0.1")},
 	}
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: keyDER})
+	serverCertDER, err := x509.CreateCertificate(rand.Reader, serverTemplate, caCert, &serverKey.PublicKey, caKey)
+	if err != nil {
+		t.Fatalf("create server cert: %v", err)
+	}
+	serverCertPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: serverCertDER})
+	serverKeyDER, err := x509.MarshalECPrivateKey(serverKey)
+	if err != nil {
+		t.Fatalf("marshal server key: %v", err)
+	}
+	serverKeyPEM := pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: serverKeyDER})
 
-	tlsCert, err = tls.X509KeyPair(pemBytes, keyPEM)
+	serverTLSCert, err = tls.X509KeyPair(serverCertPEM, serverKeyPEM)
 	if err != nil {
 		t.Fatalf("x509 key pair: %v", err)
 	}
-	return pemBytes, tlsCert
+	return caPEM, serverTLSCert
+}
+
+// loginHandler is a shared handler for the /api/login endpoint.
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/login" {
+		w.Header().Set("x-auth-token", "test-session-token")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
 }
 
 func TestUnit_NewClient_WithAPIToken(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/login":
-			w.Header().Set("x-auth-token", "test-session-token")
-			w.WriteHeader(http.StatusOK)
-		default:
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
+	srv := httptest.NewServer(http.HandlerFunc(loginHandler))
 	defer srv.Close()
 
 	c, err := client.NewClient(client.Config{
@@ -93,29 +123,21 @@ func TestUnit_NewClient_MissingEndpoint(t *testing.T) {
 }
 
 func TestUnit_CustomCATLS(t *testing.T) {
-	caPEM, tlsCert := generateTestCACert(t)
+	caPEM, serverTLSCert := generateTestCerts(t)
 
-	// Write PEM to temp file.
+	// Write CA PEM to a temp file.
 	f, err := os.CreateTemp(t.TempDir(), "ca-cert-*.pem")
 	if err != nil {
 		t.Fatalf("create temp file: %v", err)
 	}
 	if _, err := f.Write(caPEM); err != nil {
-		t.Fatalf("write ca cert: %v", err)
+		t.Fatalf("write CA cert: %v", err)
 	}
 	f.Close()
 
-	// Create TLS test server using the generated CA cert.
-	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/login":
-			w.Header().Set("x-auth-token", "token")
-			w.WriteHeader(http.StatusOK)
-		default:
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
-	srv.TLS = &tls.Config{Certificates: []tls.Certificate{tlsCert}}
+	// TLS test server using the server cert (signed by our CA).
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(loginHandler))
+	srv.TLS = &tls.Config{Certificates: []tls.Certificate{serverTLSCert}}
 	srv.StartTLS()
 	defer srv.Close()
 
@@ -133,18 +155,10 @@ func TestUnit_CustomCATLS(t *testing.T) {
 }
 
 func TestUnit_CustomCATLS_InlinePEM(t *testing.T) {
-	caPEM, tlsCert := generateTestCACert(t)
+	caPEM, serverTLSCert := generateTestCerts(t)
 
-	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/login":
-			w.Header().Set("x-auth-token", "token")
-			w.WriteHeader(http.StatusOK)
-		default:
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
-	srv.TLS = &tls.Config{Certificates: []tls.Certificate{tlsCert}}
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(loginHandler))
+	srv.TLS = &tls.Config{Certificates: []tls.Certificate{serverTLSCert}}
 	srv.StartTLS()
 	defer srv.Close()
 
@@ -162,15 +176,7 @@ func TestUnit_CustomCATLS_InlinePEM(t *testing.T) {
 }
 
 func TestUnit_InsecureSkipVerify(t *testing.T) {
-	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/login":
-			w.Header().Set("x-auth-token", "token")
-			w.WriteHeader(http.StatusOK)
-		default:
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
+	srv := httptest.NewTLSServer(http.HandlerFunc(loginHandler))
 	defer srv.Close()
 
 	c, err := client.NewClient(client.Config{

@@ -1,0 +1,144 @@
+package client
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
+	"sync"
+	"time"
+
+	"golang.org/x/oauth2"
+)
+
+// LoginWithAPIToken performs a session login using a long-lived API token.
+// It POSTs to {endpoint}/api/login with the api-token header and extracts the
+// resulting session token from the x-auth-token response header.
+func LoginWithAPIToken(ctx context.Context, httpClient *http.Client, endpoint, apiToken string) (string, error) {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+
+	loginURL := strings.TrimRight(endpoint, "/") + "/api/login"
+	req, err := http.NewRequest(http.MethodPost, loginURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("login: build request: %w", err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+	req.Header.Set("api-token", apiToken)
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("login: POST /api/login: %w", err)
+	}
+	defer resp.Body.Close()
+	io.Copy(io.Discard, resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("login: unexpected status %d", resp.StatusCode)
+	}
+
+	sessionToken := resp.Header.Get("x-auth-token")
+	if sessionToken == "" {
+		return "", fmt.Errorf("login: x-auth-token header missing from response")
+	}
+	return sessionToken, nil
+}
+
+// oauthTokenResponse is the parsed body from /oauth2/1.0/token.
+type oauthTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+}
+
+// FlashBladeTokenSource is an oauth2.TokenSource that exchanges a FlashBlade
+// API token for a short-lived Bearer token using the non-standard
+// urn:ietf:params:oauth:grant-type:token-exchange grant type.
+//
+// Tokens are cached until they expire to avoid unnecessary round-trips.
+type FlashBladeTokenSource struct {
+	endpoint    string
+	apiToken    string
+	httpClient  *http.Client
+	mu          sync.Mutex
+	cachedToken *oauth2.Token
+}
+
+// NewFlashBladeTokenSource creates a new FlashBladeTokenSource.
+func NewFlashBladeTokenSource(endpoint, apiToken string, httpClient *http.Client) *FlashBladeTokenSource {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+	return &FlashBladeTokenSource{
+		endpoint:   strings.TrimRight(endpoint, "/"),
+		apiToken:   apiToken,
+		httpClient: httpClient,
+	}
+}
+
+// Token returns a valid OAuth2 token, refreshing it if necessary.
+// Satisfies the oauth2.TokenSource interface.
+func (ts *FlashBladeTokenSource) Token() (*oauth2.Token, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	if ts.cachedToken != nil && ts.cachedToken.Valid() {
+		return ts.cachedToken, nil
+	}
+
+	tok, err := ts.fetchToken()
+	if err != nil {
+		return nil, err
+	}
+	ts.cachedToken = tok
+	return tok, nil
+}
+
+func (ts *FlashBladeTokenSource) fetchToken() (*oauth2.Token, error) {
+	tokenURL := ts.endpoint + "/oauth2/1.0/token"
+
+	form := url.Values{
+		"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
+		"subject_token":      {ts.apiToken},
+		"subject_token_type": {"urn:ietf:params:oauth:token-type:jwt"},
+	}
+
+	req, err := http.NewRequest(http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, fmt.Errorf("token exchange: build request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := ts.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("token exchange: POST /oauth2/1.0/token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("token exchange: read response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("token exchange: HTTP %d: %s", resp.StatusCode, string(body))
+	}
+
+	var tr oauthTokenResponse
+	if err := json.Unmarshal(body, &tr); err != nil {
+		return nil, fmt.Errorf("token exchange: parse response: %w", err)
+	}
+
+	expiry := time.Now().Add(time.Duration(tr.ExpiresIn) * time.Second)
+	return &oauth2.Token{
+		AccessToken: tr.AccessToken,
+		TokenType:   tr.TokenType,
+		Expiry:      expiry,
+	}, nil
+}
