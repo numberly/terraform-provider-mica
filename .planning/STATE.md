@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-file-based-policy-resources 03-02-PLAN.md
-last_updated: "2026-03-27T15:31:56.476Z"
+stopped_at: Completed 03-file-based-policy-resources 03-03-PLAN.md
+last_updated: "2026-03-27T15:42:46.609Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 11
   percent: 0
 ---
 
@@ -59,6 +59,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-object-store-resources P02 | 488 | 2 tasks | 8 files |
 | Phase 03-file-based-policy-resources P01 | 27 | 2 tasks | 7 files |
 | Phase 03-file-based-policy-resources P02 | 35 | 2 tasks | 6 files |
+| Phase 03-file-based-policy-resources P04 | 474 | 2 tasks | 6 files |
+| Phase 03-file-based-policy-resources P03 | 30 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -95,6 +97,11 @@ Recent decisions affecting current work:
 - [Phase 03-file-based-policy-resources]: NFS policy name has no RequiresReplace — rename is in-place via PATCH
 - [Phase 03-file-based-policy-resources]: Rule import uses composite ID policy_name/rule_index resolved via GetNfsExportPolicyRuleByIndex
 - [Phase 03-file-based-policy-resources]: readIntoState returns diag.Diagnostics for clean caller composition in rule resource
+- [Phase 03-file-based-policy-resources]: Snapshot policy name has RequiresReplace — API does not support rename via PATCH
+- [Phase 03-file-based-policy-resources]: SMB policy has no Version field — omitted from schema (unlike NFS export policy)
+- [Phase 03-file-based-policy-resources]: Snapshot rule ID is synthetic {policy_name}/{rule_name} — rules have no server-issued UUID
+- [Phase 03-file-based-policy-resources]: SMB rule import uses composite ID policy_name/rule_name (string name) — not numeric index like NFS
+- [Phase 03-file-based-policy-resources]: Snapshot rule update uses ReplaceSnapshotPolicyRule (atomic PATCH remove+add) — no dedicated rule PATCH endpoint
 
 ### Pending Todos
 
@@ -110,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T15:31:56.471Z
-Stopped at: Completed 03-file-based-policy-resources 03-02-PLAN.md
+Last session: 2026-03-27T15:42:46.604Z
+Stopped at: Completed 03-file-based-policy-resources 03-03-PLAN.md
 Resume file: None

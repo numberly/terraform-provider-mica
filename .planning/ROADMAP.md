@@ -12,7 +12,7 @@ Building the provider in five phases: establish the shared HTTP client and corre
 
 - [x] **Phase 1: Foundation** - Shared HTTP client, provider scaffold, and first resource (`flashblade_file_system`) establishing all CRUD patterns (completed 2026-03-27)
 - [ ] **Phase 2: Object Store Resources** - Complete object store resource chain: account, bucket, and access key with dependency ordering
-- [ ] **Phase 3: File-Based Policy Resources** - NFS export, SMB share, and snapshot policy families with parent/child rule pattern
+- [x] **Phase 3: File-Based Policy Resources** - NFS export, SMB share, and snapshot policy families with parent/child rule pattern (completed 2026-03-27)
 - [ ] **Phase 4: Object/Network/Quota Policies and Array Admin** - Remaining three policy families plus singleton array administration resources
 - [ ] **Phase 5: Quality Hardening** - Unit tests, mocked integration tests, documentation generation, and release pipeline
 
@@ -61,10 +61,10 @@ Plans:
   2. Operator can import NFS, SMB, and snapshot policy rules using composite ID (`policy_name:rule_index`); subsequent `plan` shows 0 diff
   3. Operator can create, update, and destroy SMB share policy and snapshot policy rules independently of the parent policy lifecycle
   4. All three policy data sources return attributes by name or filter without provider errors
-**Plans:** 2/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 03-01-PLAN.md — All Phase 3 model structs, client CRUD methods, and mock handlers for NFS/SMB/Snapshot
+- [x] 03-01-PLAN.md — All Phase 3 model structs, client CRUD methods, and mock handlers for NFS/SMB/Snapshot (completed 2026-03-27)
 - [ ] 03-02-PLAN.md — NFS export policy resource, rule resource, data source with tests
 - [ ] 03-03-PLAN.md — SMB share policy resource, rule resource, data source with tests
 - [ ] 03-04-PLAN.md — Snapshot policy resource, rule resource (PATCH-based), data source with tests
@@ -100,6 +100,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete   | 2026-03-27 |
 | 2. Object Store Resources | 2/3 | In Progress|  |
-| 3. File-Based Policy Resources | 2/4 | In Progress|  |
+| 3. File-Based Policy Resources | 4/4 | Complete   | 2026-03-27 |
 | 4. Object/Network/Quota Policies and Array Admin | 0/TBD | Not started | - |
 | 5. Quality Hardening | 0/TBD | Not started | - |
