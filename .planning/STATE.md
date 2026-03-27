@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-object-store-resources/02-03-PLAN.md
-last_updated: "2026-03-27T14:10:02.767Z"
+stopped_at: Completed 02-object-store-resources/02-02-PLAN.md
+last_updated: "2026-03-27T14:14:21.169Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-foundation P04 | 158 | 2 tasks | 11 files |
 | Phase 02-object-store-resources P01 | 576 | 2 tasks | 12 files |
 | Phase 02-object-store-resources P03 | 265 | 2 tasks | 7 files |
+| Phase 02-object-store-resources P02 | 488 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 02-object-store-resources]: All Phase 2 model structs added in plan 01 — Bucket, AccessKey models pre-loaded so plans 02-03 skip models.go
 - [Phase 02-object-store-resources]: WriteJSONListResponse/WriteJSONError extracted as generic helpers — all mock handlers use package-level functions
 - [Phase 02-object-store-resources]: Access key has no ImportState — secret unavailable after creation; all attributes RequiresReplace; Read does not overwrite SecretAccessKey
+- [Phase 02-object-store-resources]: destroy_eradicate_on_delete defaults false for buckets — production S3 data safety, eradication is opt-in
+- [Phase 02-object-store-resources]: Bucket name and account have RequiresReplace (ForceNew) — S3 immutability semantics
 
 ### Pending Todos
 
@@ -99,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T14:10:02.763Z
-Stopped at: Completed 02-object-store-resources/02-03-PLAN.md
+Last session: 2026-03-27T14:14:21.165Z
+Stopped at: Completed 02-object-store-resources/02-02-PLAN.md
 Resume file: None

@@ -37,12 +37,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Bucket
 
-- [ ] **BKT-01**: User can create a bucket with name, account reference, and optional settings
-- [ ] **BKT-02**: User can update bucket attributes (quotas, versioning, policies)
-- [ ] **BKT-03**: User can destroy a bucket (two-phase: mark destroyed, then eradicate)
-- [ ] **BKT-04**: User can import an existing bucket into Terraform state by name
-- [ ] **BKT-05**: Data source returns bucket attributes by name or filter
-- [ ] **BKT-06**: Drift detection logs field-level diffs via tflog when Read finds state divergence
+- [x] **BKT-01**: User can create a bucket with name, account reference, and optional settings
+- [x] **BKT-02**: User can update bucket attributes (quotas, versioning, policies)
+- [x] **BKT-03**: User can destroy a bucket (two-phase: mark destroyed, then eradicate)
+- [x] **BKT-04**: User can import an existing bucket into Terraform state by name
+- [x] **BKT-05**: Data source returns bucket attributes by name or filter
+- [x] **BKT-06**: Drift detection logs field-level diffs via tflog when Read finds state divergence
 
 ### Object Store Access Key
 
@@ -203,12 +203,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OSA-03 | Phase 2 | Complete |
 | OSA-04 | Phase 2 | Complete |
 | OSA-05 | Phase 2 | Complete |
-| BKT-01 | Phase 2 | Pending |
-| BKT-02 | Phase 2 | Pending |
-| BKT-03 | Phase 2 | Pending |
-| BKT-04 | Phase 2 | Pending |
-| BKT-05 | Phase 2 | Pending |
-| BKT-06 | Phase 2 | Pending |
+| BKT-01 | Phase 2 | Complete |
+| BKT-02 | Phase 2 | Complete |
+| BKT-03 | Phase 2 | Complete |
+| BKT-04 | Phase 2 | Complete |
+| BKT-05 | Phase 2 | Complete |
+| BKT-06 | Phase 2 | Complete |
 | OAK-01 | Phase 2 | Complete |
 | OAK-02 | Phase 2 | Complete |
 | OAK-03 | Phase 2 | Complete |
