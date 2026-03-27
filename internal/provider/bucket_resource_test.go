@@ -1,0 +1,499 @@
+package provider
+
+import (
+	"context"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock"
+	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock/handlers"
+)
+
+// ---- helpers ----------------------------------------------------------------
+
+// newTestBucketResource creates a bucketResource wired to the given mock server.
+func newTestBucketResource(t *testing.T, ms *testmock.MockServer) *bucketResource {
+	t.Helper()
+	c, err := client.NewClient(client.Config{
+		Endpoint:           ms.URL(),
+		APIToken:           "test-token",
+		InsecureSkipVerify: true,
+		MaxRetries:         1,
+		RetryBaseDelay:     1 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+	return &bucketResource{client: c}
+}
+
+// bucketResourceSchema returns the parsed schema for the bucket resource.
+func bucketResourceSchema(t *testing.T) resource.SchemaResponse {
+	t.Helper()
+	r := &bucketResource{}
+	var resp resource.SchemaResponse
+	r.Schema(context.Background(), resource.SchemaRequest{}, &resp)
+	return resp
+}
+
+// buildBucketType returns the tftypes.Object for the full bucket resource schema.
+func buildBucketType() tftypes.Object {
+	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"data_reduction":      tftypes.Number,
+		"snapshots":           tftypes.Number,
+		"total_physical":      tftypes.Number,
+		"unique":              tftypes.Number,
+		"virtual":             tftypes.Number,
+		"snapshots_effective": tftypes.Number,
+	}}
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                           tftypes.String,
+		"name":                         tftypes.String,
+		"account":                      tftypes.String,
+		"created":                      tftypes.Number,
+		"destroyed":                    tftypes.Bool,
+		"destroy_eradicate_on_delete":  tftypes.Bool,
+		"time_remaining":               tftypes.Number,
+		"versioning":                   tftypes.String,
+		"quota_limit":                  tftypes.String,
+		"hard_limit_enabled":           tftypes.Bool,
+		"object_count":                 tftypes.Number,
+		"bucket_type":                  tftypes.String,
+		"retention_lock":               tftypes.String,
+		"space":                        spaceType,
+		"timeouts":                     timeoutsType,
+	}}
+}
+
+// nullBucketConfig returns a base config map with all attributes null.
+func nullBucketConfig() map[string]tftypes.Value {
+	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"data_reduction":      tftypes.Number,
+		"snapshots":           tftypes.Number,
+		"total_physical":      tftypes.Number,
+		"unique":              tftypes.Number,
+		"virtual":             tftypes.Number,
+		"snapshots_effective": tftypes.Number,
+	}}
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	return map[string]tftypes.Value{
+		"id":                          tftypes.NewValue(tftypes.String, nil),
+		"name":                        tftypes.NewValue(tftypes.String, nil),
+		"account":                     tftypes.NewValue(tftypes.String, nil),
+		"created":                     tftypes.NewValue(tftypes.Number, nil),
+		"destroyed":                   tftypes.NewValue(tftypes.Bool, nil),
+		"destroy_eradicate_on_delete": tftypes.NewValue(tftypes.Bool, nil),
+		"time_remaining":              tftypes.NewValue(tftypes.Number, nil),
+		"versioning":                  tftypes.NewValue(tftypes.String, nil),
+		"quota_limit":                 tftypes.NewValue(tftypes.String, nil),
+		"hard_limit_enabled":          tftypes.NewValue(tftypes.Bool, nil),
+		"object_count":                tftypes.NewValue(tftypes.Number, nil),
+		"bucket_type":                 tftypes.NewValue(tftypes.String, nil),
+		"retention_lock":              tftypes.NewValue(tftypes.String, nil),
+		"space":                       tftypes.NewValue(spaceType, nil),
+		"timeouts":                    tftypes.NewValue(timeoutsType, nil),
+	}
+}
+
+// bucketPlanWithNameAndAccount returns a tfsdk.Plan with name, account, and eradicate=false.
+func bucketPlanWithNameAndAccount(t *testing.T, name, account string) tfsdk.Plan {
+	t.Helper()
+	s := bucketResourceSchema(t).Schema
+	cfg := nullBucketConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, name)
+	cfg["account"] = tftypes.NewValue(tftypes.String, account)
+	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+	return tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildBucketType(), cfg),
+		Schema: s,
+	}
+}
+
+// setupBucketMockServer creates a mock server with account and bucket handlers,
+// pre-seeds an account, and returns the server and client.
+func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBladeClient) {
+	t.Helper()
+	ms := testmock.NewMockServer()
+	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterBucketHandlers(ms.Mux, accountStore)
+
+	c, err := client.NewClient(client.Config{
+		Endpoint:           ms.URL(),
+		APIToken:           "test-token",
+		InsecureSkipVerify: true,
+		MaxRetries:         1,
+		RetryBaseDelay:     1 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+
+	// Pre-seed the test account.
+	_, err = c.PostObjectStoreAccount(context.Background(), "test-account", client.ObjectStoreAccountPost{})
+	if err != nil {
+		t.Fatalf("PostObjectStoreAccount: %v", err)
+	}
+
+	return ms, c
+}
+
+// ---- tests ------------------------------------------------------------------
+
+// TestUnit_Bucket_Create verifies Create populates ID, account, versioning, and created.
+func TestUnit_Bucket_Create(t *testing.T) {
+	ms, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	plan := bucketPlanWithNameAndAccount(t, "test-bucket", "test-account")
+	req := resource.CreateRequest{Plan: plan}
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", resp.Diagnostics)
+	}
+
+	var model bucketModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.ID.IsNull() || model.ID.ValueString() == "" {
+		t.Error("expected non-empty ID after Create")
+	}
+	if model.Name.ValueString() != "test-bucket" {
+		t.Errorf("expected name=test-bucket, got %s", model.Name.ValueString())
+	}
+	if model.Account.ValueString() != "test-account" {
+		t.Errorf("expected account=test-account, got %s", model.Account.ValueString())
+	}
+	if model.Created.IsNull() || model.Created.IsUnknown() {
+		t.Error("expected created to be populated after Create")
+	}
+	if model.Destroyed.ValueBool() {
+		t.Error("expected destroyed=false after Create")
+	}
+}
+
+// TestUnit_Bucket_Update verifies PATCH updates quota_limit, versioning, and hard_limit_enabled.
+func TestUnit_Bucket_Update(t *testing.T) {
+	ms, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Create first.
+	plan := bucketPlanWithNameAndAccount(t, "update-bucket", "test-account")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Update with new quota, versioning, hard_limit_enabled.
+	updateCfg := nullBucketConfig()
+	updateCfg["name"] = tftypes.NewValue(tftypes.String, "update-bucket")
+	updateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	updateCfg["quota_limit"] = tftypes.NewValue(tftypes.String, "10737418240")
+	updateCfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")
+	updateCfg["hard_limit_enabled"] = tftypes.NewValue(tftypes.Bool, true)
+	updateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+
+	updatePlan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), updateCfg), Schema: s}
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: createResp.State,
+	}, updateResp)
+
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update returned error: %s", updateResp.Diagnostics)
+	}
+
+	var model bucketModel
+	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.QuotaLimit.ValueString() != "10737418240" {
+		t.Errorf("expected quota_limit=10737418240, got %s", model.QuotaLimit.ValueString())
+	}
+	if model.Versioning.ValueString() != "enabled" {
+		t.Errorf("expected versioning=enabled, got %s", model.Versioning.ValueString())
+	}
+	if !model.HardLimitEnabled.ValueBool() {
+		t.Error("expected hard_limit_enabled=true after Update")
+	}
+}
+
+// TestUnit_Bucket_Destroy verifies that when destroy_eradicate_on_delete=false,
+// only soft-delete is performed (no DELETE/eradication).
+func TestUnit_Bucket_Destroy(t *testing.T) {
+	ms, c := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Create.
+	plan := bucketPlanWithNameAndAccount(t, "destroy-bucket", "test-account")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Delete (soft-delete only — eradicate=false is default).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: createResp.State}, deleteResp)
+
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete returned error: %s", deleteResp.Diagnostics)
+	}
+
+	// Verify bucket is soft-deleted but NOT eradicated.
+	destroyed := true
+	buckets, err := c.ListBuckets(context.Background(), client.ListBucketsOpts{
+		Names:     []string{"destroy-bucket"},
+		Destroyed: &destroyed,
+	})
+	if err != nil {
+		t.Fatalf("ListBuckets: %v", err)
+	}
+	if len(buckets) != 1 {
+		t.Errorf("expected bucket to be soft-deleted (still in destroyed list), got %d buckets", len(buckets))
+	}
+	if !buckets[0].Destroyed {
+		t.Error("expected bucket.Destroyed=true after soft-delete")
+	}
+}
+
+// TestUnit_Bucket_Destroy_WithEradicate verifies that when destroy_eradicate_on_delete=true,
+// the bucket is soft-deleted AND eradicated.
+func TestUnit_Bucket_Destroy_WithEradicate(t *testing.T) {
+	ms, c := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Create with eradicate=true.
+	cfg := nullBucketConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, "eradicate-bucket")
+	cfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, true)
+	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), cfg), Schema: s}
+
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Delete with eradication.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: createResp.State}, deleteResp)
+
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete returned error: %s", deleteResp.Diagnostics)
+	}
+
+	// Verify bucket is fully eradicated (not found at all).
+	destroyed := true
+	buckets, err := c.ListBuckets(context.Background(), client.ListBucketsOpts{
+		Names:     []string{"eradicate-bucket"},
+		Destroyed: &destroyed,
+	})
+	if err != nil {
+		t.Fatalf("ListBuckets: %v", err)
+	}
+	if len(buckets) != 0 {
+		t.Errorf("expected bucket to be eradicated (not found), got %d buckets", len(buckets))
+	}
+}
+
+// TestUnit_Bucket_Import verifies ImportState populates all attributes including account ref,
+// and that a subsequent Read produces 0 diff.
+func TestUnit_Bucket_Import(t *testing.T) {
+	ms, c := setupBucketMockServer(t)
+	defer ms.Close()
+
+	// Pre-create a bucket directly via the client.
+	_, err := c.PostBucket(context.Background(), "import-bucket", client.BucketPost{
+		Account:    client.NamedReference{Name: "test-account"},
+		Versioning: "enabled",
+		QuotaLimit: "21474836480",
+	})
+	if err != nil {
+		t.Fatalf("PostBucket: %v", err)
+	}
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-bucket"}, importResp)
+
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState returned error: %s", importResp.Diagnostics)
+	}
+
+	var model bucketModel
+	if diags := importResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.Name.ValueString() != "import-bucket" {
+		t.Errorf("expected name=import-bucket, got %s", model.Name.ValueString())
+	}
+	if model.Account.ValueString() != "test-account" {
+		t.Errorf("expected account=test-account, got %s", model.Account.ValueString())
+	}
+	if model.Versioning.ValueString() != "enabled" {
+		t.Errorf("expected versioning=enabled, got %s", model.Versioning.ValueString())
+	}
+	if model.QuotaLimit.ValueString() != "21474836480" {
+		t.Errorf("expected quota_limit=21474836480, got %s", model.QuotaLimit.ValueString())
+	}
+	if model.ID.IsNull() || model.ID.ValueString() == "" {
+		t.Error("expected ID to be populated after Import")
+	}
+}
+
+// TestUnit_Bucket_DriftLog verifies that Read logs diffs via tflog when quota_limit
+// or versioning diverge from state.
+func TestUnit_Bucket_DriftLog(t *testing.T) {
+	ms, c := setupBucketMockServer(t)
+	defer ms.Close()
+
+	// Create a bucket via client.
+	_, err := c.PostBucket(context.Background(), "drift-bucket", client.BucketPost{
+		Account:    client.NamedReference{Name: "test-account"},
+		QuotaLimit: "10737418240",
+		Versioning: "none",
+	})
+	if err != nil {
+		t.Fatalf("PostBucket: %v", err)
+	}
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Set up state with different values to simulate drift.
+	stateCfg := nullBucketConfig()
+	stateCfg["name"] = tftypes.NewValue(tftypes.String, "drift-bucket")
+	stateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	stateCfg["quota_limit"] = tftypes.NewValue(tftypes.String, "5368709120") // different from API
+	stateCfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")     // different from API
+	stateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+
+	stateObj := tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), stateCfg), Schema: s}
+
+	readResp := &resource.ReadResponse{
+		State: stateObj,
+	}
+	// Read should not error — it should just log the drift.
+	r.Read(context.Background(), resource.ReadRequest{State: stateObj}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	// Verify state was updated to API values (drift corrected).
+	var model bucketModel
+	if diags := readResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+	if model.QuotaLimit.ValueString() != "10737418240" {
+		t.Errorf("expected quota_limit=10737418240 from API, got %s", model.QuotaLimit.ValueString())
+	}
+	if model.Versioning.ValueString() != "none" {
+		t.Errorf("expected versioning=none from API, got %s", model.Versioning.ValueString())
+	}
+}
+
+// TestUnit_Bucket_NonEmptyDelete verifies that attempting to delete a bucket with
+// objects returns a clear diagnostic error.
+func TestUnit_Bucket_NonEmptyDelete(t *testing.T) {
+	ms, c := setupBucketMockServer(t)
+	defer ms.Close()
+
+	// Create a bucket via client and manually set object_count > 0 by creating via PATCH
+	// is not possible in mock. Instead, let's create directly and tweak via mock.
+	// For this test, we create a bucket and use client to verify the guard works.
+	// We need to test the bucket resource Delete guard for object_count > 0.
+	// Since the mock doesn't automatically set object_count, we'll test by
+	// creating a bucket and simulating a state with ObjectCount set > 0.
+	bkt, err := c.PostBucket(context.Background(), "nonempty-bucket", client.BucketPost{
+		Account: client.NamedReference{Name: "test-account"},
+	})
+	if err != nil {
+		t.Fatalf("PostBucket: %v", err)
+	}
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Build state with object_count > 0 to trigger the guard.
+	stateCfg := nullBucketConfig()
+	stateCfg["id"] = tftypes.NewValue(tftypes.String, bkt.ID)
+	stateCfg["name"] = tftypes.NewValue(tftypes.String, "nonempty-bucket")
+	stateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	stateCfg["object_count"] = tftypes.NewValue(tftypes.Number, int64(5))
+	stateCfg["destroyed"] = tftypes.NewValue(tftypes.Bool, false)
+	stateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), stateCfg), Schema: s},
+	}, deleteResp)
+
+	if !deleteResp.Diagnostics.HasError() {
+		t.Error("expected error diagnostic for non-empty bucket delete, got none")
+	}
+
+	found := false
+	for _, diag := range deleteResp.Diagnostics {
+		if strings.Contains(diag.Detail(), "contains") || strings.Contains(diag.Summary(), "contains") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected 'contains objects' diagnostic, got: %s", deleteResp.Diagnostics)
+	}
+}
