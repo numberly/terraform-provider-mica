@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-file-based-policy-resources 03-01-PLAN.md
-last_updated: "2026-03-27T15:22:04.378Z"
+stopped_at: Completed 03-file-based-policy-resources 03-02-PLAN.md
+last_updated: "2026-03-27T15:31:56.476Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-object-store-resources P03 | 265 | 2 tasks | 7 files |
 | Phase 02-object-store-resources P02 | 488 | 2 tasks | 8 files |
 | Phase 03-file-based-policy-resources P01 | 27 | 2 tasks | 7 files |
+| Phase 03-file-based-policy-resources P02 | 35 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - [Phase 03-file-based-policy-resources]: NFS rule GET model uses int for anonuid/anongid (API integer), PATCH model uses *string (API schema difference confirmed in FLASHBLADE_API.md)
 - [Phase 03-file-based-policy-resources]: SnapshotPolicyPatch omits Name field entirely — structurally enforces read-only name constraint for snapshot policies
 - [Phase 03-file-based-policy-resources]: Snapshot mock PATCH processes remove_rules before add_rules for atomic replace semantics via ReplaceSnapshotPolicyRule
+- [Phase 03-file-based-policy-resources]: NFS policy name has no RequiresReplace — rename is in-place via PATCH
+- [Phase 03-file-based-policy-resources]: Rule import uses composite ID policy_name/rule_index resolved via GetNfsExportPolicyRuleByIndex
+- [Phase 03-file-based-policy-resources]: readIntoState returns diag.Diagnostics for clean caller composition in rule resource
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T15:22:04.374Z
-Stopped at: Completed 03-file-based-policy-resources 03-01-PLAN.md
+Last session: 2026-03-27T15:31:56.471Z
+Stopped at: Completed 03-file-based-policy-resources 03-02-PLAN.md
 Resume file: None

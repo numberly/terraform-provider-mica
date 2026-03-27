@@ -61,7 +61,7 @@ Plans:
   2. Operator can import NFS, SMB, and snapshot policy rules using composite ID (`policy_name:rule_index`); subsequent `plan` shows 0 diff
   3. Operator can create, update, and destroy SMB share policy and snapshot policy rules independently of the parent policy lifecycle
   4. All three policy data sources return attributes by name or filter without provider errors
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 - [ ] 03-01-PLAN.md — All Phase 3 model structs, client CRUD methods, and mock handlers for NFS/SMB/Snapshot
@@ -100,6 +100,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete   | 2026-03-27 |
 | 2. Object Store Resources | 2/3 | In Progress|  |
-| 3. File-Based Policy Resources | 1/4 | In Progress|  |
+| 3. File-Based Policy Resources | 2/4 | In Progress|  |
 | 4. Object/Network/Quota Policies and Array Admin | 0/TBD | Not started | - |
 | 5. Quality Hardening | 0/TBD | Not started | - |
