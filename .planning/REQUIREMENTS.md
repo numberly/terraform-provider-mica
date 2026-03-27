@@ -46,11 +46,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Object Store Access Key
 
-- [ ] **OAK-01**: User can create an object store access key for a given account
-- [ ] **OAK-02**: User can delete an object store access key
-- [ ] **OAK-03**: Secret access key is marked Sensitive and only available at creation time
-- [ ] **OAK-04**: User can import an existing access key into Terraform state by name
-- [ ] **OAK-05**: Data source returns access key attributes by name or filter
+- [x] **OAK-01**: User can create an object store access key for a given account
+- [x] **OAK-02**: User can delete an object store access key
+- [x] **OAK-03**: Secret access key is marked Sensitive and only available at creation time
+- [x] **OAK-04**: User can import an existing access key into Terraform state by name
+- [x] **OAK-05**: Data source returns access key attributes by name or filter
 
 ### NFS Export Policy
 
@@ -209,11 +209,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BKT-04 | Phase 2 | Pending |
 | BKT-05 | Phase 2 | Pending |
 | BKT-06 | Phase 2 | Pending |
-| OAK-01 | Phase 2 | Pending |
-| OAK-02 | Phase 2 | Pending |
-| OAK-03 | Phase 2 | Pending |
-| OAK-04 | Phase 2 | Pending |
-| OAK-05 | Phase 2 | Pending |
+| OAK-01 | Phase 2 | Complete |
+| OAK-02 | Phase 2 | Complete |
+| OAK-03 | Phase 2 | Complete |
+| OAK-04 | Phase 2 | Complete |
+| OAK-05 | Phase 2 | Complete |
 | NFP-01 | Phase 3 | Pending |
 | NFP-02 | Phase 3 | Pending |
 | NFP-03 | Phase 3 | Pending |
