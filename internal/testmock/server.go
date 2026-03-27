@@ -26,7 +26,7 @@ func NewMockServer() *MockServer {
 	}
 
 	// Register built-in handlers.
-	mux.HandleFunc("/login", ms.handleLogin)
+	mux.HandleFunc("/api/login", ms.handleLogin)
 	mux.HandleFunc("/api/api_version", ms.handleAPIVersion)
 
 	ms.Server = httptest.NewServer(mux)

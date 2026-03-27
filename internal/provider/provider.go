@@ -264,9 +264,10 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 }
 
 // Resources returns the list of resource types provided by this provider.
-// File system resource will be added in Plan 04.
 func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewFilesystemResource,
+	}
 }
 
 // DataSources returns the list of data source types provided by this provider.
