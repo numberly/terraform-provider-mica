@@ -1,0 +1,143 @@
+package client
+
+import (
+	"context"
+	"fmt"
+	"net/url"
+	"strings"
+	"time"
+)
+
+// ListFileSystemsOpts contains optional query parameters for ListFileSystems.
+type ListFileSystemsOpts struct {
+	// Names filters results to specific file system names (comma-separated when multiple).
+	Names []string
+	// Filter is a free-form filter expression.
+	Filter string
+	// Destroyed, when set to true, returns only soft-deleted file systems.
+	Destroyed *bool
+	// ContinuationToken is used for paginated results.
+	ContinuationToken string
+	// Limit restricts the number of results returned.
+	Limit int
+}
+
+// GetFileSystem retrieves a file system by name.
+// Returns an IsNotFound error if the file system does not exist.
+func (c *FlashBladeClient) GetFileSystem(ctx context.Context, name string) (*FileSystem, error) {
+	path := "/file-systems?names=" + url.QueryEscape(name)
+	var resp ListResponse[FileSystem]
+	if err := c.get(ctx, path, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("file system %q not found", name)}
+	}
+	return &resp.Items[0], nil
+}
+
+// ListFileSystems returns all file systems matching the optional opts filters.
+func (c *FlashBladeClient) ListFileSystems(ctx context.Context, opts ListFileSystemsOpts) ([]FileSystem, error) {
+	params := url.Values{}
+	if len(opts.Names) > 0 {
+		params.Set("names", strings.Join(opts.Names, ","))
+	}
+	if opts.Filter != "" {
+		params.Set("filter", opts.Filter)
+	}
+	if opts.Destroyed != nil {
+		if *opts.Destroyed {
+			params.Set("destroyed", "true")
+		} else {
+			params.Set("destroyed", "false")
+		}
+	}
+	if opts.ContinuationToken != "" {
+		params.Set("continuation_token", opts.ContinuationToken)
+	}
+	if opts.Limit > 0 {
+		params.Set("limit", fmt.Sprintf("%d", opts.Limit))
+	}
+
+	path := "/file-systems"
+	if len(params) > 0 {
+		path += "?" + params.Encode()
+	}
+
+	var resp ListResponse[FileSystem]
+	if err := c.get(ctx, path, &resp); err != nil {
+		return nil, err
+	}
+	return resp.Items, nil
+}
+
+// PostFileSystem creates a new file system.
+func (c *FlashBladeClient) PostFileSystem(ctx context.Context, body FileSystemPost) (*FileSystem, error) {
+	var resp ListResponse[FileSystem]
+	if err := c.post(ctx, "/file-systems", body, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, fmt.Errorf("PostFileSystem: empty response from server")
+	}
+	return &resp.Items[0], nil
+}
+
+// PatchFileSystem updates an existing file system identified by its ID.
+// Only non-nil pointer fields in body are sent (PATCH semantics).
+// Uses ID (not name) for stability across renames.
+func (c *FlashBladeClient) PatchFileSystem(ctx context.Context, id string, body FileSystemPatch) (*FileSystem, error) {
+	path := "/file-systems?ids=" + url.QueryEscape(id)
+	var resp ListResponse[FileSystem]
+	if err := c.patch(ctx, path, body, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, fmt.Errorf("PatchFileSystem: empty response from server")
+	}
+	return &resp.Items[0], nil
+}
+
+// DeleteFileSystem eradicates a soft-deleted file system identified by its ID.
+// The file system must already be soft-deleted (destroyed=true) before calling this.
+func (c *FlashBladeClient) DeleteFileSystem(ctx context.Context, id string) error {
+	path := "/file-systems?ids=" + url.QueryEscape(id)
+	return c.delete(ctx, path)
+}
+
+// PollUntilEradicated polls GET /file-systems?names={name}&destroyed=true until the
+// file system is fully eradicated (empty items response). Respects context deadline.
+// The caller should provide a context with an appropriate timeout (e.g., Terraform resource timeout).
+func (c *FlashBladeClient) PollUntilEradicated(ctx context.Context, name string) error {
+	for {
+		// Check context before polling.
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("PollUntilEradicated: context cancelled while waiting for %q to eradicate: %w", name, ctx.Err())
+		default:
+		}
+
+		path := "/file-systems?names=" + url.QueryEscape(name) + "&destroyed=true"
+		var resp ListResponse[FileSystem]
+		err := c.get(ctx, path, &resp)
+		if err != nil {
+			if IsNotFound(err) {
+				return nil
+			}
+			return fmt.Errorf("PollUntilEradicated: GET error: %w", err)
+		}
+
+		if len(resp.Items) == 0 {
+			// Eradication complete.
+			return nil
+		}
+
+		// Still present — wait before retrying.
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("PollUntilEradicated: context cancelled while waiting for %q to eradicate: %w", name, ctx.Err())
+		case <-time.After(2 * time.Second):
+			// Continue polling.
+		}
+	}
+}
