@@ -54,38 +54,38 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### NFS Export Policy
 
-- [ ] **NFP-01**: User can create an NFS export policy with name and optional settings
-- [ ] **NFP-02**: User can update NFS export policy attributes
-- [ ] **NFP-03**: User can destroy an NFS export policy
+- [x] **NFP-01**: User can create an NFS export policy with name and optional settings
+- [x] **NFP-02**: User can update NFS export policy attributes
+- [x] **NFP-03**: User can destroy an NFS export policy
 - [ ] **NFP-04**: User can import an existing NFS export policy into Terraform state by name
 - [ ] **NFP-05**: Data source returns NFS export policy attributes by name or filter
-- [ ] **NFR-01**: User can create NFS export policy rules (client, access, permissions)
-- [ ] **NFR-02**: User can update NFS export policy rules
-- [ ] **NFR-03**: User can destroy NFS export policy rules
+- [x] **NFR-01**: User can create NFS export policy rules (client, access, permissions)
+- [x] **NFR-02**: User can update NFS export policy rules
+- [x] **NFR-03**: User can destroy NFS export policy rules
 - [ ] **NFR-04**: User can import NFS export policy rules using composite ID (policy_name:rule_index)
 
 ### SMB Share Policy
 
-- [ ] **SMP-01**: User can create an SMB share policy with name and optional settings
-- [ ] **SMP-02**: User can update SMB share policy attributes
-- [ ] **SMP-03**: User can destroy an SMB share policy
+- [x] **SMP-01**: User can create an SMB share policy with name and optional settings
+- [x] **SMP-02**: User can update SMB share policy attributes
+- [x] **SMP-03**: User can destroy an SMB share policy
 - [ ] **SMP-04**: User can import an existing SMB share policy into Terraform state by name
 - [ ] **SMP-05**: Data source returns SMB share policy attributes by name or filter
-- [ ] **SMR-01**: User can create SMB share policy rules
-- [ ] **SMR-02**: User can update SMB share policy rules
-- [ ] **SMR-03**: User can destroy SMB share policy rules
+- [x] **SMR-01**: User can create SMB share policy rules
+- [x] **SMR-02**: User can update SMB share policy rules
+- [x] **SMR-03**: User can destroy SMB share policy rules
 - [ ] **SMR-04**: User can import SMB share policy rules using composite ID
 
 ### Snapshot Policy
 
-- [ ] **SNP-01**: User can create a snapshot policy with name and optional settings
-- [ ] **SNP-02**: User can update snapshot policy attributes
-- [ ] **SNP-03**: User can destroy a snapshot policy
+- [x] **SNP-01**: User can create a snapshot policy with name and optional settings
+- [x] **SNP-02**: User can update snapshot policy attributes
+- [x] **SNP-03**: User can destroy a snapshot policy
 - [ ] **SNP-04**: User can import an existing snapshot policy into Terraform state by name
 - [ ] **SNP-05**: Data source returns snapshot policy attributes by name or filter
-- [ ] **SNR-01**: User can create snapshot policy rules (schedule, retention)
-- [ ] **SNR-02**: User can update snapshot policy rules
-- [ ] **SNR-03**: User can destroy snapshot policy rules
+- [x] **SNR-01**: User can create snapshot policy rules (schedule, retention)
+- [x] **SNR-02**: User can update snapshot policy rules
+- [x] **SNR-03**: User can destroy snapshot policy rules
 - [ ] **SNR-04**: User can import snapshot policy rules using composite ID
 
 ### Object Store Access Policy
@@ -214,32 +214,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OAK-03 | Phase 2 | Complete |
 | OAK-04 | Phase 2 | Complete |
 | OAK-05 | Phase 2 | Complete |
-| NFP-01 | Phase 3 | Pending |
-| NFP-02 | Phase 3 | Pending |
-| NFP-03 | Phase 3 | Pending |
+| NFP-01 | Phase 3 | Complete |
+| NFP-02 | Phase 3 | Complete |
+| NFP-03 | Phase 3 | Complete |
 | NFP-04 | Phase 3 | Pending |
 | NFP-05 | Phase 3 | Pending |
-| NFR-01 | Phase 3 | Pending |
-| NFR-02 | Phase 3 | Pending |
-| NFR-03 | Phase 3 | Pending |
+| NFR-01 | Phase 3 | Complete |
+| NFR-02 | Phase 3 | Complete |
+| NFR-03 | Phase 3 | Complete |
 | NFR-04 | Phase 3 | Pending |
-| SMP-01 | Phase 3 | Pending |
-| SMP-02 | Phase 3 | Pending |
-| SMP-03 | Phase 3 | Pending |
+| SMP-01 | Phase 3 | Complete |
+| SMP-02 | Phase 3 | Complete |
+| SMP-03 | Phase 3 | Complete |
 | SMP-04 | Phase 3 | Pending |
 | SMP-05 | Phase 3 | Pending |
-| SMR-01 | Phase 3 | Pending |
-| SMR-02 | Phase 3 | Pending |
-| SMR-03 | Phase 3 | Pending |
+| SMR-01 | Phase 3 | Complete |
+| SMR-02 | Phase 3 | Complete |
+| SMR-03 | Phase 3 | Complete |
 | SMR-04 | Phase 3 | Pending |
-| SNP-01 | Phase 3 | Pending |
-| SNP-02 | Phase 3 | Pending |
-| SNP-03 | Phase 3 | Pending |
+| SNP-01 | Phase 3 | Complete |
+| SNP-02 | Phase 3 | Complete |
+| SNP-03 | Phase 3 | Complete |
 | SNP-04 | Phase 3 | Pending |
 | SNP-05 | Phase 3 | Pending |
-| SNR-01 | Phase 3 | Pending |
-| SNR-02 | Phase 3 | Pending |
-| SNR-03 | Phase 3 | Pending |
+| SNR-01 | Phase 3 | Complete |
+| SNR-02 | Phase 3 | Complete |
+| SNR-03 | Phase 3 | Complete |
 | SNR-04 | Phase 3 | Pending |
 | OAP-01 | Phase 4 | Pending |
 | OAP-02 | Phase 4 | Pending |

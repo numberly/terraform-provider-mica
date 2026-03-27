@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-27T14:54:31.826Z"
+stopped_at: Completed 03-file-based-policy-resources 03-01-PLAN.md
+last_updated: "2026-03-27T15:22:04.378Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 11
+  completed_plans: 8
   percent: 0
 ---
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-object-store-resources P01 | 576 | 2 tasks | 12 files |
 | Phase 02-object-store-resources P03 | 265 | 2 tasks | 7 files |
 | Phase 02-object-store-resources P02 | 488 | 2 tasks | 8 files |
+| Phase 03-file-based-policy-resources P01 | 27 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Recent decisions affecting current work:
 - [Phase 02-object-store-resources]: Access key has no ImportState — secret unavailable after creation; all attributes RequiresReplace; Read does not overwrite SecretAccessKey
 - [Phase 02-object-store-resources]: destroy_eradicate_on_delete defaults false for buckets — production S3 data safety, eradication is opt-in
 - [Phase 02-object-store-resources]: Bucket name and account have RequiresReplace (ForceNew) — S3 immutability semantics
+- [Phase 03-file-based-policy-resources]: NFS rule GET model uses int for anonuid/anongid (API integer), PATCH model uses *string (API schema difference confirmed in FLASHBLADE_API.md)
+- [Phase 03-file-based-policy-resources]: SnapshotPolicyPatch omits Name field entirely — structurally enforces read-only name constraint for snapshot policies
+- [Phase 03-file-based-policy-resources]: Snapshot mock PATCH processes remove_rules before add_rules for atomic replace semantics via ReplaceSnapshotPolicyRule
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T14:54:31.821Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-file-based-policy-resources/03-CONTEXT.md
+Last session: 2026-03-27T15:22:04.374Z
+Stopped at: Completed 03-file-based-policy-resources 03-01-PLAN.md
+Resume file: None
