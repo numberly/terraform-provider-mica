@@ -207,8 +207,8 @@ func TestUnit_ObjectStoreAccount_Update(t *testing.T) {
 func TestUnit_ObjectStoreAccount_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
-	handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
-	handlers.RegisterBucketHandlers(ms.Mux)
+	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterBucketHandlers(ms.Mux, accountStore)
 
 	r := newTestOSAResource(t, ms)
 	s := osaResourceSchema(t).Schema
