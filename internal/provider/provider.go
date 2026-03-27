@@ -270,6 +270,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewObjectStoreAccountResource,
 		NewBucketResource,
 		NewAccessKeyResource,
+		NewNfsExportPolicyResource,
+		NewNfsExportPolicyRuleResource,
 	}
 }
 
@@ -280,5 +282,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewObjectStoreAccountDataSource,
 		NewBucketDataSource,
 		NewAccessKeyDataSource,
+		NewNfsExportPolicyDataSource,
 	}
 }
