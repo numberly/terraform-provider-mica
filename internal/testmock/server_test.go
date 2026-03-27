@@ -51,8 +51,8 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 
 	base := ms.URL()
 
-	// Step 1: POST /login — verify x-auth-token header.
-	resp := doJSON(t, http.MethodPost, base+"/login", nil)
+	// Step 1: POST /api/login — verify x-auth-token header.
+	resp := doJSON(t, http.MethodPost, base+"/api/login", nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("POST /login: expected 200, got %d", resp.StatusCode)
 	}
@@ -202,8 +202,8 @@ func TestUnit_MockServer_LoginAndVersion(t *testing.T) {
 	defer ms.Close()
 	base := ms.URL()
 
-	// POST /login
-	resp := doJSON(t, http.MethodPost, base+"/login", nil)
+	// POST /api/login
+	resp := doJSON(t, http.MethodPost, base+"/api/login", nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("POST /login: expected 200, got %d", resp.StatusCode)
 	}
