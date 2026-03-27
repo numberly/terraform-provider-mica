@@ -1,0 +1,86 @@
+package client
+
+import (
+	"context"
+	"fmt"
+	"net/url"
+	"strings"
+)
+
+// ListObjectStoreAccountsOpts contains optional query parameters for ListObjectStoreAccounts.
+type ListObjectStoreAccountsOpts struct {
+	// Names filters results to specific account names (comma-separated when multiple).
+	Names []string
+	// Filter is a free-form filter expression.
+	Filter string
+}
+
+// GetObjectStoreAccount retrieves an object store account by name.
+// Returns an IsNotFound error if the account does not exist.
+func (c *FlashBladeClient) GetObjectStoreAccount(ctx context.Context, name string) (*ObjectStoreAccount, error) {
+	path := "/object-store-accounts?names=" + url.QueryEscape(name)
+	var resp ListResponse[ObjectStoreAccount]
+	if err := c.get(ctx, path, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("object store account %q not found", name)}
+	}
+	return &resp.Items[0], nil
+}
+
+// ListObjectStoreAccounts returns all object store accounts matching the optional opts filters.
+func (c *FlashBladeClient) ListObjectStoreAccounts(ctx context.Context, opts ListObjectStoreAccountsOpts) ([]ObjectStoreAccount, error) {
+	params := url.Values{}
+	if len(opts.Names) > 0 {
+		params.Set("names", strings.Join(opts.Names, ","))
+	}
+	if opts.Filter != "" {
+		params.Set("filter", opts.Filter)
+	}
+
+	path := "/object-store-accounts"
+	if len(params) > 0 {
+		path += "?" + params.Encode()
+	}
+
+	var resp ListResponse[ObjectStoreAccount]
+	if err := c.get(ctx, path, &resp); err != nil {
+		return nil, err
+	}
+	return resp.Items, nil
+}
+
+// PostObjectStoreAccount creates a new object store account.
+// The name is passed as a query parameter; optional fields are in the body.
+func (c *FlashBladeClient) PostObjectStoreAccount(ctx context.Context, name string, body ObjectStoreAccountPost) (*ObjectStoreAccount, error) {
+	path := "/object-store-accounts?names=" + url.QueryEscape(name)
+	var resp ListResponse[ObjectStoreAccount]
+	if err := c.post(ctx, path, body, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, fmt.Errorf("PostObjectStoreAccount: empty response from server")
+	}
+	return &resp.Items[0], nil
+}
+
+// PatchObjectStoreAccount updates an existing object store account identified by name.
+// Only non-nil pointer fields in body are sent (PATCH semantics).
+func (c *FlashBladeClient) PatchObjectStoreAccount(ctx context.Context, name string, body ObjectStoreAccountPatch) (*ObjectStoreAccount, error) {
+	path := "/object-store-accounts?names=" + url.QueryEscape(name)
+	var resp ListResponse[ObjectStoreAccount]
+	if err := c.patch(ctx, path, body, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, fmt.Errorf("PatchObjectStoreAccount: empty response from server")
+	}
+	return &resp.Items[0], nil
+}
+
+// DeleteObjectStoreAccount permanently deletes an object store account (single-phase, no soft-delete).
+func (c *FlashBladeClient) DeleteObjectStoreAccount(ctx context.Context, name string) error {
+	path := "/object-store-accounts?names=" + url.QueryEscape(name)
+	return c.delete(ctx, path)
+}

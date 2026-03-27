@@ -87,18 +87,18 @@ func (s *fileSystemStore) handleGet(w http.ResponseWriter, r *http.Request) {
 		items = []client.FileSystem{}
 	}
 
-	writeListResponse(w, http.StatusOK, items)
+	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
 // handlePost handles POST /api/2.22/file-systems.
 func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	var body client.FileSystemPost
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
+		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
 		return
 	}
 	if body.Name == "" {
-		writeError(w, http.StatusBadRequest, "name is required")
+		WriteJSONError(w, http.StatusBadRequest, "name is required")
 		return
 	}
 
@@ -106,7 +106,7 @@ func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	defer s.mu.Unlock()
 
 	if _, exists := s.byName[body.Name]; exists {
-		writeError(w, http.StatusConflict, fmt.Sprintf("file system %q already exists", body.Name))
+		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("file system %q already exists", body.Name))
 		return
 	}
 
@@ -125,14 +125,14 @@ func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	s.byName[fs.Name] = fs
 	s.byID[fs.ID] = fs
 
-	writeListResponse(w, http.StatusOK, []client.FileSystem{*fs})
+	WriteJSONListResponse(w, http.StatusOK, []client.FileSystem{*fs})
 }
 
 // handlePatch handles PATCH /api/2.22/file-systems?ids={id}.
 func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("ids")
 	if id == "" {
-		writeError(w, http.StatusBadRequest, "ids query parameter is required for PATCH")
+		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for PATCH")
 		return
 	}
 
@@ -141,7 +141,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 
 	fs, ok := s.byID[id]
 	if !ok {
-		writeError(w, http.StatusNotFound, fmt.Sprintf("file system with id %q not found", id))
+		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("file system with id %q not found", id))
 		return
 	}
 
@@ -149,7 +149,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	// We use a raw map to detect which fields were provided.
 	var rawPatch map[string]json.RawMessage
 	if err := json.NewDecoder(r.Body).Decode(&rawPatch); err != nil {
-		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
+		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
 		return
 	}
 
@@ -158,7 +158,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if v, ok := rawPatch["name"]; ok {
 		var name string
 		if err := json.Unmarshal(v, &name); err != nil {
-			writeError(w, http.StatusBadRequest, "invalid name field")
+			WriteJSONError(w, http.StatusBadRequest, "invalid name field")
 			return
 		}
 		if name != fs.Name {
@@ -172,7 +172,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if v, ok := rawPatch["provisioned"]; ok {
 		var provisioned int64
 		if err := json.Unmarshal(v, &provisioned); err != nil {
-			writeError(w, http.StatusBadRequest, "invalid provisioned field")
+			WriteJSONError(w, http.StatusBadRequest, "invalid provisioned field")
 			return
 		}
 		fs.Provisioned = provisioned
@@ -181,7 +181,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if v, ok := rawPatch["destroyed"]; ok {
 		var destroyed bool
 		if err := json.Unmarshal(v, &destroyed); err != nil {
-			writeError(w, http.StatusBadRequest, "invalid destroyed field")
+			WriteJSONError(w, http.StatusBadRequest, "invalid destroyed field")
 			return
 		}
 		fs.Destroyed = destroyed
@@ -190,7 +190,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if v, ok := rawPatch["writable"]; ok {
 		var writable bool
 		if err := json.Unmarshal(v, &writable); err != nil {
-			writeError(w, http.StatusBadRequest, "invalid writable field")
+			WriteJSONError(w, http.StatusBadRequest, "invalid writable field")
 			return
 		}
 		fs.Writable = writable
@@ -199,7 +199,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if v, ok := rawPatch["nfs"]; ok {
 		var nfs client.NFSConfig
 		if err := json.Unmarshal(v, &nfs); err != nil {
-			writeError(w, http.StatusBadRequest, "invalid nfs field")
+			WriteJSONError(w, http.StatusBadRequest, "invalid nfs field")
 			return
 		}
 		fs.NFS = nfs
@@ -208,13 +208,13 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if v, ok := rawPatch["smb"]; ok {
 		var smb client.SMBConfig
 		if err := json.Unmarshal(v, &smb); err != nil {
-			writeError(w, http.StatusBadRequest, "invalid smb field")
+			WriteJSONError(w, http.StatusBadRequest, "invalid smb field")
 			return
 		}
 		fs.SMB = smb
 	}
 
-	writeListResponse(w, http.StatusOK, []client.FileSystem{*fs})
+	WriteJSONListResponse(w, http.StatusOK, []client.FileSystem{*fs})
 }
 
 // handleDelete handles DELETE /api/2.22/file-systems?ids={id}.
@@ -222,7 +222,7 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 func (s *fileSystemStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("ids")
 	if id == "" {
-		writeError(w, http.StatusBadRequest, "ids query parameter is required for DELETE")
+		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for DELETE")
 		return
 	}
 
@@ -231,12 +231,12 @@ func (s *fileSystemStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 
 	fs, ok := s.byID[id]
 	if !ok {
-		writeError(w, http.StatusNotFound, fmt.Sprintf("file system with id %q not found", id))
+		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("file system with id %q not found", id))
 		return
 	}
 
 	if !fs.Destroyed {
-		writeError(w, http.StatusBadRequest,
+		WriteJSONError(w, http.StatusBadRequest,
 			fmt.Sprintf("file system %q must be destroyed before eradication (set destroyed=true first)", fs.Name))
 		return
 	}
@@ -248,23 +248,3 @@ func (s *fileSystemStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// writeListResponse writes a JSON list response envelope.
-func writeListResponse(w http.ResponseWriter, statusCode int, items []client.FileSystem) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	_ = json.NewEncoder(w).Encode(map[string]interface{}{
-		"items":            items,
-		"total_item_count": len(items),
-	})
-}
-
-// writeError writes a JSON error response in FlashBlade API format.
-func writeError(w http.ResponseWriter, statusCode int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	_ = json.NewEncoder(w).Encode(map[string]interface{}{
-		"errors": []map[string]string{
-			{"message": message},
-		},
-	})
-}
