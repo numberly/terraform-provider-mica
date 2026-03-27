@@ -1,0 +1,400 @@
+package provider
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+)
+
+// Ensure objectStoreAccountResource satisfies the resource interfaces.
+var _ resource.Resource = &objectStoreAccountResource{}
+var _ resource.ResourceWithConfigure = &objectStoreAccountResource{}
+var _ resource.ResourceWithImportState = &objectStoreAccountResource{}
+
+// objectStoreAccountResource implements the flashblade_object_store_account resource.
+type objectStoreAccountResource struct {
+	client *client.FlashBladeClient
+}
+
+// NewObjectStoreAccountResource is the factory function registered in the provider.
+func NewObjectStoreAccountResource() resource.Resource {
+	return &objectStoreAccountResource{}
+}
+
+// ---------- model structs ----------------------------------------------------
+
+// objectStoreAccountSpaceModel maps space attributes for the account resource.
+type objectStoreAccountSpaceModel struct {
+	DataReduction      types.Float64 `tfsdk:"data_reduction"`
+	Snapshots          types.Int64   `tfsdk:"snapshots"`
+	TotalPhysical      types.Int64   `tfsdk:"total_physical"`
+	Unique             types.Int64   `tfsdk:"unique"`
+	Virtual            types.Int64   `tfsdk:"virtual"`
+	SnapshotsEffective types.Int64   `tfsdk:"snapshots_effective"`
+}
+
+// objectStoreAccountModel is the top-level model for the flashblade_object_store_account resource.
+type objectStoreAccountModel struct {
+	ID               types.String                  `tfsdk:"id"`
+	Name             types.String                  `tfsdk:"name"`
+	Created          types.Int64                   `tfsdk:"created"`
+	QuotaLimit       types.String                  `tfsdk:"quota_limit"`
+	HardLimitEnabled types.Bool                    `tfsdk:"hard_limit_enabled"`
+	ObjectCount      types.Int64                   `tfsdk:"object_count"`
+	Space            *objectStoreAccountSpaceModel `tfsdk:"space"`
+	Timeouts         timeouts.Value                `tfsdk:"timeouts"`
+}
+
+// ---------- resource interface methods --------------------------------------
+
+// Metadata sets the Terraform type name.
+func (r *objectStoreAccountResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = "flashblade_object_store_account"
+}
+
+// Schema defines the resource schema.
+func (r *objectStoreAccountResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Description: "Manages a FlashBlade object store account.",
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The unique identifier of the object store account.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the object store account. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"created": schema.Int64Attribute{
+				Computed:    true,
+				Description: "Unix timestamp (milliseconds) when the account was created.",
+				PlanModifiers: []planmodifier.Int64{
+					int64UseStateForUnknown(),
+				},
+			},
+			"quota_limit": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The effective quota limit applied against the size of the account, in bytes.",
+			},
+			"hard_limit_enabled": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "If true, the account's size cannot exceed the quota limit.",
+			},
+			"object_count": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The count of objects within the account.",
+			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+			}),
+		},
+		Blocks: map[string]schema.Block{
+			"space": schema.SingleNestedBlock{
+				Description: "Storage space breakdown (read-only, API-managed).",
+				Attributes: map[string]schema.Attribute{
+					"data_reduction": schema.Float64Attribute{
+						Computed:    true,
+						Description: "Data reduction ratio.",
+					},
+					"snapshots": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Physical space used by snapshots in bytes.",
+					},
+					"total_physical": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Total physical space used in bytes.",
+					},
+					"unique": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Unique physical space used in bytes.",
+					},
+					"virtual": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Virtual (logical) space used in bytes.",
+					},
+					"snapshots_effective": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Effective snapshot space used in bytes.",
+					},
+				},
+			},
+		},
+	}
+}
+
+// Configure injects the FlashBladeClient into the resource.
+func (r *objectStoreAccountResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	c, ok := req.ProviderData.(*client.FlashBladeClient)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Provider Data Type",
+			fmt.Sprintf("Expected *client.FlashBladeClient, got: %T. This is a bug in the provider.", req.ProviderData),
+		)
+		return
+	}
+	r.client = c
+}
+
+// ---------- CRUD methods ----------------------------------------------------
+
+// Create creates a new object store account.
+func (r *objectStoreAccountResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data objectStoreAccountModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createTimeout, diags := data.Timeouts.Create(ctx, 20*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
+
+	post := client.ObjectStoreAccountPost{}
+	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
+		post.QuotaLimit = data.QuotaLimit.ValueString()
+	}
+	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
+		post.HardLimitEnabled = data.HardLimitEnabled.ValueBool()
+	}
+
+	_, err := r.client.PostObjectStoreAccount(ctx, data.Name.ValueString(), post)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating object store account", err.Error())
+		return
+	}
+
+	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// Read refreshes Terraform state from the API.
+func (r *objectStoreAccountResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data objectStoreAccountModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	readTimeout, diags := data.Timeouts.Read(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
+
+	name := data.Name.ValueString()
+	acct, err := r.client.GetObjectStoreAccount(ctx, name)
+	if err != nil {
+		if client.IsNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		resp.Diagnostics.AddError("Error reading object store account", err.Error())
+		return
+	}
+
+	// Drift detection on mutable fields.
+	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
+		if data.QuotaLimit.ValueString() != acct.QuotaLimit {
+			tflog.Info(ctx, "drift detected on object store account", map[string]any{
+				"resource":    name,
+				"field":       "quota_limit",
+				"state_value": data.QuotaLimit.ValueString(),
+				"api_value":   acct.QuotaLimit,
+			})
+		}
+	}
+	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
+		if data.HardLimitEnabled.ValueBool() != acct.HardLimitEnabled {
+			tflog.Info(ctx, "drift detected on object store account", map[string]any{
+				"resource":    name,
+				"field":       "hard_limit_enabled",
+				"state_value": data.HardLimitEnabled.ValueBool(),
+				"api_value":   acct.HardLimitEnabled,
+			})
+		}
+	}
+
+	mapOSAToModel(acct, &data)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// Update applies changes to an existing object store account.
+func (r *objectStoreAccountResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, state objectStoreAccountModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateTimeout, diags := plan.Timeouts.Update(ctx, 20*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	defer cancel()
+
+	patch := client.ObjectStoreAccountPatch{}
+
+	if !plan.QuotaLimit.Equal(state.QuotaLimit) {
+		v := plan.QuotaLimit.ValueString()
+		patch.QuotaLimit = &v
+	}
+	if !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {
+		v := plan.HardLimitEnabled.ValueBool()
+		patch.HardLimitEnabled = &v
+	}
+
+	_, err := r.client.PatchObjectStoreAccount(ctx, state.Name.ValueString(), patch)
+	if err != nil {
+		resp.Diagnostics.AddError("Error updating object store account", err.Error())
+		return
+	}
+
+	r.readIntoState(ctx, plan.Name.ValueString(), &plan, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+// Delete removes an object store account (single-phase, no soft-delete).
+// Before deleting, checks for existing buckets and blocks if any are found.
+func (r *objectStoreAccountResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data objectStoreAccountModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, 10*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	defer cancel()
+
+	name := data.Name.ValueString()
+
+	// Guard: list buckets filtered by this account. Prevent delete if any exist.
+	buckets, err := r.client.ListBuckets(ctx, client.ListBucketsOpts{
+		AccountNames: []string{name},
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error checking buckets before account deletion", err.Error())
+		return
+	}
+	if len(buckets) > 0 {
+		resp.Diagnostics.AddError(
+			"Cannot delete object store account",
+			fmt.Sprintf("Account %q has %d existing bucket(s). Destroy all buckets in the account before deleting the account.", name, len(buckets)),
+		)
+		return
+	}
+
+	if err := r.client.DeleteObjectStoreAccount(ctx, name); err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
+		resp.Diagnostics.AddError("Error deleting object store account", err.Error())
+		return
+	}
+}
+
+// ImportState imports an existing object store account by name.
+func (r *objectStoreAccountResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	name := req.ID
+
+	var data objectStoreAccountModel
+	// Initialize timeouts with a null value so the framework can serialize it.
+	data.Timeouts = timeouts.Value{
+		Object: types.ObjectNull(map[string]attr.Type{
+			"create": types.StringType,
+			"read":   types.StringType,
+			"update": types.StringType,
+			"delete": types.StringType,
+		}),
+	}
+	// Set Name so Read can look up the account.
+	data.Name = types.StringValue(name)
+
+	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// ---------- helpers ---------------------------------------------------------
+
+// readIntoState calls GetObjectStoreAccount and maps the result into the provided model.
+func (r *objectStoreAccountResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountModel, diags interface {
+	AddError(string, string)
+	HasError() bool
+}) {
+	acct, err := r.client.GetObjectStoreAccount(ctx, name)
+	if err != nil {
+		diags.AddError("Error reading object store account after write", err.Error())
+		return
+	}
+	mapOSAToModel(acct, data)
+}
+
+// mapOSAToModel maps a client.ObjectStoreAccount to an objectStoreAccountModel.
+// It preserves user-managed fields (Timeouts).
+func mapOSAToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountModel) {
+	data.ID = types.StringValue(acct.ID)
+	data.Name = types.StringValue(acct.Name)
+	data.Created = types.Int64Value(acct.Created)
+	data.QuotaLimit = types.StringValue(acct.QuotaLimit)
+	data.HardLimitEnabled = types.BoolValue(acct.HardLimitEnabled)
+	data.ObjectCount = types.Int64Value(acct.ObjectCount)
+
+	data.Space = &objectStoreAccountSpaceModel{
+		DataReduction:      types.Float64Value(acct.Space.DataReduction),
+		Snapshots:          types.Int64Value(acct.Space.Snapshots),
+		TotalPhysical:      types.Int64Value(acct.Space.TotalPhysical),
+		Unique:             types.Int64Value(acct.Space.Unique),
+		Virtual:            types.Int64Value(acct.Space.Virtual),
+		SnapshotsEffective: types.Int64Value(acct.Space.SnapshotsEffective),
+	}
+}

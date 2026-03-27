@@ -267,6 +267,7 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewFilesystemResource,
+		NewObjectStoreAccountResource,
 	}
 }
 
@@ -274,5 +275,6 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewFilesystemDataSource,
+		NewObjectStoreAccountDataSource,
 	}
 }
