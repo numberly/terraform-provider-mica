@@ -276,6 +276,15 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewSmbSharePolicyRuleResource,
 		NewSnapshotPolicyResource,
 		NewSnapshotPolicyRuleResource,
+		NewNetworkAccessPolicyResource,
+		NewNetworkAccessPolicyRuleResource,
+		NewObjectStoreAccessPolicyResource,
+		NewObjectStoreAccessPolicyRuleResource,
+		NewQuotaUserResource,
+		NewQuotaGroupResource,
+		NewArrayDnsResource,
+		NewArrayNtpResource,
+		NewArraySmtpResource,
 	}
 }
 
@@ -289,5 +298,12 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewNfsExportPolicyDataSource,
 		NewSmbSharePolicyDataSource,
 		NewSnapshotPolicyDataSource,
+		NewNetworkAccessPolicyDataSource,
+		NewObjectStoreAccessPolicyDataSource,
+		NewQuotaUserDataSource,
+		NewQuotaGroupDataSource,
+		NewArrayDnsDataSource,
+		NewArrayNtpDataSource,
+		NewArraySmtpDataSource,
 	}
 }
