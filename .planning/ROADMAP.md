@@ -45,7 +45,12 @@ Plans:
   2. Secret access key value is available in state only at creation time, marked Sensitive, and does not appear in plan output
   3. `terraform destroy` on a bucket completes two-phase soft-delete; same bucket name can be recreated immediately after
   4. `terraform import` works for account, bucket, and access key; subsequent `plan` shows 0 diff for each
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Object store account: models, client CRUD, mock handler, resource, data source
+- [ ] 02-02-PLAN.md — Bucket: client CRUD, mock handler with account cross-ref, resource with soft-delete, data source
+- [ ] 02-03-PLAN.md — Access key: client methods, mock handler, resource with write-once secret, data source
 
 ### Phase 3: File-Based Policy Resources
 **Goal**: Operators can manage NFS export, SMB share, and snapshot policies — including rules — through Terraform with no false drift on rule reorder
@@ -88,7 +93,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete   | 2026-03-27 |
-| 2. Object Store Resources | 0/TBD | Not started | - |
+| 2. Object Store Resources | 0/3 | Planning complete | - |
 | 3. File-Based Policy Resources | 0/TBD | Not started | - |
 | 4. Object/Network/Quota Policies and Array Admin | 0/TBD | Not started | - |
 | 5. Quality Hardening | 0/TBD | Not started | - |
