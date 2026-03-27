@@ -90,45 +90,45 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Object Store Access Policy
 
-- [ ] **OAP-01**: User can create an object store access policy with name and rules
-- [ ] **OAP-02**: User can update object store access policy attributes
-- [ ] **OAP-03**: User can destroy an object store access policy
+- [x] **OAP-01**: User can create an object store access policy with name and rules
+- [x] **OAP-02**: User can update object store access policy attributes
+- [x] **OAP-03**: User can destroy an object store access policy
 - [ ] **OAP-04**: User can import an existing object store access policy into Terraform state by name
 - [ ] **OAP-05**: Data source returns object store access policy attributes by name or filter
-- [ ] **OAR-01**: User can create object store access policy rules (effect, action, resource, condition)
-- [ ] **OAR-02**: User can update object store access policy rules
-- [ ] **OAR-03**: User can destroy object store access policy rules
+- [x] **OAR-01**: User can create object store access policy rules (effect, action, resource, condition)
+- [x] **OAR-02**: User can update object store access policy rules
+- [x] **OAR-03**: User can destroy object store access policy rules
 - [ ] **OAR-04**: User can import object store access policy rules using composite ID
 
 ### Network Access Policy
 
-- [ ] **NAP-01**: User can create a network access policy with name
-- [ ] **NAP-02**: User can update network access policy attributes
-- [ ] **NAP-03**: User can destroy a network access policy
+- [x] **NAP-01**: User can create a network access policy with name
+- [x] **NAP-02**: User can update network access policy attributes
+- [x] **NAP-03**: User can destroy a network access policy
 - [ ] **NAP-04**: User can import an existing network access policy into Terraform state by name
 - [ ] **NAP-05**: Data source returns network access policy attributes by name or filter
-- [ ] **NAR-01**: User can create network access policy rules (client, interfaces, effect)
-- [ ] **NAR-02**: User can update network access policy rules
-- [ ] **NAR-03**: User can destroy network access policy rules
+- [x] **NAR-01**: User can create network access policy rules (client, interfaces, effect)
+- [x] **NAR-02**: User can update network access policy rules
+- [x] **NAR-03**: User can destroy network access policy rules
 - [ ] **NAR-04**: User can import network access policy rules using composite ID
 
 ### Quota Policy
 
-- [ ] **QTP-01**: User can create a quota policy with name
-- [ ] **QTP-02**: User can update quota policy attributes
-- [ ] **QTP-03**: User can destroy a quota policy
+- [x] **QTP-01**: User can create a quota policy with name
+- [x] **QTP-02**: User can update quota policy attributes
+- [x] **QTP-03**: User can destroy a quota policy
 - [ ] **QTP-04**: User can import an existing quota policy into Terraform state by name
 - [ ] **QTP-05**: Data source returns quota policy attributes by name or filter
-- [ ] **QTR-01**: User can create quota policy rules (quota_limit, enforced)
-- [ ] **QTR-02**: User can update quota policy rules
-- [ ] **QTR-03**: User can destroy quota policy rules
+- [x] **QTR-01**: User can create quota policy rules (quota_limit, enforced)
+- [x] **QTR-02**: User can update quota policy rules
+- [x] **QTR-03**: User can destroy quota policy rules
 - [ ] **QTR-04**: User can import quota policy rules using composite ID
 
 ### Array Administration
 
-- [ ] **ADM-01**: User can manage array DNS configuration (nameservers, domain, search)
-- [ ] **ADM-02**: User can manage array NTP configuration (servers)
-- [ ] **ADM-03**: User can manage array SMTP configuration (relay host, sender)
+- [x] **ADM-01**: User can manage array DNS configuration (nameservers, domain, search)
+- [x] **ADM-02**: User can manage array NTP configuration (servers)
+- [x] **ADM-03**: User can manage array SMTP configuration (relay host, sender)
 - [ ] **ADM-04**: Data sources for DNS, NTP, SMTP read-only access
 - [ ] **ADM-05**: User can import existing array admin configuration into Terraform state
 
@@ -241,36 +241,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SNR-02 | Phase 3 | Complete |
 | SNR-03 | Phase 3 | Complete |
 | SNR-04 | Phase 3 | Complete |
-| OAP-01 | Phase 4 | Pending |
-| OAP-02 | Phase 4 | Pending |
-| OAP-03 | Phase 4 | Pending |
+| OAP-01 | Phase 4 | Complete |
+| OAP-02 | Phase 4 | Complete |
+| OAP-03 | Phase 4 | Complete |
 | OAP-04 | Phase 4 | Pending |
 | OAP-05 | Phase 4 | Pending |
-| OAR-01 | Phase 4 | Pending |
-| OAR-02 | Phase 4 | Pending |
-| OAR-03 | Phase 4 | Pending |
+| OAR-01 | Phase 4 | Complete |
+| OAR-02 | Phase 4 | Complete |
+| OAR-03 | Phase 4 | Complete |
 | OAR-04 | Phase 4 | Pending |
-| NAP-01 | Phase 4 | Pending |
-| NAP-02 | Phase 4 | Pending |
-| NAP-03 | Phase 4 | Pending |
+| NAP-01 | Phase 4 | Complete |
+| NAP-02 | Phase 4 | Complete |
+| NAP-03 | Phase 4 | Complete |
 | NAP-04 | Phase 4 | Pending |
 | NAP-05 | Phase 4 | Pending |
-| NAR-01 | Phase 4 | Pending |
-| NAR-02 | Phase 4 | Pending |
-| NAR-03 | Phase 4 | Pending |
+| NAR-01 | Phase 4 | Complete |
+| NAR-02 | Phase 4 | Complete |
+| NAR-03 | Phase 4 | Complete |
 | NAR-04 | Phase 4 | Pending |
-| QTP-01 | Phase 4 | Pending |
-| QTP-02 | Phase 4 | Pending |
-| QTP-03 | Phase 4 | Pending |
+| QTP-01 | Phase 4 | Complete |
+| QTP-02 | Phase 4 | Complete |
+| QTP-03 | Phase 4 | Complete |
 | QTP-04 | Phase 4 | Pending |
 | QTP-05 | Phase 4 | Pending |
-| QTR-01 | Phase 4 | Pending |
-| QTR-02 | Phase 4 | Pending |
-| QTR-03 | Phase 4 | Pending |
+| QTR-01 | Phase 4 | Complete |
+| QTR-02 | Phase 4 | Complete |
+| QTR-03 | Phase 4 | Complete |
 | QTR-04 | Phase 4 | Pending |
-| ADM-01 | Phase 4 | Pending |
-| ADM-02 | Phase 4 | Pending |
-| ADM-03 | Phase 4 | Pending |
+| ADM-01 | Phase 4 | Complete |
+| ADM-02 | Phase 4 | Complete |
+| ADM-03 | Phase 4 | Complete |
 | ADM-04 | Phase 4 | Pending |
 | ADM-05 | Phase 4 | Pending |
 | QUA-01 | Phase 5 | Pending |

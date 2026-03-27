@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-27T16:13:58.194Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-27T16:44:36.390Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 16
+  completed_plans: 12
   percent: 0
 ---
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-file-based-policy-resources P02 | 35 | 2 tasks | 6 files |
 | Phase 03-file-based-policy-resources P04 | 474 | 2 tasks | 6 files |
 | Phase 03-file-based-policy-resources P03 | 30 | 2 tasks | 5 files |
+| Phase 04-object-network-quota-policies-and-array-admin P01 | 324 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,9 @@ Recent decisions affecting current work:
 - [Phase 03-file-based-policy-resources]: Snapshot rule ID is synthetic {policy_name}/{rule_name} — rules have no server-issued UUID
 - [Phase 03-file-based-policy-resources]: SMB rule import uses composite ID policy_name/rule_name (string name) — not numeric index like NFS
 - [Phase 03-file-based-policy-resources]: Snapshot rule update uses ReplaceSnapshotPolicyRule (atomic PATCH remove+add) — no dedicated rule PATCH endpoint
+- [Phase 04-object-network-quota-policies-and-array-admin]: OAP rule POST uses both policy_names= and names= query params (unlike NFS which server-assigns name)
+- [Phase 04-object-network-quota-policies-and-array-admin]: NetworkAccessPolicy has no POST/DELETE at policy level — singletons only (GET+PATCH)
+- [Phase 04-object-network-quota-policies-and-array-admin]: ArrayNtpPatch sends only ntp_servers field to avoid unintentional modification of other array settings
 
 ### Pending Todos
 
@@ -117,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T16:13:58.189Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-object-network-quota-policies-and-array-admin/04-CONTEXT.md
+Last session: 2026-03-27T16:44:36.384Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None
