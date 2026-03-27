@@ -268,6 +268,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 	return []func() resource.Resource{
 		NewFilesystemResource,
 		NewObjectStoreAccountResource,
+		NewAccessKeyResource,
 	}
 }
 
@@ -276,5 +277,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 	return []func() datasource.DataSource{
 		NewFilesystemDataSource,
 		NewObjectStoreAccountDataSource,
+		NewAccessKeyDataSource,
 	}
 }
