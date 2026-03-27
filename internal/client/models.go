@@ -184,3 +184,206 @@ type ObjectStoreAccessKey struct {
 type ObjectStoreAccessKeyPost struct {
 	User NamedReference `json:"user"`
 }
+
+// ---------- Phase 3 model structs -------------------------------------------
+
+// PolicyMember represents a file system that is a member of a policy.
+// Used for delete-guard checks across all policy families.
+type PolicyMember struct {
+	Name string `json:"name,omitempty"`
+	ID   string `json:"id,omitempty"`
+}
+
+// NfsExportPolicy represents a FlashBlade NFS export policy from GET responses.
+type NfsExportPolicy struct {
+	ID         string                      `json:"id,omitempty"`
+	Name       string                      `json:"name"`
+	Enabled    bool                        `json:"enabled"`
+	IsLocal    bool                        `json:"is_local,omitempty"`
+	PolicyType string                      `json:"policy_type,omitempty"`
+	Version    string                      `json:"version,omitempty"`
+	Rules      []NfsExportPolicyRuleInPolicy `json:"rules,omitempty"`
+}
+
+// NfsExportPolicyPost contains the fields accepted on POST /nfs-export-policies.
+type NfsExportPolicyPost struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// NfsExportPolicyPatch contains pointer fields for PATCH /nfs-export-policies.
+type NfsExportPolicyPatch struct {
+	Name    *string `json:"name,omitempty"`
+	Enabled *bool   `json:"enabled,omitempty"`
+}
+
+// NfsExportPolicyRule represents a rule from GET /nfs-export-policies/rules.
+// Note: anongid/anonuid are integers in GET responses.
+type NfsExportPolicyRule struct {
+	ID                        string         `json:"id,omitempty"`
+	Name                      string         `json:"name,omitempty"`
+	Index                     int            `json:"index"`
+	Policy                    NamedReference `json:"policy,omitempty"`
+	PolicyVersion             string         `json:"policy_version,omitempty"`
+	Access                    string         `json:"access,omitempty"`
+	Client                    string         `json:"client,omitempty"`
+	Permission                string         `json:"permission,omitempty"`
+	Anonuid                   int            `json:"anonuid,omitempty"`
+	Anongid                   int            `json:"anongid,omitempty"`
+	Atime                     bool           `json:"atime"`
+	Fileid32bit               bool           `json:"fileid_32bit"`
+	Secure                    bool           `json:"secure"`
+	Security                  []string       `json:"security,omitempty"`
+	RequiredTransportSecurity string         `json:"required_transport_security,omitempty"`
+}
+
+// NfsExportPolicyRuleInPolicy is an NFS rule embedded inside a policy GET response.
+type NfsExportPolicyRuleInPolicy struct {
+	Index                     int      `json:"index"`
+	Access                    string   `json:"access,omitempty"`
+	Client                    string   `json:"client,omitempty"`
+	Permission                string   `json:"permission,omitempty"`
+	Anonuid                   int      `json:"anonuid,omitempty"`
+	Anongid                   int      `json:"anongid,omitempty"`
+	Atime                     bool     `json:"atime"`
+	Fileid32bit               bool     `json:"fileid_32bit"`
+	Secure                    bool     `json:"secure"`
+	Security                  []string `json:"security,omitempty"`
+	RequiredTransportSecurity string   `json:"required_transport_security,omitempty"`
+}
+
+// NfsExportPolicyRulePost contains the writable fields for POST /nfs-export-policies/rules.
+type NfsExportPolicyRulePost struct {
+	Access                    string         `json:"access,omitempty"`
+	Client                    string         `json:"client,omitempty"`
+	Permission                string         `json:"permission,omitempty"`
+	Anonuid                   int            `json:"anonuid,omitempty"`
+	Anongid                   int            `json:"anongid,omitempty"`
+	Atime                     *bool          `json:"atime,omitempty"`
+	Fileid32bit               *bool          `json:"fileid_32bit,omitempty"`
+	Secure                    *bool          `json:"secure,omitempty"`
+	Security                  []string       `json:"security,omitempty"`
+	RequiredTransportSecurity string         `json:"required_transport_security,omitempty"`
+	Policy                    *NamedReference `json:"policy,omitempty"`
+}
+
+// NfsExportPolicyRulePatch contains pointer fields for PATCH /nfs-export-policies/rules.
+// Note: anonuid/anongid are strings in PATCH requests (API schema difference from GET).
+type NfsExportPolicyRulePatch struct {
+	Index                     *int     `json:"index,omitempty"`
+	Access                    *string  `json:"access,omitempty"`
+	Client                    *string  `json:"client,omitempty"`
+	Permission                *string  `json:"permission,omitempty"`
+	Anonuid                   *string  `json:"anonuid,omitempty"`
+	Anongid                   *string  `json:"anongid,omitempty"`
+	Atime                     *bool    `json:"atime,omitempty"`
+	Fileid32bit               *bool    `json:"fileid_32bit,omitempty"`
+	Secure                    *bool    `json:"secure,omitempty"`
+	Security                  []string `json:"security,omitempty"`
+	RequiredTransportSecurity *string  `json:"required_transport_security,omitempty"`
+}
+
+// SmbSharePolicy represents a FlashBlade SMB share policy from GET responses.
+type SmbSharePolicy struct {
+	ID         string                      `json:"id,omitempty"`
+	Name       string                      `json:"name"`
+	Enabled    bool                        `json:"enabled"`
+	IsLocal    bool                        `json:"is_local,omitempty"`
+	PolicyType string                      `json:"policy_type,omitempty"`
+	Rules      []SmbSharePolicyRuleInPolicy `json:"rules,omitempty"`
+}
+
+// SmbSharePolicyPost contains the fields accepted on POST /smb-share-policies.
+type SmbSharePolicyPost struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// SmbSharePolicyPatch contains pointer fields for PATCH /smb-share-policies.
+type SmbSharePolicyPatch struct {
+	Name    *string `json:"name,omitempty"`
+	Enabled *bool   `json:"enabled,omitempty"`
+}
+
+// SmbSharePolicyRule represents a rule from GET /smb-share-policies/rules.
+type SmbSharePolicyRule struct {
+	ID          string         `json:"id,omitempty"`
+	Name        string         `json:"name,omitempty"`
+	Policy      NamedReference `json:"policy,omitempty"`
+	Principal   string         `json:"principal,omitempty"`
+	Change      string         `json:"change,omitempty"`
+	FullControl string         `json:"full_control,omitempty"`
+	Read        string         `json:"read,omitempty"`
+}
+
+// SmbSharePolicyRuleInPolicy is an SMB rule embedded inside a policy GET response.
+type SmbSharePolicyRuleInPolicy struct {
+	Name        string `json:"name,omitempty"`
+	Principal   string `json:"principal,omitempty"`
+	Change      string `json:"change,omitempty"`
+	FullControl string `json:"full_control,omitempty"`
+	Read        string `json:"read,omitempty"`
+}
+
+// SmbSharePolicyRulePost contains the writable fields for POST /smb-share-policies/rules.
+type SmbSharePolicyRulePost struct {
+	Principal   string `json:"principal,omitempty"`
+	Change      string `json:"change,omitempty"`
+	FullControl string `json:"full_control,omitempty"`
+	Read        string `json:"read,omitempty"`
+}
+
+// SmbSharePolicyRulePatch contains pointer fields for PATCH /smb-share-policies/rules.
+type SmbSharePolicyRulePatch struct {
+	Principal   *string `json:"principal,omitempty"`
+	Change      *string `json:"change,omitempty"`
+	FullControl *string `json:"full_control,omitempty"`
+	Read        *string `json:"read,omitempty"`
+}
+
+// SnapshotPolicy represents a FlashBlade snapshot policy from GET /policies.
+type SnapshotPolicy struct {
+	ID            string                       `json:"id,omitempty"`
+	Name          string                       `json:"name"`
+	Enabled       bool                         `json:"enabled"`
+	IsLocal       bool                         `json:"is_local,omitempty"`
+	PolicyType    string                       `json:"policy_type,omitempty"`
+	RetentionLock string                       `json:"retention_lock,omitempty"`
+	Rules         []SnapshotPolicyRuleInPolicy  `json:"rules,omitempty"`
+}
+
+// SnapshotPolicyPost contains the fields accepted on POST /policies.
+type SnapshotPolicyPost struct {
+	Enabled *bool                    `json:"enabled,omitempty"`
+	Rules   []SnapshotPolicyRulePost `json:"rules,omitempty"`
+}
+
+// SnapshotPolicyPatch contains the fields for PATCH /policies.
+// Name is read-only and must NOT be sent. Rules are managed via add_rules/remove_rules.
+type SnapshotPolicyPatch struct {
+	Enabled     *bool                      `json:"enabled,omitempty"`
+	AddRules    []SnapshotPolicyRulePost    `json:"add_rules,omitempty"`
+	RemoveRules []SnapshotPolicyRuleRemove  `json:"remove_rules,omitempty"`
+}
+
+// SnapshotPolicyRuleInPolicy represents a rule embedded in a snapshot policy GET response.
+type SnapshotPolicyRuleInPolicy struct {
+	Name       string  `json:"name,omitempty"`
+	AtTime     *int64  `json:"at,omitempty"`
+	Every      *int64  `json:"every,omitempty"`
+	KeepFor    *int64  `json:"keep_for,omitempty"`
+	Suffix     string  `json:"suffix,omitempty"`
+	ClientName string  `json:"client_name,omitempty"`
+}
+
+// SnapshotPolicyRulePost contains the fields for adding a rule via add_rules.
+type SnapshotPolicyRulePost struct {
+	AtTime     *int64 `json:"at,omitempty"`
+	Every      *int64 `json:"every,omitempty"`
+	KeepFor    *int64 `json:"keep_for,omitempty"`
+	Suffix     string `json:"suffix,omitempty"`
+	ClientName string `json:"client_name,omitempty"`
+}
+
+// SnapshotPolicyRuleRemove identifies a rule to remove via remove_rules.
+type SnapshotPolicyRuleRemove struct {
+	Name string `json:"name"`
+}
