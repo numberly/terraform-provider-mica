@@ -10,7 +10,7 @@ Building the provider in five phases: establish the shared HTTP client and corre
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Foundation** - Shared HTTP client, provider scaffold, and first resource (`flashblade_file_system`) establishing all CRUD patterns
+- [x] **Phase 1: Foundation** - Shared HTTP client, provider scaffold, and first resource (`flashblade_file_system`) establishing all CRUD patterns (completed 2026-03-27)
 - [ ] **Phase 2: Object Store Resources** - Complete object store resource chain: account, bucket, and access key with dependency ordering
 - [ ] **Phase 3: File-Based Policy Resources** - NFS export, SMB share, and snapshot policy families with parent/child rule pattern
 - [ ] **Phase 4: Object/Network/Quota Policies and Array Admin** - Remaining three policy families plus singleton array administration resources
@@ -28,7 +28,7 @@ Building the provider in five phases: establish the shared HTTP client and corre
   3. `terraform destroy` on a file system completes the two-phase soft-delete without name-collision failures on re-creation
   4. `terraform import flashblade_file_system.x name` populates all attributes; subsequent `plan` shows 0 diff
   5. Drift detection produces structured `tflog` output listing changed fields when `terraform refresh` detects API-side divergence
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 01-01-PLAN.md — Project scaffold, build tooling, and shared HTTP client layer (auth, TLS, retry, version negotiation)
@@ -87,7 +87,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 3/4 | In Progress|  |
+| 1. Foundation | 4/4 | Complete   | 2026-03-27 |
 | 2. Object Store Resources | 0/TBD | Not started | - |
 | 3. File-Based Policy Resources | 0/TBD | Not started | - |
 | 4. Object/Network/Quota Policies and Array Admin | 0/TBD | Not started | - |

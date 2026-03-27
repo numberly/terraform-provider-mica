@@ -11,10 +11,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **PROV-01**: Provider accepts endpoint URL, API token, and TLS CA certificate via config block
 - [x] **PROV-02**: Provider accepts OAuth2 client_id, key_id, and issuer for client_credentials auth
-- [ ] **PROV-03**: Provider falls back to FLASHBLADE_ENDPOINT, FLASHBLADE_API_TOKEN, FLASHBLADE_OAUTH2_* environment variables when config block values are absent
+- [x] **PROV-03**: Provider falls back to FLASHBLADE_ENDPOINT, FLASHBLADE_API_TOKEN, FLASHBLADE_OAUTH2_* environment variables when config block values are absent
 - [x] **PROV-04**: Provider negotiates API version on startup via GET /api/api_version and targets v2.22
 - [x] **PROV-05**: Provider marks api_token, oauth2 private key, and access key secrets as Sensitive in schema
-- [ ] **PROV-06**: Provider logs all operations with structured tflog output (resource name, operation, API path)
+- [x] **PROV-06**: Provider logs all operations with structured tflog output (resource name, operation, API path)
 - [x] **PROV-07**: Provider supports custom CA certificate for TLS verification (ca_cert_file or inline ca_cert)
 
 ### File System
@@ -23,9 +23,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **FS-02**: User can update file system attributes (size, policies, NFS settings, SMB settings)
 - [x] **FS-03**: User can destroy a file system (two-phase: mark destroyed, then eradicate)
 - [x] **FS-04**: User can read file system state including all computed attributes (space, created timestamp)
-- [ ] **FS-05**: User can import an existing file system into Terraform state by name
-- [ ] **FS-06**: Data source returns file system attributes by name or filter
-- [ ] **FS-07**: Drift detection logs field-level diffs via tflog when Read finds state divergence
+- [x] **FS-05**: User can import an existing file system into Terraform state by name
+- [x] **FS-06**: Data source returns file system attributes by name or filter
+- [x] **FS-07**: Drift detection logs field-level diffs via tflog when Read finds state divergence
 
 ### Object Store Account
 
@@ -186,18 +186,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | PROV-01 | Phase 1 | Complete |
 | PROV-02 | Phase 1 | Complete |
-| PROV-03 | Phase 1 | Pending |
+| PROV-03 | Phase 1 | Complete |
 | PROV-04 | Phase 1 | Complete |
 | PROV-05 | Phase 1 | Complete |
-| PROV-06 | Phase 1 | Pending |
+| PROV-06 | Phase 1 | Complete |
 | PROV-07 | Phase 1 | Complete |
 | FS-01 | Phase 1 | Complete |
 | FS-02 | Phase 1 | Complete |
 | FS-03 | Phase 1 | Complete |
 | FS-04 | Phase 1 | Complete |
-| FS-05 | Phase 1 | Pending |
-| FS-06 | Phase 1 | Pending |
-| FS-07 | Phase 1 | Pending |
+| FS-05 | Phase 1 | Complete |
+| FS-06 | Phase 1 | Complete |
+| FS-07 | Phase 1 | Complete |
 | OSA-01 | Phase 2 | Pending |
 | OSA-02 | Phase 2 | Pending |
 | OSA-03 | Phase 2 | Pending |

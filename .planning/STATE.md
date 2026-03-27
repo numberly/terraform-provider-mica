@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-foundation/01-02-PLAN.md
-last_updated: "2026-03-27T07:46:14.806Z"
+stopped_at: Completed 01-foundation/01-04-PLAN.md
+last_updated: "2026-03-27T11:18:02.542Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-foundation P01 | 35 | 2 tasks | 17 files |
 | Phase 01-foundation P03 | 25 | 4 tasks | 5 files |
 | Phase 01-foundation P02 | 52 | 1 tasks | 2 files |
+| Phase 01-foundation P04 | 158 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: auth block uses SingleNestedAttribute not SingleNestedBlock — framework recommendation for typed config access
 - [Phase 01-foundation]: Configure validates endpoint and auth before calling NewClient — cleaner error messages than client-level errors
 - [Phase 01-foundation]: retry_base_delay parsed as time.Duration string in Configure — decoupled from client's internal Duration type
+- [Phase 01-foundation]: timeouts uses Attributes() not Block() — consistent with provider auth pattern; Optional not Required
+- [Phase 01-foundation]: destroy_eradicate_on_delete defaults true via booldefault.StaticBool — clean teardown is ops-team default
+- [Phase 01-foundation]: ImportState initializes timeouts.Value with types.ObjectNull to satisfy timeouts.Type custom serialization
 
 ### Pending Todos
 
@@ -88,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T07:46:14.802Z
-Stopped at: Completed 01-foundation/01-02-PLAN.md
+Last session: 2026-03-27T11:18:02.537Z
+Stopped at: Completed 01-foundation/01-04-PLAN.md
 Resume file: None
