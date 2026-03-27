@@ -2,11 +2,18 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
 )
 
 // Ensure FlashBladeProvider satisfies the provider.Provider interface.
@@ -15,6 +22,30 @@ var _ provider.Provider = &FlashBladeProvider{}
 // FlashBladeProvider is the root provider struct.
 type FlashBladeProvider struct {
 	version string
+}
+
+// flashBladeProviderModel maps the provider schema to Go types.
+type flashBladeProviderModel struct {
+	Endpoint           types.String `tfsdk:"endpoint"`
+	CACertFile         types.String `tfsdk:"ca_cert_file"`
+	CACert             types.String `tfsdk:"ca_cert"`
+	InsecureSkipVerify types.Bool   `tfsdk:"insecure_skip_verify"`
+	MaxRetries         types.Int64  `tfsdk:"max_retries"`
+	RetryBaseDelay     types.String `tfsdk:"retry_base_delay"`
+	Auth               *authModel   `tfsdk:"auth"`
+}
+
+// authModel maps the nested auth block.
+type authModel struct {
+	APIToken types.String `tfsdk:"api_token"`
+	OAuth2   *oauth2Model `tfsdk:"oauth2"`
+}
+
+// oauth2Model maps the nested oauth2 sub-block.
+type oauth2Model struct {
+	ClientID types.String `tfsdk:"client_id"`
+	KeyID    types.String `tfsdk:"key_id"`
+	Issuer   types.String `tfsdk:"issuer"`
 }
 
 // New returns a factory function that creates a FlashBladeProvider.
@@ -30,21 +61,216 @@ func (p *FlashBladeProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 	resp.Version = p.version
 }
 
-// Schema returns an empty schema placeholder — fleshed out in Plan 02.
+// Schema returns the provider configuration schema.
 func (p *FlashBladeProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = schema.Schema{}
+	resp.Schema = schema.Schema{
+		Description: "Interact with Pure Storage FlashBlade arrays via the REST API v2.22.",
+		Attributes: map[string]schema.Attribute{
+			"endpoint": schema.StringAttribute{
+				Optional:    true,
+				Description: "FlashBlade management endpoint URL (e.g. https://flashblade.example.com). Falls back to FLASHBLADE_HOST environment variable.",
+			},
+			"ca_cert_file": schema.StringAttribute{
+				Optional:    true,
+				Description: "Path to a PEM-encoded CA certificate file used for TLS verification.",
+			},
+			"ca_cert": schema.StringAttribute{
+				Optional:    true,
+				Description: "Inline PEM-encoded CA certificate string used for TLS verification.",
+			},
+			"insecure_skip_verify": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Disable TLS certificate verification. For testing and development only.",
+			},
+			"max_retries": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Maximum number of retry attempts for transient errors (429, 5xx). Default: 3.",
+			},
+			"retry_base_delay": schema.StringAttribute{
+				Optional:    true,
+				Description: "Initial retry delay as a Go duration string (e.g. '1s', '500ms'). Default: '1s'.",
+			},
+			"auth": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "Authentication configuration for the FlashBlade array.",
+				Attributes: map[string]schema.Attribute{
+					"api_token": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "API token for session-based authentication. Falls back to FLASHBLADE_API_TOKEN environment variable.",
+					},
+					"oauth2": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: "OAuth2 token-exchange authentication configuration.",
+						Attributes: map[string]schema.Attribute{
+							"client_id": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								Description: "OAuth2 client ID. Falls back to FLASHBLADE_OAUTH2_CLIENT_ID environment variable.",
+							},
+							"key_id": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								Description: "OAuth2 key ID. Falls back to FLASHBLADE_OAUTH2_KEY_ID environment variable.",
+							},
+							"issuer": schema.StringAttribute{
+								Optional:    true,
+								Description: "OAuth2 issuer. Falls back to FLASHBLADE_OAUTH2_ISSUER environment variable.",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
 
-// Configure is a no-op stub — implementation in Plan 02.
-func (p *FlashBladeProvider) Configure(_ context.Context, _ provider.ConfigureRequest, _ *provider.ConfigureResponse) {
+// Configure initializes the FlashBladeClient from the provider configuration
+// and injects it into ResourceData and DataSourceData for resource use.
+func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var config flashBladeProviderModel
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Resolve endpoint: config value takes precedence, fall back to env var.
+	endpoint := config.Endpoint.ValueString()
+	if endpoint == "" {
+		endpoint = os.Getenv("FLASHBLADE_HOST")
+	}
+	if endpoint == "" {
+		resp.Diagnostics.AddError(
+			"Missing FlashBlade Endpoint",
+			"The provider requires an endpoint URL. Set the 'endpoint' attribute or the FLASHBLADE_HOST environment variable.",
+		)
+		return
+	}
+
+	// Resolve auth credentials.
+	var apiToken, oauth2ClientID, oauth2KeyID, oauth2Issuer string
+	if config.Auth != nil {
+		apiToken = config.Auth.APIToken.ValueString()
+		if config.Auth.OAuth2 != nil {
+			oauth2ClientID = config.Auth.OAuth2.ClientID.ValueString()
+			oauth2KeyID = config.Auth.OAuth2.KeyID.ValueString()
+			oauth2Issuer = config.Auth.OAuth2.Issuer.ValueString()
+		}
+	}
+
+	// Apply env var fallbacks for all auth fields.
+	if apiToken == "" {
+		apiToken = os.Getenv("FLASHBLADE_API_TOKEN")
+	}
+	if oauth2ClientID == "" {
+		oauth2ClientID = os.Getenv("FLASHBLADE_OAUTH2_CLIENT_ID")
+	}
+	if oauth2KeyID == "" {
+		oauth2KeyID = os.Getenv("FLASHBLADE_OAUTH2_KEY_ID")
+	}
+	if oauth2Issuer == "" {
+		oauth2Issuer = os.Getenv("FLASHBLADE_OAUTH2_ISSUER")
+	}
+
+	// Validate that at least one auth method is configured.
+	hasAPIToken := apiToken != ""
+	hasOAuth2 := oauth2ClientID != "" || oauth2KeyID != ""
+	if !hasAPIToken && !hasOAuth2 {
+		resp.Diagnostics.AddError(
+			"Missing FlashBlade Authentication",
+			"The provider requires either an 'api_token' or an 'oauth2' block (client_id, key_id). "+
+				"Set the credentials in the provider configuration or via FLASHBLADE_API_TOKEN / FLASHBLADE_OAUTH2_* environment variables.",
+		)
+		return
+	}
+
+	// Determine auth mode for logging.
+	authMode := "token"
+	if !hasAPIToken && hasOAuth2 {
+		authMode = "oauth2"
+	}
+
+	// Log provider configuration (endpoint is logged, credentials are never logged).
+	tflog.Info(ctx, "Configuring FlashBlade provider", map[string]any{
+		"endpoint":  endpoint,
+		"auth_mode": authMode,
+	})
+
+	// Resolve TLS config.
+	caCertFile := config.CACertFile.ValueString()
+	caCert := config.CACert.ValueString()
+	insecureSkipVerify := config.InsecureSkipVerify.ValueBool()
+
+	// Resolve retry config.
+	maxRetries := int(config.MaxRetries.ValueInt64())
+	if maxRetries <= 0 {
+		maxRetries = 3
+	}
+
+	retryBaseDelay := time.Second
+	if delayStr := config.RetryBaseDelay.ValueString(); delayStr != "" {
+		parsed, err := time.ParseDuration(delayStr)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Invalid retry_base_delay",
+				fmt.Sprintf("Cannot parse %q as a Go duration: %s. Use a value like '1s', '500ms'.", delayStr, err),
+			)
+			return
+		}
+		retryBaseDelay = parsed
+	}
+
+	// Build the client config.
+	cfg := client.Config{
+		Endpoint:           endpoint,
+		APIToken:           apiToken,
+		OAuth2ClientID:     oauth2ClientID,
+		OAuth2KeyID:        oauth2KeyID,
+		OAuth2Issuer:       oauth2Issuer,
+		MaxRetries:         maxRetries,
+		RetryBaseDelay:     retryBaseDelay,
+		CACertFile:         caCertFile,
+		CACert:             caCert,
+		InsecureSkipVerify: insecureSkipVerify,
+	}
+
+	c, err := client.NewClient(cfg)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to create FlashBlade client",
+			fmt.Sprintf("Error initializing FlashBlade client for endpoint %q: %s", endpoint, err),
+		)
+		return
+	}
+
+	// Negotiate API version — fail early if v2.22 is not supported.
+	if err := c.NegotiateVersion(ctx); err != nil {
+		resp.Diagnostics.AddError(
+			"FlashBlade API version not supported",
+			fmt.Sprintf("FlashBlade at %s does not support API version v%s. Error: %s", endpoint, client.APIVersion, err),
+		)
+		return
+	}
+
+	tflog.Info(ctx, "FlashBlade provider configured successfully", map[string]any{
+		"endpoint":  endpoint,
+		"auth_mode": authMode,
+	})
+
+	// Inject the client into ResourceData and DataSourceData.
+	resp.ResourceData = c
+	resp.DataSourceData = c
 }
 
-// Resources returns an empty slice — resources added in Plan 03+.
+// Resources returns the list of resource types provided by this provider.
+// File system resource will be added in Plan 04.
 func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{}
 }
 
-// DataSources returns an empty slice — data sources added in Plan 03+.
+// DataSources returns the list of data source types provided by this provider.
+// File system data source will be added in Plan 04.
 func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{}
 }
