@@ -1,5 +1,7 @@
 package client
 
+import "encoding/json"
+
 // Space holds the storage space breakdown for a file system.
 type Space struct {
 	DataReduction       float64 `json:"data_reduction,omitempty"`
@@ -386,4 +388,218 @@ type SnapshotPolicyRulePost struct {
 // SnapshotPolicyRuleRemove identifies a rule to remove via remove_rules.
 type SnapshotPolicyRuleRemove struct {
 	Name string `json:"name"`
+}
+
+// ---------- Phase 4 model structs -------------------------------------------
+
+// ObjectStoreAccessPolicy represents a FlashBlade object store access policy from GET responses.
+type ObjectStoreAccessPolicy struct {
+	ID          string                        `json:"id,omitempty"`
+	Name        string                        `json:"name"`
+	Description string                        `json:"description,omitempty"`
+	ARN         string                        `json:"arn,omitempty"`
+	Enabled     bool                          `json:"enabled"`
+	IsLocal     bool                          `json:"is_local,omitempty"`
+	PolicyType  string                        `json:"policy_type,omitempty"`
+	Rules       []ObjectStoreAccessPolicyRule `json:"rules,omitempty"`
+	Created     int64                         `json:"created,omitempty"`
+	Updated     int64                         `json:"updated,omitempty"`
+}
+
+// ObjectStoreAccessPolicyPost contains the fields accepted on POST /object-store-access-policies.
+// Name is passed as a query parameter (?names=), not in the body.
+// Rules are created separately via the /rules endpoint.
+type ObjectStoreAccessPolicyPost struct {
+	Description string `json:"description,omitempty"`
+}
+
+// ObjectStoreAccessPolicyPatch contains pointer fields for PATCH /object-store-access-policies.
+// Only name is writable via PATCH; description is POST-only per API spec.
+type ObjectStoreAccessPolicyPatch struct {
+	Name *string `json:"name,omitempty"`
+}
+
+// ObjectStoreAccessPolicyRule represents a rule from GET /object-store-access-policies/rules.
+type ObjectStoreAccessPolicyRule struct {
+	Name       string             `json:"name,omitempty"`
+	Effect     string             `json:"effect,omitempty"`
+	Actions    []string           `json:"actions,omitempty"`
+	Conditions json.RawMessage    `json:"conditions,omitempty"`
+	Resources  []string           `json:"resources,omitempty"`
+	Policy     *NamedReference    `json:"policy,omitempty"`
+}
+
+// ObjectStoreAccessPolicyRulePost contains the writable fields for POST /object-store-access-policies/rules.
+type ObjectStoreAccessPolicyRulePost struct {
+	Effect     string          `json:"effect"`
+	Actions    []string        `json:"actions"`
+	Conditions json.RawMessage `json:"conditions,omitempty"`
+	Resources  []string        `json:"resources"`
+}
+
+// ObjectStoreAccessPolicyRulePatch contains pointer fields for PATCH /object-store-access-policies/rules.
+// Effect is read-only after creation (RequiresReplace in TF schema).
+type ObjectStoreAccessPolicyRulePatch struct {
+	Actions    []string        `json:"actions,omitempty"`
+	Conditions json.RawMessage `json:"conditions,omitempty"`
+	Resources  []string        `json:"resources,omitempty"`
+}
+
+// NetworkAccessPolicy represents a FlashBlade network access policy from GET responses.
+type NetworkAccessPolicy struct {
+	ID         string `json:"id,omitempty"`
+	Name       string `json:"name"`
+	Enabled    bool   `json:"enabled"`
+	IsLocal    bool   `json:"is_local,omitempty"`
+	PolicyType string `json:"policy_type,omitempty"`
+	Version    string `json:"version,omitempty"`
+}
+
+// NetworkAccessPolicyPatch contains pointer fields for PATCH /network-access-policies.
+// No POST model exists — network access policies are singletons.
+type NetworkAccessPolicyPatch struct {
+	Enabled *bool   `json:"enabled,omitempty"`
+	Name    *string `json:"name,omitempty"`
+}
+
+// NetworkAccessPolicyRule represents a rule from GET /network-access-policies/rules.
+type NetworkAccessPolicyRule struct {
+	ID            string         `json:"id,omitempty"`
+	Name          string         `json:"name,omitempty"`
+	Client        string         `json:"client,omitempty"`
+	Effect        string         `json:"effect,omitempty"`
+	Index         int            `json:"index"`
+	Interfaces    []string       `json:"interfaces,omitempty"`
+	Policy        *NamedReference `json:"policy,omitempty"`
+	PolicyVersion string         `json:"policy_version,omitempty"`
+}
+
+// NetworkAccessPolicyRulePost contains the writable fields for POST /network-access-policies/rules.
+type NetworkAccessPolicyRulePost struct {
+	Client     string   `json:"client"`
+	Effect     string   `json:"effect"`
+	Index      int      `json:"index,omitempty"`
+	Interfaces []string `json:"interfaces"`
+}
+
+// NetworkAccessPolicyRulePatch contains pointer fields for PATCH /network-access-policies/rules.
+type NetworkAccessPolicyRulePatch struct {
+	Client     *string  `json:"client,omitempty"`
+	Effect     *string  `json:"effect,omitempty"`
+	Index      *int     `json:"index,omitempty"`
+	Interfaces []string `json:"interfaces,omitempty"`
+}
+
+// QuotaUser represents a per-filesystem user quota from GET /quotas/users.
+type QuotaUser struct {
+	FileSystem *NamedReference `json:"file_system,omitempty"`
+	User       *NamedReference `json:"user,omitempty"`
+	Quota      int64           `json:"quota"`
+	Usage      int64           `json:"usage,omitempty"`
+}
+
+// QuotaUserPost contains the writable fields for POST /quotas/users.
+// file_system_names and uids are passed as query parameters.
+type QuotaUserPost struct {
+	Quota int64 `json:"quota"`
+}
+
+// QuotaUserPatch contains pointer fields for PATCH /quotas/users.
+type QuotaUserPatch struct {
+	Quota *int64 `json:"quota,omitempty"`
+}
+
+// QuotaGroup represents a per-filesystem group quota from GET /quotas/groups.
+type QuotaGroup struct {
+	FileSystem *NamedReference `json:"file_system,omitempty"`
+	Group      *NamedReference `json:"group,omitempty"`
+	Quota      int64           `json:"quota"`
+	Usage      int64           `json:"usage,omitempty"`
+}
+
+// QuotaGroupPost contains the writable fields for POST /quotas/groups.
+// file_system_names and gids are passed as query parameters.
+type QuotaGroupPost struct {
+	Quota int64 `json:"quota"`
+}
+
+// QuotaGroupPatch contains pointer fields for PATCH /quotas/groups.
+type QuotaGroupPatch struct {
+	Quota *int64 `json:"quota,omitempty"`
+}
+
+// ArrayDns represents a FlashBlade DNS configuration from GET /dns.
+type ArrayDns struct {
+	ID          string   `json:"id,omitempty"`
+	Name        string   `json:"name,omitempty"`
+	Domain      string   `json:"domain,omitempty"`
+	Nameservers []string `json:"nameservers,omitempty"`
+	Services    []string `json:"services,omitempty"`
+	Sources     []string `json:"sources,omitempty"`
+}
+
+// ArrayDnsPost contains the fields accepted on POST /dns.
+type ArrayDnsPost struct {
+	Domain      string   `json:"domain,omitempty"`
+	Nameservers []string `json:"nameservers,omitempty"`
+	Services    []string `json:"services,omitempty"`
+	Sources     []string `json:"sources,omitempty"`
+}
+
+// ArrayDnsPatch contains pointer fields for PATCH /dns.
+type ArrayDnsPatch struct {
+	Domain      *string   `json:"domain,omitempty"`
+	Nameservers *[]string `json:"nameservers,omitempty"`
+	Services    *[]string `json:"services,omitempty"`
+	Sources     *[]string `json:"sources,omitempty"`
+}
+
+// ArrayInfo represents the NTP-relevant fields from GET /arrays.
+type ArrayInfo struct {
+	ID         string   `json:"id,omitempty"`
+	Name       string   `json:"name,omitempty"`
+	NtpServers []string `json:"ntp_servers,omitempty"`
+}
+
+// ArrayNtpPatch contains only the NTP servers field for PATCH /arrays.
+// Only ntp_servers is sent to avoid unintentional modification of other array settings.
+type ArrayNtpPatch struct {
+	NtpServers *[]string `json:"ntp_servers,omitempty"`
+}
+
+// SmtpServer represents a FlashBlade SMTP server configuration from GET /smtp-servers.
+type SmtpServer struct {
+	ID             string `json:"id,omitempty"`
+	Name           string `json:"name,omitempty"`
+	RelayHost      string `json:"relay_host,omitempty"`
+	SenderDomain   string `json:"sender_domain,omitempty"`
+	EncryptionMode string `json:"encryption_mode,omitempty"`
+}
+
+// SmtpServerPatch contains pointer fields for PATCH /smtp-servers.
+type SmtpServerPatch struct {
+	RelayHost      *string `json:"relay_host,omitempty"`
+	SenderDomain   *string `json:"sender_domain,omitempty"`
+	EncryptionMode *string `json:"encryption_mode,omitempty"`
+}
+
+// AlertWatcher represents a FlashBlade alert watcher (email recipient) from GET /alert-watchers.
+// Name is the email address.
+type AlertWatcher struct {
+	ID                          string `json:"id,omitempty"`
+	Name                        string `json:"name"`
+	Enabled                     bool   `json:"enabled"`
+	MinimumNotificationSeverity string `json:"minimum_notification_severity,omitempty"`
+}
+
+// AlertWatcherPost contains the fields accepted on POST /alert-watchers.
+// Name (email) is passed as a query parameter (?names=).
+type AlertWatcherPost struct {
+	MinimumNotificationSeverity string `json:"minimum_notification_severity,omitempty"`
+}
+
+// AlertWatcherPatch contains pointer fields for PATCH /alert-watchers.
+type AlertWatcherPatch struct {
+	Enabled                     *bool   `json:"enabled,omitempty"`
+	MinimumNotificationSeverity *string `json:"minimum_notification_severity,omitempty"`
 }
