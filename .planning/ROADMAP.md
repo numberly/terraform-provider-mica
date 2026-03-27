@@ -78,7 +78,14 @@ Plans:
   2. Operator can create network access and quota policies with rules; composite import IDs work for all rule types
   3. Operator can manage array DNS, NTP, and SMTP configuration; `apply → plan` shows 0 diff on singleton resources
   4. `terraform destroy` on a singleton array admin resource returns a clear diagnostic (not a silent no-op or panic)
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — All Phase 4 model structs, client CRUD methods, and mock handlers for OAP/NAP/Quota/ArrayAdmin
+- [ ] 04-02-PLAN.md — Object store access policy resource, rule resource (IAM-style), data source with tests
+- [ ] 04-03-PLAN.md — Network access policy singleton resource, rule resource (index-based), data source with tests
+- [ ] 04-04-PLAN.md — Quota user and quota group resources (per-filesystem), data sources with tests
+- [ ] 04-05-PLAN.md — Array admin DNS, NTP, SMTP singleton resources with data sources and tests
 
 ### Phase 5: Quality Hardening
 **Goal**: All resources are covered by unit tests, mocked integration tests, and auto-generated documentation; release pipeline is operational
@@ -101,5 +108,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 4/4 | Complete   | 2026-03-27 |
 | 2. Object Store Resources | 2/3 | In Progress|  |
 | 3. File-Based Policy Resources | 4/4 | Complete   | 2026-03-27 |
-| 4. Object/Network/Quota Policies and Array Admin | 0/TBD | Not started | - |
+| 4. Object/Network/Quota Policies and Array Admin | 0/5 | Not started | - |
 | 5. Quality Hardening | 0/TBD | Not started | - |
