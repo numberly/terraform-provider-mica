@@ -29,11 +29,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Object Store Account
 
-- [ ] **OSA-01**: User can create an object store account with name
-- [ ] **OSA-02**: User can update object store account attributes
-- [ ] **OSA-03**: User can destroy an object store account (two-phase soft-delete)
-- [ ] **OSA-04**: User can import an existing object store account into Terraform state by name
-- [ ] **OSA-05**: Data source returns object store account attributes by name or filter
+- [x] **OSA-01**: User can create an object store account with name
+- [x] **OSA-02**: User can update object store account attributes
+- [x] **OSA-03**: User can destroy an object store account (two-phase soft-delete)
+- [x] **OSA-04**: User can import an existing object store account into Terraform state by name
+- [x] **OSA-05**: Data source returns object store account attributes by name or filter
 
 ### Bucket
 
@@ -198,11 +198,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FS-05 | Phase 1 | Complete |
 | FS-06 | Phase 1 | Complete |
 | FS-07 | Phase 1 | Complete |
-| OSA-01 | Phase 2 | Pending |
-| OSA-02 | Phase 2 | Pending |
-| OSA-03 | Phase 2 | Pending |
-| OSA-04 | Phase 2 | Pending |
-| OSA-05 | Phase 2 | Pending |
+| OSA-01 | Phase 2 | Complete |
+| OSA-02 | Phase 2 | Complete |
+| OSA-03 | Phase 2 | Complete |
+| OSA-04 | Phase 2 | Complete |
+| OSA-05 | Phase 2 | Complete |
 | BKT-01 | Phase 2 | Pending |
 | BKT-02 | Phase 2 | Pending |
 | BKT-03 | Phase 2 | Pending |
