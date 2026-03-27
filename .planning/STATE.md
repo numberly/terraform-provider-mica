@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-foundation/01-03-PLAN.md
-last_updated: "2026-03-27T07:20:29.288Z"
+stopped_at: Completed 01-foundation/01-02-PLAN.md
+last_updated: "2026-03-27T07:46:14.806Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01-foundation P01 | 35 | 2 tasks | 17 files |
 | Phase 01-foundation P03 | 25 | 4 tasks | 5 files |
+| Phase 01-foundation P02 | 52 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: GetFileSystem synthesizes 404 APIError on empty items list — FlashBlade returns HTTP 200 with empty items for non-existent resources, not HTTP 404
 - [Phase 01-foundation]: testmock PATCH handler uses raw map[string]json.RawMessage for true PATCH semantics without overwriting absent fields
 - [Phase 01-foundation]: PollUntilEradicated queries ?destroyed=true to avoid race with same-name file system creation
+- [Phase 01-foundation]: auth block uses SingleNestedAttribute not SingleNestedBlock — framework recommendation for typed config access
+- [Phase 01-foundation]: Configure validates endpoint and auth before calling NewClient — cleaner error messages than client-level errors
+- [Phase 01-foundation]: retry_base_delay parsed as time.Duration string in Configure — decoupled from client's internal Duration type
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T07:20:29.282Z
-Stopped at: Completed 01-foundation/01-03-PLAN.md
+Last session: 2026-03-27T07:46:14.802Z
+Stopped at: Completed 01-foundation/01-02-PLAN.md
 Resume file: None
