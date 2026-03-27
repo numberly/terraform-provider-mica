@@ -1,0 +1,373 @@
+package provider
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock"
+	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock/handlers"
+)
+
+// ---- helpers ----------------------------------------------------------------
+
+// newTestSnapshotPolicyResource creates a snapshotPolicyResource wired to the given mock server.
+func newTestSnapshotPolicyResource(t *testing.T, ms *testmock.MockServer) *snapshotPolicyResource {
+	t.Helper()
+	c, err := client.NewClient(client.Config{
+		Endpoint:           ms.URL(),
+		APIToken:           "test-token",
+		InsecureSkipVerify: true,
+		MaxRetries:         1,
+		RetryBaseDelay:     1 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+	return &snapshotPolicyResource{client: c}
+}
+
+// snapshotPolicyResourceSchema returns the parsed schema for the snapshot policy resource.
+func snapshotPolicyResourceSchema(t *testing.T) resource.SchemaResponse {
+	t.Helper()
+	r := &snapshotPolicyResource{}
+	var resp resource.SchemaResponse
+	r.Schema(context.Background(), resource.SchemaRequest{}, &resp)
+	return resp
+}
+
+// buildSnapshotPolicyType returns the tftypes.Object for the snapshot policy resource.
+func buildSnapshotPolicyType() tftypes.Object {
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":             tftypes.String,
+		"name":           tftypes.String,
+		"enabled":        tftypes.Bool,
+		"is_local":       tftypes.Bool,
+		"policy_type":    tftypes.String,
+		"retention_lock": tftypes.String,
+		"timeouts":       timeoutsType,
+	}}
+}
+
+// nullSnapshotPolicyConfig returns a base config map with all attributes null.
+func nullSnapshotPolicyConfig() map[string]tftypes.Value {
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	return map[string]tftypes.Value{
+		"id":             tftypes.NewValue(tftypes.String, nil),
+		"name":           tftypes.NewValue(tftypes.String, nil),
+		"enabled":        tftypes.NewValue(tftypes.Bool, nil),
+		"is_local":       tftypes.NewValue(tftypes.Bool, nil),
+		"policy_type":    tftypes.NewValue(tftypes.String, nil),
+		"retention_lock": tftypes.NewValue(tftypes.String, nil),
+		"timeouts":       tftypes.NewValue(timeoutsType, nil),
+	}
+}
+
+// snapshotPolicyPlanWithName returns a tfsdk.Plan with the given policy name.
+func snapshotPolicyPlanWithName(t *testing.T, name string) tfsdk.Plan {
+	t.Helper()
+	s := snapshotPolicyResourceSchema(t).Schema
+	cfg := nullSnapshotPolicyConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, name)
+	return tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildSnapshotPolicyType(), cfg),
+		Schema: s,
+	}
+}
+
+// snapshotPolicyPlanWithNameAndEnabled returns a tfsdk.Plan with name and enabled flag.
+func snapshotPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tfsdk.Plan {
+	t.Helper()
+	s := snapshotPolicyResourceSchema(t).Schema
+	cfg := nullSnapshotPolicyConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, name)
+	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, enabled)
+	return tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildSnapshotPolicyType(), cfg),
+		Schema: s,
+	}
+}
+
+// ---- tests ------------------------------------------------------------------
+
+// TestSnapshotPolicyResource_Create verifies Create populates ID, name, and enabled.
+func TestSnapshotPolicyResource_Create(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
+
+	r := newTestSnapshotPolicyResource(t, ms)
+	s := snapshotPolicyResourceSchema(t).Schema
+
+	plan := snapshotPolicyPlanWithNameAndEnabled(t, "test-snap-policy", true)
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSnapshotPolicyType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", resp.Diagnostics)
+	}
+
+	var model snapshotPolicyModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.ID.IsNull() || model.ID.ValueString() == "" {
+		t.Error("expected non-empty ID after Create")
+	}
+	if model.Name.ValueString() != "test-snap-policy" {
+		t.Errorf("expected name=test-snap-policy, got %s", model.Name.ValueString())
+	}
+	if !model.Enabled.ValueBool() {
+		t.Error("expected enabled=true after Create")
+	}
+}
+
+// TestSnapshotPolicyResource_Update verifies PATCH updates enabled flag in-place.
+// Name change is RequiresReplace so we only test enabled update here.
+func TestSnapshotPolicyResource_Update(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
+
+	r := newTestSnapshotPolicyResource(t, ms)
+	s := snapshotPolicyResourceSchema(t).Schema
+
+	// Create first.
+	createPlan := snapshotPolicyPlanWithNameAndEnabled(t, "update-snap-policy", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSnapshotPolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Update enabled=false (in-place, name does NOT change).
+	newPlan := snapshotPolicyPlanWithNameAndEnabled(t, "update-snap-policy", false)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSnapshotPolicyType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  newPlan,
+		State: createResp.State,
+	}, updateResp)
+
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update returned error: %s", updateResp.Diagnostics)
+	}
+
+	var model snapshotPolicyModel
+	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+	if model.Enabled.ValueBool() {
+		t.Error("expected enabled=false after update")
+	}
+	if model.Name.ValueString() != "update-snap-policy" {
+		t.Errorf("expected name unchanged, got %s", model.Name.ValueString())
+	}
+}
+
+// TestSnapshotPolicyResource_Delete verifies DELETE removes the policy.
+func TestSnapshotPolicyResource_Delete(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
+
+	r := newTestSnapshotPolicyResource(t, ms)
+	s := snapshotPolicyResourceSchema(t).Schema
+
+	// Create first.
+	plan := snapshotPolicyPlanWithName(t, "delete-snap-policy")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSnapshotPolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: createResp.State}, deleteResp)
+
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete returned error: %s", deleteResp.Diagnostics)
+	}
+
+	// Verify policy is gone.
+	_, err := r.client.GetSnapshotPolicy(context.Background(), "delete-snap-policy")
+	if err == nil || !client.IsNotFound(err) {
+		t.Errorf("expected policy to be deleted, got: %v", err)
+	}
+}
+
+// TestSnapshotPolicyResource_Import verifies ImportState populates all attributes.
+func TestSnapshotPolicyResource_Import(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
+
+	r := newTestSnapshotPolicyResource(t, ms)
+	s := snapshotPolicyResourceSchema(t).Schema
+
+	// Create first.
+	plan := snapshotPolicyPlanWithName(t, "import-snap-policy")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSnapshotPolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Import by name.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSnapshotPolicyType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-snap-policy"}, importResp)
+
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState returned error: %s", importResp.Diagnostics)
+	}
+
+	var model snapshotPolicyModel
+	if diags := importResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.Name.ValueString() != "import-snap-policy" {
+		t.Errorf("expected name=import-snap-policy after import, got %s", model.Name.ValueString())
+	}
+	if model.ID.IsNull() || model.ID.ValueString() == "" {
+		t.Error("expected ID to be populated after import")
+	}
+}
+
+// ---- data source tests -------------------------------------------------------
+
+// newTestSnapshotPolicyDataSource creates a snapshotPolicyDataSource wired to the given mock server.
+func newTestSnapshotPolicyDataSource(t *testing.T, ms *testmock.MockServer) *snapshotPolicyDataSource {
+	t.Helper()
+	c, err := client.NewClient(client.Config{
+		Endpoint:           ms.URL(),
+		APIToken:           "test-token",
+		InsecureSkipVerify: true,
+		MaxRetries:         1,
+		RetryBaseDelay:     1 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+	return &snapshotPolicyDataSource{client: c}
+}
+
+// snapshotPolicyDataSourceSchema returns the schema for the snapshot policy data source.
+func snapshotPolicyDataSourceSchema(t *testing.T) datasource.SchemaResponse {
+	t.Helper()
+	d := &snapshotPolicyDataSource{}
+	var resp datasource.SchemaResponse
+	d.Schema(context.Background(), datasource.SchemaRequest{}, &resp)
+	return resp
+}
+
+// buildSnapshotPolicyDSType returns the tftypes.Object for the snapshot policy data source.
+func buildSnapshotPolicyDSType() tftypes.Object {
+	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":             tftypes.String,
+		"name":           tftypes.String,
+		"enabled":        tftypes.Bool,
+		"is_local":       tftypes.Bool,
+		"policy_type":    tftypes.String,
+		"retention_lock": tftypes.String,
+	}}
+}
+
+// nullSnapshotPolicyDSConfig returns a base config map with all data source attributes null.
+func nullSnapshotPolicyDSConfig() map[string]tftypes.Value {
+	return map[string]tftypes.Value{
+		"id":             tftypes.NewValue(tftypes.String, nil),
+		"name":           tftypes.NewValue(tftypes.String, nil),
+		"enabled":        tftypes.NewValue(tftypes.Bool, nil),
+		"is_local":       tftypes.NewValue(tftypes.Bool, nil),
+		"policy_type":    tftypes.NewValue(tftypes.String, nil),
+		"retention_lock": tftypes.NewValue(tftypes.String, nil),
+	}
+}
+
+// TestSnapshotPolicyDataSource verifies data source reads policy by name and returns all attributes.
+func TestSnapshotPolicyDataSource(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
+
+	// Create a policy via the resource client so the data source can find it.
+	c, err := client.NewClient(client.Config{
+		Endpoint:           ms.URL(),
+		APIToken:           "test-token",
+		InsecureSkipVerify: true,
+		MaxRetries:         1,
+		RetryBaseDelay:     1 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+	enabled := true
+	_, err = c.PostSnapshotPolicy(context.Background(), "ds-test-snap-policy", client.SnapshotPolicyPost{
+		Enabled: &enabled,
+	})
+	if err != nil {
+		t.Fatalf("PostSnapshotPolicy: %v", err)
+	}
+
+	d := newTestSnapshotPolicyDataSource(t, ms)
+	s := snapshotPolicyDataSourceSchema(t).Schema
+
+	cfg := nullSnapshotPolicyDSConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-test-snap-policy")
+
+	readResp := &datasource.ReadResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSnapshotPolicyDSType(), nil), Schema: s},
+	}
+	d.Read(context.Background(), datasource.ReadRequest{
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildSnapshotPolicyDSType(), cfg), Schema: s},
+	}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("DataSource Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var model snapshotPolicyDataSourceModel
+	if diags := readResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.Name.ValueString() != "ds-test-snap-policy" {
+		t.Errorf("expected name=ds-test-snap-policy, got %s", model.Name.ValueString())
+	}
+	if !model.Enabled.ValueBool() {
+		t.Error("expected enabled=true")
+	}
+	if model.ID.IsNull() || model.ID.ValueString() == "" {
+		t.Error("expected ID to be populated")
+	}
+}
