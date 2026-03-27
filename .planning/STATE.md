@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-foundation/01-01-PLAN.md
-last_updated: "2026-03-26T15:59:55.452Z"
+stopped_at: Completed 01-foundation/01-03-PLAN.md
+last_updated: "2026-03-27T07:20:29.288Z"
 last_activity: 2026-03-26 — Roadmap created, requirements mapped to 5 phases
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-foundation P01 | 35 | 2 tasks | 17 files |
+| Phase 01-foundation P03 | 25 | 4 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Client layer is pure Go with zero terraform-plugin-framework imports — testable with httptest.NewServer
 - [Phase 01-foundation]: OAuth2 uses custom FlashBladeTokenSource (token-exchange grant) not standard clientcredentials.Config
 - [Phase 01-foundation]: HTTPClient() exported on FlashBladeClient for transport-layer testing without mocking internals
+- [Phase 01-foundation]: GetFileSystem synthesizes 404 APIError on empty items list — FlashBlade returns HTTP 200 with empty items for non-existent resources, not HTTP 404
+- [Phase 01-foundation]: testmock PATCH handler uses raw map[string]json.RawMessage for true PATCH semantics without overwriting absent fields
+- [Phase 01-foundation]: PollUntilEradicated queries ?destroyed=true to avoid race with same-name file system creation
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T15:59:55.448Z
-Stopped at: Completed 01-foundation/01-01-PLAN.md
+Last session: 2026-03-27T07:20:29.282Z
+Stopped at: Completed 01-foundation/01-03-PLAN.md
 Resume file: None

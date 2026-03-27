@@ -19,10 +19,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### File System
 
-- [ ] **FS-01**: User can create a file system with name, provisioned size, and optional policy attachments
-- [ ] **FS-02**: User can update file system attributes (size, policies, NFS settings, SMB settings)
-- [ ] **FS-03**: User can destroy a file system (two-phase: mark destroyed, then eradicate)
-- [ ] **FS-04**: User can read file system state including all computed attributes (space, created timestamp)
+- [x] **FS-01**: User can create a file system with name, provisioned size, and optional policy attachments
+- [x] **FS-02**: User can update file system attributes (size, policies, NFS settings, SMB settings)
+- [x] **FS-03**: User can destroy a file system (two-phase: mark destroyed, then eradicate)
+- [x] **FS-04**: User can read file system state including all computed attributes (space, created timestamp)
 - [ ] **FS-05**: User can import an existing file system into Terraform state by name
 - [ ] **FS-06**: Data source returns file system attributes by name or filter
 - [ ] **FS-07**: Drift detection logs field-level diffs via tflog when Read finds state divergence
@@ -191,10 +191,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROV-05 | Phase 1 | Complete |
 | PROV-06 | Phase 1 | Pending |
 | PROV-07 | Phase 1 | Complete |
-| FS-01 | Phase 1 | Pending |
-| FS-02 | Phase 1 | Pending |
-| FS-03 | Phase 1 | Pending |
-| FS-04 | Phase 1 | Pending |
+| FS-01 | Phase 1 | Complete |
+| FS-02 | Phase 1 | Complete |
+| FS-03 | Phase 1 | Complete |
+| FS-04 | Phase 1 | Complete |
 | FS-05 | Phase 1 | Pending |
 | FS-06 | Phase 1 | Pending |
 | FS-07 | Phase 1 | Pending |
