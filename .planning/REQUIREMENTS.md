@@ -105,12 +105,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **NAP-01**: User can create a network access policy with name
 - [x] **NAP-02**: User can update network access policy attributes
 - [x] **NAP-03**: User can destroy a network access policy
-- [ ] **NAP-04**: User can import an existing network access policy into Terraform state by name
-- [ ] **NAP-05**: Data source returns network access policy attributes by name or filter
+- [x] **NAP-04**: User can import an existing network access policy into Terraform state by name
+- [x] **NAP-05**: Data source returns network access policy attributes by name or filter
 - [x] **NAR-01**: User can create network access policy rules (client, interfaces, effect)
 - [x] **NAR-02**: User can update network access policy rules
 - [x] **NAR-03**: User can destroy network access policy rules
-- [ ] **NAR-04**: User can import network access policy rules using composite ID
+- [x] **NAR-04**: User can import network access policy rules using composite ID
 
 ### Quota Policy
 
@@ -253,12 +253,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAP-01 | Phase 4 | Complete |
 | NAP-02 | Phase 4 | Complete |
 | NAP-03 | Phase 4 | Complete |
-| NAP-04 | Phase 4 | Pending |
-| NAP-05 | Phase 4 | Pending |
+| NAP-04 | Phase 4 | Complete |
+| NAP-05 | Phase 4 | Complete |
 | NAR-01 | Phase 4 | Complete |
 | NAR-02 | Phase 4 | Complete |
 | NAR-03 | Phase 4 | Complete |
-| NAR-04 | Phase 4 | Pending |
+| NAR-04 | Phase 4 | Complete |
 | QTP-01 | Phase 4 | Complete |
 | QTP-02 | Phase 4 | Complete |
 | QTP-03 | Phase 4 | Complete |
