@@ -289,6 +289,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewObjectStoreAccountExportResource,
 		NewServerResource,
 		NewObjectStoreVirtualHostResource,
+		NewS3ExportPolicyResource,
+		NewS3ExportPolicyRuleResource,
 	}
 }
 
@@ -313,5 +315,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewFileSystemExportDataSource,
 		NewObjectStoreAccountExportDataSource,
 		NewObjectStoreVirtualHostDataSource,
+		NewS3ExportPolicyDataSource,
 	}
 }
