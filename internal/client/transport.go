@@ -70,7 +70,7 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		// Drain and close the response body before retrying to release the
 		// underlying TCP connection back to the pool.
-		io.Copy(io.Discard, resp.Body)
+		_, _ = io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 
 		delay := t.computeDelay(attempt)

@@ -37,7 +37,7 @@ func LoginWithAPIToken(ctx context.Context, httpClient *http.Client, endpoint, a
 		return "", fmt.Errorf("login: POST /api/login: %w", err)
 	}
 	defer resp.Body.Close()
-	io.Copy(io.Discard, resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("login: unexpected status %d", resp.StatusCode)

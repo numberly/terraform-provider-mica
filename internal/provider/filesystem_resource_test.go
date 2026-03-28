@@ -42,19 +42,6 @@ func resourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// fsType returns the tftypes.Object for the full filesystem resource schema.
-// It is built from the actual schema so tests stay in sync automatically.
-func fsType(t *testing.T) tftypes.Object {
-	t.Helper()
-	s := resourceSchema(t).Schema
-	typ, err := s.Type().ApplyTerraform5AttributePathStep(nil)
-	_ = typ
-	_ = err
-	// Build a static tftypes.Object matching the schema — maintained manually
-	// but checked against the schema via compile-time model struct.
-	return buildFSType()
-}
-
 // buildFSType returns the tftypes.Object for filesystem_resource schema.
 func buildFSType() tftypes.Object {
 	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
@@ -199,16 +186,6 @@ func planWithName(t *testing.T, name string, provisioned int64) tfsdk.Plan {
 	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, true)
 	return tfsdk.Plan{
 		Raw:    tftypes.NewValue(buildFSType(), cfg),
-		Schema: s,
-	}
-}
-
-// stateFromCreateResp builds a tfsdk.State from a Create response for Update/Delete tests.
-func stateFromPlan(t *testing.T, plan tfsdk.Plan) tfsdk.State {
-	t.Helper()
-	s := resourceSchema(t).Schema
-	return tfsdk.State{
-		Raw:    plan.Raw,
 		Schema: s,
 	}
 }

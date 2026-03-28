@@ -445,20 +445,21 @@ func TestUnit_FileSystem_List_Paginated(t *testing.T) {
 		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
 			callCount++
 			token := r.URL.Query().Get("continuation_token")
-			if token == "" {
+			switch token {
+			case "":
 				// First page: return 2 items + continuation_token.
 				writeJSON(w, http.StatusOK, map[string]any{
 					"items":              page1,
 					"total_item_count":   3,
 					"continuation_token": "page2-token",
 				})
-			} else if token == "page2-token" {
+			case "page2-token":
 				// Second page: return 1 item, no token.
 				writeJSON(w, http.StatusOK, map[string]any{
 					"items":            page2,
 					"total_item_count": 3,
 				})
-			} else {
+			default:
 				http.Error(w, "unexpected continuation_token", http.StatusBadRequest)
 			}
 		default:

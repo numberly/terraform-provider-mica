@@ -208,8 +208,8 @@ func TestObjectStoreAccessPolicyRuleResource_Create(t *testing.T) {
 	if len(actions) != 2 {
 		t.Errorf("expected 2 actions, got %d", len(actions))
 	}
-	if model.Conditions.IsNull() {
-		// Expected null since no conditions provided
+	if !model.Conditions.IsNull() {
+		t.Error("expected conditions to be null since none were provided")
 	}
 }
 

@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -17,7 +18,7 @@ func TestUnit_OAuth2TokenSource(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"access_token":"test-access-token","expires_in":3600,"token_type":"Bearer"}`))
+		_, _ = w.Write([]byte(`{"access_token":"test-access-token","expires_in":3600,"token_type":"Bearer"}`))
 	}))
 	defer srv.Close()
 
@@ -41,7 +42,7 @@ func TestUnit_OAuth2TokenSource_Caching(t *testing.T) {
 		atomic.AddInt32(&callCount, 1)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"access_token":"cached-token","expires_in":3600,"token_type":"Bearer"}`))
+		_, _ = w.Write([]byte(`{"access_token":"cached-token","expires_in":3600,"token_type":"Bearer"}`))
 	}))
 	defer srv.Close()
 
@@ -76,7 +77,7 @@ func TestUnit_LoginWithAPIToken(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	tok, err := client.LoginWithAPIToken(nil, srv.Client(), srv.URL, "my-api-token")
+	tok, err := client.LoginWithAPIToken(context.TODO(), srv.Client(), srv.URL, "my-api-token")
 	if err != nil {
 		t.Fatalf("LoginWithAPIToken(): %v", err)
 	}
@@ -89,7 +90,7 @@ func TestUnit_APIError_NotFound(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"errors":[{"message":"file system not found"}]}`))
+		_, _ = w.Write([]byte(`{"errors":[{"message":"file system not found"}]}`))
 	}))
 	defer srv.Close()
 
