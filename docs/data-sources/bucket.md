@@ -38,13 +38,13 @@ output "bucket_versioning" {
 - `hard_limit_enabled` (Boolean) If true, the bucket's size cannot exceed the quota limit.
 - `id` (String) The unique identifier of the bucket.
 - `object_count` (Number) The count of objects in the bucket.
-- `quota_limit` (String) The effective quota limit applied against the size of the bucket, in bytes.
+- `quota_limit` (Number) The effective quota limit applied against the size of the bucket, in bytes.
 - `retention_lock` (String) The retention lock mode for the bucket.
-- `space` (Block, Read-only) Storage space breakdown. (see [below for nested schema](#nestedblock--space))
+- `space` (Attributes) Storage space breakdown. (see [below for nested schema](#nestedatt--space))
 - `time_remaining` (Number) Milliseconds remaining until auto-eradication of a soft-deleted bucket.
 - `versioning` (String) The bucket versioning state ('none', 'enabled', or 'suspended').
 
-<a id="nestedblock--space"></a>
+<a id="nestedatt--space"></a>
 ### Nested Schema for `space`
 
 Read-Only:

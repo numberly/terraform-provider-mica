@@ -39,12 +39,12 @@ resource "flashblade_file_system" "example" {
 
 ### Optional
 
-- `default_quotas` (Block, Optional) Default quota settings. (see [below for nested schema](#nestedblock--default_quotas))
+- `default_quotas` (Attributes) Default quota settings. (see [below for nested schema](#nestedatt--default_quotas))
 - `destroy_eradicate_on_delete` (Boolean) When true (default), Terraform will eradicate the file system on destroy. When false, only soft-deletes.
-- `multi_protocol` (Block, Optional) Multi-protocol access configuration. (see [below for nested schema](#nestedblock--multi_protocol))
-- `nfs` (Block, Optional) NFS protocol configuration. (see [below for nested schema](#nestedblock--nfs))
+- `multi_protocol` (Attributes) Multi-protocol access configuration. (see [below for nested schema](#nestedatt--multi_protocol))
+- `nfs` (Attributes) NFS protocol configuration. (see [below for nested schema](#nestedatt--nfs))
 - `nfs_export_policy` (String) Name of the NFS export policy to apply to this file system.
-- `smb` (Block, Optional) SMB protocol configuration. (see [below for nested schema](#nestedblock--smb))
+- `smb` (Attributes) SMB protocol configuration. (see [below for nested schema](#nestedatt--smb))
 - `smb_share_policy` (String) Name of the SMB share policy to apply to this file system.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
@@ -52,15 +52,15 @@ resource "flashblade_file_system" "example" {
 
 - `created` (Number) Unix timestamp (milliseconds) when the file system was created.
 - `destroyed` (Boolean) Whether the file system is soft-deleted.
-- `http` (Block, Read-only) HTTP protocol configuration (read-only, API-managed). (see [below for nested schema](#nestedblock--http))
+- `http` (Attributes) HTTP protocol configuration (read-only, API-managed). (see [below for nested schema](#nestedatt--http))
 - `id` (String) The unique identifier of the file system.
 - `promotion_status` (String) Replication promotion status of the file system.
-- `source` (Block, Read-only) Source file system reference (for clones/replicas, read-only). (see [below for nested schema](#nestedblock--source))
-- `space` (Block, Read-only) Storage space breakdown (read-only, API-managed). (see [below for nested schema](#nestedblock--space))
+- `source` (Attributes) Source file system reference (for clones/replicas, read-only). (see [below for nested schema](#nestedatt--source))
+- `space` (Attributes) Storage space breakdown (read-only, API-managed). (see [below for nested schema](#nestedatt--space))
 - `time_remaining` (Number) Milliseconds remaining until auto-eradication of a soft-deleted file system.
 - `writable` (Boolean) Whether the file system is writable.
 
-<a id="nestedblock--default_quotas"></a>
+<a id="nestedatt--default_quotas"></a>
 ### Nested Schema for `default_quotas`
 
 Optional:
@@ -69,7 +69,7 @@ Optional:
 - `user_quota` (Number) Default quota per user in bytes.
 
 
-<a id="nestedblock--multi_protocol"></a>
+<a id="nestedatt--multi_protocol"></a>
 ### Nested Schema for `multi_protocol`
 
 Optional:
@@ -78,7 +78,7 @@ Optional:
 - `safeguard_acls` (Boolean) Whether to safeguard ACLs during multi-protocol access.
 
 
-<a id="nestedblock--nfs"></a>
+<a id="nestedatt--nfs"></a>
 ### Nested Schema for `nfs`
 
 Optional:
@@ -90,7 +90,7 @@ Optional:
 - `v4_1_enabled` (Boolean) Whether NFSv4.1 is enabled.
 
 
-<a id="nestedblock--smb"></a>
+<a id="nestedatt--smb"></a>
 ### Nested Schema for `smb`
 
 Optional:
@@ -112,7 +112,7 @@ Optional:
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
-<a id="nestedblock--http"></a>
+<a id="nestedatt--http"></a>
 ### Nested Schema for `http`
 
 Read-Only:
@@ -120,7 +120,7 @@ Read-Only:
 - `enabled` (Boolean) Whether HTTP is enabled on this file system.
 
 
-<a id="nestedblock--source"></a>
+<a id="nestedatt--source"></a>
 ### Nested Schema for `source`
 
 Read-Only:
@@ -129,7 +129,7 @@ Read-Only:
 - `name` (String) Source file system name.
 
 
-<a id="nestedblock--space"></a>
+<a id="nestedatt--space"></a>
 ### Nested Schema for `space`
 
 Read-Only:

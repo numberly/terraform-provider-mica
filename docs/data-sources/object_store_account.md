@@ -35,10 +35,10 @@ output "object_count" {
 - `hard_limit_enabled` (Boolean) If true, the account's size cannot exceed the quota limit.
 - `id` (String) The unique identifier of the object store account.
 - `object_count` (Number) The count of objects within the account.
-- `quota_limit` (String) The effective quota limit applied against the size of the account, in bytes.
-- `space` (Block, Read-only) Storage space breakdown. (see [below for nested schema](#nestedblock--space))
+- `quota_limit` (Number) The effective quota limit applied against the size of the account, in bytes.
+- `space` (Attributes) Storage space breakdown. (see [below for nested schema](#nestedatt--space))
 
-<a id="nestedblock--space"></a>
+<a id="nestedatt--space"></a>
 ### Nested Schema for `space`
 
 Read-Only:

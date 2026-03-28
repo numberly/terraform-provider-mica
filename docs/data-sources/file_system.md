@@ -32,21 +32,21 @@ output "provisioned_size" {
 ### Read-Only
 
 - `created` (Number) Unix timestamp (milliseconds) when the file system was created.
-- `default_quotas` (Block, Read-only) Default quota settings. (see [below for nested schema](#nestedblock--default_quotas))
+- `default_quotas` (Attributes) Default quota settings. (see [below for nested schema](#nestedatt--default_quotas))
 - `destroyed` (Boolean) Whether the file system is soft-deleted.
-- `http` (Block, Read-only) HTTP protocol configuration. (see [below for nested schema](#nestedblock--http))
+- `http` (Attributes) HTTP protocol configuration. (see [below for nested schema](#nestedatt--http))
 - `id` (String) The unique identifier of the file system.
-- `multi_protocol` (Block, Read-only) Multi-protocol access configuration. (see [below for nested schema](#nestedblock--multi_protocol))
-- `nfs` (Block, Read-only) NFS protocol configuration. (see [below for nested schema](#nestedblock--nfs))
+- `multi_protocol` (Attributes) Multi-protocol access configuration. (see [below for nested schema](#nestedatt--multi_protocol))
+- `nfs` (Attributes) NFS protocol configuration. (see [below for nested schema](#nestedatt--nfs))
 - `promotion_status` (String) Replication promotion status of the file system.
 - `provisioned` (Number) Provisioned size of the file system in bytes.
-- `smb` (Block, Read-only) SMB protocol configuration. (see [below for nested schema](#nestedblock--smb))
-- `source` (Block, Read-only) Source file system reference (for clones/replicas). (see [below for nested schema](#nestedblock--source))
-- `space` (Block, Read-only) Storage space breakdown. (see [below for nested schema](#nestedblock--space))
+- `smb` (Attributes) SMB protocol configuration. (see [below for nested schema](#nestedatt--smb))
+- `source` (Attributes) Source file system reference (for clones/replicas). (see [below for nested schema](#nestedatt--source))
+- `space` (Attributes) Storage space breakdown. (see [below for nested schema](#nestedatt--space))
 - `time_remaining` (Number) Milliseconds remaining until auto-eradication of a soft-deleted file system.
 - `writable` (Boolean) Whether the file system is writable.
 
-<a id="nestedblock--default_quotas"></a>
+<a id="nestedatt--default_quotas"></a>
 ### Nested Schema for `default_quotas`
 
 Read-Only:
@@ -55,7 +55,7 @@ Read-Only:
 - `user_quota` (Number) Default quota per user in bytes.
 
 
-<a id="nestedblock--http"></a>
+<a id="nestedatt--http"></a>
 ### Nested Schema for `http`
 
 Read-Only:
@@ -63,7 +63,7 @@ Read-Only:
 - `enabled` (Boolean) Whether HTTP is enabled on this file system.
 
 
-<a id="nestedblock--multi_protocol"></a>
+<a id="nestedatt--multi_protocol"></a>
 ### Nested Schema for `multi_protocol`
 
 Read-Only:
@@ -72,7 +72,7 @@ Read-Only:
 - `safeguard_acls` (Boolean) Whether ACLs are safeguarded during multi-protocol access.
 
 
-<a id="nestedblock--nfs"></a>
+<a id="nestedatt--nfs"></a>
 ### Nested Schema for `nfs`
 
 Read-Only:
@@ -84,7 +84,7 @@ Read-Only:
 - `v4_1_enabled` (Boolean) Whether NFSv4.1 is enabled.
 
 
-<a id="nestedblock--smb"></a>
+<a id="nestedatt--smb"></a>
 ### Nested Schema for `smb`
 
 Read-Only:
@@ -95,7 +95,7 @@ Read-Only:
 - `smb_encryption_enabled` (Boolean) Whether SMB encryption is enabled.
 
 
-<a id="nestedblock--source"></a>
+<a id="nestedatt--source"></a>
 ### Nested Schema for `source`
 
 Read-Only:
@@ -104,7 +104,7 @@ Read-Only:
 - `name` (String) Source file system name.
 
 
-<a id="nestedblock--space"></a>
+<a id="nestedatt--space"></a>
 ### Nested Schema for `space`
 
 Read-Only:

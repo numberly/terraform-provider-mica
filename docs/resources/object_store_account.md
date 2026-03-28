@@ -32,7 +32,8 @@ resource "flashblade_object_store_account" "example" {
 ### Optional
 
 - `hard_limit_enabled` (Boolean) If true, the account's size cannot exceed the quota limit.
-- `quota_limit` (String) The effective quota limit applied against the size of the account, in bytes.
+- `quota_limit` (Number) The effective quota limit applied against the size of the account, in bytes.
+- `skip_default_export` (Boolean) When true, suppresses the default account export to _array_server at creation time. Use this when you manage exports explicitly via flashblade_object_store_account_export.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -40,7 +41,7 @@ resource "flashblade_object_store_account" "example" {
 - `created` (Number) Unix timestamp (milliseconds) when the account was created.
 - `id` (String) The unique identifier of the object store account.
 - `object_count` (Number) The count of objects within the account.
-- `space` (Block, Read-only) Storage space breakdown (read-only, API-managed). (see [below for nested schema](#nestedblock--space))
+- `space` (Attributes) Storage space breakdown (read-only, API-managed). (see [below for nested schema](#nestedatt--space))
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -53,7 +54,7 @@ Optional:
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
-<a id="nestedblock--space"></a>
+<a id="nestedatt--space"></a>
 ### Nested Schema for `space`
 
 Read-Only:

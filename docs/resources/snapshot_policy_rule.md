@@ -40,13 +40,13 @@ resource "flashblade_snapshot_policy_rule" "example" {
 - `client_name` (String) An optional client name pattern for this rule.
 - `every` (Number) Schedule: run every N milliseconds (e.g. 86400000 for daily).
 - `keep_for` (Number) Retention: keep snapshots for this many milliseconds (e.g. 604800000 for 7 days).
-- `suffix` (String) An optional suffix appended to snapshot names created by this rule.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `id` (String) Synthetic ID in the form '{policy_name}/{rule_name}'.
 - `name` (String) The server-assigned rule identifier within the policy.
+- `suffix` (String) Read-only suffix appended to snapshot names created by this rule (assigned by the API, not configurable via add_rules).
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

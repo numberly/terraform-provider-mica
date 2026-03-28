@@ -40,7 +40,7 @@ resource "flashblade_bucket" "example" {
 
 - `destroy_eradicate_on_delete` (Boolean) When true, Terraform will eradicate the bucket on destroy. When false (default), only soft-deletes. Buckets hold production data — eradication is opt-in.
 - `hard_limit_enabled` (Boolean) If true, the bucket's size cannot exceed the quota limit.
-- `quota_limit` (String) The effective quota limit applied against the size of the bucket, in bytes.
+- `quota_limit` (Number) The effective quota limit applied against the size of the bucket, in bytes.
 - `retention_lock` (String) The retention lock mode for the bucket.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `versioning` (String) The bucket versioning state ('none', 'enabled', or 'suspended').
@@ -52,7 +52,7 @@ resource "flashblade_bucket" "example" {
 - `destroyed` (Boolean) Whether the bucket is soft-deleted.
 - `id` (String) The unique identifier of the bucket.
 - `object_count` (Number) The count of objects in the bucket.
-- `space` (Block, Read-only) Storage space breakdown (read-only, API-managed). (see [below for nested schema](#nestedblock--space))
+- `space` (Attributes) Storage space breakdown (read-only, API-managed). (see [below for nested schema](#nestedatt--space))
 - `time_remaining` (Number) Milliseconds remaining until auto-eradication of a soft-deleted bucket.
 
 <a id="nestedatt--timeouts"></a>
@@ -66,7 +66,7 @@ Optional:
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
-<a id="nestedblock--space"></a>
+<a id="nestedatt--space"></a>
 ### Nested Schema for `space`
 
 Read-Only:
