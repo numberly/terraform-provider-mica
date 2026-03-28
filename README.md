@@ -103,6 +103,63 @@ Production-ready configurations showing how resources compose together:
 | [Array Admin Baseline](examples/workflows/array-admin-baseline/) | Day-1 DNS, NTP, SMTP configuration | array_dns, array_ntp, array_smtp |
 | [Secured S3 Bucket](examples/workflows/secured-s3-bucket/) | Bucket with network + access policies | bucket, network_access_policy, object_store_access_policy |
 
+## Resource Coverage Roadmap
+
+### v1.0 — Current Release
+
+| Resource | Create | Read | Update | Delete | Import | Data Source | Notes |
+|----------|:------:|:----:|:------:|:------:|:------:|:-----------:|-------|
+| **Storage** |
+| `flashblade_file_system` | ✅ | ✅ | ✅ | ✅ soft-delete | ✅ | ✅ | Two-phase destroy, in-place rename |
+| `flashblade_bucket` | ✅ | ✅ | ✅ | ✅ soft-delete | ✅ | ✅ | Default recoverable, ForceNew on rename |
+| `flashblade_object_store_account` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Fails if buckets exist |
+| `flashblade_object_store_access_key` | ✅ | ✅ | — | ✅ | — | ✅ | Immutable, write-once secret |
+| **NFS Export Policy** |
+| `flashblade_nfs_export_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Guard: fails if attached to FS |
+| `flashblade_nfs_export_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Index-based ordering |
+| **SMB Share Policy** |
+| `flashblade_smb_share_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Guard: fails if attached to FS |
+| `flashblade_smb_share_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/rule_name` | — | Name-based identity |
+| **Snapshot Policy** |
+| `flashblade_snapshot_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ForceNew on rename (API read-only) |
+| `flashblade_snapshot_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Via parent PATCH add/remove_rules |
+| **Object Store Access Policy** |
+| `flashblade_object_store_access_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | IAM-style, guard if attached |
+| `flashblade_object_store_access_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/rule_name` | — | JSON conditions, effect RequiresReplace |
+| **Network Access Policy** |
+| `flashblade_network_access_policy` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ | ✅ | No POST/DELETE — GET+PATCH only |
+| `flashblade_network_access_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Index-based ordering |
+| **Quota** |
+| `flashblade_quota_user` | ✅ | ✅ | ✅ | ✅ | ✅ `fs/uid` | ✅ | Per-filesystem user quota |
+| `flashblade_quota_group` | ✅ | ✅ | ✅ | ✅ | ✅ `fs/gid` | ✅ | Per-filesystem group quota |
+| **Array Administration** |
+| `flashblade_array_dns` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ `default` | ✅ | Destroy clears config |
+| `flashblade_array_ntp` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ `default` | ✅ | Destroy clears NTP servers |
+| `flashblade_array_smtp` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ `default` | ✅ | Includes alert watchers |
+
+**Legend:** ✅ = supported | — = intentionally not supported | `soft-delete` = two-phase destroy + eradicate | `singleton` = adopt existing via GET+PATCH | `reset` = destroy resets to defaults
+
+### v1.x — Planned
+
+| Resource | Description | Priority |
+|----------|-------------|----------|
+| Object Lock / WORM config | `retention_lock`, `object_lock_config` on buckets | P2 |
+| QoS policy attachment | Bandwidth/IOPS control on file systems and buckets | P2 |
+| Eradication config | Custom eradication delay per resource | P2 |
+| Acceptance tests | Tests against real FlashBlade array (`TF_ACC=1`) | P2 |
+| Terraform Registry | Public publication on registry.terraform.io | P2 |
+
+### v2+ — Future
+
+| Resource | Description | Complexity |
+|----------|-------------|------------|
+| Bucket replica links | DR automation between arrays | High |
+| File system replica links | Cross-array replication | High |
+| Array connections | Multi-array connectivity management | High |
+| API client management | Service account provisioning | Medium |
+| Active Directory | Domain join via Terraform | High |
+| Pulumi bridge | Pulumi SDK from Terraform provider | Medium |
+
 ## Development
 
 ```bash
