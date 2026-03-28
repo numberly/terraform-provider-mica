@@ -147,8 +147,8 @@ func (c *FlashBladeClient) GetS3ExportPolicyRuleByName(ctx context.Context, poli
 
 // PostS3ExportPolicyRule creates a new rule in an S3 export policy.
 // The policy is identified via the policy_names query parameter only.
-func (c *FlashBladeClient) PostS3ExportPolicyRule(ctx context.Context, policyName string, body S3ExportPolicyRulePost) (*S3ExportPolicyRule, error) {
-	path := "/s3-export-policies/rules?policy_names=" + url.QueryEscape(policyName)
+func (c *FlashBladeClient) PostS3ExportPolicyRule(ctx context.Context, policyName, ruleName string, body S3ExportPolicyRulePost) (*S3ExportPolicyRule, error) {
+	path := "/s3-export-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
 	var resp ListResponse[S3ExportPolicyRule]
 	if err := c.post(ctx, path, body, &resp); err != nil {
 		return nil, err

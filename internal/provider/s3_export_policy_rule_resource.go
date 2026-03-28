@@ -77,8 +77,8 @@ func (r *s3ExportPolicyRuleResource) Schema(ctx context.Context, _ resource.Sche
 				},
 			},
 			"name": schema.StringAttribute{
-				Computed:    true,
-				Description: "The server-assigned rule identifier. Used internally for PATCH/DELETE API calls.",
+				Required:    true,
+				Description: "The rule name. Passed as ?names= query param on POST.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -168,7 +168,8 @@ func (r *s3ExportPolicyRuleResource) Create(ctx context.Context, req resource.Cr
 	}
 	post.Resources = resources
 
-	created, err := r.client.PostS3ExportPolicyRule(ctx, policyName, post)
+	ruleName := data.Name.ValueString()
+	created, err := r.client.PostS3ExportPolicyRule(ctx, policyName, ruleName, post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating S3 export policy rule", err.Error())
 		return
