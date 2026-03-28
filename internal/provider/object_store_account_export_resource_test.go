@@ -230,9 +230,11 @@ func TestUnit_AccountExport_Update(t *testing.T) {
 	}
 }
 
-// TestUnit_AccountExport_Delete verifies DELETE removes the export without error.
-// NOTE: The resource passes data.Name (combined name) as exportName to the client.
-// The mock handles this with lenient lookup (Pitfall 5 from research).
+// TestUnit_AccountExport_Delete verifies DELETE sends the short export name (not combined "account/export")
+// to the API and removes the export without error.
+// The mock uses strict lookup: member_names + "/" + names must match the stored combined key.
+// If the resource passes the combined name as exportName, the mock will not find the export
+// and the subsequent GET will still return it (proving the delete failed).
 func TestUnit_AccountExport_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
@@ -259,10 +261,42 @@ func TestUnit_AccountExport_Delete(t *testing.T) {
 		t.Fatalf("Delete returned error: %s", deleteResp.Diagnostics)
 	}
 
-	// Verify export is gone.
+	// Verify export is actually gone from the mock store.
+	// If Delete sent the wrong name format, the strict mock would not have found/deleted
+	// the export, and GET will still return it.
 	_, err := r.client.GetObjectStoreAccountExport(context.Background(), "delete-account/delete-account")
 	if err == nil || !client.IsNotFound(err) {
-		t.Errorf("expected export to be deleted, got: %v", err)
+		t.Errorf("expected export to be deleted (strict mock), but GET still returns it: %v", err)
+	}
+}
+
+// TestUnit_AccountExport_Delete_NoSlash verifies Delete with a name that has no "/" passes name as-is (defensive).
+func TestUnit_AccountExport_Delete_NoSlash(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	store := handlers.RegisterObjectStoreAccountExportHandlers(ms.Mux)
+
+	// Seed an export with a simple name (no slash) to simulate edge case.
+	store.AddObjectStoreAccountExportWithName("simple-account", "simple-export", "s3-policy", "server1")
+
+	r := newTestAccountExportResource(t, ms)
+	s := accountExportResourceSchema(t).Schema
+
+	// Build state with name="simple-export" (no slash).
+	cfg := nullAccountExportConfig()
+	cfg["id"] = tftypes.NewValue(tftypes.String, "test-id")
+	cfg["name"] = tftypes.NewValue(tftypes.String, "simple-export")
+	cfg["account_name"] = tftypes.NewValue(tftypes.String, "simple-account")
+	cfg["server_name"] = tftypes.NewValue(tftypes.String, "server1")
+	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, true)
+	cfg["policy_name"] = tftypes.NewValue(tftypes.String, "s3-policy")
+	state := tfsdk.State{Raw: tftypes.NewValue(buildAccountExportType(), cfg), Schema: s}
+
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: state}, deleteResp)
+
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete returned error: %s", deleteResp.Diagnostics)
 	}
 }
 

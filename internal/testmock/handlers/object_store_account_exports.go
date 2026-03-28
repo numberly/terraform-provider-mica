@@ -48,6 +48,26 @@ func (s *objectStoreAccountExportStore) AddObjectStoreAccountExport(accountName,
 	return export
 }
 
+// AddObjectStoreAccountExportWithName seeds an export with a custom combined name into the store for test setup.
+func (s *objectStoreAccountExportStore) AddObjectStoreAccountExportWithName(accountName, exportName, policyName, serverName string) *client.ObjectStoreAccountExport {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	combinedName := accountName + "/" + exportName
+	export := &client.ObjectStoreAccountExport{
+		Name:    combinedName,
+		ID:      uuid.New().String(),
+		Enabled: true,
+		Member:  &client.NamedReference{Name: accountName},
+		Server:  &client.NamedReference{Name: serverName},
+		Policy:  &client.NamedReference{Name: policyName},
+	}
+
+	s.byName[combinedName] = export
+	s.byID[export.ID] = export
+	return export
+}
+
 // handle dispatches object store account export requests by HTTP method.
 func (s *objectStoreAccountExportStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -178,10 +198,8 @@ func (s *objectStoreAccountExportStore) handlePatch(w http.ResponseWriter, r *ht
 }
 
 // handleDelete handles DELETE /api/2.22/object-store-account-exports?member_names={accountName}&names={exportName}.
-// NOTE: The resource code passes data.Name (combined name like "account/account") as exportName
-// to DeleteObjectStoreAccountExport. The client sends this as ?names=. The mock is lenient:
-// it tries lookup by "memberNames/names" first, then by "names" directly (to handle
-// the combined-name-as-export-name pattern).
+// The real FlashBlade API expects names= to contain the short export name (not the combined "account/export" format).
+// This mock enforces strict lookup: memberName + "/" + exportName must match an existing combined key.
 func (s *objectStoreAccountExportStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	memberName := r.URL.Query().Get("member_names")
 	exportName := r.URL.Query().Get("names")
@@ -194,15 +212,9 @@ func (s *objectStoreAccountExportStore) handleDelete(w http.ResponseWriter, r *h
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Try the standard lookup: memberName + "/" + exportName.
+	// Strict lookup: memberName + "/" + exportName must match the stored combined name.
 	combinedKey := memberName + "/" + exportName
 	export, ok := s.byName[combinedKey]
-	if !ok {
-		// Lenient fallback: try exportName directly as the combined name.
-		// This handles the case where the resource passes data.Name (already combined)
-		// as the exportName parameter.
-		export, ok = s.byName[exportName]
-	}
 
 	if !ok {
 		// FlashBlade returns 200 with empty items for not-found on delete.
