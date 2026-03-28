@@ -17,8 +17,8 @@ Requirements for milestone v1.2 — Code Quality & Robustness.
 ### Architecture Cleanup
 
 - [x] **ARC-01**: Split models.go into domain files (storage, policies, exports, admin)
-- [ ] **ARC-02**: Unified compositeID helper for policy rule import/delete
-- [ ] **ARC-03**: Extract stringOrNull to shared helper (used by all rule resources)
+- [x] **ARC-02**: Unified compositeID helper for policy rule import/delete
+- [x] **ARC-03**: Extract stringOrNull to shared helper (used by all rule resources)
 
 ### Test Hardening
 
@@ -56,8 +56,8 @@ Deferred to future release.
 | BUG-03 | Phase 9 | Complete |
 | BUG-04 | Phase 9 | Complete |
 | ARC-01 | Phase 10 | Complete |
-| ARC-02 | Phase 10 | Pending |
-| ARC-03 | Phase 10 | Pending |
+| ARC-02 | Phase 10 | Complete |
+| ARC-03 | Phase 10 | Complete |
 | TST-01 | Phase 11 | Pending |
 | TST-02 | Phase 11 | Pending |
 | TST-03 | Phase 11 | Pending |
