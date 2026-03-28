@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-28T06:07:15.294Z"
+stopped_at: Completed 04-05-PLAN.md
+last_updated: "2026-03-28T06:10:47.076Z"
 last_activity: 2026-03-27 — NAP singleton resource, rule resource, data source — all tests pass (136 total)
 progress:
   total_phases: 5
@@ -114,6 +114,8 @@ Recent decisions affecting current work:
 - [Phase 04-object-network-quota-policies-and-array-admin]: OAP description RequiresReplace — POST-only field, PATCH rejects it; OAP rule effect RequiresReplace — read-only after creation
 - [Phase 04-object-network-quota-policies-and-array-admin]: OAP conditions stored as types.String with jsonencode convention — json.RawMessage round-trip at API boundary
 - [Phase 04-object-network-quota-policies-and-array-admin]: OAP delete guard: ListObjectStoreAccessPolicyMembers before DELETE — prevents detach errors on policies attached to buckets
+- [Phase 04-object-network-quota-policies-and-array-admin]: SMTP alert_watchers nested within SMTP resource (not separate Terraform resources) — single resource manages composite lifecycle
+- [Phase 04-object-network-quota-policies-and-array-admin]: DNS Create uses GET-first then PATCH-or-POST — handles both fresh arrays and arrays with existing DNS config
 
 ### Pending Todos
 
@@ -129,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T06:07:01.376Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-03-28T06:10:47.071Z
+Stopped at: Completed 04-05-PLAN.md
 Resume file: None

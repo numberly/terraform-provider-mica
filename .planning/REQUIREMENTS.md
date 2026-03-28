@@ -129,8 +129,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ADM-01**: User can manage array DNS configuration (nameservers, domain, search)
 - [x] **ADM-02**: User can manage array NTP configuration (servers)
 - [x] **ADM-03**: User can manage array SMTP configuration (relay host, sender)
-- [ ] **ADM-04**: Data sources for DNS, NTP, SMTP read-only access
-- [ ] **ADM-05**: User can import existing array admin configuration into Terraform state
+- [x] **ADM-04**: Data sources for DNS, NTP, SMTP read-only access
+- [x] **ADM-05**: User can import existing array admin configuration into Terraform state
 
 ### Cross-Cutting Quality
 
@@ -271,8 +271,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ADM-01 | Phase 4 | Complete |
 | ADM-02 | Phase 4 | Complete |
 | ADM-03 | Phase 4 | Complete |
-| ADM-04 | Phase 4 | Pending |
-| ADM-05 | Phase 4 | Pending |
+| ADM-04 | Phase 4 | Complete |
+| ADM-05 | Phase 4 | Complete |
 | QUA-01 | Phase 5 | Pending |
 | QUA-02 | Phase 5 | Pending |
 | QUA-03 | Phase 5 | Pending |
