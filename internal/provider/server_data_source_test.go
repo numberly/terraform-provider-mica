@@ -42,17 +42,31 @@ func serverDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 
 // buildServerDSType returns the tftypes.Object for the server data source schema.
 func buildServerDSType() tftypes.Object {
+	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"domain":      tftypes.String,
+		"nameservers": tftypes.List{ElementType: tftypes.String},
+		"services":    tftypes.List{ElementType: tftypes.String},
+	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"id":   tftypes.String,
-		"name": tftypes.String,
+		"id":      tftypes.String,
+		"name":    tftypes.String,
+		"created": tftypes.Number,
+		"dns":     tftypes.List{ElementType: dnsType},
 	}}
 }
 
 // nullServerDSConfig returns a base config map with all data source attributes null.
 func nullServerDSConfig() map[string]tftypes.Value {
+	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"domain":      tftypes.String,
+		"nameservers": tftypes.List{ElementType: tftypes.String},
+		"services":    tftypes.List{ElementType: tftypes.String},
+	}}
 	return map[string]tftypes.Value{
-		"id":   tftypes.NewValue(tftypes.String, nil),
-		"name": tftypes.NewValue(tftypes.String, nil),
+		"id":      tftypes.NewValue(tftypes.String, nil),
+		"name":    tftypes.NewValue(tftypes.String, nil),
+		"created": tftypes.NewValue(tftypes.Number, nil),
+		"dns":     tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
 	}
 }
 
@@ -92,6 +106,12 @@ func TestUnit_ServerDataSource(t *testing.T) {
 	}
 	if model.ID.IsNull() || model.ID.ValueString() == "" {
 		t.Error("expected ID to be populated")
+	}
+	if model.Created.IsNull() || model.Created.ValueInt64() == 0 {
+		t.Error("expected created to be populated")
+	}
+	if model.DNS.IsNull() {
+		t.Error("expected dns to be populated")
 	}
 }
 

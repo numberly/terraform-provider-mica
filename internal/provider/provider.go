@@ -287,6 +287,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewArraySmtpResource,
 		NewFileSystemExportResource,
 		NewObjectStoreAccountExportResource,
+		NewServerResource,
 	}
 }
 
