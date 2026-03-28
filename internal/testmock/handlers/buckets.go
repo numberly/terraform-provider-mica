@@ -168,7 +168,6 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		},
 		Created:          time.Now().UnixMilli(),
 		Destroyed:        false,
-		Versioning:       body.Versioning,
 		QuotaLimit:       parseQuotaLimit(body.QuotaLimit),
 		HardLimitEnabled: body.HardLimitEnabled,
 		RetentionLock:    body.RetentionLock,

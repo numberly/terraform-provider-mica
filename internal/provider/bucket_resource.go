@@ -232,9 +232,6 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 	post := client.BucketPost{
 		Account: client.NamedReference{Name: data.Account.ValueString()},
 	}
-	if !data.Versioning.IsNull() && !data.Versioning.IsUnknown() {
-		post.Versioning = data.Versioning.ValueString()
-	}
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
 		post.QuotaLimit = strconv.FormatInt(data.QuotaLimit.ValueInt64(), 10)
 	}
@@ -245,10 +242,22 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		post.RetentionLock = data.RetentionLock.ValueString()
 	}
 
-	_, err := r.client.PostBucket(ctx, data.Name.ValueString(), post)
+	bucket, err := r.client.PostBucket(ctx, data.Name.ValueString(), post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating bucket", err.Error())
 		return
+	}
+
+	// Versioning is not a valid POST parameter — apply via PATCH after creation.
+	if !data.Versioning.IsNull() && !data.Versioning.IsUnknown() {
+		v := data.Versioning.ValueString()
+		_, err := r.client.PatchBucket(ctx, bucket.ID, client.BucketPatch{
+			Versioning: &v,
+		})
+		if err != nil {
+			resp.Diagnostics.AddError("Error setting bucket versioning", err.Error())
+			return
+		}
 	}
 
 	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)

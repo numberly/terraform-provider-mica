@@ -57,6 +57,7 @@ func TestUnit_AccessKeyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterObjectStoreUserHandlers(ms.Mux, accountStore)
 	keyStore := handlers.RegisterObjectStoreAccessKeyHandlers(ms.Mux, accountStore)
 
 	// Seed an account and then create a key using the resource helper.

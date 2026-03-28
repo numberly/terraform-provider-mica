@@ -147,6 +147,13 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 	// Build user name in format "<account>/admin".
 	userName := data.ObjectStoreAccount.ValueString() + "/admin"
 
+	// Ensure the object store user exists before creating the access key.
+	// FlashBlade requires the user to exist — it is not auto-created.
+	if err := r.client.EnsureObjectStoreUser(ctx, userName); err != nil {
+		resp.Diagnostics.AddError("Error ensuring object store user", err.Error())
+		return
+	}
+
 	key, err := r.client.PostObjectStoreAccessKey(ctx, client.ObjectStoreAccessKeyPost{
 		User: client.NamedReference{Name: userName},
 	})

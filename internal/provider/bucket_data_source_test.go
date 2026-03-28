@@ -118,13 +118,17 @@ func TestUnit_BucketDataSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("PostObjectStoreAccount: %v", err)
 	}
-	_, err = c.PostBucket(context.Background(), "ds-bucket", client.BucketPost{
+	dsBucket, err := c.PostBucket(context.Background(), "ds-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "ds-account"},
-		Versioning: "enabled",
 		QuotaLimit: "10737418240",
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
+	}
+	v := "enabled"
+	_, err = c.PatchBucket(context.Background(), dsBucket.ID, client.BucketPatch{Versioning: &v})
+	if err != nil {
+		t.Fatalf("PatchBucket (versioning): %v", err)
 	}
 
 	d := newTestBucketDataSource(t, ms)

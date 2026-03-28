@@ -157,9 +157,9 @@ type Bucket struct {
 
 // BucketPost contains the fields accepted on POST /buckets.
 // NOTE: quota_limit must be serialized as a string per FlashBlade API.
+// NOTE: versioning is NOT a valid POST parameter — use PATCH after creation.
 type BucketPost struct {
 	Account          NamedReference `json:"account"`
-	Versioning       string         `json:"versioning,omitempty"`
 	QuotaLimit       string         `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool           `json:"hard_limit_enabled,omitempty"`
 	RetentionLock    string         `json:"retention_lock,omitempty"`

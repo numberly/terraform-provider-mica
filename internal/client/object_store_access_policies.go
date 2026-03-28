@@ -126,11 +126,10 @@ func (c *FlashBladeClient) DeleteObjectStoreAccessPolicyRule(ctx context.Context
 	return c.delete(ctx, path)
 }
 
-// ListObjectStoreAccessPolicyMembers returns the buckets that use the given object store access policy.
+// ListObjectStoreAccessPolicyMembers returns the users attached to the given object store access policy.
 // Used for delete-guard checks before removing a policy.
 func (c *FlashBladeClient) ListObjectStoreAccessPolicyMembers(ctx context.Context, policyName string) ([]PolicyMember, error) {
-	filter := "access_policy.name='" + policyName + "'"
-	path := "/buckets?filter=" + url.QueryEscape(filter)
+	path := "/object-store-access-policies/object-store-users?policy_names=" + url.QueryEscape(policyName)
 	var resp ListResponse[PolicyMember]
 	if err := c.get(ctx, path, &resp); err != nil {
 		return nil, err

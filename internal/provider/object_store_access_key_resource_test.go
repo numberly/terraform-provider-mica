@@ -114,6 +114,7 @@ func TestUnit_AccessKey_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterObjectStoreUserHandlers(ms.Mux, accountStore)
 	handlers.RegisterObjectStoreAccessKeyHandlers(ms.Mux, accountStore)
 
 	seedAccount(t, ms, "test-account")
@@ -157,6 +158,7 @@ func TestUnit_AccessKey_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterObjectStoreUserHandlers(ms.Mux, accountStore)
 	handlers.RegisterObjectStoreAccessKeyHandlers(ms.Mux, accountStore)
 
 	seedAccount(t, ms, "delete-account")
@@ -208,6 +210,7 @@ func TestUnit_AccessKey_SecretPreserved(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterObjectStoreUserHandlers(ms.Mux, accountStore)
 	handlers.RegisterObjectStoreAccessKeyHandlers(ms.Mux, accountStore)
 
 	seedAccount(t, ms, "secret-account")
@@ -291,6 +294,7 @@ func TestUnit_AccessKey_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterObjectStoreUserHandlers(ms.Mux, accountStore)
 	handlers.RegisterObjectStoreAccessKeyHandlers(ms.Mux, accountStore)
 
 	seedAccount(t, ms, "lifecycle-account")

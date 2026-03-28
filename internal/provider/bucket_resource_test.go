@@ -356,13 +356,17 @@ func TestUnit_Bucket_Import(t *testing.T) {
 	defer ms.Close()
 
 	// Pre-create a bucket directly via the client.
-	_, err := c.PostBucket(context.Background(), "import-bucket", client.BucketPost{
+	importBucket, err := c.PostBucket(context.Background(), "import-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "test-account"},
-		Versioning: "enabled",
 		QuotaLimit: "21474836480",
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
+	}
+	v := "enabled"
+	_, err = c.PatchBucket(context.Background(), importBucket.ID, client.BucketPatch{Versioning: &v})
+	if err != nil {
+		t.Fatalf("PatchBucket (versioning): %v", err)
 	}
 
 	r := newTestBucketResource(t, ms)
@@ -406,13 +410,17 @@ func TestUnit_Bucket_DriftLog(t *testing.T) {
 	defer ms.Close()
 
 	// Create a bucket via client.
-	_, err := c.PostBucket(context.Background(), "drift-bucket", client.BucketPost{
+	driftBucket, err := c.PostBucket(context.Background(), "drift-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "test-account"},
 		QuotaLimit: "10737418240",
-		Versioning: "none",
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
+	}
+	vNone := "none"
+	_, err = c.PatchBucket(context.Background(), driftBucket.ID, client.BucketPatch{Versioning: &vNone})
+	if err != nil {
+		t.Fatalf("PatchBucket (versioning): %v", err)
 	}
 
 	r := newTestBucketResource(t, ms)

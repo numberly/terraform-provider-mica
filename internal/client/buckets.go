@@ -28,7 +28,18 @@ func (c *FlashBladeClient) ListBuckets(ctx context.Context, opts ListBucketsOpts
 		params.Set("names", strings.Join(opts.Names, ","))
 	}
 	if len(opts.AccountNames) > 0 {
-		params.Set("account_names", strings.Join(opts.AccountNames, ","))
+		// FlashBlade API does not have an account_names query param on /buckets.
+		// Use filter expression: account.name='name1' or account.name='name2'
+		var parts []string
+		for _, acct := range opts.AccountNames {
+			parts = append(parts, fmt.Sprintf("account.name='%s'", acct))
+		}
+		acctFilter := strings.Join(parts, " or ")
+		if opts.Filter != "" {
+			opts.Filter = "(" + acctFilter + ") and (" + opts.Filter + ")"
+		} else {
+			opts.Filter = acctFilter
+		}
 	}
 	if opts.Filter != "" {
 		params.Set("filter", opts.Filter)

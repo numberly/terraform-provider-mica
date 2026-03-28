@@ -314,20 +314,56 @@ func (r *objectStoreAccountResource) Delete(ctx context.Context, req resource.De
 
 	name := data.Name.ValueString()
 
-	// Guard: list buckets filtered by this account. Prevent delete if any exist.
-	buckets, err := r.client.ListBuckets(ctx, client.ListBucketsOpts{
+	// Guard: list active (non-destroyed) buckets in this account. Prevent delete if any exist.
+	notDestroyed := false
+	activeBuckets, err := r.client.ListBuckets(ctx, client.ListBucketsOpts{
 		AccountNames: []string{name},
+		Destroyed:    &notDestroyed,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error checking buckets before account deletion", err.Error())
 		return
 	}
-	if len(buckets) > 0 {
+	if len(activeBuckets) > 0 {
 		resp.Diagnostics.AddError(
 			"Cannot delete object store account",
-			fmt.Sprintf("Account %q has %d existing bucket(s). Destroy all buckets in the account before deleting the account.", name, len(buckets)),
+			fmt.Sprintf("Account %q has %d active bucket(s). Destroy all buckets in the account before deleting the account.", name, len(activeBuckets)),
 		)
 		return
+	}
+
+	// Eradicate any soft-deleted buckets remaining in the account.
+	// FlashBlade refuses to delete an account that has soft-deleted buckets.
+	destroyed := true
+	softDeleted, err := r.client.ListBuckets(ctx, client.ListBucketsOpts{
+		AccountNames: []string{name},
+		Destroyed:    &destroyed,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error listing soft-deleted buckets before account deletion", err.Error())
+		return
+	}
+	for _, b := range softDeleted {
+		if err := r.client.DeleteBucket(ctx, b.ID); err != nil {
+			resp.Diagnostics.AddError(
+				"Error eradicating soft-deleted bucket",
+				fmt.Sprintf("Failed to eradicate bucket %q (ID: %s) before account deletion: %s", b.Name, b.ID, err.Error()),
+			)
+			return
+		}
+	}
+
+	// Delete any object store users in the account.
+	// FlashBlade refuses to delete an account that has users.
+	if err := r.client.DeleteObjectStoreUser(ctx, name+"/admin"); err != nil {
+		if !client.IsNotFound(err) {
+			// Tolerate "user does not exist" (400) — may have been cleaned up already.
+			apiErr, ok := err.(*client.APIError)
+			if !ok || apiErr.StatusCode != 400 {
+				resp.Diagnostics.AddError("Error deleting object store user before account deletion", err.Error())
+				return
+			}
+		}
 	}
 
 	if err := r.client.DeleteObjectStoreAccount(ctx, name); err != nil {

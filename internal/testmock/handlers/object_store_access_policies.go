@@ -25,6 +25,10 @@ func RegisterObjectStoreAccessPolicyHandlers(mux *http.ServeMux) *objectStoreAcc
 	}
 	mux.HandleFunc("/api/2.22/object-store-access-policies", store.handlePolicy)
 	mux.HandleFunc("/api/2.22/object-store-access-policies/rules", store.handleRules)
+	// Stub for policy-user membership checks (delete guard). Always returns empty list.
+	mux.HandleFunc("/api/2.22/object-store-access-policies/object-store-users", func(w http.ResponseWriter, r *http.Request) {
+		WriteJSONListResponse(w, http.StatusOK, []any{})
+	})
 	return store
 }
 
