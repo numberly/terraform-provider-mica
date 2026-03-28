@@ -10,6 +10,8 @@ import (
 	"github.com/soulkyu/terraform-provider-flashblade/internal/provider"
 )
 
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name flashblade
+
 // version is set by goreleaser at build time via ldflags.
 var version = "dev"
 

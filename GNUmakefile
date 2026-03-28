@@ -5,7 +5,7 @@ TYPE=flashblade
 VERSION=dev
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
-.PHONY: build test testacc lint generate install default
+.PHONY: build test testacc lint generate docs install default
 
 default: build
 
@@ -22,6 +22,9 @@ lint:
 	golangci-lint run ./...
 
 generate:
+	go generate ./...
+
+docs:
 	go generate ./...
 
 install: build
