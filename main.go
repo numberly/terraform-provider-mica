@@ -29,6 +29,8 @@ func main() {
 		Debug:   debug,
 	}
 
+	log.Printf("[INFO] flashblade provider %s (commit=%s, built=%s)", version, commit, date)
+
 	if err := providerserver.Serve(context.Background(), provider.New(version), opts); err != nil {
 		log.Fatal(err.Error())
 	}
