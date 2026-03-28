@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_call:  # Allow release.yml to call this as a gate
 
 jobs:
   test:

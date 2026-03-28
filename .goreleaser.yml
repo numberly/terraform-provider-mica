@@ -3,6 +3,7 @@ version: 2
 before:
   hooks:
     - go mod tidy
+    - go test ./internal/... -count=1 -timeout 5m
 
 builds:
   - env:
@@ -11,7 +12,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - "-s -w -X main.version={{.Version}}"
+      - "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
     goos:
       - linux
       - darwin
@@ -19,6 +20,9 @@ builds:
     goarch:
       - amd64
       - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
     binary: "{{ .ProjectName }}_v{{ .Version }}"
 
 archives:
@@ -29,19 +33,57 @@ checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
 
-signs:
-  - artifacts: checksum
-    args:
-      - "--batch"
-      - "--local-user"
-      - "{{ .Env.GPG_FINGERPRINT }}"
-      - "--output"
-      - "${signature}"
-      - "--detach-sign"
-      - "${artifact}"
-
 release:
-  draft: true
+  draft: false
+  name_template: "{{ .Tag }}"
+  header: |
+    ## {{ .Tag }}
+
+    ### Installation
+
+    ```hcl
+    terraform {
+      required_providers {
+        flashblade = {
+          source  = "numberly/flashblade"
+          version = "{{ .Version }}"
+        }
+      }
+    }
+    ```
+
+    ### Checksums
+
+    All artifacts are signed with [Cosign](https://docs.sigstore.dev/cosign/overview/) (keyless, Sigstore).
+    Verify with:
+
+    ```bash
+    cosign verify-blob \
+      --signature {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.sig \
+      --certificate {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.pem \
+      --certificate-identity-regexp "https://github.com/numberly/opentofu-provider-flashblade" \
+      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+      {{ .ProjectName }}_{{ .Version }}_SHA256SUMS
+    ```
 
 changelog:
-  skip: true
+  use: github-native
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Documentation
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Other
+      order: 999
+  filters:
+    exclude:
+      - "^chore"
+      - "^test"
+      - "^ci"
+      - "^refactor"
