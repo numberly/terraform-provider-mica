@@ -145,6 +145,12 @@ None yet.
 - [Phase 4]: Object store access policy rule IAM schema (conditions/effects) not fully mapped — requires FLASHBLADE_API.md deep-dive during planning
 - [Phase 4]: Array admin singleton DELETE semantics (reset to defaults vs. error) unconfirmed
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Add production workflow examples to documentation | 2026-03-28 | 8fdc00a | [1-add-production-workflow-examples-to-docu](./quick/1-add-production-workflow-examples-to-docu/) |
+
 ## Session Continuity
 
 Last session: 2026-03-28T08:36:45.056Z
