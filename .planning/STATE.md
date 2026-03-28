@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-quality-hardening/05-01-PLAN.md
-last_updated: "2026-03-28T07:29:18.804Z"
+stopped_at: Completed 05-quality-hardening/05-02-PLAN.md
+last_updated: "2026-03-28T07:41:12.361Z"
 last_activity: 2026-03-27 — NAP singleton resource, rule resource, data source — all tests pass (136 total)
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 18
   percent: 81
 ---
 
@@ -66,6 +66,7 @@ Progress: [████████░░] 81%
 | Phase 04-object-network-quota-policies-and-array-admin P02 | 67 | 2 tasks | 7 files |
 | Phase 04-object-network-quota-policies-and-array-admin P05 | 20 | 3 tasks | 10 files |
 | Phase 05-quality-hardening P01 | 25 | 2 tasks | 24 files |
+| Phase 05-quality-hardening P02 | 8 | 2 tasks | 32 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,8 @@ Recent decisions affecting current work:
 - [Phase 05-quality-hardening]: IsConflict/IsUnprocessable follow exact pattern of IsNotFound for consistent error helper API
 - [Phase 05-quality-hardening]: Validator tests call ValidateString/ValidateInt64 directly without full provider spin-up — fast unit tests
 - [Phase 05-quality-hardening]: Only bucket, quota_group, quota_user received new validators — other resources lack clear enum/range fields per research guidance
+- [Phase 05-quality-hardening]: Pagination loop uses url.Values params object accumulating continuation_token on each iteration — callers see identical return type
+- [Phase 05-quality-hardening]: Error-path tests confirmed production code already handled 409/422/404 via AddError — no production changes needed in 05-02
 
 ### Pending Todos
 
@@ -135,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T07:29:18.797Z
-Stopped at: Completed 05-quality-hardening/05-01-PLAN.md
+Last session: 2026-03-28T07:41:12.353Z
+Stopped at: Completed 05-quality-hardening/05-02-PLAN.md
 Resume file: None
