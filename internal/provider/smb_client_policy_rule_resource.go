@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -302,11 +301,11 @@ func (r *smbClientPolicyRuleResource) Delete(ctx context.Context, req resource.D
 
 // ImportState imports an existing SMB client policy rule using composite ID "policy_name/rule_name".
 func (r *smbClientPolicyRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 {
+	parts, err := parseCompositeID(req.ID, 2)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid import ID format",
-			fmt.Sprintf("Expected 'policy_name/rule_name', got: %q. Example: 'my-policy/smb-client-rule-abc12345'", req.ID),
+			fmt.Sprintf("Expected 'policy_name/rule_name', got: %q. Example: 'my-policy/smb-client-rule-abc12345'. %s", req.ID, err),
 		)
 		return
 	}

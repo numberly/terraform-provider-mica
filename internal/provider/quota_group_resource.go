@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -287,8 +286,8 @@ func (r *quotaGroupResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 // ImportState imports an existing group quota by composite ID "file_system_name/gid".
 func (r *quotaGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+	parts, err := parseCompositeID(req.ID, 2)
+	if err != nil || parts[0] == "" || parts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Invalid import ID",
 			fmt.Sprintf("Expected import ID in the form 'file_system_name/gid', got: %q", req.ID),
@@ -337,7 +336,7 @@ func (r *quotaGroupResource) readIntoState(ctx context.Context, fsName, gid stri
 // mapQuotaGroupToModel maps a client.QuotaGroup to a quotaGroupModel.
 // Preserves user-managed fields (Timeouts).
 func mapQuotaGroupToModel(fsName, gid string, qg *client.QuotaGroup, data *quotaGroupModel) {
-	data.ID = types.StringValue(fsName + "/" + gid)
+	data.ID = types.StringValue(compositeID(fsName, gid))
 	data.FileSystemName = types.StringValue(fsName)
 	data.GID = types.StringValue(gid)
 	data.Quota = types.Int64Value(qg.Quota)

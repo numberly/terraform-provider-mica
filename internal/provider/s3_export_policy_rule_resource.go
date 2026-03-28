@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -325,11 +324,11 @@ func (r *s3ExportPolicyRuleResource) Delete(ctx context.Context, req resource.De
 
 // ImportState imports an existing S3 export policy rule using composite ID "policy_name/rule_index".
 func (r *s3ExportPolicyRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 {
+	parts, err := parseCompositeID(req.ID, 2)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid import ID format",
-			fmt.Sprintf("Expected 'policy_name/rule_index', got: %q. Example: 'my-policy/0'", req.ID),
+			fmt.Sprintf("Expected 'policy_name/rule_index', got: %q. Example: 'my-policy/0'. %s", req.ID, err),
 		)
 		return
 	}

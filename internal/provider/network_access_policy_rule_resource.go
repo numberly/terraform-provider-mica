@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -323,11 +322,11 @@ func (r *networkAccessPolicyRuleResource) Delete(ctx context.Context, req resour
 
 // ImportState imports an existing network access policy rule using composite ID "policy_name/rule_index".
 func (r *networkAccessPolicyRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 {
+	parts, err := parseCompositeID(req.ID, 2)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid import ID format",
-			fmt.Sprintf("Expected 'policy_name/rule_index', got: %q. Example: 'default/0'", req.ID),
+			fmt.Sprintf("Expected 'policy_name/rule_index', got: %q. Example: 'default/0'. %s", req.ID, err),
 		)
 		return
 	}

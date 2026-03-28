@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -287,8 +286,8 @@ func (r *quotaUserResource) Delete(ctx context.Context, req resource.DeleteReque
 
 // ImportState imports an existing user quota by composite ID "file_system_name/uid".
 func (r *quotaUserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+	parts, err := parseCompositeID(req.ID, 2)
+	if err != nil || parts[0] == "" || parts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Invalid import ID",
 			fmt.Sprintf("Expected import ID in the form 'file_system_name/uid', got: %q", req.ID),
@@ -337,7 +336,7 @@ func (r *quotaUserResource) readIntoState(ctx context.Context, fsName, uid strin
 // mapQuotaUserToModel maps a client.QuotaUser to a quotaUserModel.
 // Preserves user-managed fields (Timeouts).
 func mapQuotaUserToModel(fsName, uid string, qu *client.QuotaUser, data *quotaUserModel) {
-	data.ID = types.StringValue(fsName + "/" + uid)
+	data.ID = types.StringValue(compositeID(fsName, uid))
 	data.FileSystemName = types.StringValue(fsName)
 	data.UID = types.StringValue(uid)
 	data.Quota = types.Int64Value(qu.Quota)

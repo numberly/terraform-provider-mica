@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -358,11 +357,11 @@ func (r *objectStoreAccessPolicyRuleResource) Delete(ctx context.Context, req re
 
 // ImportState imports an existing object store access policy rule using composite ID "policy_name/rule_name".
 func (r *objectStoreAccessPolicyRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 {
+	parts, err := parseCompositeID(req.ID, 2)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid import ID format",
-			fmt.Sprintf("Expected 'policy_name/rule_name', got: %q. Example: 'my-policy/my-rule'", req.ID),
+			fmt.Sprintf("Expected 'policy_name/rule_name', got: %q. Example: 'my-policy/my-rule'. %s", req.ID, err),
 		)
 		return
 	}
@@ -417,7 +416,7 @@ func mapOAPRuleToModel(ctx context.Context, rule *client.ObjectStoreAccessPolicy
 	if rule.Policy != nil {
 		policyName = rule.Policy.Name
 	}
-	data.ID = types.StringValue(policyName + "/" + rule.Name)
+	data.ID = types.StringValue(compositeID(policyName, rule.Name))
 	data.Name = types.StringValue(rule.Name)
 	data.Effect = types.StringValue(rule.Effect)
 

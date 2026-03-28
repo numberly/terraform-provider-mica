@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -299,11 +298,11 @@ func (r *snapshotPolicyRuleResource) Delete(ctx context.Context, req resource.De
 
 // ImportState imports an existing snapshot rule using composite ID "policy_name/rule_index".
 func (r *snapshotPolicyRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 {
+	parts, err := parseCompositeID(req.ID, 2)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid import ID format",
-			fmt.Sprintf("Expected 'policy_name/rule_index', got: %q. Example: 'my-policy/0'", req.ID),
+			fmt.Sprintf("Expected 'policy_name/rule_index', got: %q. Example: 'my-policy/0'. %s", req.ID, err),
 		)
 		return
 	}
@@ -435,7 +434,7 @@ func mapSnapshotRuleToModel(rule *client.SnapshotPolicyRuleInPolicy, policyName 
 	data.PolicyName = types.StringValue(policyName)
 	data.Name = types.StringValue(rule.Name)
 	// Synthetic composite ID: policy_name/rule_name
-	data.ID = types.StringValue(policyName + "/" + rule.Name)
+	data.ID = types.StringValue(compositeID(policyName, rule.Name))
 
 	if rule.AtTime != nil {
 		data.AtTime = types.Int64Value(*rule.AtTime)
