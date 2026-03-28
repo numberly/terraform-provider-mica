@@ -160,9 +160,8 @@ func (r *bucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Update: true,
 				Delete: true,
 			}),
-		},
-		Blocks: map[string]schema.Block{
-			"space": schema.SingleNestedBlock{
+			"space": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Storage space breakdown (read-only, API-managed).",
 				Attributes: map[string]schema.Attribute{
 					"data_reduction": schema.Float64Attribute{

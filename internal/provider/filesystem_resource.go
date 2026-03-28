@@ -181,9 +181,8 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Update: true,
 				Delete: true,
 			}),
-		},
-		Blocks: map[string]schema.Block{
-			"space": schema.SingleNestedBlock{
+			"space": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Storage space breakdown (read-only, API-managed).",
 				Attributes: map[string]schema.Attribute{
 					"data_reduction": schema.Float64Attribute{
@@ -212,7 +211,9 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 					},
 				},
 			},
-			"nfs": schema.SingleNestedBlock{
+			"nfs": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
 				Description: "NFS protocol configuration.",
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -245,7 +246,9 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 					},
 				},
 			},
-			"smb": schema.SingleNestedBlock{
+			"smb": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
 				Description: "SMB protocol configuration.",
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -274,7 +277,8 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 					},
 				},
 			},
-			"http": schema.SingleNestedBlock{
+			"http": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "HTTP protocol configuration (read-only, API-managed).",
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -283,33 +287,42 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 					},
 				},
 			},
-			"multi_protocol": schema.SingleNestedBlock{
+			"multi_protocol": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
 				Description: "Multi-protocol access configuration.",
 				Attributes: map[string]schema.Attribute{
 					"access_control_style": schema.StringAttribute{
 						Optional:    true,
+						Computed:    true,
 						Description: "Access control style for multi-protocol access ('nfs' or 'smb').",
 					},
 					"safeguard_acls": schema.BoolAttribute{
 						Optional:    true,
+						Computed:    true,
 						Description: "Whether to safeguard ACLs during multi-protocol access.",
 					},
 				},
 			},
-			"default_quotas": schema.SingleNestedBlock{
+			"default_quotas": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
 				Description: "Default quota settings.",
 				Attributes: map[string]schema.Attribute{
 					"group_quota": schema.Int64Attribute{
 						Optional:    true,
+						Computed:    true,
 						Description: "Default quota per group in bytes.",
 					},
 					"user_quota": schema.Int64Attribute{
 						Optional:    true,
+						Computed:    true,
 						Description: "Default quota per user in bytes.",
 					},
 				},
 			},
-			"source": schema.SingleNestedBlock{
+			"source": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Source file system reference (for clones/replicas, read-only).",
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{

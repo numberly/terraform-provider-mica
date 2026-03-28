@@ -141,9 +141,8 @@ func (d *filesystemDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Computed:    true,
 				Description: "Whether the file system is writable.",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"space": schema.SingleNestedBlock{
+			"space": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Storage space breakdown.",
 				Attributes: map[string]schema.Attribute{
 					"data_reduction": schema.Float64Attribute{
@@ -172,7 +171,8 @@ func (d *filesystemDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 					},
 				},
 			},
-			"nfs": schema.SingleNestedBlock{
+			"nfs": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "NFS protocol configuration.",
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -197,7 +197,8 @@ func (d *filesystemDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 					},
 				},
 			},
-			"smb": schema.SingleNestedBlock{
+			"smb": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "SMB protocol configuration.",
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -218,7 +219,8 @@ func (d *filesystemDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 					},
 				},
 			},
-			"http": schema.SingleNestedBlock{
+			"http": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "HTTP protocol configuration.",
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -227,7 +229,8 @@ func (d *filesystemDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 					},
 				},
 			},
-			"multi_protocol": schema.SingleNestedBlock{
+			"multi_protocol": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Multi-protocol access configuration.",
 				Attributes: map[string]schema.Attribute{
 					"access_control_style": schema.StringAttribute{
@@ -240,7 +243,8 @@ func (d *filesystemDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 					},
 				},
 			},
-			"default_quotas": schema.SingleNestedBlock{
+			"default_quotas": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Default quota settings.",
 				Attributes: map[string]schema.Attribute{
 					"group_quota": schema.Int64Attribute{
@@ -253,7 +257,8 @@ func (d *filesystemDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 					},
 				},
 			},
-			"source": schema.SingleNestedBlock{
+			"source": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Source file system reference (for clones/replicas).",
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{

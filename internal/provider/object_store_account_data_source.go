@@ -84,9 +84,8 @@ func (d *objectStoreAccountDataSource) Schema(_ context.Context, _ datasource.Sc
 				Computed:    true,
 				Description: "The count of objects within the account.",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"space": schema.SingleNestedBlock{
+			"space": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Storage space breakdown.",
 				Attributes: map[string]schema.Attribute{
 					"data_reduction": schema.Float64Attribute{

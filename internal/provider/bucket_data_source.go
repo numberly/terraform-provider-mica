@@ -114,9 +114,8 @@ func (d *bucketDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed:    true,
 				Description: "The retention lock mode for the bucket.",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"space": schema.SingleNestedBlock{
+			"space": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Storage space breakdown.",
 				Attributes: map[string]schema.Attribute{
 					"data_reduction": schema.Float64Attribute{
