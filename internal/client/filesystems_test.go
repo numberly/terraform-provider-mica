@@ -51,6 +51,11 @@ func TestUnit_FileSystem_Create(t *testing.T) {
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
 		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/file-systems":
+			name := r.URL.Query().Get("names")
+			if name == "" {
+				http.Error(w, "Names query parameter is missing", http.StatusBadRequest)
+				return
+			}
 			var body client.FileSystemPost
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
@@ -58,7 +63,7 @@ func TestUnit_FileSystem_Create(t *testing.T) {
 			}
 			fs := client.FileSystem{
 				ID:          "fs-id-001",
-				Name:        body.Name,
+				Name:        name,
 				Provisioned: body.Provisioned,
 				Created:     time.Now().UnixMilli(),
 				Space:       client.Space{},

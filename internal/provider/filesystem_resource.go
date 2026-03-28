@@ -385,7 +385,7 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		post.NFS = client.NFSConfig{
+		post.NFS = &client.NFSConfig{
 			Enabled:    nfsModel.Enabled.ValueBool(),
 			V3Enabled:  nfsModel.V3Enabled.ValueBool(),
 			V41Enabled: nfsModel.V41Enabled.ValueBool(),
@@ -399,7 +399,7 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		post.SMB = client.SMBConfig{
+		post.SMB = &client.SMBConfig{
 			Enabled:                       smbModel.Enabled.ValueBool(),
 			AccessBasedEnumerationEnabled: smbModel.AccessBasedEnumerationEnabled.ValueBool(),
 			ContinuousAvailabilityEnabled: smbModel.ContinuousAvailabilityEnabled.ValueBool(),

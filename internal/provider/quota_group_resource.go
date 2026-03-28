@@ -146,8 +146,22 @@ func (r *quotaGroupResource) Create(ctx context.Context, req resource.CreateRequ
 		Quota: data.Quota.ValueInt64(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating group quota", err.Error())
-		return
+		// FlashBlade pre-creates implicit zero-quota entries for GIDs that access the FS.
+		// Fall back to PATCH if the quota already exists.
+		apiErr, ok := err.(*client.APIError)
+		if ok && apiErr.StatusCode == 400 {
+			q := data.Quota.ValueInt64()
+			_, patchErr := r.client.PatchQuotaGroup(ctx, fsName, gid, client.QuotaGroupPatch{
+				Quota: &q,
+			})
+			if patchErr != nil {
+				resp.Diagnostics.AddError("Error creating group quota", patchErr.Error())
+				return
+			}
+		} else {
+			resp.Diagnostics.AddError("Error creating group quota", err.Error())
+			return
+		}
 	}
 
 	r.readIntoState(ctx, fsName, gid, &data, &resp.Diagnostics)

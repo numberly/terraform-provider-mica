@@ -73,12 +73,13 @@ type FileSystem struct {
 }
 
 // FileSystemPost contains the fields accepted on POST /api/2.22/file-systems.
+// Name is NOT serialised to JSON — the API requires it as a ?names= query parameter.
 type FileSystemPost struct {
-	Name        string    `json:"name"`
-	Provisioned int64     `json:"provisioned,omitempty"`
-	NFS         NFSConfig `json:"nfs,omitempty"`
-	SMB         SMBConfig `json:"smb,omitempty"`
-	Writable    bool      `json:"writable,omitempty"`
+	Name        string     `json:"-"`
+	Provisioned int64      `json:"provisioned,omitempty"`
+	NFS         *NFSConfig `json:"nfs,omitempty"`
+	SMB         *SMBConfig `json:"smb,omitempty"`
+	Writable    bool       `json:"writable,omitempty"`
 }
 
 // FileSystemPatch contains all mutable fields for PATCH /api/2.22/file-systems.
@@ -267,7 +268,9 @@ type NfsExportPolicyRulePost struct {
 	Secure                    *bool          `json:"secure,omitempty"`
 	Security                  []string       `json:"security,omitempty"`
 	RequiredTransportSecurity string         `json:"required_transport_security,omitempty"`
-	Policy                    *NamedReference `json:"policy,omitempty"`
+	// Policy is passed as a query parameter (policy_names=), NOT in the JSON body.
+	// The API rejects any "policy" field in the POST body (HTTP 400).
+	Policy *NamedReference `json:"-"`
 }
 
 // NfsExportPolicyRulePatch contains pointer fields for PATCH /nfs-export-policies/rules.
@@ -379,17 +382,22 @@ type SnapshotPolicyRuleInPolicy struct {
 }
 
 // SnapshotPolicyRulePost contains the fields for adding a rule via add_rules.
+// NOTE: suffix is NOT a valid field in add_rules — the API returns HTTP 400 if it is sent.
+// suffix is read-only and appears only in GET responses (SnapshotPolicyRuleInPolicy).
 type SnapshotPolicyRulePost struct {
 	AtTime     *int64 `json:"at,omitempty"`
 	Every      *int64 `json:"every,omitempty"`
 	KeepFor    *int64 `json:"keep_for,omitempty"`
-	Suffix     string `json:"suffix,omitempty"`
 	ClientName string `json:"client_name,omitempty"`
 }
 
 // SnapshotPolicyRuleRemove identifies a rule to remove via remove_rules.
+// FlashBlade identifies rules by their scheduling fields, not by name.
 type SnapshotPolicyRuleRemove struct {
-	Name string `json:"name"`
+	Every   int64  `json:"every,omitempty"`
+	At      int64  `json:"at,omitempty"`
+	KeepFor int64  `json:"keep_for,omitempty"`
+	Suffix  string `json:"suffix,omitempty"`
 }
 
 // ---------- Phase 4 model structs -------------------------------------------
@@ -492,12 +500,18 @@ type NetworkAccessPolicyRulePatch struct {
 	Interfaces []string `json:"interfaces,omitempty"`
 }
 
+// NumericIDReference is a reference where the ID is a number (used for user/group references).
+type NumericIDReference struct {
+	Name string `json:"name,omitempty"`
+	ID   int64  `json:"id,omitempty"`
+}
+
 // QuotaUser represents a per-filesystem user quota from GET /quotas/users.
 type QuotaUser struct {
-	FileSystem *NamedReference `json:"file_system,omitempty"`
-	User       *NamedReference `json:"user,omitempty"`
-	Quota      int64           `json:"quota"`
-	Usage      int64           `json:"usage,omitempty"`
+	FileSystem *NamedReference     `json:"file_system,omitempty"`
+	User       *NumericIDReference `json:"user,omitempty"`
+	Quota      int64               `json:"quota"`
+	Usage      int64               `json:"usage,omitempty"`
 }
 
 // QuotaUserPost contains the writable fields for POST /quotas/users.
@@ -513,10 +527,10 @@ type QuotaUserPatch struct {
 
 // QuotaGroup represents a per-filesystem group quota from GET /quotas/groups.
 type QuotaGroup struct {
-	FileSystem *NamedReference `json:"file_system,omitempty"`
-	Group      *NamedReference `json:"group,omitempty"`
-	Quota      int64           `json:"quota"`
-	Usage      int64           `json:"usage,omitempty"`
+	FileSystem *NamedReference     `json:"file_system,omitempty"`
+	Group      *NumericIDReference `json:"group,omitempty"`
+	Quota      int64               `json:"quota"`
+	Usage      int64               `json:"usage,omitempty"`
 }
 
 // QuotaGroupPost contains the writable fields for POST /quotas/groups.

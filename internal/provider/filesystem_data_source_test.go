@@ -178,7 +178,7 @@ func TestUnit_FileSystemDataSource(t *testing.T) {
 	_, err = c.PostFileSystem(context.Background(), client.FileSystemPost{
 		Name:        "ds-test-fs",
 		Provisioned: 2147483648,
-		NFS:         client.NFSConfig{Enabled: true},
+		NFS:         &client.NFSConfig{Enabled: true},
 	})
 	if err != nil {
 		t.Fatalf("PostFileSystem: %v", err)

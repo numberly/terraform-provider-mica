@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // APISubError is one error entry in a FlashBlade API error response.
@@ -52,13 +53,24 @@ func ParseAPIError(resp *http.Response) error {
 	}
 }
 
-// IsNotFound returns true when err is an *APIError with HTTP 404.
+// IsNotFound returns true when err is an *APIError with HTTP 404,
+// or HTTP 400 with a "does not exist" message (FlashBlade returns 400 instead of 404 for some resources).
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	apiErr, ok := err.(*APIError)
-	return ok && apiErr.StatusCode == http.StatusNotFound
+	if !ok {
+		return false
+	}
+	if apiErr.StatusCode == http.StatusNotFound {
+		return true
+	}
+	if apiErr.StatusCode == http.StatusBadRequest {
+		msg := apiErr.Error()
+		return strings.Contains(msg, "does not exist")
+	}
+	return false
 }
 
 // IsConflict returns true when err is an *APIError with HTTP 409.

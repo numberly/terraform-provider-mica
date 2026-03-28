@@ -90,35 +90,38 @@ func (s *fileSystemStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/file-systems.
+// handlePost handles POST /api/2.22/file-systems?names={name}.
+// The FlashBlade API requires the name as a ?names= query parameter, not in the body.
 func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("names")
+	if name == "" {
+		WriteJSONError(w, http.StatusBadRequest, "Names query parameter is missing")
+		return
+	}
+
 	var body client.FileSystemPost
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-	if body.Name == "" {
-		WriteJSONError(w, http.StatusBadRequest, "name is required")
 		return
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.byName[body.Name]; exists {
-		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("file system %q already exists", body.Name))
+	if _, exists := s.byName[name]; exists {
+		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("file system %q already exists", name))
 		return
 	}
 
 	fs := &client.FileSystem{
 		ID:          uuid.New().String(),
-		Name:        body.Name,
+		Name:        name,
 		Provisioned: body.Provisioned,
 		Destroyed:   false,
 		Created:     time.Now().UnixMilli(),
 		Space:       client.Space{},
-		NFS:         body.NFS,
-		SMB:         body.SMB,
+		NFS:         derefNFS(body.NFS),
+		SMB:         derefSMB(body.SMB),
 		Writable:    body.Writable,
 	}
 
@@ -126,6 +129,20 @@ func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	s.byID[fs.ID] = fs
 
 	WriteJSONListResponse(w, http.StatusOK, []client.FileSystem{*fs})
+}
+
+func derefNFS(p *client.NFSConfig) client.NFSConfig {
+	if p == nil {
+		return client.NFSConfig{}
+	}
+	return *p
+}
+
+func derefSMB(p *client.SMBConfig) client.SMBConfig {
+	if p == nil {
+		return client.SMBConfig{}
+	}
+	return *p
 }
 
 // handlePatch handles PATCH /api/2.22/file-systems?ids={id}.

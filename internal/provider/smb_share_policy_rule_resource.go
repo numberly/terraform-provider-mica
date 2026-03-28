@@ -366,12 +366,22 @@ func (r *smbSharePolicyRuleResource) readIntoState(ctx context.Context, policyNa
 }
 
 // mapSMBRuleToModel maps a client.SmbSharePolicyRule to an smbSharePolicyRuleModel.
+// Empty strings from the API (JSON null → Go "") are mapped to types.StringNull()
+// to avoid inconsistent state when the API does not store a permission value.
 func mapSMBRuleToModel(rule *client.SmbSharePolicyRule, data *smbSharePolicyRuleModel) {
 	data.ID = types.StringValue(rule.ID)
 	data.Name = types.StringValue(rule.Name)
 	data.PolicyName = types.StringValue(rule.Policy.Name)
 	data.Principal = types.StringValue(rule.Principal)
-	data.Change = types.StringValue(rule.Change)
-	data.FullControl = types.StringValue(rule.FullControl)
-	data.Read = types.StringValue(rule.Read)
+	data.Change = stringOrNull(rule.Change)
+	data.FullControl = stringOrNull(rule.FullControl)
+	data.Read = stringOrNull(rule.Read)
+}
+
+// stringOrNull returns types.StringNull() for empty strings, types.StringValue() otherwise.
+func stringOrNull(s string) types.String {
+	if s == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(s)
 }

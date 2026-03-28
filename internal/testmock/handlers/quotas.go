@@ -123,7 +123,7 @@ func (s *quotaStore) handleUsersPost(w http.ResponseWriter, r *http.Request) {
 
 	quota := &client.QuotaUser{
 		FileSystem: &client.NamedReference{Name: fsName},
-		User:       &client.NamedReference{Name: uid},
+		User:       &client.NumericIDReference{Name: uid},
 		Quota:      body.Quota,
 	}
 
@@ -246,7 +246,7 @@ func (s *quotaStore) handleGroupsPost(w http.ResponseWriter, r *http.Request) {
 
 	quota := &client.QuotaGroup{
 		FileSystem: &client.NamedReference{Name: fsName},
-		Group:      &client.NamedReference{Name: gid},
+		Group:      &client.NumericIDReference{Name: gid},
 		Quota:      body.Quota,
 	}
 

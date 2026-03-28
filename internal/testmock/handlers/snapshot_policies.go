@@ -126,7 +126,6 @@ func (s *snapshotPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Re
 			AtTime:     rulePost.AtTime,
 			Every:      rulePost.Every,
 			KeepFor:    rulePost.KeepFor,
-			Suffix:     rulePost.Suffix,
 			ClientName: rulePost.ClientName,
 		})
 	}
@@ -179,13 +178,16 @@ func (s *snapshotPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.R
 			WriteJSONError(w, http.StatusBadRequest, "invalid remove_rules field")
 			return
 		}
-		removeSet := make(map[string]bool)
-		for _, r := range removeRules {
-			removeSet[r.Name] = true
-		}
 		var remaining []client.SnapshotPolicyRuleInPolicy
 		for _, r := range policy.Rules {
-			if !removeSet[r.Name] {
+			shouldRemove := false
+			for _, rm := range removeRules {
+				if rm.Every != 0 && r.Every != nil && rm.Every == *r.Every {
+					shouldRemove = true
+					break
+				}
+			}
+			if !shouldRemove {
 				remaining = append(remaining, r)
 			}
 		}
@@ -193,7 +195,19 @@ func (s *snapshotPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.R
 	}
 
 	// Process add_rules: append new rules with auto-generated names.
+	// Reject suffix if present (real API returns HTTP 400: Invalid body parameter: suffix).
 	if v, ok := rawPatch["add_rules"]; ok {
+		var rawRules []map[string]json.RawMessage
+		if err := json.Unmarshal(v, &rawRules); err != nil {
+			WriteJSONError(w, http.StatusBadRequest, "invalid add_rules field")
+			return
+		}
+		for _, rawRule := range rawRules {
+			if _, hasSuffix := rawRule["suffix"]; hasSuffix {
+				WriteJSONError(w, http.StatusBadRequest, "Invalid body parameter: suffix")
+				return
+			}
+		}
 		var addRules []client.SnapshotPolicyRulePost
 		if err := json.Unmarshal(v, &addRules); err != nil {
 			WriteJSONError(w, http.StatusBadRequest, "invalid add_rules field")
@@ -206,7 +220,6 @@ func (s *snapshotPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.R
 				AtTime:     rulePost.AtTime,
 				Every:      rulePost.Every,
 				KeepFor:    rulePost.KeepFor,
-				Suffix:     rulePost.Suffix,
 				ClientName: rulePost.ClientName,
 			})
 		}

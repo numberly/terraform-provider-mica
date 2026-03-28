@@ -104,9 +104,8 @@ func (r *snapshotPolicyRuleResource) Schema(ctx context.Context, _ resource.Sche
 				Description: "Retention: keep snapshots for this many milliseconds (e.g. 604800000 for 7 days).",
 			},
 			"suffix": schema.StringAttribute{
-				Optional:    true,
 				Computed:    true,
-				Description: "An optional suffix appended to snapshot names created by this rule.",
+				Description: "Read-only suffix appended to snapshot names created by this rule (assigned by the API, not configurable via add_rules).",
 			},
 			"client_name": schema.StringAttribute{
 				Optional:    true,
@@ -244,10 +243,10 @@ func (r *snapshotPolicyRuleResource) Update(ctx context.Context, req resource.Up
 	defer cancel()
 
 	policyName := state.PolicyName.ValueString()
-	oldRuleName := state.Name.ValueString()
+	oldRule := buildRuleRemove(&state)
 	newRulePost := buildRulePost(&plan)
 
-	updatedPolicy, err := r.client.ReplaceSnapshotPolicyRule(ctx, policyName, oldRuleName, newRulePost)
+	updatedPolicy, err := r.client.ReplaceSnapshotPolicyRule(ctx, policyName, oldRule, newRulePost)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating snapshot policy rule", err.Error())
 		return
@@ -286,9 +285,9 @@ func (r *snapshotPolicyRuleResource) Delete(ctx context.Context, req resource.De
 	defer cancel()
 
 	policyName := data.PolicyName.ValueString()
-	ruleName := data.Name.ValueString()
+	rule := buildRuleRemove(&data)
 
-	_, err := r.client.RemoveSnapshotPolicyRule(ctx, policyName, ruleName)
+	_, err := r.client.RemoveSnapshotPolicyRule(ctx, policyName, rule)
 	if err != nil {
 		if client.IsNotFound(err) {
 			return
@@ -379,6 +378,25 @@ func (r *snapshotPolicyRuleResource) readIntoState(ctx context.Context, policyNa
 }
 
 // buildRulePost constructs a SnapshotPolicyRulePost from the resource model.
+// buildRuleRemove builds a SnapshotPolicyRuleRemove from the current state.
+// FlashBlade identifies rules by their scheduling fields (every, at, keep_for), not by name.
+func buildRuleRemove(data *snapshotPolicyRuleModel) client.SnapshotPolicyRuleRemove {
+	remove := client.SnapshotPolicyRuleRemove{}
+	if !data.Every.IsNull() && !data.Every.IsUnknown() {
+		remove.Every = data.Every.ValueInt64()
+	}
+	if !data.AtTime.IsNull() && !data.AtTime.IsUnknown() {
+		remove.At = data.AtTime.ValueInt64()
+	}
+	if !data.KeepFor.IsNull() && !data.KeepFor.IsUnknown() {
+		remove.KeepFor = data.KeepFor.ValueInt64()
+	}
+	if !data.Suffix.IsNull() && !data.Suffix.IsUnknown() {
+		remove.Suffix = data.Suffix.ValueString()
+	}
+	return remove
+}
+
 func buildRulePost(data *snapshotPolicyRuleModel) client.SnapshotPolicyRulePost {
 	post := client.SnapshotPolicyRulePost{}
 	if !data.AtTime.IsNull() && !data.AtTime.IsUnknown() {
@@ -393,9 +411,8 @@ func buildRulePost(data *snapshotPolicyRuleModel) client.SnapshotPolicyRulePost 
 		v := data.KeepFor.ValueInt64()
 		post.KeepFor = &v
 	}
-	if !data.Suffix.IsNull() && !data.Suffix.IsUnknown() {
-		post.Suffix = data.Suffix.ValueString()
-	}
+	// NOTE: suffix is NOT sent to the API — it is rejected with HTTP 400.
+	// It is read-only and populated from GET responses only.
 	if !data.ClientName.IsNull() && !data.ClientName.IsUnknown() {
 		post.ClientName = data.ClientName.ValueString()
 	}

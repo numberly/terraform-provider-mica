@@ -104,18 +104,19 @@ func (c *FlashBladeClient) AddSnapshotPolicyRule(ctx context.Context, policyName
 }
 
 // RemoveSnapshotPolicyRule removes a rule from a snapshot policy via PATCH remove_rules.
-func (c *FlashBladeClient) RemoveSnapshotPolicyRule(ctx context.Context, policyName, ruleName string) (*SnapshotPolicy, error) {
+// FlashBlade identifies rules by their scheduling fields (every, at, keep_for), not by name.
+func (c *FlashBladeClient) RemoveSnapshotPolicyRule(ctx context.Context, policyName string, rule SnapshotPolicyRuleRemove) (*SnapshotPolicy, error) {
 	body := SnapshotPolicyPatch{
-		RemoveRules: []SnapshotPolicyRuleRemove{{Name: ruleName}},
+		RemoveRules: []SnapshotPolicyRuleRemove{rule},
 	}
 	return c.PatchSnapshotPolicy(ctx, policyName, body)
 }
 
 // ReplaceSnapshotPolicyRule atomically removes an existing rule and adds a new one via PATCH.
 // This is used for in-place rule updates since snapshot rules have no dedicated PATCH endpoint.
-func (c *FlashBladeClient) ReplaceSnapshotPolicyRule(ctx context.Context, policyName, oldRuleName string, newRule SnapshotPolicyRulePost) (*SnapshotPolicy, error) {
+func (c *FlashBladeClient) ReplaceSnapshotPolicyRule(ctx context.Context, policyName string, oldRule SnapshotPolicyRuleRemove, newRule SnapshotPolicyRulePost) (*SnapshotPolicy, error) {
 	body := SnapshotPolicyPatch{
-		RemoveRules: []SnapshotPolicyRuleRemove{{Name: oldRuleName}},
+		RemoveRules: []SnapshotPolicyRuleRemove{oldRule},
 		AddRules:    []SnapshotPolicyRulePost{newRule},
 	}
 	return c.PatchSnapshotPolicy(ctx, policyName, body)

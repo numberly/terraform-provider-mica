@@ -146,11 +146,8 @@ func (c *FlashBladeClient) GetNfsExportPolicyRuleByName(ctx context.Context, pol
 }
 
 // PostNfsExportPolicyRule creates a new rule in an NFS export policy.
+// The policy is identified via the policy_names query parameter only — it must NOT appear in the body.
 func (c *FlashBladeClient) PostNfsExportPolicyRule(ctx context.Context, policyName string, body NfsExportPolicyRulePost) (*NfsExportPolicyRule, error) {
-	// Ensure the policy reference is set in the body.
-	if body.Policy == nil {
-		body.Policy = &NamedReference{Name: policyName}
-	}
 	path := "/nfs-export-policies/rules?policy_names=" + url.QueryEscape(policyName)
 	var resp ListResponse[NfsExportPolicyRule]
 	if err := c.post(ctx, path, body, &resp); err != nil {

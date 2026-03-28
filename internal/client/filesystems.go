@@ -81,9 +81,11 @@ func (c *FlashBladeClient) ListFileSystems(ctx context.Context, opts ListFileSys
 }
 
 // PostFileSystem creates a new file system.
+// The name is passed as a ?names= query parameter as required by the FlashBlade API.
 func (c *FlashBladeClient) PostFileSystem(ctx context.Context, body FileSystemPost) (*FileSystem, error) {
+	path := "/file-systems?names=" + url.QueryEscape(body.Name)
 	var resp ListResponse[FileSystem]
-	if err := c.post(ctx, "/file-systems", body, &resp); err != nil {
+	if err := c.post(ctx, path, body, &resp); err != nil {
 		return nil, err
 	}
 	if len(resp.Items) == 0 {

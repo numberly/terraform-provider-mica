@@ -82,9 +82,9 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 		t.Errorf("GET /api/api_version: expected 2.22 in versions, got %v", versionResp.Versions)
 	}
 
-	// Step 3: POST /api/2.22/file-systems — create file system.
-	resp = doJSON(t, http.MethodPost, base+"/api/2.22/file-systems", map[string]any{
-		"name":        "test-fs",
+	// Step 3: POST /api/2.22/file-systems?names=test-fs — create file system.
+	// The FlashBlade API requires the name as a ?names= query parameter, not in the body.
+	resp = doJSON(t, http.MethodPost, base+"/api/2.22/file-systems?names=test-fs", map[string]any{
 		"provisioned": 1073741824,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -240,9 +240,9 @@ func TestUnit_MockServer_DeleteRequiresDestroyed(t *testing.T) {
 	handlers.RegisterFileSystemHandlers(ms.Mux)
 	base := ms.URL()
 
-	// Create a file system (not destroyed)
-	resp := doJSON(t, http.MethodPost, base+"/api/2.22/file-systems", map[string]any{
-		"name":        "no-destroy-fs",
+	// Create a file system (not destroyed).
+	// The FlashBlade API requires the name as a ?names= query parameter, not in the body.
+	resp := doJSON(t, http.MethodPost, base+"/api/2.22/file-systems?names=no-destroy-fs", map[string]any{
 		"provisioned": 1073741824,
 	})
 	if resp.StatusCode != http.StatusOK {
