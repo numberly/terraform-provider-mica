@@ -176,10 +176,11 @@ Plans:
   2. `terraform plan` on an existing file system with `writable = true` shows 0 changes (no permanent 1-change drift)
   3. A 400 error from the API that is not "does not exist" propagates as a real error to the operator (IsNotFound no longer masks non-404 failures)
   4. PATCH/POST requests for resources with nested structs do not send empty `{}` objects for unset fields (omitempty works correctly with pointer types)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 09-01: TBD
+- [ ] 09-01-PLAN.md — Fix account export Delete name extraction and filesystem writable drift
+- [ ] 09-02-PLAN.md — Scope IsNotFound matching and audit omitempty on struct fields
 
 ### Phase 10: Architecture Cleanup
 **Goal**: Codebase is organized by domain with shared helpers so that future development is faster and less error-prone
@@ -224,6 +225,6 @@ Phases execute in numeric order: 9 -> 10 -> 11
 | 6. Server Resource & Export Consolidation | v1.1 | 2/2 | Complete | 2026-03-28 |
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 3/3 | Complete | 2026-03-28 |
-| 9. Bug Fixes | v1.2 | 0/? | Not started | - |
+| 9. Bug Fixes | v1.2 | 0/2 | In progress | - |
 | 10. Architecture Cleanup | v1.2 | 0/? | Not started | - |
 | 11. Test Hardening & Validators | v1.2 | 0/? | Not started | - |
