@@ -9,11 +9,11 @@ Requirements for milestone v1.1 — Servers & Exports.
 
 ### Server Management
 
-- [ ] **SRV-01**: Operator can create a FlashBlade server with DNS configuration via Terraform
-- [ ] **SRV-02**: Operator can update server DNS configuration via Terraform apply
-- [ ] **SRV-03**: Operator can destroy a server with cascade delete option for dependent exports
-- [ ] **SRV-04**: Operator can import an existing server into Terraform state
-- [ ] **SRV-05**: Server data source reads existing server by name (consolidate existing)
+- [x] **SRV-01**: Operator can create a FlashBlade server with DNS configuration via Terraform
+- [x] **SRV-02**: Operator can update server DNS configuration via Terraform apply
+- [x] **SRV-03**: Operator can destroy a server with cascade delete option for dependent exports
+- [x] **SRV-04**: Operator can import an existing server into Terraform state
+- [x] **SRV-05**: Server data source reads existing server by name (consolidate existing)
 
 ### S3 Export Policies
 
@@ -75,11 +75,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRV-01 | Phase 6 | Pending |
-| SRV-02 | Phase 6 | Pending |
-| SRV-03 | Phase 6 | Pending |
-| SRV-04 | Phase 6 | Pending |
-| SRV-05 | Phase 6 | Pending |
+| SRV-01 | Phase 6 | Complete |
+| SRV-02 | Phase 6 | Complete |
+| SRV-03 | Phase 6 | Complete |
+| SRV-04 | Phase 6 | Complete |
+| SRV-05 | Phase 6 | Complete |
 | S3P-01 | Phase 7 | Pending |
 | S3P-02 | Phase 7 | Pending |
 | S3P-03 | Phase 7 | Pending |

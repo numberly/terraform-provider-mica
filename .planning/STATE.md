@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Servers & Exports
-status: ready_to_plan
-stopped_at: Roadmap created for v1.1 — 3 phases (6-8), 22 requirements mapped
-last_updated: "2026-03-28T13:00:00.000Z"
-last_activity: 2026-03-28 — Roadmap v1.1 created
+status: executing
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-28T14:27:00.000Z"
+last_activity: 2026-03-28 — Completed plan 06-01 (server resource)
 progress:
-  total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 8
+  completed_phases: 5
+  total_plans: 22
+  completed_plans: 21
   percent: 0
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v1.1 — Servers & Exports, Phase 6 ready to plan
+**Current focus:** Milestone v1.1 — Servers & Exports, Phase 6 plan 1 complete
 
 ## Current Position
 
 Phase: 6 of 8 (Server Resource & Export Consolidation)
-Plan: — (phase not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-28 — Roadmap v1.1 created
+Plan: 2 of 2
+Status: Executing
+Last activity: 2026-03-28 — Completed plan 06-01 (server resource)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 | 03-file-policies | 4 | 566 min | 142 min |
 | 04-obj-net-quota-admin | 5 | 423 min | 85 min |
 | 05-quality-hardening | 4 | 143 min | 36 min |
+| 06-server-resource | 1 | 5 min | 5 min |
 
 *Updated after each plan completion*
 
@@ -63,6 +64,8 @@ Recent decisions affecting current work:
 - [v1.0]: PATCH handler uses raw map[string]json.RawMessage for true PATCH semantics
 - [v1.0]: Rule import uses composite ID policy_name/rule_index or policy_name/rule_name
 - [v1.0]: Singleton admin resources use GET-first then PATCH-or-POST pattern
+- [v1.1]: DNS modeled as ListNestedAttribute; cascade_delete is write-only list used only on Delete
+- [v1.1]: Server creation uses ?create_ds= query param (not ?names=) per FlashBlade API convention
 
 ### Pending Todos
 
@@ -76,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Roadmap v1.1 created — Phase 6 ready to plan
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None
