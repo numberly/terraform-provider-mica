@@ -227,5 +227,5 @@ Phases execute in numeric order: 9 -> 10 -> 11
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 9. Bug Fixes | v1.2 | 0/2 | In progress | - |
-| 10. Architecture Cleanup | 2/2 | Complete   | 2026-03-28 | - |
+| 10. Architecture Cleanup | 2/2 | Complete    | 2026-03-28 | - |
 | 11. Test Hardening & Validators | v1.2 | 0/? | Not started | - |
