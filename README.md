@@ -91,6 +91,18 @@ Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_array_ntp` | Read current array NTP configuration |
 | `flashblade_array_smtp` | Read current array SMTP configuration |
 
+## Workflow Examples
+
+Production-ready configurations showing how resources compose together:
+
+| Workflow | Description | Resources Used |
+|----------|-------------|----------------|
+| [Object Store Setup](examples/workflows/object-store-setup/) | S3-compatible storage: account, bucket, access key | account, bucket, access_key |
+| [NFS File Share](examples/workflows/nfs-file-share/) | Team shared storage with export policy | file_system, nfs_export_policy, nfs_export_policy_rule |
+| [Multi-Protocol File System](examples/workflows/multi-protocol-file-system/) | Windows + Linux access on same FS | file_system, nfs_export_policy, smb_share_policy |
+| [Array Admin Baseline](examples/workflows/array-admin-baseline/) | Day-1 DNS, NTP, SMTP configuration | array_dns, array_ntp, array_smtp |
+| [Secured S3 Bucket](examples/workflows/secured-s3-bucket/) | Bucket with network + access policies | bucket, network_access_policy, object_store_access_policy |
+
 ## Development
 
 ```bash
