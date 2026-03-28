@@ -1,29 +1,30 @@
 # =============================================================================
-# Vault-Integrated S3 Onboarding Workflow
+# S3 Tenant Full-Stack Onboarding
 # =============================================================================
 #
-# Production workflow for onboarding a new S3 tenant on FlashBlade.
-# Zero secrets in code — Vault owns credentials end-to-end.
+# Complete workflow for onboarding a new S3 tenant on FlashBlade.
+# This is the canonical example — every layer from server to bucket.
 #
 # Architecture:
 #
-#   [Vault] --> FlashBlade API token
-#       |
 #   [Server] (data source — pre-provisioned)
 #       |
-#   [Object Store Account]
-#       +-- [Account Export] + [S3 Export Policy]
-#       +-- [Access Policy + Rule]
-#       +-- [Access Key] --> written back to Vault
-#       +-- [Bucket]
+#   [Object Store Account] (S3 namespace per tenant)
 #       |
-#   [Vault] <-- S3 credentials stored for apps
+#       +-- [Account Export] --> links account to server
+#       |       |
+#       |   [S3 Export Policy + Rule] --> transport-level access control
+#       |
+#       +-- [Access Policy + Rule] --> IAM-style S3 operation control
+#       |
+#       +-- [Access Key] --> credentials (stored in output or Vault)
+#       |
+#       +-- [Bucket] --> actual storage with versioning + quota
 #
-# Security model:
-#   - FlashBlade API token: read from Vault at apply time
-#   - S3 access key: written to Vault immediately after creation
-#   - Terraform outputs: endpoint only, zero secrets
-#   - Applications: read S3 credentials from Vault, never from Terraform
+# Usage:
+#   1. Copy terraform.tfvars.example to terraform.tfvars
+#   2. Fill in your FlashBlade endpoint and server name
+#   3. terraform init && terraform apply
 #
 # =============================================================================
 
@@ -32,10 +33,6 @@ terraform {
     flashblade = {
       source  = "numberly/flashblade"
       version = "~> 1.0"
-    }
-    vault = {
-      source  = "hashicorp/vault"
-      version = "~> 4.0"
     }
   }
 }
@@ -49,21 +46,15 @@ variable "flashblade_endpoint" {
   description = "FlashBlade management endpoint (e.g. https://flashblade.example.com)."
 }
 
-variable "vault_secret_path" {
+variable "flashblade_api_token" {
   type        = string
-  description = "Vault KV path where the FlashBlade API token is stored."
-  default     = "secret/infrastructure/flashblade"
-}
-
-variable "vault_flashblade_key" {
-  type        = string
-  description = "Key within the Vault secret that holds the FlashBlade API token."
-  default     = "api_token"
+  sensitive   = true
+  description = "FlashBlade API token for authentication."
 }
 
 variable "tenant_name" {
   type        = string
-  description = "Name of the tenant being onboarded."
+  description = "Name of the tenant being onboarded. Used for account, bucket, and policy naming."
 }
 
 variable "server_name" {
@@ -77,37 +68,32 @@ variable "bucket_quota_bytes" {
   default     = 1099511627776 # 1 TiB
 }
 
-variable "s3_data_vip" {
-  type        = string
-  description = "FlashBlade S3 data VIP or FQDN for the bucket endpoint output."
-}
-
 # -----------------------------------------------------------------------------
-# Step 1: Retrieve FlashBlade API key from Vault
+# Provider
 # -----------------------------------------------------------------------------
-
-data "vault_kv_secret_v2" "flashblade" {
-  mount = split("/", var.vault_secret_path)[0]
-  name  = join("/", slice(split("/", var.vault_secret_path), 1, length(split("/", var.vault_secret_path))))
-}
 
 provider "flashblade" {
   endpoint             = var.flashblade_endpoint
-  auth                 = { api_token = data.vault_kv_secret_v2.flashblade.data[var.vault_flashblade_key] }
+  auth                 = { api_token = var.flashblade_api_token }
   insecure_skip_verify = true
 }
 
 # -----------------------------------------------------------------------------
-# Step 2: Reference the existing server
+# Step 1: Reference the existing server
 # -----------------------------------------------------------------------------
+# The server is pre-provisioned infrastructure. We reference it to export
+# the account and make S3 reachable through this server's network path.
 
 data "flashblade_server" "this" {
   name = var.server_name
 }
 
 # -----------------------------------------------------------------------------
-# Step 3: Create object store account
+# Step 2: Create object store account
 # -----------------------------------------------------------------------------
+# Each tenant gets its own account — isolation boundary for buckets and keys.
+# skip_default_export prevents the auto-created _array_server export since
+# we manage exports explicitly below.
 
 resource "flashblade_object_store_account" "tenant" {
   name                = var.tenant_name
@@ -115,8 +101,12 @@ resource "flashblade_object_store_account" "tenant" {
 }
 
 # -----------------------------------------------------------------------------
-# Step 4: S3 export policy + account export
+# Step 3: S3 export policy + account export
 # -----------------------------------------------------------------------------
+# Two layers here:
+# - The S3 export policy controls WHICH S3 operations are allowed at the
+#   transport level (think: firewall for S3 traffic)
+# - The account export links the account to the server through this policy
 
 resource "flashblade_s3_export_policy" "tenant" {
   name    = "${var.tenant_name}-s3-export"
@@ -139,8 +129,11 @@ resource "flashblade_object_store_account_export" "tenant" {
 }
 
 # -----------------------------------------------------------------------------
-# Step 5: IAM-style access policy
+# Step 4: IAM-style access policy
 # -----------------------------------------------------------------------------
+# Controls what S3 operations the tenant's user can perform. This is the
+# fine-grained authorization layer (separate from the export policy which
+# controls transport-level access).
 
 resource "flashblade_object_store_access_policy" "tenant_rw" {
   name = "${flashblade_object_store_account.tenant.name}/rw"
@@ -155,32 +148,20 @@ resource "flashblade_object_store_access_policy_rule" "allow_all" {
 }
 
 # -----------------------------------------------------------------------------
-# Step 6: Generate access key + store in Vault
+# Step 5: Generate access key
 # -----------------------------------------------------------------------------
+# The access key is immutable and the secret is only available at creation.
+# In production, pipe this to Vault (see vault-s3-onboarding workflow).
 
 resource "flashblade_object_store_access_key" "tenant" {
   object_store_account = flashblade_object_store_account.tenant.name
 }
 
-resource "vault_kv_secret_v2" "tenant_s3_credentials" {
-  mount = split("/", var.vault_secret_path)[0]
-  name  = "tenants/${var.tenant_name}/s3"
-
-  data_json = jsonencode({
-    access_key_id     = flashblade_object_store_access_key.tenant.access_key_id
-    secret_access_key = flashblade_object_store_access_key.tenant.secret_access_key
-    endpoint          = "https://${var.s3_data_vip}"
-    bucket            = flashblade_bucket.tenant.name
-  })
-
-  lifecycle {
-    replace_triggered_by = [flashblade_object_store_access_key.tenant]
-  }
-}
-
 # -----------------------------------------------------------------------------
-# Step 7: Create bucket
+# Step 6: Create bucket
 # -----------------------------------------------------------------------------
+# The bucket belongs to the tenant's account. Versioning enabled by default
+# for data protection. Quota enforces storage limits.
 
 resource "flashblade_bucket" "tenant" {
   name               = "${var.tenant_name}-data"
@@ -189,21 +170,34 @@ resource "flashblade_bucket" "tenant" {
   quota_limit        = var.bucket_quota_bytes
   hard_limit_enabled = true
 
+  # Keep recoverable on destroy. Set to true only when you're certain
+  # the data can be permanently deleted.
   destroy_eradicate_on_delete = false
 }
 
 # -----------------------------------------------------------------------------
-# Outputs: endpoint only (no secrets)
+# Outputs
 # -----------------------------------------------------------------------------
 
-output "bucket_endpoint" {
-  description = "S3 endpoint for the tenant's bucket. Credentials are in Vault."
-  value       = "https://${var.s3_data_vip}/${flashblade_bucket.tenant.name}"
+output "account_name" {
+  description = "The object store account name."
+  value       = flashblade_object_store_account.tenant.name
 }
 
-output "vault_credentials_path" {
-  description = "Vault path where S3 credentials are stored."
-  value       = "tenants/${var.tenant_name}/s3"
+output "bucket_name" {
+  description = "The bucket name."
+  value       = flashblade_bucket.tenant.name
+}
+
+output "access_key_id" {
+  description = "The S3 access key ID. Use with secret_access_key to authenticate."
+  value       = flashblade_object_store_access_key.tenant.access_key_id
+}
+
+output "secret_access_key" {
+  description = "The S3 secret access key. Only available at creation time."
+  value       = flashblade_object_store_access_key.tenant.secret_access_key
+  sensitive   = true
 }
 
 output "server_name" {

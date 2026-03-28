@@ -2,6 +2,7 @@
 
 flashblade_endpoint  = "https://flashblade.example.com"
 s3_data_vip          = "s3.flashblade.example.com"
+server_name          = "srv-my-server"
 tenant_name          = "my-app"
 bucket_quota_bytes   = 1099511627776 # 1 TiB
 
