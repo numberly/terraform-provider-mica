@@ -11,9 +11,8 @@ linters:
   settings:
     govet:
       enable-all: false
-
-issues:
-  exclude:
-    - linters:
-        - staticcheck
-      text: "SA1019"
+  exclusions:
+    rules:
+      - linters:
+          - staticcheck
+        text: "SA1019"
