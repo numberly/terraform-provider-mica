@@ -34,12 +34,12 @@ provider "flashblade" {
   endpoint = "https://flashblade.example.com"
 
   # Option A: API token
-  auth {
+  auth = {
     api_token = var.flashblade_api_token
   }
 
   # Option B: OAuth2 token exchange
-  # auth {
+  # auth = {
   #   oauth2_client_id     = var.client_id
   #   oauth2_client_secret = var.client_secret
   # }

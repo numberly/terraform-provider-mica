@@ -80,7 +80,7 @@ data "vault_kv_secret_v2" "flashblade" {
 provider "flashblade" {
   endpoint = var.flashblade_endpoint
 
-  auth {
+  auth = {
     api_token = data.vault_kv_secret_v2.flashblade.data[var.vault_flashblade_key]
   }
 }

@@ -14,7 +14,7 @@ Interact with Pure Storage FlashBlade arrays via the REST API v2.22.
 ```terraform
 provider "flashblade" {
   endpoint = "https://flashblade.example.com"
-  auth {
+  auth = {
     api_token = var.flashblade_api_token
   }
 }

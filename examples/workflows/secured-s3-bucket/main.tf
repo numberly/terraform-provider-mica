@@ -30,7 +30,7 @@ terraform {
 provider "flashblade" {
   endpoint = var.flashblade_endpoint
 
-  auth {
+  auth = {
     api_token = var.flashblade_api_token
   }
 }
