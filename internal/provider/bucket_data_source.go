@@ -28,16 +28,6 @@ func NewBucketDataSource() datasource.DataSource {
 
 // ---------- model structs ----------------------------------------------------
 
-// bucketDataSourceSpaceModel maps space attributes for the bucket data source.
-type bucketDataSourceSpaceModel struct {
-	DataReduction      types.Float64 `tfsdk:"data_reduction"`
-	Snapshots          types.Int64   `tfsdk:"snapshots"`
-	TotalPhysical      types.Int64   `tfsdk:"total_physical"`
-	Unique             types.Int64   `tfsdk:"unique"`
-	Virtual            types.Int64   `tfsdk:"virtual"`
-	SnapshotsEffective types.Int64   `tfsdk:"snapshots_effective"`
-}
-
 // bucketDataSourceModel is the top-level model for the flashblade_bucket data source.
 type bucketDataSourceModel struct {
 	ID               types.String `tfsdk:"id"`

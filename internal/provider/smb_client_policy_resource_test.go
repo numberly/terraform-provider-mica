@@ -82,18 +82,6 @@ func nullSMBClientPolicyConfig() map[string]tftypes.Value {
 	}
 }
 
-// smbClientPolicyPlanWithName returns a tfsdk.Plan with the given policy name.
-func smbClientPolicyPlanWithName(t *testing.T, name string) tfsdk.Plan {
-	t.Helper()
-	s := smbClientPolicyResourceSchema(t).Schema
-	cfg := nullSMBClientPolicyConfig()
-	cfg["name"] = tftypes.NewValue(tftypes.String, name)
-	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBClientPolicyType(), cfg),
-		Schema: s,
-	}
-}
-
 // smbClientPolicyPlanWithNameAndEnabled returns a tfsdk.Plan with name and enabled flag.
 func smbClientPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tfsdk.Plan {
 	t.Helper()

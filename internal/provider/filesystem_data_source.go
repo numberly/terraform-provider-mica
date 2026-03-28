@@ -28,56 +28,6 @@ func NewFilesystemDataSource() datasource.DataSource {
 
 // ---------- nested model structs (data source) ------------------------------
 
-// filesystemDataSourceSpaceModel mirrors the resource space model.
-type filesystemDataSourceSpaceModel struct {
-	DataReduction      types.Float64 `tfsdk:"data_reduction"`
-	Snapshots          types.Int64   `tfsdk:"snapshots"`
-	TotalPhysical      types.Int64   `tfsdk:"total_physical"`
-	Unique             types.Int64   `tfsdk:"unique"`
-	Virtual            types.Int64   `tfsdk:"virtual"`
-	SnapshotsEffective types.Int64   `tfsdk:"snapshots_effective"`
-}
-
-// filesystemDataSourceNFSModel mirrors the resource NFS model.
-type filesystemDataSourceNFSModel struct {
-	Enabled    types.Bool   `tfsdk:"enabled"`
-	V3Enabled  types.Bool   `tfsdk:"v3_enabled"`
-	V41Enabled types.Bool   `tfsdk:"v4_1_enabled"`
-	Rules      types.String `tfsdk:"rules"`
-	Transport  types.String `tfsdk:"transport"`
-}
-
-// filesystemDataSourceSMBModel mirrors the resource SMB model.
-type filesystemDataSourceSMBModel struct {
-	Enabled                       types.Bool `tfsdk:"enabled"`
-	AccessBasedEnumerationEnabled types.Bool `tfsdk:"access_based_enumeration_enabled"`
-	ContinuousAvailabilityEnabled types.Bool `tfsdk:"continuous_availability_enabled"`
-	SMBEncryptionEnabled          types.Bool `tfsdk:"smb_encryption_enabled"`
-}
-
-// filesystemDataSourceHTTPModel mirrors the resource HTTP model.
-type filesystemDataSourceHTTPModel struct {
-	Enabled types.Bool `tfsdk:"enabled"`
-}
-
-// filesystemDataSourceMultiProtocolModel mirrors the resource multi_protocol model.
-type filesystemDataSourceMultiProtocolModel struct {
-	AccessControlStyle types.String `tfsdk:"access_control_style"`
-	SafeguardACLs      types.Bool   `tfsdk:"safeguard_acls"`
-}
-
-// filesystemDataSourceDefaultQuotasModel mirrors the resource default_quotas model.
-type filesystemDataSourceDefaultQuotasModel struct {
-	GroupQuota types.Int64 `tfsdk:"group_quota"`
-	UserQuota  types.Int64 `tfsdk:"user_quota"`
-}
-
-// filesystemDataSourceSourceModel mirrors the resource source model.
-type filesystemDataSourceSourceModel struct {
-	ID   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
-}
-
 // filesystemDataSourceModel is the top-level model for the flashblade_file_system data source.
 type filesystemDataSourceModel struct {
 	ID              types.String `tfsdk:"id"`

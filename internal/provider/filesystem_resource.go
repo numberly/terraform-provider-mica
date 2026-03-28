@@ -36,16 +36,6 @@ func NewFilesystemResource() resource.Resource {
 
 // ---------- nested model structs --------------------------------------------
 
-// filesystemSpaceModel maps space attributes.
-type filesystemSpaceModel struct {
-	DataReduction      types.Float64 `tfsdk:"data_reduction"`
-	Snapshots          types.Int64   `tfsdk:"snapshots"`
-	TotalPhysical      types.Int64   `tfsdk:"total_physical"`
-	Unique             types.Int64   `tfsdk:"unique"`
-	Virtual            types.Int64   `tfsdk:"virtual"`
-	SnapshotsEffective types.Int64   `tfsdk:"snapshots_effective"`
-}
-
 // filesystemNFSModel maps NFS attributes.
 type filesystemNFSModel struct {
 	Enabled    types.Bool   `tfsdk:"enabled"`
@@ -61,29 +51,6 @@ type filesystemSMBModel struct {
 	AccessBasedEnumerationEnabled types.Bool `tfsdk:"access_based_enumeration_enabled"`
 	ContinuousAvailabilityEnabled types.Bool `tfsdk:"continuous_availability_enabled"`
 	SMBEncryptionEnabled          types.Bool `tfsdk:"smb_encryption_enabled"`
-}
-
-// filesystemHTTPModel maps HTTP attributes.
-type filesystemHTTPModel struct {
-	Enabled types.Bool `tfsdk:"enabled"`
-}
-
-// filesystemMultiProtocolModel maps multi_protocol attributes.
-type filesystemMultiProtocolModel struct {
-	AccessControlStyle types.String `tfsdk:"access_control_style"`
-	SafeguardACLs      types.Bool   `tfsdk:"safeguard_acls"`
-}
-
-// filesystemDefaultQuotasModel maps default_quotas attributes.
-type filesystemDefaultQuotasModel struct {
-	GroupQuota types.Int64 `tfsdk:"group_quota"`
-	UserQuota  types.Int64 `tfsdk:"user_quota"`
-}
-
-// filesystemSourceModel maps the source reference.
-type filesystemSourceModel struct {
-	ID   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
 }
 
 // filesystemModel is the top-level model for the flashblade_file_system resource.

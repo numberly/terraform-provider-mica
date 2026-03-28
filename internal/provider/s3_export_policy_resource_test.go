@@ -93,18 +93,6 @@ func s3PolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tfs
 	}
 }
 
-// s3PolicyPlanWithName returns a tfsdk.Plan with the given policy name.
-func s3PolicyPlanWithName(t *testing.T, name string) tfsdk.Plan {
-	t.Helper()
-	s := s3PolicyResourceSchema(t).Schema
-	cfg := nullS3PolicyConfig()
-	cfg["name"] = tftypes.NewValue(tftypes.String, name)
-	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildS3PolicyType(), cfg),
-		Schema: s,
-	}
-}
-
 // createTestS3Policy is a helper that creates an S3 export policy via the client.
 func createTestS3Policy(t *testing.T, c *client.FlashBladeClient, name string) {
 	t.Helper()

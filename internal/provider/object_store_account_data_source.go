@@ -28,16 +28,6 @@ func NewObjectStoreAccountDataSource() datasource.DataSource {
 
 // ---------- model structs ----------------------------------------------------
 
-// objectStoreAccountDataSourceSpaceModel maps space attributes for the data source.
-type objectStoreAccountDataSourceSpaceModel struct {
-	DataReduction      types.Float64 `tfsdk:"data_reduction"`
-	Snapshots          types.Int64   `tfsdk:"snapshots"`
-	TotalPhysical      types.Int64   `tfsdk:"total_physical"`
-	Unique             types.Int64   `tfsdk:"unique"`
-	Virtual            types.Int64   `tfsdk:"virtual"`
-	SnapshotsEffective types.Int64   `tfsdk:"snapshots_effective"`
-}
-
 // objectStoreAccountDataSourceModel is the top-level model for the flashblade_object_store_account data source.
 type objectStoreAccountDataSourceModel struct {
 	ID               types.String `tfsdk:"id"`

@@ -38,16 +38,6 @@ func NewBucketResource() resource.Resource {
 
 // ---------- model structs ----------------------------------------------------
 
-// bucketSpaceModel maps space attributes for the bucket resource.
-type bucketSpaceModel struct {
-	DataReduction      types.Float64 `tfsdk:"data_reduction"`
-	Snapshots          types.Int64   `tfsdk:"snapshots"`
-	TotalPhysical      types.Int64   `tfsdk:"total_physical"`
-	Unique             types.Int64   `tfsdk:"unique"`
-	Virtual            types.Int64   `tfsdk:"virtual"`
-	SnapshotsEffective types.Int64   `tfsdk:"snapshots_effective"`
-}
-
 // bucketModel is the top-level model for the flashblade_bucket resource.
 type bucketModel struct {
 	ID                       types.String   `tfsdk:"id"`
