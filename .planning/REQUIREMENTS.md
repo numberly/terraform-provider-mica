@@ -9,10 +9,10 @@ Requirements for milestone v1.2 — Code Quality & Robustness.
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: Account export Delete passes correct short export name (not combined)
-- [ ] **BUG-02**: File system `writable` field mapped correctly in Read (0 drift on plan)
-- [ ] **BUG-03**: IsNotFound scoped to actual "not found" messages (not all 400s)
-- [ ] **BUG-04**: Fix omitempty on nested structs (use pointers or json:"-" where needed)
+- [x] **BUG-01**: Account export Delete passes correct short export name (not combined)
+- [x] **BUG-02**: File system `writable` field mapped correctly in Read (0 drift on plan)
+- [x] **BUG-03**: IsNotFound scoped to actual "not found" messages (not all 400s)
+- [x] **BUG-04**: Fix omitempty on nested structs (use pointers or json:"-" where needed)
 
 ### Architecture Cleanup
 
@@ -51,10 +51,10 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 9 | Pending |
-| BUG-02 | Phase 9 | Pending |
-| BUG-03 | Phase 9 | Pending |
-| BUG-04 | Phase 9 | Pending |
+| BUG-01 | Phase 9 | Complete |
+| BUG-02 | Phase 9 | Complete |
+| BUG-03 | Phase 9 | Complete |
+| BUG-04 | Phase 9 | Complete |
 | ARC-01 | Phase 10 | Pending |
 | ARC-02 | Phase 10 | Pending |
 | ARC-03 | Phase 10 | Pending |
