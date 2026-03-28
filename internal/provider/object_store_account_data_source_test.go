@@ -54,7 +54,7 @@ func buildOSADSType() tftypes.Object {
 		"id":                 tftypes.String,
 		"name":               tftypes.String,
 		"created":            tftypes.Number,
-		"quota_limit":        tftypes.String,
+		"quota_limit":        tftypes.Number,
 		"hard_limit_enabled": tftypes.Bool,
 		"object_count":       tftypes.Number,
 		"space":              spaceType,
@@ -75,7 +75,7 @@ func nullOSADSConfig() map[string]tftypes.Value {
 		"id":                 tftypes.NewValue(tftypes.String, nil),
 		"name":               tftypes.NewValue(tftypes.String, nil),
 		"created":            tftypes.NewValue(tftypes.Number, nil),
-		"quota_limit":        tftypes.NewValue(tftypes.String, nil),
+		"quota_limit":        tftypes.NewValue(tftypes.Number, nil),
 		"hard_limit_enabled": tftypes.NewValue(tftypes.Bool, nil),
 		"object_count":       tftypes.NewValue(tftypes.Number, nil),
 		"space":              tftypes.NewValue(spaceType, nil),
@@ -102,7 +102,7 @@ func TestUnit_ObjectStoreAccountDataSource(t *testing.T) {
 		t.Fatalf("NewClient: %v", err)
 	}
 	_, err = c.PostObjectStoreAccount(context.Background(), "ds-test-account", client.ObjectStoreAccountPost{
-		QuotaLimit: "21474836480",
+		QuotaLimit: 21474836480,
 	})
 	if err != nil {
 		t.Fatalf("PostObjectStoreAccount: %v", err)
@@ -133,8 +133,8 @@ func TestUnit_ObjectStoreAccountDataSource(t *testing.T) {
 	if model.Name.ValueString() != "ds-test-account" {
 		t.Errorf("expected name=ds-test-account, got %s", model.Name.ValueString())
 	}
-	if model.QuotaLimit.ValueString() != "21474836480" {
-		t.Errorf("expected quota_limit=21474836480, got %s", model.QuotaLimit.ValueString())
+	if model.QuotaLimit.ValueInt64() != 21474836480 {
+		t.Errorf("expected quota_limit=21474836480, got %d", model.QuotaLimit.ValueInt64())
 	}
 	if model.ID.IsNull() || model.ID.ValueString() == "" {
 		t.Error("expected ID to be populated")

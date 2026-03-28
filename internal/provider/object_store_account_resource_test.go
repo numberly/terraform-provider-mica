@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"math/big"
 	"testing"
 	"time"
 
@@ -61,7 +62,7 @@ func buildOSAType() tftypes.Object {
 		"id":                 tftypes.String,
 		"name":               tftypes.String,
 		"created":            tftypes.Number,
-		"quota_limit":        tftypes.String,
+		"quota_limit":        tftypes.Number,
 		"hard_limit_enabled": tftypes.Bool,
 		"object_count":       tftypes.Number,
 		"space":              spaceType,
@@ -89,7 +90,7 @@ func nullOSAConfig() map[string]tftypes.Value {
 		"id":                 tftypes.NewValue(tftypes.String, nil),
 		"name":               tftypes.NewValue(tftypes.String, nil),
 		"created":            tftypes.NewValue(tftypes.Number, nil),
-		"quota_limit":        tftypes.NewValue(tftypes.String, nil),
+		"quota_limit":        tftypes.NewValue(tftypes.Number, nil),
 		"hard_limit_enabled": tftypes.NewValue(tftypes.Bool, nil),
 		"object_count":       tftypes.NewValue(tftypes.Number, nil),
 		"space":              tftypes.NewValue(spaceType, nil),
@@ -110,12 +111,12 @@ func osaPlanWithName(t *testing.T, name string) tfsdk.Plan {
 }
 
 // osaPlanWithNameAndQuota returns a tfsdk.Plan with name and quota_limit.
-func osaPlanWithNameAndQuota(t *testing.T, name string, quotaLimit string) tfsdk.Plan {
+func osaPlanWithNameAndQuota(t *testing.T, name string, quotaLimit int64) tfsdk.Plan {
 	t.Helper()
 	s := osaResourceSchema(t).Schema
 	cfg := nullOSAConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
-	cfg["quota_limit"] = tftypes.NewValue(tftypes.String, quotaLimit)
+	cfg["quota_limit"] = tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(quotaLimit))
 	return tfsdk.Plan{
 		Raw:    tftypes.NewValue(buildOSAType(), cfg),
 		Schema: s,
@@ -181,7 +182,7 @@ func TestUnit_ObjectStoreAccount_Update(t *testing.T) {
 	}
 
 	// Update quota_limit.
-	newPlan := osaPlanWithNameAndQuota(t, "update-account", "10737418240")
+	newPlan := osaPlanWithNameAndQuota(t, "update-account", 10737418240)
 	updateResp := &resource.UpdateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
 	}
@@ -198,8 +199,8 @@ func TestUnit_ObjectStoreAccount_Update(t *testing.T) {
 	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get state: %s", diags)
 	}
-	if model.QuotaLimit.ValueString() != "10737418240" {
-		t.Errorf("expected quota_limit=10737418240 after update, got %s", model.QuotaLimit.ValueString())
+	if model.QuotaLimit.ValueInt64() != 10737418240 {
+		t.Errorf("expected quota_limit=10737418240 after update, got %d", model.QuotaLimit.ValueInt64())
 	}
 }
 
@@ -366,7 +367,7 @@ func TestUnit_ObjectStoreAccount_Lifecycle(t *testing.T) {
 	}
 
 	// Step 3: Update quota_limit.
-	updatePlan := osaPlanWithNameAndQuota(t, "lifecycle-account", "10737418240")
+	updatePlan := osaPlanWithNameAndQuota(t, "lifecycle-account", 10737418240)
 	updateResp := &resource.UpdateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
 	}
@@ -381,8 +382,8 @@ func TestUnit_ObjectStoreAccount_Lifecycle(t *testing.T) {
 	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
 		t.Fatalf("Get update state: %s", diags)
 	}
-	if updateModel.QuotaLimit.ValueString() != "10737418240" {
-		t.Errorf("Update: expected quota_limit=10737418240, got %s", updateModel.QuotaLimit.ValueString())
+	if updateModel.QuotaLimit.ValueInt64() != 10737418240 {
+		t.Errorf("Update: expected quota_limit=10737418240, got %d", updateModel.QuotaLimit.ValueInt64())
 	}
 
 	// Step 4: Read post-update.
@@ -395,8 +396,8 @@ func TestUnit_ObjectStoreAccount_Lifecycle(t *testing.T) {
 	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
 		t.Fatalf("Get read2 state: %s", diags)
 	}
-	if readModel2.QuotaLimit.ValueString() != "10737418240" {
-		t.Errorf("Read2: expected quota_limit=10737418240, got %s", readModel2.QuotaLimit.ValueString())
+	if readModel2.QuotaLimit.ValueInt64() != 10737418240 {
+		t.Errorf("Read2: expected quota_limit=10737418240, got %d", readModel2.QuotaLimit.ValueInt64())
 	}
 
 	// Step 5: Delete.
@@ -421,7 +422,7 @@ func TestUnit_ObjectStoreAccount_ImportIdempotency(t *testing.T) {
 	s := osaResourceSchema(t).Schema
 
 	// Create.
-	createPlan := osaPlanWithNameAndQuota(t, "idempotent-account", "5368709120")
+	createPlan := osaPlanWithNameAndQuota(t, "idempotent-account", 5368709120)
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
 	}
@@ -458,8 +459,8 @@ func TestUnit_ObjectStoreAccount_ImportIdempotency(t *testing.T) {
 	if importedModel.Name.ValueString() != createModel.Name.ValueString() {
 		t.Errorf("name mismatch: create=%s import=%s", createModel.Name.ValueString(), importedModel.Name.ValueString())
 	}
-	if importedModel.QuotaLimit.ValueString() != createModel.QuotaLimit.ValueString() {
-		t.Errorf("quota_limit mismatch: create=%s import=%s", createModel.QuotaLimit.ValueString(), importedModel.QuotaLimit.ValueString())
+	if importedModel.QuotaLimit.ValueInt64() != createModel.QuotaLimit.ValueInt64() {
+		t.Errorf("quota_limit mismatch: create=%d import=%d", createModel.QuotaLimit.ValueInt64(), importedModel.QuotaLimit.ValueInt64())
 	}
 	if importedModel.ID.ValueString() != createModel.ID.ValueString() {
 		t.Errorf("id mismatch: create=%s import=%s", createModel.ID.ValueString(), importedModel.ID.ValueString())

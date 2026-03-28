@@ -57,7 +57,7 @@ type bucketModel struct {
 	DestroyEradicateOnDelete types.Bool        `tfsdk:"destroy_eradicate_on_delete"`
 	TimeRemaining            types.Int64       `tfsdk:"time_remaining"`
 	Versioning               types.String      `tfsdk:"versioning"`
-	QuotaLimit               types.String      `tfsdk:"quota_limit"`
+	QuotaLimit               types.Int64       `tfsdk:"quota_limit"`
 	HardLimitEnabled         types.Bool        `tfsdk:"hard_limit_enabled"`
 	ObjectCount              types.Int64       `tfsdk:"object_count"`
 	BucketType               types.String      `tfsdk:"bucket_type"`
@@ -128,7 +128,7 @@ func (r *bucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 					stringvalidator.OneOf("none", "enabled", "suspended"),
 				},
 			},
-			"quota_limit": schema.StringAttribute{
+			"quota_limit": schema.Int64Attribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "The effective quota limit applied against the size of the bucket, in bytes.",
@@ -235,7 +235,7 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		post.Versioning = data.Versioning.ValueString()
 	}
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
-		post.QuotaLimit = data.QuotaLimit.ValueString()
+		post.QuotaLimit = data.QuotaLimit.ValueInt64()
 	}
 	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
 		post.HardLimitEnabled = data.HardLimitEnabled.ValueBool()
@@ -297,11 +297,11 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 		}
 	}
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
-		if data.QuotaLimit.ValueString() != bkt.QuotaLimit {
+		if data.QuotaLimit.ValueInt64() != bkt.QuotaLimit {
 			tflog.Info(ctx, "drift detected on bucket", map[string]any{
 				"resource":    name,
 				"field":       "quota_limit",
-				"state_value": data.QuotaLimit.ValueString(),
+				"state_value": data.QuotaLimit.ValueInt64(),
 				"api_value":   bkt.QuotaLimit,
 			})
 		}
@@ -345,7 +345,7 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		patch.Versioning = &v
 	}
 	if !plan.QuotaLimit.Equal(state.QuotaLimit) {
-		v := plan.QuotaLimit.ValueString()
+		v := plan.QuotaLimit.ValueInt64()
 		patch.QuotaLimit = &v
 	}
 	if !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {
@@ -479,7 +479,7 @@ func mapBucketToModel(bkt *client.Bucket, data *bucketModel) {
 	data.Destroyed = types.BoolValue(bkt.Destroyed)
 	data.TimeRemaining = types.Int64Value(bkt.TimeRemaining)
 	data.Versioning = types.StringValue(bkt.Versioning)
-	data.QuotaLimit = types.StringValue(bkt.QuotaLimit)
+	data.QuotaLimit = types.Int64Value(bkt.QuotaLimit)
 	data.HardLimitEnabled = types.BoolValue(bkt.HardLimitEnabled)
 	data.ObjectCount = types.Int64Value(bkt.ObjectCount)
 	data.BucketType = types.StringValue(bkt.BucketType)

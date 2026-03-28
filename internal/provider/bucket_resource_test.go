@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"math/big"
 	"net/http"
 	"strings"
 	"testing"
@@ -70,7 +71,7 @@ func buildBucketType() tftypes.Object {
 		"destroy_eradicate_on_delete":  tftypes.Bool,
 		"time_remaining":               tftypes.Number,
 		"versioning":                   tftypes.String,
-		"quota_limit":                  tftypes.String,
+		"quota_limit":                  tftypes.Number,
 		"hard_limit_enabled":           tftypes.Bool,
 		"object_count":                 tftypes.Number,
 		"bucket_type":                  tftypes.String,
@@ -105,7 +106,7 @@ func nullBucketConfig() map[string]tftypes.Value {
 		"destroy_eradicate_on_delete": tftypes.NewValue(tftypes.Bool, nil),
 		"time_remaining":              tftypes.NewValue(tftypes.Number, nil),
 		"versioning":                  tftypes.NewValue(tftypes.String, nil),
-		"quota_limit":                 tftypes.NewValue(tftypes.String, nil),
+		"quota_limit":                 tftypes.NewValue(tftypes.Number, nil),
 		"hard_limit_enabled":          tftypes.NewValue(tftypes.Bool, nil),
 		"object_count":                tftypes.NewValue(tftypes.Number, nil),
 		"bucket_type":                 tftypes.NewValue(tftypes.String, nil),
@@ -223,7 +224,7 @@ func TestUnit_Bucket_Update(t *testing.T) {
 	updateCfg := nullBucketConfig()
 	updateCfg["name"] = tftypes.NewValue(tftypes.String, "update-bucket")
 	updateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
-	updateCfg["quota_limit"] = tftypes.NewValue(tftypes.String, "10737418240")
+	updateCfg["quota_limit"] = tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(10737418240))
 	updateCfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")
 	updateCfg["hard_limit_enabled"] = tftypes.NewValue(tftypes.Bool, true)
 	updateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
@@ -247,8 +248,8 @@ func TestUnit_Bucket_Update(t *testing.T) {
 		t.Fatalf("Get state: %s", diags)
 	}
 
-	if model.QuotaLimit.ValueString() != "10737418240" {
-		t.Errorf("expected quota_limit=10737418240, got %s", model.QuotaLimit.ValueString())
+	if model.QuotaLimit.ValueInt64() != 10737418240 {
+		t.Errorf("expected quota_limit=10737418240, got %d", model.QuotaLimit.ValueInt64())
 	}
 	if model.Versioning.ValueString() != "enabled" {
 		t.Errorf("expected versioning=enabled, got %s", model.Versioning.ValueString())
@@ -358,7 +359,7 @@ func TestUnit_Bucket_Import(t *testing.T) {
 	_, err := c.PostBucket(context.Background(), "import-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "test-account"},
 		Versioning: "enabled",
-		QuotaLimit: "21474836480",
+		QuotaLimit: 21474836480,
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
@@ -390,8 +391,8 @@ func TestUnit_Bucket_Import(t *testing.T) {
 	if model.Versioning.ValueString() != "enabled" {
 		t.Errorf("expected versioning=enabled, got %s", model.Versioning.ValueString())
 	}
-	if model.QuotaLimit.ValueString() != "21474836480" {
-		t.Errorf("expected quota_limit=21474836480, got %s", model.QuotaLimit.ValueString())
+	if model.QuotaLimit.ValueInt64() != 21474836480 {
+		t.Errorf("expected quota_limit=21474836480, got %d", model.QuotaLimit.ValueInt64())
 	}
 	if model.ID.IsNull() || model.ID.ValueString() == "" {
 		t.Error("expected ID to be populated after Import")
@@ -407,7 +408,7 @@ func TestUnit_Bucket_DriftLog(t *testing.T) {
 	// Create a bucket via client.
 	_, err := c.PostBucket(context.Background(), "drift-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "test-account"},
-		QuotaLimit: "10737418240",
+		QuotaLimit: 10737418240,
 		Versioning: "none",
 	})
 	if err != nil {
@@ -421,7 +422,7 @@ func TestUnit_Bucket_DriftLog(t *testing.T) {
 	stateCfg := nullBucketConfig()
 	stateCfg["name"] = tftypes.NewValue(tftypes.String, "drift-bucket")
 	stateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
-	stateCfg["quota_limit"] = tftypes.NewValue(tftypes.String, "5368709120") // different from API
+	stateCfg["quota_limit"] = tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(5368709120)) // different from API
 	stateCfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")     // different from API
 	stateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
 
@@ -442,8 +443,8 @@ func TestUnit_Bucket_DriftLog(t *testing.T) {
 	if diags := readResp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get state: %s", diags)
 	}
-	if model.QuotaLimit.ValueString() != "10737418240" {
-		t.Errorf("expected quota_limit=10737418240 from API, got %s", model.QuotaLimit.ValueString())
+	if model.QuotaLimit.ValueInt64() != 10737418240 {
+		t.Errorf("expected quota_limit=10737418240 from API, got %d", model.QuotaLimit.ValueInt64())
 	}
 	if model.Versioning.ValueString() != "none" {
 		t.Errorf("expected versioning=none from API, got %s", model.Versioning.ValueString())
@@ -652,7 +653,7 @@ func TestUnit_Bucket_ImportIdempotency(t *testing.T) {
 	createCfg["name"] = tftypes.NewValue(tftypes.String, "idempotent-bucket")
 	createCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
 	createCfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")
-	createCfg["quota_limit"] = tftypes.NewValue(tftypes.String, "10737418240")
+	createCfg["quota_limit"] = tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(10737418240))
 	createCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
 	createPlan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), createCfg), Schema: s}
 	createResp := &resource.CreateResponse{
@@ -697,8 +698,8 @@ func TestUnit_Bucket_ImportIdempotency(t *testing.T) {
 	if importedModel.Versioning.ValueString() != createModel.Versioning.ValueString() {
 		t.Errorf("versioning mismatch: create=%s import=%s", createModel.Versioning.ValueString(), importedModel.Versioning.ValueString())
 	}
-	if importedModel.QuotaLimit.ValueString() != createModel.QuotaLimit.ValueString() {
-		t.Errorf("quota_limit mismatch: create=%s import=%s", createModel.QuotaLimit.ValueString(), importedModel.QuotaLimit.ValueString())
+	if importedModel.QuotaLimit.ValueInt64() != createModel.QuotaLimit.ValueInt64() {
+		t.Errorf("quota_limit mismatch: create=%d import=%d", createModel.QuotaLimit.ValueInt64(), importedModel.QuotaLimit.ValueInt64())
 	}
 }
 

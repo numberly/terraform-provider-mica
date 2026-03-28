@@ -231,7 +231,7 @@ func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v, ok := rawPatch["quota_limit"]; ok {
-		var quotaLimit string
+		var quotaLimit int64
 		if err := json.Unmarshal(v, &quotaLimit); err != nil {
 			WriteJSONError(w, http.StatusBadRequest, "invalid quota_limit field")
 			return

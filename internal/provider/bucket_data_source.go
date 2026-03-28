@@ -46,7 +46,7 @@ type bucketDataSourceModel struct {
 	Destroyed        types.Bool                  `tfsdk:"destroyed"`
 	TimeRemaining    types.Int64                 `tfsdk:"time_remaining"`
 	Versioning       types.String                `tfsdk:"versioning"`
-	QuotaLimit       types.String                `tfsdk:"quota_limit"`
+	QuotaLimit       types.Int64                 `tfsdk:"quota_limit"`
 	HardLimitEnabled types.Bool                  `tfsdk:"hard_limit_enabled"`
 	ObjectCount      types.Int64                 `tfsdk:"object_count"`
 	BucketType       types.String                `tfsdk:"bucket_type"`
@@ -94,7 +94,7 @@ func (d *bucketDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed:    true,
 				Description: "The bucket versioning state ('none', 'enabled', or 'suspended').",
 			},
-			"quota_limit": schema.StringAttribute{
+			"quota_limit": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The effective quota limit applied against the size of the bucket, in bytes.",
 			},
@@ -193,7 +193,7 @@ func (d *bucketDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config.Destroyed = types.BoolValue(bkt.Destroyed)
 	config.TimeRemaining = types.Int64Value(bkt.TimeRemaining)
 	config.Versioning = types.StringValue(bkt.Versioning)
-	config.QuotaLimit = types.StringValue(bkt.QuotaLimit)
+	config.QuotaLimit = types.Int64Value(bkt.QuotaLimit)
 	config.HardLimitEnabled = types.BoolValue(bkt.HardLimitEnabled)
 	config.ObjectCount = types.Int64Value(bkt.ObjectCount)
 	config.BucketType = types.StringValue(bkt.BucketType)

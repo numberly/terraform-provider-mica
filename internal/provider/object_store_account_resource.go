@@ -49,7 +49,7 @@ type objectStoreAccountModel struct {
 	ID               types.String                  `tfsdk:"id"`
 	Name             types.String                  `tfsdk:"name"`
 	Created          types.Int64                   `tfsdk:"created"`
-	QuotaLimit       types.String                  `tfsdk:"quota_limit"`
+	QuotaLimit       types.Int64                   `tfsdk:"quota_limit"`
 	HardLimitEnabled types.Bool                    `tfsdk:"hard_limit_enabled"`
 	ObjectCount      types.Int64                   `tfsdk:"object_count"`
 	Space            *objectStoreAccountSpaceModel `tfsdk:"space"`
@@ -89,7 +89,7 @@ func (r *objectStoreAccountResource) Schema(ctx context.Context, _ resource.Sche
 					int64UseStateForUnknown(),
 				},
 			},
-			"quota_limit": schema.StringAttribute{
+			"quota_limit": schema.Int64Attribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "The effective quota limit applied against the size of the account, in bytes.",
@@ -179,7 +179,7 @@ func (r *objectStoreAccountResource) Create(ctx context.Context, req resource.Cr
 
 	post := client.ObjectStoreAccountPost{}
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
-		post.QuotaLimit = data.QuotaLimit.ValueString()
+		post.QuotaLimit = data.QuotaLimit.ValueInt64()
 	}
 	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
 		post.HardLimitEnabled = data.HardLimitEnabled.ValueBool()
@@ -228,11 +228,11 @@ func (r *objectStoreAccountResource) Read(ctx context.Context, req resource.Read
 
 	// Drift detection on mutable fields.
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
-		if data.QuotaLimit.ValueString() != acct.QuotaLimit {
+		if data.QuotaLimit.ValueInt64() != acct.QuotaLimit {
 			tflog.Info(ctx, "drift detected on object store account", map[string]any{
 				"resource":    name,
 				"field":       "quota_limit",
-				"state_value": data.QuotaLimit.ValueString(),
+				"state_value": data.QuotaLimit.ValueInt64(),
 				"api_value":   acct.QuotaLimit,
 			})
 		}
@@ -272,7 +272,7 @@ func (r *objectStoreAccountResource) Update(ctx context.Context, req resource.Up
 	patch := client.ObjectStoreAccountPatch{}
 
 	if !plan.QuotaLimit.Equal(state.QuotaLimit) {
-		v := plan.QuotaLimit.ValueString()
+		v := plan.QuotaLimit.ValueInt64()
 		patch.QuotaLimit = &v
 	}
 	if !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {
@@ -384,7 +384,7 @@ func mapOSAToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountMode
 	data.ID = types.StringValue(acct.ID)
 	data.Name = types.StringValue(acct.Name)
 	data.Created = types.Int64Value(acct.Created)
-	data.QuotaLimit = types.StringValue(acct.QuotaLimit)
+	data.QuotaLimit = types.Int64Value(acct.QuotaLimit)
 	data.HardLimitEnabled = types.BoolValue(acct.HardLimitEnabled)
 	data.ObjectCount = types.Int64Value(acct.ObjectCount)
 

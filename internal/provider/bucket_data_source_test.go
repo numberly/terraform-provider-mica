@@ -58,7 +58,7 @@ func buildBucketDSType() tftypes.Object {
 		"destroyed":          tftypes.Bool,
 		"time_remaining":     tftypes.Number,
 		"versioning":         tftypes.String,
-		"quota_limit":        tftypes.String,
+		"quota_limit":        tftypes.Number,
 		"hard_limit_enabled": tftypes.Bool,
 		"object_count":       tftypes.Number,
 		"bucket_type":        tftypes.String,
@@ -85,7 +85,7 @@ func nullBucketDSConfig() map[string]tftypes.Value {
 		"destroyed":          tftypes.NewValue(tftypes.Bool, nil),
 		"time_remaining":     tftypes.NewValue(tftypes.Number, nil),
 		"versioning":         tftypes.NewValue(tftypes.String, nil),
-		"quota_limit":        tftypes.NewValue(tftypes.String, nil),
+		"quota_limit":        tftypes.NewValue(tftypes.Number, nil),
 		"hard_limit_enabled": tftypes.NewValue(tftypes.Bool, nil),
 		"object_count":       tftypes.NewValue(tftypes.Number, nil),
 		"bucket_type":        tftypes.NewValue(tftypes.String, nil),
@@ -121,7 +121,7 @@ func TestUnit_BucketDataSource(t *testing.T) {
 	_, err = c.PostBucket(context.Background(), "ds-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "ds-account"},
 		Versioning: "enabled",
-		QuotaLimit: "10737418240",
+		QuotaLimit: 10737418240,
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
@@ -158,8 +158,8 @@ func TestUnit_BucketDataSource(t *testing.T) {
 	if model.Versioning.ValueString() != "enabled" {
 		t.Errorf("expected versioning=enabled, got %s", model.Versioning.ValueString())
 	}
-	if model.QuotaLimit.ValueString() != "10737418240" {
-		t.Errorf("expected quota_limit=10737418240, got %s", model.QuotaLimit.ValueString())
+	if model.QuotaLimit.ValueInt64() != 10737418240 {
+		t.Errorf("expected quota_limit=10737418240, got %d", model.QuotaLimit.ValueInt64())
 	}
 	if model.ID.IsNull() || model.ID.ValueString() == "" {
 		t.Error("expected ID to be populated")

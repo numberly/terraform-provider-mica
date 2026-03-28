@@ -42,7 +42,7 @@ type objectStoreAccountDataSourceModel struct {
 	ID               types.String                            `tfsdk:"id"`
 	Name             types.String                            `tfsdk:"name"`
 	Created          types.Int64                             `tfsdk:"created"`
-	QuotaLimit       types.String                            `tfsdk:"quota_limit"`
+	QuotaLimit       types.Int64                             `tfsdk:"quota_limit"`
 	HardLimitEnabled types.Bool                              `tfsdk:"hard_limit_enabled"`
 	ObjectCount      types.Int64                             `tfsdk:"object_count"`
 	Space            *objectStoreAccountDataSourceSpaceModel `tfsdk:"space"`
@@ -72,7 +72,7 @@ func (d *objectStoreAccountDataSource) Schema(_ context.Context, _ datasource.Sc
 				Computed:    true,
 				Description: "Unix timestamp (milliseconds) when the account was created.",
 			},
-			"quota_limit": schema.StringAttribute{
+			"quota_limit": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The effective quota limit applied against the size of the account, in bytes.",
 			},
@@ -159,7 +159,7 @@ func (d *objectStoreAccountDataSource) Read(ctx context.Context, req datasource.
 	config.ID = types.StringValue(acct.ID)
 	config.Name = types.StringValue(acct.Name)
 	config.Created = types.Int64Value(acct.Created)
-	config.QuotaLimit = types.StringValue(acct.QuotaLimit)
+	config.QuotaLimit = types.Int64Value(acct.QuotaLimit)
 	config.HardLimitEnabled = types.BoolValue(acct.HardLimitEnabled)
 	config.ObjectCount = types.Int64Value(acct.ObjectCount)
 

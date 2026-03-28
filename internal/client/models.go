@@ -117,7 +117,7 @@ type ObjectStoreAccount struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`
 	Created          int64  `json:"created,omitempty"`
-	QuotaLimit       string `json:"quota_limit,omitempty"`
+	QuotaLimit       int64 `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool   `json:"hard_limit_enabled"`
 	ObjectCount      int64  `json:"object_count,omitempty"`
 	Space            Space  `json:"space,omitempty"`
@@ -126,14 +126,14 @@ type ObjectStoreAccount struct {
 // ObjectStoreAccountPost contains the mutable fields for POST /object-store-accounts.
 // Name is passed as a query parameter (?names=), not in the body.
 type ObjectStoreAccountPost struct {
-	QuotaLimit       string `json:"quota_limit,omitempty"`
+	QuotaLimit       int64 `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool   `json:"hard_limit_enabled,omitempty"`
 }
 
 // ObjectStoreAccountPatch contains pointer fields for PATCH semantics.
 // Only non-nil fields are included in the request body.
 type ObjectStoreAccountPatch struct {
-	QuotaLimit       *string `json:"quota_limit,omitempty"`
+	QuotaLimit       *int64 `json:"quota_limit,omitempty"`
 	HardLimitEnabled *bool   `json:"hard_limit_enabled,omitempty"`
 }
 
@@ -146,7 +146,7 @@ type Bucket struct {
 	Destroyed        bool           `json:"destroyed"`
 	TimeRemaining    int64          `json:"time_remaining,omitempty"`
 	Versioning       string         `json:"versioning,omitempty"`
-	QuotaLimit       string         `json:"quota_limit,omitempty"`
+	QuotaLimit       int64          `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool           `json:"hard_limit_enabled"`
 	ObjectCount      int64          `json:"object_count,omitempty"`
 	BucketType       string         `json:"bucket_type,omitempty"`
@@ -158,7 +158,7 @@ type Bucket struct {
 type BucketPost struct {
 	Account          NamedReference `json:"account"`
 	Versioning       string         `json:"versioning,omitempty"`
-	QuotaLimit       string         `json:"quota_limit,omitempty"`
+	QuotaLimit       int64          `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool           `json:"hard_limit_enabled,omitempty"`
 	RetentionLock    string         `json:"retention_lock,omitempty"`
 }
@@ -167,7 +167,7 @@ type BucketPost struct {
 type BucketPatch struct {
 	Destroyed        *bool   `json:"destroyed,omitempty"`
 	Versioning       *string `json:"versioning,omitempty"`
-	QuotaLimit       *string `json:"quota_limit,omitempty"`
+	QuotaLimit       *int64 `json:"quota_limit,omitempty"`
 	HardLimitEnabled *bool   `json:"hard_limit_enabled,omitempty"`
 	RetentionLock    *string `json:"retention_lock,omitempty"`
 }
