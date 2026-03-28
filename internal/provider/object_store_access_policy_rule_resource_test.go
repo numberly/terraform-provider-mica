@@ -410,6 +410,160 @@ func TestObjectStoreAccessPolicyRuleResource_ConditionsRoundTrip(t *testing.T) {
 	}
 }
 
+// TestUnit_OAPRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_OAPRule_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
+
+	createTestOAPPolicy(t, ms, "lifecycle-oap-rule-policy")
+
+	r := newTestOAPRuleResource(t, ms)
+	s := oapRuleResourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := oapRulePlan(t, "lifecycle-oap-rule-policy", "lifecycle-rule", "allow",
+		[]string{"s3:GetObject"},
+		[]string{"arn:aws:s3:::test-bucket/*"},
+	)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel objectStoreAccessPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Name.ValueString() != "lifecycle-rule" {
+		t.Errorf("Create: expected name=lifecycle-rule, got %s", createModel.Name.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 objectStoreAccessPolicyRuleModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.Effect.ValueString() != "allow" {
+		t.Errorf("Read1: expected effect=allow, got %s", readModel1.Effect.ValueString())
+	}
+
+	// Step 3: Update actions list (effect is RequiresReplace, use resources update).
+	updatePlan := oapRulePlan(t, "lifecycle-oap-rule-policy", "lifecycle-rule", "allow",
+		[]string{"s3:GetObject", "s3:PutObject"},
+		[]string{"arn:aws:s3:::test-bucket/*"},
+	)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel objectStoreAccessPolicyRuleModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	var updatedActions []string
+	updateModel.Actions.ElementsAs(context.Background(), &updatedActions, false)
+	if len(updatedActions) != 2 {
+		t.Errorf("Update: expected 2 actions, got %d", len(updatedActions))
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 objectStoreAccessPolicyRuleModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	var readActions []string
+	readModel2.Actions.ElementsAs(context.Background(), &readActions, false)
+	if len(readActions) != 2 {
+		t.Errorf("Read2: expected 2 actions, got %d", len(readActions))
+	}
+
+	// Step 5: Delete.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_OAPRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_OAPRule_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
+
+	createTestOAPPolicy(t, ms, "idempotent-oap-rule-policy")
+
+	r := newTestOAPRuleResource(t, ms)
+	s := oapRuleResourceSchema(t).Schema
+
+	// Create.
+	createPlan := oapRulePlan(t, "idempotent-oap-rule-policy", "idempotent-rule", "allow",
+		[]string{"s3:GetObject"},
+		[]string{"arn:aws:s3:::test-bucket/*"},
+	)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel objectStoreAccessPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState using composite ID "policy_name/rule_name".
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-oap-rule-policy/idempotent-rule"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel objectStoreAccessPolicyRuleModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.PolicyName.ValueString() != createModel.PolicyName.ValueString() {
+		t.Errorf("policy_name mismatch: create=%s import=%s", createModel.PolicyName.ValueString(), importedModel.PolicyName.ValueString())
+	}
+	if importedModel.Name.ValueString() != createModel.Name.ValueString() {
+		t.Errorf("name mismatch: create=%s import=%s", createModel.Name.ValueString(), importedModel.Name.ValueString())
+	}
+	if importedModel.Effect.ValueString() != createModel.Effect.ValueString() {
+		t.Errorf("effect mismatch: create=%s import=%s", createModel.Effect.ValueString(), importedModel.Effect.ValueString())
+	}
+}
+
 // TestUnit_OAPRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the OAP rule resource schema.
 func TestUnit_OAPRule_PlanModifiers(t *testing.T) {

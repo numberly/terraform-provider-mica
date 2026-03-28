@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -381,6 +382,201 @@ func TestObjectStoreAccessPolicyDataSource(t *testing.T) {
 	}
 	if model.Description.ValueString() != "datasource test" {
 		t.Errorf("expected description='datasource test', got %s", model.Description.ValueString())
+	}
+}
+
+// TestUnit_OAP_Create_Conflict verifies that a 409 Conflict on POST produces
+// an error diagnostic.
+func TestUnit_OAP_Create_Conflict(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	ms.RegisterHandler("/api/2.22/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handlers.WriteJSONError(w, http.StatusConflict, "Policy with the given name already exists.")
+			return
+		}
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccessPolicy{})
+	})
+
+	r := newTestOAPResource(t, ms)
+	s := oapResourceSchema(t).Schema
+
+	plan := oapPlanWithName(t, "conflict-oap")
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
+
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected Create to produce an error diagnostic on 409 Conflict, got none")
+	}
+}
+
+// TestUnit_OAP_Read_NotFound verifies that a not-found response (empty items)
+// during Read removes the resource from Terraform state without an error diagnostic.
+func TestUnit_OAP_Read_NotFound(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	ms.RegisterHandler("/api/2.22/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccessPolicy{})
+	})
+
+	r := newTestOAPResource(t, ms)
+	s := oapResourceSchema(t).Schema
+
+	cfg := nullOAPConfig()
+	cfg["id"] = tftypes.NewValue(tftypes.String, "oap-gone-id")
+	cfg["name"] = tftypes.NewValue(tftypes.String, "gone-oap")
+	state := tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), cfg), Schema: s}
+
+	readResp := &resource.ReadResponse{State: state}
+	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+	if !readResp.State.Raw.IsNull() {
+		t.Error("expected state to be removed (null) when OAP not found")
+	}
+}
+
+// TestUnit_ObjectStoreAccessPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_ObjectStoreAccessPolicy_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
+	handlers.RegisterBucketHandlers(ms.Mux, nil)
+
+	r := newTestOAPResource(t, ms)
+	s := oapResourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := oapPlanWithName(t, "lifecycle-oap-policy")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel objectStoreAccessPolicyModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Name.ValueString() != "lifecycle-oap-policy" {
+		t.Errorf("Create: expected name=lifecycle-oap-policy, got %s", createModel.Name.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 objectStoreAccessPolicyModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.ID.IsNull() || readModel1.ID.ValueString() == "" {
+		t.Error("Read1: expected non-empty ID")
+	}
+
+	// Step 3: Update (rename policy — description is RequiresReplace, name is mutable).
+	updatePlan := oapPlanWithName(t, "lifecycle-oap-policy-renamed")
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel objectStoreAccessPolicyModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Name.ValueString() != "lifecycle-oap-policy-renamed" {
+		t.Errorf("Update: expected name=lifecycle-oap-policy-renamed, got %s", updateModel.Name.ValueString())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 objectStoreAccessPolicyModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Name.ValueString() != "lifecycle-oap-policy-renamed" {
+		t.Errorf("Read2: expected name=lifecycle-oap-policy-renamed, got %s", readModel2.Name.ValueString())
+	}
+
+	// Step 5: Delete.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+	_, err := r.client.GetObjectStoreAccessPolicy(context.Background(), "lifecycle-oap-policy-renamed")
+	if err == nil || !client.IsNotFound(err) {
+		t.Errorf("expected policy to be deleted, got: %v", err)
+	}
+}
+
+// TestUnit_ObjectStoreAccessPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_ObjectStoreAccessPolicy_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
+
+	r := newTestOAPResource(t, ms)
+	s := oapResourceSchema(t).Schema
+
+	// Create.
+	createPlan := oapPlanWithName(t, "idempotent-oap-policy")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel objectStoreAccessPolicyModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-oap-policy"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel objectStoreAccessPolicyModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.Name.ValueString() != createModel.Name.ValueString() {
+		t.Errorf("name mismatch: create=%s import=%s", createModel.Name.ValueString(), importedModel.Name.ValueString())
+	}
+	if importedModel.ID.ValueString() != createModel.ID.ValueString() {
+		t.Errorf("id mismatch: create=%s import=%s", createModel.ID.ValueString(), importedModel.ID.ValueString())
 	}
 }
 

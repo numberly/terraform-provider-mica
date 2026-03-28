@@ -323,6 +323,148 @@ func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
 	}
 }
 
+// TestUnit_NfsExportPolicyRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
+
+	r := newTestNFSRuleResource(t, ms)
+	s := nfsRuleResourceSchema(t).Schema
+
+	createTestPolicy(t, r.client, "lifecycle-nfs-rule-policy")
+
+	// Step 1: Create.
+	createPlan := nfsRulePlan(t, "lifecycle-nfs-rule-policy", "root-squash", "*", "rw")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel nfsExportPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Access.ValueString() != "root-squash" {
+		t.Errorf("Create: expected access=root-squash, got %s", createModel.Access.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 nfsExportPolicyRuleModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.Client.ValueString() != "*" {
+		t.Errorf("Read1: expected client=*, got %s", readModel1.Client.ValueString())
+	}
+
+	// Step 3: Update client to specific subnet.
+	updatePlan := nfsRulePlan(t, "lifecycle-nfs-rule-policy", "root-squash", "192.168.0.0/16", "rw")
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel nfsExportPolicyRuleModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Client.ValueString() != "192.168.0.0/16" {
+		t.Errorf("Update: expected client=192.168.0.0/16, got %s", updateModel.Client.ValueString())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 nfsExportPolicyRuleModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Client.ValueString() != "192.168.0.0/16" {
+		t.Errorf("Read2: expected client=192.168.0.0/16, got %s", readModel2.Client.ValueString())
+	}
+
+	// Step 5: Delete.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_NfsExportPolicyRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
+
+	r := newTestNFSRuleResource(t, ms)
+	s := nfsRuleResourceSchema(t).Schema
+
+	createTestPolicy(t, r.client, "idempotent-nfs-rule-policy")
+
+	// Create.
+	createPlan := nfsRulePlan(t, "idempotent-nfs-rule-policy", "root-squash", "*", "rw")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel nfsExportPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	index := strconv.FormatInt(createModel.Index.ValueInt64(), 10)
+
+	// ImportState using composite ID.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-nfs-rule-policy/" + index}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel nfsExportPolicyRuleModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.PolicyName.ValueString() != createModel.PolicyName.ValueString() {
+		t.Errorf("policy_name mismatch: create=%s import=%s", createModel.PolicyName.ValueString(), importedModel.PolicyName.ValueString())
+	}
+	if importedModel.Access.ValueString() != createModel.Access.ValueString() {
+		t.Errorf("access mismatch: create=%s import=%s", createModel.Access.ValueString(), importedModel.Access.ValueString())
+	}
+	if importedModel.Client.ValueString() != createModel.Client.ValueString() {
+		t.Errorf("client mismatch: create=%s import=%s", createModel.Client.ValueString(), importedModel.Client.ValueString())
+	}
+}
+
 // TestUnit_NFSRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the nfs_export_policy_rule resource schema.
 func TestUnit_NFSRule_PlanModifiers(t *testing.T) {

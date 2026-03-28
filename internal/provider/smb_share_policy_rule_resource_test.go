@@ -329,6 +329,154 @@ func TestSmbSharePolicyRuleResource_Import(t *testing.T) {
 	}
 }
 
+// TestUnit_SmbSharePolicyRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_SmbSharePolicyRule_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
+
+	r := newTestSMBRuleResource(t, ms)
+	s := smbRuleResourceSchema(t).Schema
+
+	createSMBPolicyForRuleTest(t, ms, "lifecycle-smb-rule-policy")
+
+	// Step 1: Create.
+	createPlan := smbRulePlan(t, "lifecycle-smb-rule-policy", "Everyone", "allow", "deny", "allow")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel smbSharePolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Change.ValueString() != "allow" {
+		t.Errorf("Create: expected change=allow, got %s", createModel.Change.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 smbSharePolicyRuleModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.Principal.ValueString() != "Everyone" {
+		t.Errorf("Read1: expected principal=Everyone, got %s", readModel1.Principal.ValueString())
+	}
+
+	// Step 3: Update change to "deny".
+	updateCfg := nullSMBRuleConfig()
+	updateCfg["policy_name"] = tftypes.NewValue(tftypes.String, "lifecycle-smb-rule-policy")
+	updateCfg["principal"] = tftypes.NewValue(tftypes.String, "Everyone")
+	updateCfg["change"] = tftypes.NewValue(tftypes.String, "deny")
+	updateCfg["full_control"] = tftypes.NewValue(tftypes.String, "deny")
+	updateCfg["read"] = tftypes.NewValue(tftypes.String, "allow")
+	updatePlan := tfsdk.Plan{Raw: tftypes.NewValue(buildSMBRuleType(), updateCfg), Schema: s}
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel smbSharePolicyRuleModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Change.ValueString() != "deny" {
+		t.Errorf("Update: expected change=deny, got %s", updateModel.Change.ValueString())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 smbSharePolicyRuleModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Change.ValueString() != "deny" {
+		t.Errorf("Read2: expected change=deny, got %s", readModel2.Change.ValueString())
+	}
+
+	// Step 5: Delete.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_SmbSharePolicyRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_SmbSharePolicyRule_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
+
+	r := newTestSMBRuleResource(t, ms)
+	s := smbRuleResourceSchema(t).Schema
+
+	createSMBPolicyForRuleTest(t, ms, "idempotent-smb-rule-policy")
+
+	// Create.
+	createPlan := smbRulePlan(t, "idempotent-smb-rule-policy", "Everyone", "allow", "deny", "allow")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel smbSharePolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState using composite ID "policy_name/rule_name".
+	compositeID := "idempotent-smb-rule-policy/" + createModel.Name.ValueString()
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: compositeID}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel smbSharePolicyRuleModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.PolicyName.ValueString() != createModel.PolicyName.ValueString() {
+		t.Errorf("policy_name mismatch: create=%s import=%s", createModel.PolicyName.ValueString(), importedModel.PolicyName.ValueString())
+	}
+	if importedModel.Principal.ValueString() != createModel.Principal.ValueString() {
+		t.Errorf("principal mismatch: create=%s import=%s", createModel.Principal.ValueString(), importedModel.Principal.ValueString())
+	}
+	if importedModel.Change.ValueString() != createModel.Change.ValueString() {
+		t.Errorf("change mismatch: create=%s import=%s", createModel.Change.ValueString(), importedModel.Change.ValueString())
+	}
+}
+
 // TestUnit_SMBRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the smb_share_policy_rule resource schema.
 func TestUnit_SMBRule_PlanModifiers(t *testing.T) {

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -369,6 +370,64 @@ func TestQuotaGroupDataSource(t *testing.T) {
 	}
 	if model.Quota.ValueInt64() != 1073741824 {
 		t.Errorf("expected quota=1073741824, got %d", model.Quota.ValueInt64())
+	}
+}
+
+// TestUnit_QuotaGroup_Create_Conflict verifies that a 409 Conflict on POST produces
+// an error diagnostic.
+func TestUnit_QuotaGroup_Create_Conflict(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	ms.RegisterHandler("/api/2.22/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handlers.WriteJSONError(w, http.StatusConflict, "A quota for this group already exists on the file system.")
+			return
+		}
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.QuotaGroup{})
+	})
+
+	r := newTestQuotaGroupResource(t, ms)
+	s := quotaGroupResourceSchema(t).Schema
+
+	plan := quotaGroupPlan(t, "testfs", "2000", 1073741824)
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildQuotaGroupType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
+
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected Create to produce an error diagnostic on 409 Conflict, got none")
+	}
+}
+
+// TestUnit_QuotaGroup_Read_NotFound verifies that a not-found response during Read
+// removes the resource from Terraform state without an error diagnostic.
+func TestUnit_QuotaGroup_Read_NotFound(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	ms.RegisterHandler("/api/2.22/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.QuotaGroup{})
+	})
+
+	r := newTestQuotaGroupResource(t, ms)
+	s := quotaGroupResourceSchema(t).Schema
+
+	cfg := nullQuotaGroupConfig()
+	cfg["id"] = tftypes.NewValue(tftypes.String, "testfs/2000")
+	cfg["file_system_name"] = tftypes.NewValue(tftypes.String, "testfs")
+	cfg["gid"] = tftypes.NewValue(tftypes.String, "2000")
+	cfg["quota"] = tftypes.NewValue(tftypes.Number, int64(1073741824))
+	state := tfsdk.State{Raw: tftypes.NewValue(buildQuotaGroupType(), cfg), Schema: s}
+
+	readResp := &resource.ReadResponse{State: state}
+	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+	if !readResp.State.Raw.IsNull() {
+		t.Error("expected state to be removed (null) when quota group not found")
 	}
 }
 

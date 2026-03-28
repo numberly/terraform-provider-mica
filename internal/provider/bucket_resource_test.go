@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -698,6 +699,82 @@ func TestUnit_Bucket_ImportIdempotency(t *testing.T) {
 	}
 	if importedModel.QuotaLimit.ValueString() != createModel.QuotaLimit.ValueString() {
 		t.Errorf("quota_limit mismatch: create=%s import=%s", createModel.QuotaLimit.ValueString(), importedModel.QuotaLimit.ValueString())
+	}
+}
+
+// TestUnit_Bucket_Create_Conflict verifies that a 409 Conflict on POST produces
+// an error diagnostic (not a panic or silent failure).
+func TestUnit_Bucket_Create_Conflict(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	// Register a mock that always returns 409 on POST /buckets.
+	ms.RegisterHandler("/api/2.22/buckets", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handlers.WriteJSONError(w, http.StatusConflict, "Bucket with the given name already exists.")
+			return
+		}
+		// GET: return empty list (no existing bucket).
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.Bucket{})
+	})
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	plan := bucketPlanWithNameAndAccount(t, "conflict-bucket", "test-account")
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
+
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected Create to produce an error diagnostic on 409 Conflict, got none")
+	}
+	// Verify the error message is informative.
+	found := false
+	for _, d := range resp.Diagnostics {
+		if strings.Contains(d.Detail(), "409") || strings.Contains(d.Detail(), "conflict") ||
+			strings.Contains(d.Detail(), "Conflict") || strings.Contains(d.Summary(), "conflict") ||
+			strings.Contains(d.Summary(), "Error") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected diagnostic to mention conflict or 409, got: %s", resp.Diagnostics)
+	}
+}
+
+// TestUnit_Bucket_Read_NotFound verifies that a 404 during Read removes the resource
+// from Terraform state without producing an error diagnostic.
+func TestUnit_Bucket_Read_NotFound(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	// Register a GET handler that always returns 404-equivalent: empty items list.
+	// FlashBlade returns HTTP 200 + empty items for not-found resources.
+	ms.RegisterHandler("/api/2.22/buckets", func(w http.ResponseWriter, r *http.Request) {
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.Bucket{})
+	})
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Build a state that represents an existing bucket.
+	cfg := nullBucketConfig()
+	cfg["id"] = tftypes.NewValue(tftypes.String, "bucket-gone-id")
+	cfg["name"] = tftypes.NewValue(tftypes.String, "gone-bucket")
+	cfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+	state := tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), cfg), Schema: s}
+
+	readResp := &resource.ReadResponse{State: state}
+	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+	if !readResp.State.Raw.IsNull() {
+		t.Error("expected state to be removed (null) when bucket not found, but it was not null")
 	}
 }
 

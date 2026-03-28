@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -284,6 +285,151 @@ func TestNfsExportPolicyResource_Import(t *testing.T) {
 	}
 }
 
+// TestUnit_NfsExportPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_NfsExportPolicy_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
+	handlers.RegisterFileSystemHandlers(ms.Mux)
+
+	r := newTestNFSPolicyResource(t, ms)
+	s := nfsPolicyResourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := nfsPolicyPlanWithNameAndEnabled(t, "lifecycle-nfs-policy", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel nfsExportPolicyModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Name.ValueString() != "lifecycle-nfs-policy" {
+		t.Errorf("Create: expected name=lifecycle-nfs-policy, got %s", createModel.Name.ValueString())
+	}
+	if !createModel.Enabled.ValueBool() {
+		t.Error("Create: expected enabled=true")
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 nfsExportPolicyModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if !readModel1.Enabled.ValueBool() {
+		t.Error("Read1: expected enabled=true")
+	}
+
+	// Step 3: Update enabled=false.
+	updatePlan := nfsPolicyPlanWithNameAndEnabled(t, "lifecycle-nfs-policy", false)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel nfsExportPolicyModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Enabled.ValueBool() {
+		t.Error("Update: expected enabled=false")
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 nfsExportPolicyModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Enabled.ValueBool() {
+		t.Error("Read2: expected enabled=false")
+	}
+
+	// Step 5: Delete.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+	_, err := r.client.GetNfsExportPolicy(context.Background(), "lifecycle-nfs-policy")
+	if err == nil || !client.IsNotFound(err) {
+		t.Errorf("expected policy to be deleted, got: %v", err)
+	}
+}
+
+// TestUnit_NfsExportPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_NfsExportPolicy_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
+
+	r := newTestNFSPolicyResource(t, ms)
+	s := nfsPolicyResourceSchema(t).Schema
+
+	// Create.
+	createPlan := nfsPolicyPlanWithNameAndEnabled(t, "idempotent-nfs-policy", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel nfsExportPolicyModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-nfs-policy"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel nfsExportPolicyModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.Name.ValueString() != createModel.Name.ValueString() {
+		t.Errorf("name mismatch: create=%s import=%s", createModel.Name.ValueString(), importedModel.Name.ValueString())
+	}
+	if importedModel.Enabled.ValueBool() != createModel.Enabled.ValueBool() {
+		t.Errorf("enabled mismatch: create=%v import=%v", createModel.Enabled.ValueBool(), importedModel.Enabled.ValueBool())
+	}
+	if importedModel.ID.ValueString() != createModel.ID.ValueString() {
+		t.Errorf("id mismatch: create=%s import=%s", createModel.ID.ValueString(), importedModel.ID.ValueString())
+	}
+}
+
 // ---- data source tests -------------------------------------------------------
 
 // newTestNFSPolicyDataSource creates an nfsExportPolicyDataSource wired to the given mock server.
@@ -390,6 +536,62 @@ func TestNfsExportPolicyDataSource(t *testing.T) {
 	}
 	if model.ID.IsNull() || model.ID.ValueString() == "" {
 		t.Error("expected ID to be populated")
+	}
+}
+
+// TestUnit_NfsExportPolicy_Create_Conflict verifies that a 409 Conflict on POST
+// produces an error diagnostic with a meaningful message.
+func TestUnit_NfsExportPolicy_Create_Conflict(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	ms.RegisterHandler("/api/2.22/nfs-export-policies", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handlers.WriteJSONError(w, http.StatusConflict, "Policy with the given name already exists.")
+			return
+		}
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.NfsExportPolicy{})
+	})
+
+	r := newTestNFSPolicyResource(t, ms)
+	s := nfsPolicyResourceSchema(t).Schema
+
+	plan := nfsPolicyPlanWithName(t, "conflict-policy")
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
+
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected Create to produce an error diagnostic on 409 Conflict, got none")
+	}
+}
+
+// TestUnit_NfsExportPolicy_Read_NotFound verifies that a not-found response (empty items)
+// during Read removes the resource from Terraform state without an error diagnostic.
+func TestUnit_NfsExportPolicy_Read_NotFound(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	ms.RegisterHandler("/api/2.22/nfs-export-policies", func(w http.ResponseWriter, r *http.Request) {
+		handlers.WriteJSONListResponse(w, http.StatusOK, []client.NfsExportPolicy{})
+	})
+
+	r := newTestNFSPolicyResource(t, ms)
+	s := nfsPolicyResourceSchema(t).Schema
+
+	cfg := nullNFSPolicyConfig()
+	cfg["id"] = tftypes.NewValue(tftypes.String, "nfs-gone-id")
+	cfg["name"] = tftypes.NewValue(tftypes.String, "gone-policy")
+	state := tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), cfg), Schema: s}
+
+	readResp := &resource.ReadResponse{State: state}
+	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+	if !readResp.State.Raw.IsNull() {
+		t.Error("expected state to be removed (null) when NFS export policy not found")
 	}
 }
 

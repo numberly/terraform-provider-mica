@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -923,6 +924,63 @@ func TestUnit_FileSystem_ImportIdempotency(t *testing.T) {
 	}
 	if importedModel.ID.ValueString() != createModel.ID.ValueString() {
 		t.Errorf("id mismatch: create=%s import=%s", createModel.ID.ValueString(), importedModel.ID.ValueString())
+	}
+}
+
+// TestUnit_FileSystem_Delete_Unprocessable verifies that a 422 Unprocessable returned
+// by DELETE (eradication) produces an error diagnostic (not a silent failure or panic).
+// This represents the case where a filesystem cannot be eradicated (e.g. still has mounts).
+func TestUnit_FileSystem_Delete_Unprocessable(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+
+	// Register a mock server that:
+	// - PATCH: accepts soft-delete (returns destroyed=true)
+	// - DELETE: returns 422 Unprocessable
+	// - GET: returns the soft-deleted file system (needed by PATCH logic)
+	ms.RegisterHandler("/api/2.22/file-systems", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			// Return a soft-deleted filesystem (supports PATCH destroyed path).
+			fs := client.FileSystem{
+				ID:        "unprocessable-fs-id",
+				Name:      "unprocessable-fs",
+				Destroyed: true,
+			}
+			handlers.WriteJSONListResponse(w, http.StatusOK, []client.FileSystem{fs})
+		case http.MethodPatch:
+			// Accept soft-delete — return destroyed=true.
+			destroyed := true
+			fs := client.FileSystem{
+				ID:        "unprocessable-fs-id",
+				Name:      "unprocessable-fs",
+				Destroyed: destroyed,
+			}
+			handlers.WriteJSONListResponse(w, http.StatusOK, []client.FileSystem{fs})
+		case http.MethodDelete:
+			// Simulate 422: filesystem cannot be eradicated (e.g. still has NFS mounts).
+			handlers.WriteJSONError(w, http.StatusUnprocessableEntity, "File system cannot be eradicated while NFS mounts are active.")
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	r := newTestResource(t, ms)
+	s := resourceSchema(t).Schema
+
+	// Build state representing an existing filesystem with eradicate=true.
+	cfg := nullFSConfig()
+	cfg["id"] = tftypes.NewValue(tftypes.String, "unprocessable-fs-id")
+	cfg["name"] = tftypes.NewValue(tftypes.String, "unprocessable-fs")
+	cfg["provisioned"] = tftypes.NewValue(tftypes.Number, int64(1073741824))
+	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, true)
+	state := tfsdk.State{Raw: tftypes.NewValue(buildFSType(), cfg), Schema: s}
+
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: state}, deleteResp)
+
+	if !deleteResp.Diagnostics.HasError() {
+		t.Error("expected Delete to produce an error diagnostic on 422 Unprocessable, got none")
 	}
 }
 
