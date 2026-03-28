@@ -377,11 +377,3 @@ func mapSMBRuleToModel(rule *client.SmbSharePolicyRule, data *smbSharePolicyRule
 	data.FullControl = stringOrNull(rule.FullControl)
 	data.Read = stringOrNull(rule.Read)
 }
-
-// stringOrNull returns types.StringNull() for empty strings, types.StringValue() otherwise.
-func stringOrNull(s string) types.String {
-	if s == "" {
-		return types.StringNull()
-	}
-	return types.StringValue(s)
-}
