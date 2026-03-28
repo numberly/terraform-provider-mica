@@ -48,67 +48,77 @@ provider "flashblade" {
 
 Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
 
-## Resources
+## Resources & Data Sources
 
-| Resource | Description |
-|----------|-------------|
-| `flashblade_file_system` | NFS/SMB file system with soft-delete lifecycle |
-| `flashblade_bucket` | S3 bucket (account-scoped, versioning, quota) |
-| `flashblade_object_store_account` | Object store account (S3 namespace) |
-| `flashblade_object_store_access_key` | S3 access key pair (create-only, no import) |
-| `flashblade_nfs_export_policy` | NFS export policy |
-| `flashblade_nfs_export_policy_rule` | Rule within an NFS export policy |
-| `flashblade_smb_share_policy` | SMB share policy |
-| `flashblade_smb_share_policy_rule` | Rule within an SMB share policy |
-| `flashblade_snapshot_policy` | Snapshot schedule policy |
-| `flashblade_snapshot_policy_rule` | Rule within a snapshot policy |
-| `flashblade_object_store_access_policy` | IAM-style S3 access policy |
-| `flashblade_object_store_access_policy_rule` | Rule within an S3 access policy |
-| `flashblade_network_access_policy` | Network access policy (singleton, adopt existing) |
-| `flashblade_network_access_policy_rule` | Rule within a network access policy |
-| `flashblade_quota_group` | Per-filesystem group quota |
-| `flashblade_quota_user` | Per-filesystem user quota |
-| `flashblade_array_dns` | Array DNS configuration (singleton) |
-| `flashblade_array_ntp` | Array NTP server list (singleton) |
-| `flashblade_array_smtp` | Array SMTP relay and alert watchers (singleton) |
-| **Servers & Exports** |
-| `flashblade_server` | FlashBlade server with DNS configuration |
-| `flashblade_file_system_export` | File system export to a server (NFS) |
-| `flashblade_object_store_account_export` | Object store account export to a server (S3) |
-| `flashblade_s3_export_policy` | S3 export access policy |
-| `flashblade_s3_export_policy_rule` | Rule within an S3 export policy |
-| `flashblade_object_store_virtual_host` | S3 virtual-hosted-style endpoint |
-| **SMB Client Policy** |
-| `flashblade_smb_client_policy` | SMB client authentication policy |
-| `flashblade_smb_client_policy_rule` | Rule within an SMB client policy |
-| **Syslog** |
-| `flashblade_syslog_server` | Syslog server configuration |
+### Storage
 
-## Data Sources
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_file_system` | ✅ | NFS/SMB file system with soft-delete lifecycle |
+| `flashblade_bucket` | ✅ | S3 bucket (account-scoped, versioning, quota) |
+| `flashblade_object_store_account` | ✅ | Object store account (S3 namespace) |
+| `flashblade_object_store_access_key` | ✅ | S3 access key pair (create-only, no import) |
 
-| Data Source | Description |
-|-------------|-------------|
-| `flashblade_file_system` | Look up an existing file system |
-| `flashblade_bucket` | Look up an existing bucket |
-| `flashblade_object_store_account` | Look up an existing object store account |
-| `flashblade_object_store_access_key` | Look up an existing access key |
-| `flashblade_nfs_export_policy` | Look up an existing NFS export policy |
-| `flashblade_smb_share_policy` | Look up an existing SMB share policy |
-| `flashblade_snapshot_policy` | Look up an existing snapshot policy |
-| `flashblade_object_store_access_policy` | Look up an existing S3 access policy |
-| `flashblade_network_access_policy` | Look up an existing network access policy |
-| `flashblade_quota_group` | Look up an existing group quota |
-| `flashblade_quota_user` | Look up an existing user quota |
-| `flashblade_array_dns` | Read current array DNS configuration |
-| `flashblade_array_ntp` | Read current array NTP configuration |
-| `flashblade_array_smtp` | Read current array SMTP configuration |
-| `flashblade_server` | Look up an existing server |
-| `flashblade_file_system_export` | Look up an existing file system export |
-| `flashblade_object_store_account_export` | Look up an existing account export |
-| `flashblade_s3_export_policy` | Look up an existing S3 export policy |
-| `flashblade_object_store_virtual_host` | Look up an existing virtual host |
-| `flashblade_smb_client_policy` | Look up an existing SMB client policy |
-| `flashblade_syslog_server` | Look up an existing syslog server |
+### Servers & Exports
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_server` | ✅ | FlashBlade server with DNS configuration |
+| `flashblade_file_system_export` | ✅ | File system export to a server (NFS) |
+| `flashblade_object_store_account_export` | ✅ | Object store account export to a server (S3) |
+| `flashblade_object_store_virtual_host` | ✅ | S3 virtual-hosted-style endpoint |
+
+### NFS Policies
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_nfs_export_policy` | ✅ | NFS export policy |
+| `flashblade_nfs_export_policy_rule` | — | Rule within an NFS export policy |
+
+### SMB Policies
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_smb_share_policy` | ✅ | SMB share policy (file permissions) |
+| `flashblade_smb_share_policy_rule` | — | Rule within an SMB share policy |
+| `flashblade_smb_client_policy` | ✅ | SMB client policy (auth, encryption) |
+| `flashblade_smb_client_policy_rule` | — | Rule within an SMB client policy |
+
+### S3 Policies
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_object_store_access_policy` | ✅ | IAM-style S3 access policy |
+| `flashblade_object_store_access_policy_rule` | — | Rule within an S3 access policy |
+| `flashblade_s3_export_policy` | ✅ | S3 export transport-level access policy |
+| `flashblade_s3_export_policy_rule` | — | Rule within an S3 export policy |
+
+### Snapshot & Network Policies
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_snapshot_policy` | ✅ | Snapshot schedule policy |
+| `flashblade_snapshot_policy_rule` | — | Rule within a snapshot policy |
+| `flashblade_network_access_policy` | ✅ | Network access policy (singleton) |
+| `flashblade_network_access_policy_rule` | — | Rule within a network access policy |
+
+### Quotas
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_quota_user` | ✅ | Per-filesystem user quota |
+| `flashblade_quota_group` | ✅ | Per-filesystem group quota |
+
+### Array Administration
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_array_dns` | ✅ | Array DNS configuration (singleton) |
+| `flashblade_array_ntp` | ✅ | Array NTP server list (singleton) |
+| `flashblade_array_smtp` | ✅ | Array SMTP relay and alert watchers (singleton) |
+| `flashblade_syslog_server` | ✅ | Syslog server configuration |
+
+**Total: 28 resources, 21 data sources**
 
 ## Workflow Examples
 
