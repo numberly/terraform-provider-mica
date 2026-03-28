@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // nfsExportPolicyStore is the thread-safe in-memory state for NFS export policy handlers.

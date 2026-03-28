@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // Ensure objectStoreAccessPolicyRuleResource satisfies the resource interfaces.

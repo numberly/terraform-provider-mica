@@ -17,7 +17,7 @@
 terraform {
   required_providers {
     flashblade = {
-      source  = "soulkyu/flashblade"
+      source  = "numberly/flashblade"
       version = "~> 1.0"
     }
   }

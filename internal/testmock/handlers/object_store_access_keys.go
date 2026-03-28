@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // accessKeyStore is the thread-safe in-memory state for object store access key handlers.

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // Ensure networkAccessPolicyDataSource satisfies the datasource interfaces.

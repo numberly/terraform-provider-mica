@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // newTestClient creates a FlashBladeClient pointing at a test server with a fake session token.

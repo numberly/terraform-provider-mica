@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // quotaStore is the thread-safe in-memory state for quota handlers.

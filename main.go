@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 
-	"github.com/soulkyu/terraform-provider-flashblade/internal/provider"
+	"github.com/numberly/opentofu-provider-flashblade/internal/provider"
 )
 
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name flashblade
@@ -21,7 +21,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/soulkyu/flashblade",
+		Address: "registry.terraform.io/numberly/flashblade",
 		Debug:   debug,
 	}
 

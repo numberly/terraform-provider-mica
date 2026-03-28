@@ -1,4 +1,4 @@
-module github.com/soulkyu/terraform-provider-flashblade
+module github.com/numberly/opentofu-provider-flashblade
 
 go 1.25.0
 

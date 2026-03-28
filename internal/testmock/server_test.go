@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock"
-	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock/handlers"
+	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
+	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
 )
 
 // doJSON is a convenience helper for making JSON requests to the mock server.

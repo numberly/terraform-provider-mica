@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
-	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock"
-	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock/handlers"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
+	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
 )
 
 // ---- helpers ----------------------------------------------------------------

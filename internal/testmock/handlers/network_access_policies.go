@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // networkAccessPolicyStore is the thread-safe in-memory state for NAP handlers.

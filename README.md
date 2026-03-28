@@ -1,6 +1,6 @@
 # Terraform Provider FlashBlade
 
-[![CI](https://github.com/soulkyu/terraform-provider-flashblade/actions/workflows/ci.yml/badge.svg)](https://github.com/soulkyu/terraform-provider-flashblade/actions/workflows/ci.yml)
+[![CI](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml/badge.svg)](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml)
 
 Terraform provider for [Pure Storage FlashBlade](https://www.purestorage.com/products/file-and-object/flashblade.html), managing storage resources via the FlashBlade REST API v2.22.
 
@@ -20,7 +20,7 @@ This provider enables GitOps-driven management of FlashBlade storage: file syste
 terraform {
   required_providers {
     flashblade = {
-      source  = "soulkyu/flashblade"
+      source  = "numberly/flashblade"
       version = "~> 1.0"
     }
   }
@@ -181,7 +181,7 @@ make install
 
 ## Documentation
 
-Generated docs are in the `docs/` directory and published to the [Terraform Registry](https://registry.terraform.io/providers/soulkyu/flashblade/latest).
+Generated docs are in the `docs/` directory and published to the [Terraform Registry](https://registry.terraform.io/providers/numberly/flashblade/latest).
 
 ## Contributing
 
