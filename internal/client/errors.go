@@ -54,7 +54,12 @@ func ParseAPIError(resp *http.Response) error {
 }
 
 // IsNotFound returns true when err is an *APIError with HTTP 404,
-// or HTTP 400 with a "does not exist" message (FlashBlade returns 400 instead of 404 for some resources).
+// or HTTP 400 with a sub-error message ending with "does not exist"
+// (FlashBlade returns 400 instead of 404 for some resources).
+//
+// The match is scoped to the first sub-error message (Errors[0].Message)
+// using HasSuffix to avoid false positives on validation errors that
+// contain "does not exist" mid-sentence (e.g., "parameter does not exist in schema").
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -66,9 +71,11 @@ func IsNotFound(err error) bool {
 	if apiErr.StatusCode == http.StatusNotFound {
 		return true
 	}
-	if apiErr.StatusCode == http.StatusBadRequest {
-		msg := apiErr.Error()
-		return strings.Contains(msg, "does not exist")
+	// FlashBlade returns 400 instead of 404 for some resources.
+	// Match only when the sub-error message ends with "does not exist." or "does not exist".
+	if apiErr.StatusCode == http.StatusBadRequest && len(apiErr.Errors) > 0 {
+		msg := strings.TrimSpace(apiErr.Errors[0].Message)
+		return strings.HasSuffix(msg, "does not exist.") || strings.HasSuffix(msg, "does not exist")
 	}
 	return false
 }
