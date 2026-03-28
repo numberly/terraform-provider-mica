@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-28T06:47:02.465Z"
+stopped_at: Completed 05-quality-hardening/05-01-PLAN.md
+last_updated: "2026-03-28T07:29:18.804Z"
 last_activity: 2026-03-27 — NAP singleton resource, rule resource, data source — all tests pass (136 total)
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 16
-  completed_plans: 16
+  total_plans: 20
+  completed_plans: 17
   percent: 81
 ---
 
@@ -65,6 +65,7 @@ Progress: [████████░░] 81%
 | Phase 04-object-network-quota-policies-and-array-admin P03 | 12 | 2 tasks | 6 files |
 | Phase 04-object-network-quota-policies-and-array-admin P02 | 67 | 2 tasks | 7 files |
 | Phase 04-object-network-quota-policies-and-array-admin P05 | 20 | 3 tasks | 10 files |
+| Phase 05-quality-hardening P01 | 25 | 2 tasks | 24 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,9 @@ Recent decisions affecting current work:
 - [Phase 04-object-network-quota-policies-and-array-admin]: OAP delete guard: ListObjectStoreAccessPolicyMembers before DELETE — prevents detach errors on policies attached to buckets
 - [Phase 04-object-network-quota-policies-and-array-admin]: SMTP alert_watchers nested within SMTP resource (not separate Terraform resources) — single resource manages composite lifecycle
 - [Phase 04-object-network-quota-policies-and-array-admin]: DNS Create uses GET-first then PATCH-or-POST — handles both fresh arrays and arrays with existing DNS config
+- [Phase 05-quality-hardening]: IsConflict/IsUnprocessable follow exact pattern of IsNotFound for consistent error helper API
+- [Phase 05-quality-hardening]: Validator tests call ValidateString/ValidateInt64 directly without full provider spin-up — fast unit tests
+- [Phase 05-quality-hardening]: Only bucket, quota_group, quota_user received new validators — other resources lack clear enum/range fields per research guidance
 
 ### Pending Todos
 
@@ -131,6 +135,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T06:47:02.460Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-quality-hardening/05-CONTEXT.md
+Last session: 2026-03-28T07:29:18.797Z
+Stopped at: Completed 05-quality-hardening/05-01-PLAN.md
+Resume file: None

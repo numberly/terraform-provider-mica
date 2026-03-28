@@ -134,9 +134,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Cross-Cutting Quality
 
-- [ ] **QUA-01**: All resources implement correct plan modifiers (UseStateForUnknown for stable computed, RequiresReplace for immutable)
-- [ ] **QUA-02**: All resources validate input at plan time (invalid quota values, enum fields, required references)
-- [ ] **QUA-03**: Unit tests cover all schema definitions, validators, and plan modifiers
+- [x] **QUA-01**: All resources implement correct plan modifiers (UseStateForUnknown for stable computed, RequiresReplace for immutable)
+- [x] **QUA-02**: All resources validate input at plan time (invalid quota values, enum fields, required references)
+- [x] **QUA-03**: Unit tests cover all schema definitions, validators, and plan modifiers
 - [ ] **QUA-04**: Mocked API integration tests cover CRUD lifecycle for all resource families
 - [ ] **QUA-05**: HTTP client implements retry with exponential backoff for transient API errors
 - [ ] **QUA-06**: Provider documentation generated via terraform-plugin-docs for all resources and data sources
@@ -273,9 +273,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ADM-03 | Phase 4 | Complete |
 | ADM-04 | Phase 4 | Complete |
 | ADM-05 | Phase 4 | Complete |
-| QUA-01 | Phase 5 | Pending |
-| QUA-02 | Phase 5 | Pending |
-| QUA-03 | Phase 5 | Pending |
+| QUA-01 | Phase 5 | Complete |
+| QUA-02 | Phase 5 | Complete |
+| QUA-03 | Phase 5 | Complete |
 | QUA-04 | Phase 5 | Pending |
 | QUA-05 | Phase 5 | Pending |
 | QUA-06 | Phase 5 | Pending |
