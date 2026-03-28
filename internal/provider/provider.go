@@ -285,6 +285,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewArrayDnsResource,
 		NewArrayNtpResource,
 		NewArraySmtpResource,
+		NewFileSystemExportResource,
+		NewObjectStoreAccountExportResource,
 	}
 }
 
@@ -305,5 +307,8 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewArrayDnsDataSource,
 		NewArrayNtpDataSource,
 		NewArraySmtpDataSource,
+		NewServerDataSource,
+		NewFileSystemExportDataSource,
+		NewObjectStoreAccountExportDataSource,
 	}
 }
