@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -235,7 +236,7 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		post.Versioning = data.Versioning.ValueString()
 	}
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
-		post.QuotaLimit = data.QuotaLimit.ValueInt64()
+		post.QuotaLimit = strconv.FormatInt(data.QuotaLimit.ValueInt64(), 10)
 	}
 	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
 		post.HardLimitEnabled = data.HardLimitEnabled.ValueBool()
@@ -345,7 +346,7 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		patch.Versioning = &v
 	}
 	if !plan.QuotaLimit.Equal(state.QuotaLimit) {
-		v := plan.QuotaLimit.ValueInt64()
+		v := strconv.FormatInt(plan.QuotaLimit.ValueInt64(), 10)
 		patch.QuotaLimit = &v
 	}
 	if !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {

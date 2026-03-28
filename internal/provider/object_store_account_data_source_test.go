@@ -102,7 +102,7 @@ func TestUnit_ObjectStoreAccountDataSource(t *testing.T) {
 		t.Fatalf("NewClient: %v", err)
 	}
 	_, err = c.PostObjectStoreAccount(context.Background(), "ds-test-account", client.ObjectStoreAccountPost{
-		QuotaLimit: 21474836480,
+		QuotaLimit: "21474836480",
 	})
 	if err != nil {
 		t.Fatalf("PostObjectStoreAccount: %v", err)

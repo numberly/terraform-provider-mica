@@ -125,15 +125,16 @@ type ObjectStoreAccount struct {
 
 // ObjectStoreAccountPost contains the mutable fields for POST /object-store-accounts.
 // Name is passed as a query parameter (?names=), not in the body.
+// NOTE: quota_limit must be serialized as a string per FlashBlade API.
 type ObjectStoreAccountPost struct {
-	QuotaLimit       int64 `json:"quota_limit,omitempty"`
+	QuotaLimit       string `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool   `json:"hard_limit_enabled,omitempty"`
 }
 
 // ObjectStoreAccountPatch contains pointer fields for PATCH semantics.
 // Only non-nil fields are included in the request body.
 type ObjectStoreAccountPatch struct {
-	QuotaLimit       *int64 `json:"quota_limit,omitempty"`
+	QuotaLimit       *string `json:"quota_limit,omitempty"`
 	HardLimitEnabled *bool   `json:"hard_limit_enabled,omitempty"`
 }
 
@@ -155,10 +156,11 @@ type Bucket struct {
 }
 
 // BucketPost contains the fields accepted on POST /buckets.
+// NOTE: quota_limit must be serialized as a string per FlashBlade API.
 type BucketPost struct {
 	Account          NamedReference `json:"account"`
 	Versioning       string         `json:"versioning,omitempty"`
-	QuotaLimit       int64          `json:"quota_limit,omitempty"`
+	QuotaLimit       string         `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool           `json:"hard_limit_enabled,omitempty"`
 	RetentionLock    string         `json:"retention_lock,omitempty"`
 }
@@ -167,7 +169,7 @@ type BucketPost struct {
 type BucketPatch struct {
 	Destroyed        *bool   `json:"destroyed,omitempty"`
 	Versioning       *string `json:"versioning,omitempty"`
-	QuotaLimit       *int64 `json:"quota_limit,omitempty"`
+	QuotaLimit       *string `json:"quota_limit,omitempty"`
 	HardLimitEnabled *bool   `json:"hard_limit_enabled,omitempty"`
 	RetentionLock    *string `json:"retention_lock,omitempty"`
 }

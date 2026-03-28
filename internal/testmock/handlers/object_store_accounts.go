@@ -100,7 +100,7 @@ func (s *objectStoreAccountStore) handlePost(w http.ResponseWriter, r *http.Requ
 		ID:               uuid.New().String(),
 		Name:             name,
 		Created:          time.Now().UnixMilli(),
-		QuotaLimit:       body.QuotaLimit,
+		QuotaLimit:       parseQuotaLimit(body.QuotaLimit),
 		HardLimitEnabled: body.HardLimitEnabled,
 		Space:            client.Space{},
 	}
@@ -136,12 +136,12 @@ func (s *objectStoreAccountStore) handlePatch(w http.ResponseWriter, r *http.Req
 	}
 
 	if v, ok := rawPatch["quota_limit"]; ok {
-		var quotaLimit int64
-		if err := json.Unmarshal(v, &quotaLimit); err != nil {
+		var quotaStr string
+		if err := json.Unmarshal(v, &quotaStr); err != nil {
 			WriteJSONError(w, http.StatusBadRequest, "invalid quota_limit field")
 			return
 		}
-		acct.QuotaLimit = quotaLimit
+		acct.QuotaLimit = parseQuotaLimit(quotaStr)
 	}
 
 	if v, ok := rawPatch["hard_limit_enabled"]; ok {

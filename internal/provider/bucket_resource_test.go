@@ -359,7 +359,7 @@ func TestUnit_Bucket_Import(t *testing.T) {
 	_, err := c.PostBucket(context.Background(), "import-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "test-account"},
 		Versioning: "enabled",
-		QuotaLimit: 21474836480,
+		QuotaLimit: "21474836480",
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
@@ -408,7 +408,7 @@ func TestUnit_Bucket_DriftLog(t *testing.T) {
 	// Create a bucket via client.
 	_, err := c.PostBucket(context.Background(), "drift-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "test-account"},
-		QuotaLimit: 10737418240,
+		QuotaLimit: "10737418240",
 		Versioning: "none",
 	})
 	if err != nil {

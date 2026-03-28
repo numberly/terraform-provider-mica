@@ -121,7 +121,7 @@ func TestUnit_BucketDataSource(t *testing.T) {
 	_, err = c.PostBucket(context.Background(), "ds-bucket", client.BucketPost{
 		Account:    client.NamedReference{Name: "ds-account"},
 		Versioning: "enabled",
-		QuotaLimit: 10737418240,
+		QuotaLimit: "10737418240",
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)

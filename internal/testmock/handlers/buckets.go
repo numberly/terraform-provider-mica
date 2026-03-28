@@ -169,7 +169,7 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		Created:          time.Now().UnixMilli(),
 		Destroyed:        false,
 		Versioning:       body.Versioning,
-		QuotaLimit:       body.QuotaLimit,
+		QuotaLimit:       parseQuotaLimit(body.QuotaLimit),
 		HardLimitEnabled: body.HardLimitEnabled,
 		RetentionLock:    body.RetentionLock,
 		Space:            client.Space{},
@@ -231,12 +231,12 @@ func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v, ok := rawPatch["quota_limit"]; ok {
-		var quotaLimit int64
-		if err := json.Unmarshal(v, &quotaLimit); err != nil {
+		var quotaStr string
+		if err := json.Unmarshal(v, &quotaStr); err != nil {
 			WriteJSONError(w, http.StatusBadRequest, "invalid quota_limit field")
 			return
 		}
-		b.QuotaLimit = quotaLimit
+		b.QuotaLimit = parseQuotaLimit(quotaStr)
 	}
 
 	if v, ok := rawPatch["hard_limit_enabled"]; ok {

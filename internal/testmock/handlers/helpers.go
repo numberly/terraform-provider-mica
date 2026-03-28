@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 // WriteJSONListResponse writes a JSON list response envelope with the given items.
@@ -42,4 +43,13 @@ func countItems(items any) int {
 		return 0
 	}
 	return len(arr)
+}
+
+// parseQuotaLimit converts a string quota_limit (as sent by POST/PATCH) to int64 (as stored internally).
+func parseQuotaLimit(s string) int64 {
+	if s == "" {
+		return 0
+	}
+	v, _ := strconv.ParseInt(s, 10, 64)
+	return v
 }
