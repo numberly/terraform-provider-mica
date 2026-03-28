@@ -17,15 +17,15 @@ Requirements for milestone v1.1 — Servers & Exports.
 
 ### S3 Export Policies
 
-- [ ] **S3P-01**: Operator can create an S3 export policy with enable/disable toggle
-- [ ] **S3P-02**: Operator can create S3 export policy rules with actions/effect/resources (IAM-style)
-- [ ] **S3P-03**: Operator can update and delete S3 export policy rules independently
+- [x] **S3P-01**: Operator can create an S3 export policy with enable/disable toggle
+- [x] **S3P-02**: Operator can create S3 export policy rules with actions/effect/resources (IAM-style)
+- [x] **S3P-03**: Operator can update and delete S3 export policy rules independently
 - [ ] **S3P-04**: Operator can import S3 export policies and rules into Terraform state
 
 ### Object Store Virtual Hosts
 
-- [ ] **VH-01**: Operator can create a virtual host with hostname and attached servers
-- [ ] **VH-02**: Operator can update attached servers list on a virtual host
+- [x] **VH-01**: Operator can create a virtual host with hostname and attached servers
+- [x] **VH-02**: Operator can update attached servers list on a virtual host
 - [ ] **VH-03**: Operator can import an existing virtual host into Terraform state
 
 ### SMB Client Policies
@@ -80,12 +80,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRV-03 | Phase 6 | Complete |
 | SRV-04 | Phase 6 | Complete |
 | SRV-05 | Phase 6 | Complete |
-| S3P-01 | Phase 7 | Pending |
-| S3P-02 | Phase 7 | Pending |
-| S3P-03 | Phase 7 | Pending |
+| S3P-01 | Phase 7 | Complete |
+| S3P-02 | Phase 7 | Complete |
+| S3P-03 | Phase 7 | Complete |
 | S3P-04 | Phase 7 | Pending |
-| VH-01 | Phase 7 | Pending |
-| VH-02 | Phase 7 | Pending |
+| VH-01 | Phase 7 | Complete |
+| VH-02 | Phase 7 | Complete |
 | VH-03 | Phase 7 | Pending |
 | SMC-01 | Phase 8 | Pending |
 | SMC-02 | Phase 8 | Pending |

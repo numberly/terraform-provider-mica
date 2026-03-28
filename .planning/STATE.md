@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Servers & Exports
 status: completed
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-28T14:34:19.526Z"
-last_activity: 2026-03-28 — Completed plan 06-02 (export resource tests)
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-28T15:02:48.838Z"
+last_activity: 2026-03-28 — Completed plan 07-01 (client layer and mock handlers)
 progress:
   total_phases: 8
   completed_phases: 6
-  total_plans: 22
-  completed_plans: 22
-  percent: 100
+  total_plans: 25
+  completed_plans: 23
+  percent: 92
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v1.1 — Servers & Exports, Phase 6 complete
+**Current focus:** Milestone v1.1 — Servers & Exports, Phase 7 in progress
 
 ## Current Position
 
-Phase: 6 of 8 (Server Resource & Export Consolidation)
-Plan: 2 of 2 (complete)
-Status: Phase 6 complete
-Last activity: 2026-03-28 — Completed plan 06-02 (export resource tests)
+Phase: 7 of 8 (S3 Export Policies & Virtual Hosts)
+Plan: 1 of 3 (complete)
+Status: Phase 7 plan 1 complete
+Last activity: 2026-03-28 — Completed plan 07-01 (client layer and mock handlers)
 
-Progress: [██████████] 100%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [██████████] 100%
 | 06-export-tests | 1 | 8 min | 8 min |
 
 *Updated after each plan completion*
+| Phase 07 P01 | 3 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ Recent decisions affecting current work:
 - [v1.1]: DNS modeled as ListNestedAttribute; cascade_delete is write-only list used only on Delete
 - [v1.1]: Server creation uses ?create_ds= query param (not ?names=) per FlashBlade API convention
 - [v1.1]: Mock DELETE handler for account exports uses lenient lookup (Pitfall 5: data.Name passed as combined name)
+- [Phase 07]: S3 export policy GET does not embed rules (unlike NFS) - rules fetched from separate /rules endpoint
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T14:29:56.858Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-03-28T15:02:35.726Z
+Stopped at: Completed 07-01-PLAN.md
 Resume file: None

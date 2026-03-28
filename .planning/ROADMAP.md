@@ -138,7 +138,7 @@ Plans:
   2. Operator can update and delete individual S3 export policy rules without affecting sibling rules
   3. Operator can create a virtual host with a hostname, attach servers to it, and update the server list via Terraform apply
   4. Operator can import existing S3 export policies, rules, and virtual hosts into Terraform state with no drift on subsequent plan
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 07-01-PLAN.md — Model structs, client CRUD methods, and mock handlers for S3 export policies and virtual hosts
@@ -169,5 +169,5 @@ Phases execute in numeric order: 6 -> 7 -> 8
 | 4. Object/Network/Quota & Array Admin | v1.0 | 5/5 | Complete | 2026-03-28 |
 | 5. Quality Hardening | v1.0 | 4/4 | Complete | 2026-03-28 |
 | 6. Server Resource & Export Consolidation | v1.1 | 0/2 | Planned | - |
-| 7. S3 Export Policies & Virtual Hosts | v1.1 | 0/3 | Planned | - |
+| 7. S3 Export Policies & Virtual Hosts | 1/3 | In Progress|  | - |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 0/? | Not started | - |
