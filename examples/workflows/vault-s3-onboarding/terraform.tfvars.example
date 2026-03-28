@@ -1,0 +1,10 @@
+# Copy this file to terraform.tfvars and fill in your values.
+
+flashblade_endpoint  = "https://flashblade.example.com"
+s3_data_vip          = "s3.flashblade.example.com"
+tenant_name          = "my-app"
+bucket_quota_bytes   = 1099511627776 # 1 TiB
+
+# Vault paths (defaults work with standard KV v2 layout)
+# vault_secret_path    = "secret/infrastructure/flashblade"
+# vault_flashblade_key = "api_token"

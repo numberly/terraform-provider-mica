@@ -102,6 +102,7 @@ Production-ready configurations showing how resources compose together:
 | [Multi-Protocol File System](examples/workflows/multi-protocol-file-system/) | Windows + Linux access on same FS | file_system, nfs_export_policy, smb_share_policy |
 | [Array Admin Baseline](examples/workflows/array-admin-baseline/) | Day-1 DNS, NTP, SMTP configuration | array_dns, array_ntp, array_smtp |
 | [Secured S3 Bucket](examples/workflows/secured-s3-bucket/) | Bucket with network + access policies | bucket, network_access_policy, object_store_access_policy |
+| [Vault S3 Onboarding](examples/workflows/vault-s3-onboarding/) | Tenant onboarding: Vault → account → policy → key (in Vault) → bucket | account, access_policy, access_key, bucket, **vault** |
 
 ## Resource Coverage Roadmap
 
