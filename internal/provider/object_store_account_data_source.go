@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,13 +40,13 @@ type objectStoreAccountDataSourceSpaceModel struct {
 
 // objectStoreAccountDataSourceModel is the top-level model for the flashblade_object_store_account data source.
 type objectStoreAccountDataSourceModel struct {
-	ID               types.String                            `tfsdk:"id"`
-	Name             types.String                            `tfsdk:"name"`
-	Created          types.Int64                             `tfsdk:"created"`
-	QuotaLimit       types.Int64                             `tfsdk:"quota_limit"`
-	HardLimitEnabled types.Bool                              `tfsdk:"hard_limit_enabled"`
-	ObjectCount      types.Int64                             `tfsdk:"object_count"`
-	Space            *objectStoreAccountDataSourceSpaceModel `tfsdk:"space"`
+	ID               types.String `tfsdk:"id"`
+	Name             types.String `tfsdk:"name"`
+	Created          types.Int64  `tfsdk:"created"`
+	QuotaLimit       types.Int64  `tfsdk:"quota_limit"`
+	HardLimitEnabled types.Bool   `tfsdk:"hard_limit_enabled"`
+	ObjectCount      types.Int64  `tfsdk:"object_count"`
+	Space            types.Object `tfsdk:"space"`
 }
 
 // ---------- data source interface methods -----------------------------------
@@ -163,14 +164,27 @@ func (d *objectStoreAccountDataSource) Read(ctx context.Context, req datasource.
 	config.HardLimitEnabled = types.BoolValue(acct.HardLimitEnabled)
 	config.ObjectCount = types.Int64Value(acct.ObjectCount)
 
-	config.Space = &objectStoreAccountDataSourceSpaceModel{
-		DataReduction:      types.Float64Value(acct.Space.DataReduction),
-		Snapshots:          types.Int64Value(acct.Space.Snapshots),
-		TotalPhysical:      types.Int64Value(acct.Space.TotalPhysical),
-		Unique:             types.Int64Value(acct.Space.Unique),
-		Virtual:            types.Int64Value(acct.Space.Virtual),
-		SnapshotsEffective: types.Int64Value(acct.Space.SnapshotsEffective),
+	spaceAttrTypes := map[string]attr.Type{
+		"data_reduction":      types.Float64Type,
+		"snapshots":           types.Int64Type,
+		"total_physical":      types.Int64Type,
+		"unique":              types.Int64Type,
+		"virtual":             types.Int64Type,
+		"snapshots_effective": types.Int64Type,
 	}
+	spaceObj, diags := types.ObjectValue(spaceAttrTypes, map[string]attr.Value{
+		"data_reduction":      types.Float64Value(acct.Space.DataReduction),
+		"snapshots":           types.Int64Value(acct.Space.Snapshots),
+		"total_physical":      types.Int64Value(acct.Space.TotalPhysical),
+		"unique":              types.Int64Value(acct.Space.Unique),
+		"virtual":             types.Int64Value(acct.Space.Virtual),
+		"snapshots_effective": types.Int64Value(acct.Space.SnapshotsEffective),
+	})
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.Space = spaceObj
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

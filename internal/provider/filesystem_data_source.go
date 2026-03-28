@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -79,21 +80,21 @@ type filesystemDataSourceSourceModel struct {
 
 // filesystemDataSourceModel is the top-level model for the flashblade_file_system data source.
 type filesystemDataSourceModel struct {
-	ID              types.String                            `tfsdk:"id"`
-	Name            types.String                            `tfsdk:"name"`
-	Provisioned     types.Int64                             `tfsdk:"provisioned"`
-	Destroyed       types.Bool                              `tfsdk:"destroyed"`
-	TimeRemaining   types.Int64                             `tfsdk:"time_remaining"`
-	Created         types.Int64                             `tfsdk:"created"`
-	PromotionStatus types.String                            `tfsdk:"promotion_status"`
-	Writable        types.Bool                              `tfsdk:"writable"`
-	Space           *filesystemDataSourceSpaceModel         `tfsdk:"space"`
-	NFS             *filesystemDataSourceNFSModel           `tfsdk:"nfs"`
-	SMB             *filesystemDataSourceSMBModel           `tfsdk:"smb"`
-	HTTP            *filesystemDataSourceHTTPModel          `tfsdk:"http"`
-	MultiProtocol   *filesystemDataSourceMultiProtocolModel `tfsdk:"multi_protocol"`
-	DefaultQuotas   *filesystemDataSourceDefaultQuotasModel `tfsdk:"default_quotas"`
-	Source          *filesystemDataSourceSourceModel        `tfsdk:"source"`
+	ID              types.String `tfsdk:"id"`
+	Name            types.String `tfsdk:"name"`
+	Provisioned     types.Int64  `tfsdk:"provisioned"`
+	Destroyed       types.Bool   `tfsdk:"destroyed"`
+	TimeRemaining   types.Int64  `tfsdk:"time_remaining"`
+	Created         types.Int64  `tfsdk:"created"`
+	PromotionStatus types.String `tfsdk:"promotion_status"`
+	Writable        types.Bool   `tfsdk:"writable"`
+	Space           types.Object `tfsdk:"space"`
+	NFS             types.Object `tfsdk:"nfs"`
+	SMB             types.Object `tfsdk:"smb"`
+	HTTP            types.Object `tfsdk:"http"`
+	MultiProtocol   types.Object `tfsdk:"multi_protocol"`
+	DefaultQuotas   types.Object `tfsdk:"default_quotas"`
+	Source          types.Object `tfsdk:"source"`
 }
 
 // ---------- data source interface methods -----------------------------------
@@ -323,56 +324,59 @@ func (d *filesystemDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	config.Writable = types.BoolValue(fs.Writable)
 	config.TimeRemaining = types.Int64Value(fs.TimeRemaining)
 
-	config.Space = &filesystemDataSourceSpaceModel{
-		DataReduction:      types.Float64Value(fs.Space.DataReduction),
-		Snapshots:          types.Int64Value(fs.Space.Snapshots),
-		TotalPhysical:      types.Int64Value(fs.Space.TotalPhysical),
-		Unique:             types.Int64Value(fs.Space.Unique),
-		Virtual:            types.Int64Value(fs.Space.Virtual),
-		SnapshotsEffective: types.Int64Value(fs.Space.SnapshotsEffective),
-	}
+	// Space (always set — Computed-only block).
+	config.Space = mustObjectValue(fsSpaceAttrTypes(), map[string]attr.Value{
+		"data_reduction":      types.Float64Value(fs.Space.DataReduction),
+		"snapshots":           types.Int64Value(fs.Space.Snapshots),
+		"total_physical":      types.Int64Value(fs.Space.TotalPhysical),
+		"unique":              types.Int64Value(fs.Space.Unique),
+		"virtual":             types.Int64Value(fs.Space.Virtual),
+		"snapshots_effective": types.Int64Value(fs.Space.SnapshotsEffective),
+	})
 
-	config.NFS = &filesystemDataSourceNFSModel{
-		Enabled:    types.BoolValue(fs.NFS.Enabled),
-		V3Enabled:  types.BoolValue(fs.NFS.V3Enabled),
-		V41Enabled: types.BoolValue(fs.NFS.V41Enabled),
-		Rules:      types.StringValue(fs.NFS.Rules),
-		Transport:  types.StringValue(fs.NFS.Transport),
-	}
+	// NFS block — always set from API.
+	config.NFS = mustObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
+		"enabled":      types.BoolValue(fs.NFS.Enabled),
+		"v3_enabled":   types.BoolValue(fs.NFS.V3Enabled),
+		"v4_1_enabled": types.BoolValue(fs.NFS.V41Enabled),
+		"rules":        types.StringValue(fs.NFS.Rules),
+		"transport":    types.StringValue(fs.NFS.Transport),
+	})
 
-	config.SMB = &filesystemDataSourceSMBModel{
-		Enabled:                       types.BoolValue(fs.SMB.Enabled),
-		AccessBasedEnumerationEnabled: types.BoolValue(fs.SMB.AccessBasedEnumerationEnabled),
-		ContinuousAvailabilityEnabled: types.BoolValue(fs.SMB.ContinuousAvailabilityEnabled),
-		SMBEncryptionEnabled:          types.BoolValue(fs.SMB.SMBEncryptionEnabled),
-	}
+	// SMB block — always set from API.
+	config.SMB = mustObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
+		"enabled":                          types.BoolValue(fs.SMB.Enabled),
+		"access_based_enumeration_enabled": types.BoolValue(fs.SMB.AccessBasedEnumerationEnabled),
+		"continuous_availability_enabled":  types.BoolValue(fs.SMB.ContinuousAvailabilityEnabled),
+		"smb_encryption_enabled":           types.BoolValue(fs.SMB.SMBEncryptionEnabled),
+	})
 
-	config.HTTP = &filesystemDataSourceHTTPModel{
-		Enabled: types.BoolValue(fs.HTTP.Enabled),
-	}
+	// HTTP block — always set from API (Computed-only).
+	config.HTTP = mustObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
+		"enabled": types.BoolValue(fs.HTTP.Enabled),
+	})
 
+	// Source block — only if present in API response.
 	if fs.Source != nil {
-		config.Source = &filesystemDataSourceSourceModel{
-			ID:   types.StringValue(fs.Source.ID),
-			Name: types.StringValue(fs.Source.Name),
-		}
+		config.Source = mustObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
+			"id":   types.StringValue(fs.Source.ID),
+			"name": types.StringValue(fs.Source.Name),
+		})
 	} else {
-		config.Source = nil
+		config.Source = types.ObjectNull(fsSourceAttrTypes())
 	}
 
-	if fs.MultiProtocol.AccessControlStyle != "" || fs.MultiProtocol.SafeguardACLsOnDestroy {
-		config.MultiProtocol = &filesystemDataSourceMultiProtocolModel{
-			AccessControlStyle: types.StringValue(fs.MultiProtocol.AccessControlStyle),
-			SafeguardACLs:      types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy),
-		}
-	}
+	// MultiProtocol — always set from API.
+	config.MultiProtocol = mustObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
+		"access_control_style": types.StringValue(fs.MultiProtocol.AccessControlStyle),
+		"safeguard_acls":       types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy),
+	})
 
-	if fs.DefaultQuotas.GroupQuota != 0 || fs.DefaultQuotas.UserQuota != 0 {
-		config.DefaultQuotas = &filesystemDataSourceDefaultQuotasModel{
-			GroupQuota: types.Int64Value(fs.DefaultQuotas.GroupQuota),
-			UserQuota:  types.Int64Value(fs.DefaultQuotas.UserQuota),
-		}
-	}
+	// DefaultQuotas — always set from API.
+	config.DefaultQuotas = mustObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
+		"group_quota": types.Int64Value(fs.DefaultQuotas.GroupQuota),
+		"user_quota":  types.Int64Value(fs.DefaultQuotas.UserQuota),
+	})
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

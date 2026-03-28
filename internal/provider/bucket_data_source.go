@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,19 +40,19 @@ type bucketDataSourceSpaceModel struct {
 
 // bucketDataSourceModel is the top-level model for the flashblade_bucket data source.
 type bucketDataSourceModel struct {
-	ID               types.String                `tfsdk:"id"`
-	Name             types.String                `tfsdk:"name"`
-	Account          types.String                `tfsdk:"account"`
-	Created          types.Int64                 `tfsdk:"created"`
-	Destroyed        types.Bool                  `tfsdk:"destroyed"`
-	TimeRemaining    types.Int64                 `tfsdk:"time_remaining"`
-	Versioning       types.String                `tfsdk:"versioning"`
-	QuotaLimit       types.Int64                 `tfsdk:"quota_limit"`
-	HardLimitEnabled types.Bool                  `tfsdk:"hard_limit_enabled"`
-	ObjectCount      types.Int64                 `tfsdk:"object_count"`
-	BucketType       types.String                `tfsdk:"bucket_type"`
-	RetentionLock    types.String                `tfsdk:"retention_lock"`
-	Space            *bucketDataSourceSpaceModel `tfsdk:"space"`
+	ID               types.String `tfsdk:"id"`
+	Name             types.String `tfsdk:"name"`
+	Account          types.String `tfsdk:"account"`
+	Created          types.Int64  `tfsdk:"created"`
+	Destroyed        types.Bool   `tfsdk:"destroyed"`
+	TimeRemaining    types.Int64  `tfsdk:"time_remaining"`
+	Versioning       types.String `tfsdk:"versioning"`
+	QuotaLimit       types.Int64  `tfsdk:"quota_limit"`
+	HardLimitEnabled types.Bool   `tfsdk:"hard_limit_enabled"`
+	ObjectCount      types.Int64  `tfsdk:"object_count"`
+	BucketType       types.String `tfsdk:"bucket_type"`
+	RetentionLock    types.String `tfsdk:"retention_lock"`
+	Space            types.Object `tfsdk:"space"`
 }
 
 // ---------- data source interface methods -----------------------------------
@@ -199,14 +200,27 @@ func (d *bucketDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config.BucketType = types.StringValue(bkt.BucketType)
 	config.RetentionLock = types.StringValue(bkt.RetentionLock)
 
-	config.Space = &bucketDataSourceSpaceModel{
-		DataReduction:      types.Float64Value(bkt.Space.DataReduction),
-		Snapshots:          types.Int64Value(bkt.Space.Snapshots),
-		TotalPhysical:      types.Int64Value(bkt.Space.TotalPhysical),
-		Unique:             types.Int64Value(bkt.Space.Unique),
-		Virtual:            types.Int64Value(bkt.Space.Virtual),
-		SnapshotsEffective: types.Int64Value(bkt.Space.SnapshotsEffective),
+	spaceAttrTypes := map[string]attr.Type{
+		"data_reduction":      types.Float64Type,
+		"snapshots":           types.Int64Type,
+		"total_physical":      types.Int64Type,
+		"unique":              types.Int64Type,
+		"virtual":             types.Int64Type,
+		"snapshots_effective": types.Int64Type,
 	}
+	spaceObj, spaceDiags := types.ObjectValue(spaceAttrTypes, map[string]attr.Value{
+		"data_reduction":      types.Float64Value(bkt.Space.DataReduction),
+		"snapshots":           types.Int64Value(bkt.Space.Snapshots),
+		"total_physical":      types.Int64Value(bkt.Space.TotalPhysical),
+		"unique":              types.Int64Value(bkt.Space.Unique),
+		"virtual":             types.Int64Value(bkt.Space.Virtual),
+		"snapshots_effective": types.Int64Value(bkt.Space.SnapshotsEffective),
+	})
+	resp.Diagnostics.Append(spaceDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.Space = spaceObj
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

@@ -46,14 +46,14 @@ type objectStoreAccountSpaceModel struct {
 
 // objectStoreAccountModel is the top-level model for the flashblade_object_store_account resource.
 type objectStoreAccountModel struct {
-	ID               types.String                  `tfsdk:"id"`
-	Name             types.String                  `tfsdk:"name"`
-	Created          types.Int64                   `tfsdk:"created"`
-	QuotaLimit       types.Int64                   `tfsdk:"quota_limit"`
-	HardLimitEnabled types.Bool                    `tfsdk:"hard_limit_enabled"`
-	ObjectCount      types.Int64                   `tfsdk:"object_count"`
-	Space            *objectStoreAccountSpaceModel `tfsdk:"space"`
-	Timeouts         timeouts.Value                `tfsdk:"timeouts"`
+	ID               types.String   `tfsdk:"id"`
+	Name             types.String   `tfsdk:"name"`
+	Created          types.Int64    `tfsdk:"created"`
+	QuotaLimit       types.Int64    `tfsdk:"quota_limit"`
+	HardLimitEnabled types.Bool     `tfsdk:"hard_limit_enabled"`
+	ObjectCount      types.Int64    `tfsdk:"object_count"`
+	Space            types.Object   `tfsdk:"space"`
+	Timeouts         timeouts.Value `tfsdk:"timeouts"`
 }
 
 // ---------- resource interface methods --------------------------------------
@@ -365,6 +365,18 @@ func (r *objectStoreAccountResource) ImportState(ctx context.Context, req resour
 
 // ---------- helpers ---------------------------------------------------------
 
+// objectStoreAccountSpaceAttrTypes returns the attribute types for the space object.
+func objectStoreAccountSpaceAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"data_reduction":      types.Float64Type,
+		"snapshots":           types.Int64Type,
+		"total_physical":      types.Int64Type,
+		"unique":              types.Int64Type,
+		"virtual":             types.Int64Type,
+		"snapshots_effective": types.Int64Type,
+	}
+}
+
 // readIntoState calls GetObjectStoreAccount and maps the result into the provided model.
 func (r *objectStoreAccountResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountModel, diags interface {
 	AddError(string, string)
@@ -388,12 +400,17 @@ func mapOSAToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountMode
 	data.HardLimitEnabled = types.BoolValue(acct.HardLimitEnabled)
 	data.ObjectCount = types.Int64Value(acct.ObjectCount)
 
-	data.Space = &objectStoreAccountSpaceModel{
-		DataReduction:      types.Float64Value(acct.Space.DataReduction),
-		Snapshots:          types.Int64Value(acct.Space.Snapshots),
-		TotalPhysical:      types.Int64Value(acct.Space.TotalPhysical),
-		Unique:             types.Int64Value(acct.Space.Unique),
-		Virtual:            types.Int64Value(acct.Space.Virtual),
-		SnapshotsEffective: types.Int64Value(acct.Space.SnapshotsEffective),
+	spaceObj, diags := types.ObjectValue(objectStoreAccountSpaceAttrTypes(), map[string]attr.Value{
+		"data_reduction":      types.Float64Value(acct.Space.DataReduction),
+		"snapshots":           types.Int64Value(acct.Space.Snapshots),
+		"total_physical":      types.Int64Value(acct.Space.TotalPhysical),
+		"unique":              types.Int64Value(acct.Space.Unique),
+		"virtual":             types.Int64Value(acct.Space.Virtual),
+		"snapshots_effective": types.Int64Value(acct.Space.SnapshotsEffective),
+	})
+	// ObjectValue only fails if keys/types mismatch — treat as a coding error.
+	if diags.HasError() {
+		panic("mapOSAToModel: failed to build space object: " + diags[0].Detail())
 	}
+	data.Space = spaceObj
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
@@ -87,25 +88,25 @@ type filesystemSourceModel struct {
 
 // filesystemModel is the top-level model for the flashblade_file_system resource.
 type filesystemModel struct {
-	ID                       types.String                  `tfsdk:"id"`
-	Name                     types.String                  `tfsdk:"name"`
-	Provisioned              types.Int64                   `tfsdk:"provisioned"`
-	Destroyed                types.Bool                    `tfsdk:"destroyed"`
-	DestroyEradicateOnDelete types.Bool                    `tfsdk:"destroy_eradicate_on_delete"`
-	TimeRemaining            types.Int64                   `tfsdk:"time_remaining"`
-	Created                  types.Int64                   `tfsdk:"created"`
-	PromotionStatus          types.String                  `tfsdk:"promotion_status"`
-	Writable                 types.Bool                    `tfsdk:"writable"`
-	NFSExportPolicy          types.String                  `tfsdk:"nfs_export_policy"`
-	SMBSharePolicy           types.String                  `tfsdk:"smb_share_policy"`
-	Space                    *filesystemSpaceModel         `tfsdk:"space"`
-	NFS                      *filesystemNFSModel           `tfsdk:"nfs"`
-	SMB                      *filesystemSMBModel           `tfsdk:"smb"`
-	HTTP                     *filesystemHTTPModel          `tfsdk:"http"`
-	MultiProtocol            *filesystemMultiProtocolModel `tfsdk:"multi_protocol"`
-	DefaultQuotas            *filesystemDefaultQuotasModel `tfsdk:"default_quotas"`
-	Source                   *filesystemSourceModel        `tfsdk:"source"`
-	Timeouts                 timeouts.Value                `tfsdk:"timeouts"`
+	ID                       types.String   `tfsdk:"id"`
+	Name                     types.String   `tfsdk:"name"`
+	Provisioned              types.Int64    `tfsdk:"provisioned"`
+	Destroyed                types.Bool     `tfsdk:"destroyed"`
+	DestroyEradicateOnDelete types.Bool     `tfsdk:"destroy_eradicate_on_delete"`
+	TimeRemaining            types.Int64    `tfsdk:"time_remaining"`
+	Created                  types.Int64    `tfsdk:"created"`
+	PromotionStatus          types.String   `tfsdk:"promotion_status"`
+	Writable                 types.Bool     `tfsdk:"writable"`
+	NFSExportPolicy          types.String   `tfsdk:"nfs_export_policy"`
+	SMBSharePolicy           types.String   `tfsdk:"smb_share_policy"`
+	Space                    types.Object   `tfsdk:"space"`
+	NFS                      types.Object   `tfsdk:"nfs"`
+	SMB                      types.Object   `tfsdk:"smb"`
+	HTTP                     types.Object   `tfsdk:"http"`
+	MultiProtocol            types.Object   `tfsdk:"multi_protocol"`
+	DefaultQuotas            types.Object   `tfsdk:"default_quotas"`
+	Source                   types.Object   `tfsdk:"source"`
+	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 }
 
 // ---------- resource interface methods --------------------------------------
@@ -378,21 +379,31 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 		Provisioned: data.Provisioned.ValueInt64(),
 	}
 
-	if data.NFS != nil {
+	if !data.NFS.IsNull() && !data.NFS.IsUnknown() {
+		var nfsModel filesystemNFSModel
+		resp.Diagnostics.Append(data.NFS.As(ctx, &nfsModel, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		post.NFS = client.NFSConfig{
-			Enabled:    data.NFS.Enabled.ValueBool(),
-			V3Enabled:  data.NFS.V3Enabled.ValueBool(),
-			V41Enabled: data.NFS.V41Enabled.ValueBool(),
-			Rules:      data.NFS.Rules.ValueString(),
-			Transport:  data.NFS.Transport.ValueString(),
+			Enabled:    nfsModel.Enabled.ValueBool(),
+			V3Enabled:  nfsModel.V3Enabled.ValueBool(),
+			V41Enabled: nfsModel.V41Enabled.ValueBool(),
+			Rules:      nfsModel.Rules.ValueString(),
+			Transport:  nfsModel.Transport.ValueString(),
 		}
 	}
-	if data.SMB != nil {
+	if !data.SMB.IsNull() && !data.SMB.IsUnknown() {
+		var smbModel filesystemSMBModel
+		resp.Diagnostics.Append(data.SMB.As(ctx, &smbModel, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		post.SMB = client.SMBConfig{
-			Enabled:                       data.SMB.Enabled.ValueBool(),
-			AccessBasedEnumerationEnabled: data.SMB.AccessBasedEnumerationEnabled.ValueBool(),
-			ContinuousAvailabilityEnabled: data.SMB.ContinuousAvailabilityEnabled.ValueBool(),
-			SMBEncryptionEnabled:          data.SMB.SMBEncryptionEnabled.ValueBool(),
+			Enabled:                       smbModel.Enabled.ValueBool(),
+			AccessBasedEnumerationEnabled: smbModel.AccessBasedEnumerationEnabled.ValueBool(),
+			ContinuousAvailabilityEnabled: smbModel.ContinuousAvailabilityEnabled.ValueBool(),
+			SMBEncryptionEnabled:          smbModel.SMBEncryptionEnabled.ValueBool(),
 		}
 	}
 
@@ -485,24 +496,34 @@ func (r *filesystemResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// NFS changes.
-	if plan.NFS != nil {
+	if !plan.NFS.IsNull() && !plan.NFS.IsUnknown() {
+		var nfsModel filesystemNFSModel
+		resp.Diagnostics.Append(plan.NFS.As(ctx, &nfsModel, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		nfs := client.NFSConfig{
-			Enabled:    plan.NFS.Enabled.ValueBool(),
-			V3Enabled:  plan.NFS.V3Enabled.ValueBool(),
-			V41Enabled: plan.NFS.V41Enabled.ValueBool(),
-			Rules:      plan.NFS.Rules.ValueString(),
-			Transport:  plan.NFS.Transport.ValueString(),
+			Enabled:    nfsModel.Enabled.ValueBool(),
+			V3Enabled:  nfsModel.V3Enabled.ValueBool(),
+			V41Enabled: nfsModel.V41Enabled.ValueBool(),
+			Rules:      nfsModel.Rules.ValueString(),
+			Transport:  nfsModel.Transport.ValueString(),
 		}
 		patch.NFS = &nfs
 	}
 
 	// SMB changes.
-	if plan.SMB != nil {
+	if !plan.SMB.IsNull() && !plan.SMB.IsUnknown() {
+		var smbModel filesystemSMBModel
+		resp.Diagnostics.Append(plan.SMB.As(ctx, &smbModel, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		smb := client.SMBConfig{
-			Enabled:                       plan.SMB.Enabled.ValueBool(),
-			AccessBasedEnumerationEnabled: plan.SMB.AccessBasedEnumerationEnabled.ValueBool(),
-			ContinuousAvailabilityEnabled: plan.SMB.ContinuousAvailabilityEnabled.ValueBool(),
-			SMBEncryptionEnabled:          plan.SMB.SMBEncryptionEnabled.ValueBool(),
+			Enabled:                       smbModel.Enabled.ValueBool(),
+			AccessBasedEnumerationEnabled: smbModel.AccessBasedEnumerationEnabled.ValueBool(),
+			ContinuousAvailabilityEnabled: smbModel.ContinuousAvailabilityEnabled.ValueBool(),
+			SMBEncryptionEnabled:          smbModel.SMBEncryptionEnabled.ValueBool(),
 		}
 		patch.SMB = &smb
 	}
@@ -598,6 +619,74 @@ func (r *filesystemResource) ImportState(ctx context.Context, req resource.Impor
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+// ---------- attr type helpers -----------------------------------------------
+
+func fsSpaceAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"data_reduction":      types.Float64Type,
+		"snapshots":           types.Int64Type,
+		"total_physical":      types.Int64Type,
+		"unique":              types.Int64Type,
+		"virtual":             types.Int64Type,
+		"snapshots_effective": types.Int64Type,
+	}
+}
+
+func fsNFSAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled":     types.BoolType,
+		"v3_enabled":  types.BoolType,
+		"v4_1_enabled": types.BoolType,
+		"rules":       types.StringType,
+		"transport":   types.StringType,
+	}
+}
+
+func fsSMBAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled":                         types.BoolType,
+		"access_based_enumeration_enabled": types.BoolType,
+		"continuous_availability_enabled":  types.BoolType,
+		"smb_encryption_enabled":           types.BoolType,
+	}
+}
+
+func fsHTTPAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled": types.BoolType,
+	}
+}
+
+func fsMultiProtocolAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"access_control_style": types.StringType,
+		"safeguard_acls":       types.BoolType,
+	}
+}
+
+func fsDefaultQuotasAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"group_quota": types.Int64Type,
+		"user_quota":  types.Int64Type,
+	}
+}
+
+func fsSourceAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   types.StringType,
+		"name": types.StringType,
+	}
+}
+
+// mustObjectValue builds a types.Object and panics on coding errors (mismatched keys/types).
+func mustObjectValue(attrTypes map[string]attr.Type, values map[string]attr.Value) types.Object {
+	obj, diags := types.ObjectValue(attrTypes, values)
+	if diags.HasError() {
+		panic("mustObjectValue: " + diags[0].Detail())
+	}
+	return obj
+}
+
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetFileSystem and maps the result into the provided model.
@@ -632,68 +721,58 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) {
 	}
 
 	// Space (always set — Computed-only block).
-	data.Space = &filesystemSpaceModel{
-		DataReduction:      types.Float64Value(fs.Space.DataReduction),
-		Snapshots:          types.Int64Value(fs.Space.Snapshots),
-		TotalPhysical:      types.Int64Value(fs.Space.TotalPhysical),
-		Unique:             types.Int64Value(fs.Space.Unique),
-		Virtual:            types.Int64Value(fs.Space.Virtual),
-		SnapshotsEffective: types.Int64Value(fs.Space.SnapshotsEffective),
-	}
+	data.Space = mustObjectValue(fsSpaceAttrTypes(), map[string]attr.Value{
+		"data_reduction":      types.Float64Value(fs.Space.DataReduction),
+		"snapshots":           types.Int64Value(fs.Space.Snapshots),
+		"total_physical":      types.Int64Value(fs.Space.TotalPhysical),
+		"unique":              types.Int64Value(fs.Space.Unique),
+		"virtual":             types.Int64Value(fs.Space.Virtual),
+		"snapshots_effective": types.Int64Value(fs.Space.SnapshotsEffective),
+	})
 
 	// NFS block — always set from API.
-	data.NFS = &filesystemNFSModel{
-		Enabled:    types.BoolValue(fs.NFS.Enabled),
-		V3Enabled:  types.BoolValue(fs.NFS.V3Enabled),
-		V41Enabled: types.BoolValue(fs.NFS.V41Enabled),
-		Rules:      types.StringValue(fs.NFS.Rules),
-		Transport:  types.StringValue(fs.NFS.Transport),
-	}
+	data.NFS = mustObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
+		"enabled":      types.BoolValue(fs.NFS.Enabled),
+		"v3_enabled":   types.BoolValue(fs.NFS.V3Enabled),
+		"v4_1_enabled": types.BoolValue(fs.NFS.V41Enabled),
+		"rules":        types.StringValue(fs.NFS.Rules),
+		"transport":    types.StringValue(fs.NFS.Transport),
+	})
 
 	// SMB block — always set from API.
-	data.SMB = &filesystemSMBModel{
-		Enabled:                       types.BoolValue(fs.SMB.Enabled),
-		AccessBasedEnumerationEnabled: types.BoolValue(fs.SMB.AccessBasedEnumerationEnabled),
-		ContinuousAvailabilityEnabled: types.BoolValue(fs.SMB.ContinuousAvailabilityEnabled),
-		SMBEncryptionEnabled:          types.BoolValue(fs.SMB.SMBEncryptionEnabled),
-	}
+	data.SMB = mustObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
+		"enabled":                          types.BoolValue(fs.SMB.Enabled),
+		"access_based_enumeration_enabled": types.BoolValue(fs.SMB.AccessBasedEnumerationEnabled),
+		"continuous_availability_enabled":  types.BoolValue(fs.SMB.ContinuousAvailabilityEnabled),
+		"smb_encryption_enabled":           types.BoolValue(fs.SMB.SMBEncryptionEnabled),
+	})
 
 	// HTTP block — always set from API (Computed-only).
-	data.HTTP = &filesystemHTTPModel{
-		Enabled: types.BoolValue(fs.HTTP.Enabled),
-	}
+	data.HTTP = mustObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
+		"enabled": types.BoolValue(fs.HTTP.Enabled),
+	})
 
 	// Source block — only if present in API response.
 	if fs.Source != nil {
-		data.Source = &filesystemSourceModel{
-			ID:   types.StringValue(fs.Source.ID),
-			Name: types.StringValue(fs.Source.Name),
-		}
+		data.Source = mustObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
+			"id":   types.StringValue(fs.Source.ID),
+			"name": types.StringValue(fs.Source.Name),
+		})
 	} else {
-		data.Source = nil
+		data.Source = types.ObjectNull(fsSourceAttrTypes())
 	}
 
-	// MultiProtocol — only set if data contains it (Optional/Computed).
-	if data.MultiProtocol == nil && (fs.MultiProtocol.AccessControlStyle != "" || fs.MultiProtocol.SafeguardACLsOnDestroy) {
-		data.MultiProtocol = &filesystemMultiProtocolModel{
-			AccessControlStyle: types.StringValue(fs.MultiProtocol.AccessControlStyle),
-			SafeguardACLs:      types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy),
-		}
-	} else if data.MultiProtocol != nil {
-		data.MultiProtocol.AccessControlStyle = types.StringValue(fs.MultiProtocol.AccessControlStyle)
-		data.MultiProtocol.SafeguardACLs = types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy)
-	}
+	// MultiProtocol — always set from API (Optional/Computed).
+	data.MultiProtocol = mustObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
+		"access_control_style": types.StringValue(fs.MultiProtocol.AccessControlStyle),
+		"safeguard_acls":       types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy),
+	})
 
-	// DefaultQuotas — only set if data contains it (Optional/Computed).
-	if data.DefaultQuotas == nil && (fs.DefaultQuotas.GroupQuota != 0 || fs.DefaultQuotas.UserQuota != 0) {
-		data.DefaultQuotas = &filesystemDefaultQuotasModel{
-			GroupQuota: types.Int64Value(fs.DefaultQuotas.GroupQuota),
-			UserQuota:  types.Int64Value(fs.DefaultQuotas.UserQuota),
-		}
-	} else if data.DefaultQuotas != nil {
-		data.DefaultQuotas.GroupQuota = types.Int64Value(fs.DefaultQuotas.GroupQuota)
-		data.DefaultQuotas.UserQuota = types.Int64Value(fs.DefaultQuotas.UserQuota)
-	}
+	// DefaultQuotas — always set from API (Optional/Computed).
+	data.DefaultQuotas = mustObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
+		"group_quota": types.Int64Value(fs.DefaultQuotas.GroupQuota),
+		"user_quota":  types.Int64Value(fs.DefaultQuotas.UserQuota),
+	})
 }
 
 // ---------- plan modifier helpers -------------------------------------------

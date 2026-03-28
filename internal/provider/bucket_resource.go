@@ -49,21 +49,21 @@ type bucketSpaceModel struct {
 
 // bucketModel is the top-level model for the flashblade_bucket resource.
 type bucketModel struct {
-	ID                       types.String      `tfsdk:"id"`
-	Name                     types.String      `tfsdk:"name"`
-	Account                  types.String      `tfsdk:"account"`
-	Created                  types.Int64       `tfsdk:"created"`
-	Destroyed                types.Bool        `tfsdk:"destroyed"`
-	DestroyEradicateOnDelete types.Bool        `tfsdk:"destroy_eradicate_on_delete"`
-	TimeRemaining            types.Int64       `tfsdk:"time_remaining"`
-	Versioning               types.String      `tfsdk:"versioning"`
-	QuotaLimit               types.Int64       `tfsdk:"quota_limit"`
-	HardLimitEnabled         types.Bool        `tfsdk:"hard_limit_enabled"`
-	ObjectCount              types.Int64       `tfsdk:"object_count"`
-	BucketType               types.String      `tfsdk:"bucket_type"`
-	RetentionLock            types.String      `tfsdk:"retention_lock"`
-	Space                    *bucketSpaceModel `tfsdk:"space"`
-	Timeouts                 timeouts.Value    `tfsdk:"timeouts"`
+	ID                       types.String   `tfsdk:"id"`
+	Name                     types.String   `tfsdk:"name"`
+	Account                  types.String   `tfsdk:"account"`
+	Created                  types.Int64    `tfsdk:"created"`
+	Destroyed                types.Bool     `tfsdk:"destroyed"`
+	DestroyEradicateOnDelete types.Bool     `tfsdk:"destroy_eradicate_on_delete"`
+	TimeRemaining            types.Int64    `tfsdk:"time_remaining"`
+	Versioning               types.String   `tfsdk:"versioning"`
+	QuotaLimit               types.Int64    `tfsdk:"quota_limit"`
+	HardLimitEnabled         types.Bool     `tfsdk:"hard_limit_enabled"`
+	ObjectCount              types.Int64    `tfsdk:"object_count"`
+	BucketType               types.String   `tfsdk:"bucket_type"`
+	RetentionLock            types.String   `tfsdk:"retention_lock"`
+	Space                    types.Object   `tfsdk:"space"`
+	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 }
 
 // ---------- resource interface methods --------------------------------------
@@ -456,6 +456,18 @@ func (r *bucketResource) ImportState(ctx context.Context, req resource.ImportSta
 
 // ---------- helpers ---------------------------------------------------------
 
+// bucketSpaceAttrTypes returns the attribute types for the bucket space object.
+func bucketSpaceAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"data_reduction":      types.Float64Type,
+		"snapshots":           types.Int64Type,
+		"total_physical":      types.Int64Type,
+		"unique":              types.Int64Type,
+		"virtual":             types.Int64Type,
+		"snapshots_effective": types.Int64Type,
+	}
+}
+
 // readIntoState calls GetBucket and maps the result into the provided model.
 func (r *bucketResource) readIntoState(ctx context.Context, name string, data *bucketModel, diags interface {
 	AddError(string, string)
@@ -485,12 +497,17 @@ func mapBucketToModel(bkt *client.Bucket, data *bucketModel) {
 	data.BucketType = types.StringValue(bkt.BucketType)
 	data.RetentionLock = types.StringValue(bkt.RetentionLock)
 
-	data.Space = &bucketSpaceModel{
-		DataReduction:      types.Float64Value(bkt.Space.DataReduction),
-		Snapshots:          types.Int64Value(bkt.Space.Snapshots),
-		TotalPhysical:      types.Int64Value(bkt.Space.TotalPhysical),
-		Unique:             types.Int64Value(bkt.Space.Unique),
-		Virtual:            types.Int64Value(bkt.Space.Virtual),
-		SnapshotsEffective: types.Int64Value(bkt.Space.SnapshotsEffective),
+	spaceObj, diags := types.ObjectValue(bucketSpaceAttrTypes(), map[string]attr.Value{
+		"data_reduction":      types.Float64Value(bkt.Space.DataReduction),
+		"snapshots":           types.Int64Value(bkt.Space.Snapshots),
+		"total_physical":      types.Int64Value(bkt.Space.TotalPhysical),
+		"unique":              types.Int64Value(bkt.Space.Unique),
+		"virtual":             types.Int64Value(bkt.Space.Virtual),
+		"snapshots_effective": types.Int64Value(bkt.Space.SnapshotsEffective),
+	})
+	// ObjectValue only fails if keys/types mismatch — treat as a coding error.
+	if diags.HasError() {
+		panic("mapBucketToModel: failed to build space object: " + diags[0].Detail())
 	}
+	data.Space = spaceObj
 }

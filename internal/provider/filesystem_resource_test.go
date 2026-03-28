@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
@@ -279,10 +280,14 @@ func TestUnit_FileSystem_Create_WithNFS(t *testing.T) {
 	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get state: %s", diags)
 	}
-	if model.NFS == nil {
+	if model.NFS.IsNull() || model.NFS.IsUnknown() {
 		t.Fatal("expected NFS block to be populated")
 	}
-	if !model.NFS.Enabled.ValueBool() {
+	var nfsModel filesystemNFSModel
+	if diags := model.NFS.As(context.Background(), &nfsModel, basetypes.ObjectAsOptions{}); diags.HasError() {
+		t.Fatalf("NFS.As: %s", diags)
+	}
+	if !nfsModel.Enabled.ValueBool() {
 		t.Error("expected NFS.enabled=true")
 	}
 }
@@ -329,10 +334,14 @@ func TestUnit_FileSystem_Create_WithSMB(t *testing.T) {
 	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get state: %s", diags)
 	}
-	if model.SMB == nil {
+	if model.SMB.IsNull() || model.SMB.IsUnknown() {
 		t.Fatal("expected SMB block to be populated")
 	}
-	if !model.SMB.Enabled.ValueBool() {
+	var smbModel filesystemSMBModel
+	if diags := model.SMB.As(context.Background(), &smbModel, basetypes.ObjectAsOptions{}); diags.HasError() {
+		t.Fatalf("SMB.As: %s", diags)
+	}
+	if !smbModel.Enabled.ValueBool() {
 		t.Error("expected SMB.enabled=true")
 	}
 }
