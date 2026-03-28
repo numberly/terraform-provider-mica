@@ -190,7 +190,7 @@ Plans:
   1. `models.go` is split into domain files (storage, policies, exports, admin) and `go build ./...` compiles without errors
   2. All policy rule resources use a single `compositeID` helper for import parsing and delete ID construction (no duplicated split/join logic)
   3. All rule resources that convert nullable strings use a shared `stringOrNull` helper from a common package (no inline duplicates)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 10-01-PLAN.md — Split models.go into 5 domain files (storage, policies, exports, admin, common)
@@ -227,5 +227,5 @@ Phases execute in numeric order: 9 -> 10 -> 11
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 9. Bug Fixes | v1.2 | 0/2 | In progress | - |
-| 10. Architecture Cleanup | v1.2 | 0/2 | Not started | - |
+| 10. Architecture Cleanup | 1/2 | In Progress|  | - |
 | 11. Test Hardening & Validators | v1.2 | 0/? | Not started | - |
