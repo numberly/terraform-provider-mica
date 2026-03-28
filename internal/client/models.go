@@ -697,3 +697,72 @@ type ObjectStoreAccountExportPatch struct {
 	ExportEnabled *bool           `json:"export_enabled,omitempty"`
 	Policy        *NamedReference `json:"policy,omitempty"`
 }
+
+// ---------- Phase 7 model structs -------------------------------------------
+
+// S3ExportPolicy represents a FlashBlade S3 export policy from GET responses.
+type S3ExportPolicy struct {
+	ID         string `json:"id,omitempty"`
+	Name       string `json:"name"`
+	Enabled    bool   `json:"enabled"`
+	IsLocal    bool   `json:"is_local,omitempty"`
+	PolicyType string `json:"policy_type,omitempty"`
+	Version    string `json:"version,omitempty"`
+}
+
+// S3ExportPolicyPost contains the fields accepted on POST /s3-export-policies.
+type S3ExportPolicyPost struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// S3ExportPolicyPatch contains pointer fields for PATCH /s3-export-policies.
+type S3ExportPolicyPatch struct {
+	Name    *string `json:"name,omitempty"`
+	Enabled *bool   `json:"enabled,omitempty"`
+}
+
+// S3ExportPolicyRule represents a rule from GET /s3-export-policies/rules.
+type S3ExportPolicyRule struct {
+	ID        string         `json:"id,omitempty"`
+	Name      string         `json:"name,omitempty"`
+	Index     int            `json:"index"`
+	Policy    NamedReference `json:"policy,omitempty"`
+	Effect    string         `json:"effect,omitempty"`
+	Actions   []string       `json:"actions,omitempty"`
+	Resources []string       `json:"resources,omitempty"`
+}
+
+// S3ExportPolicyRulePost contains the writable fields for POST /s3-export-policies/rules.
+type S3ExportPolicyRulePost struct {
+	Effect    string   `json:"effect"`
+	Actions   []string `json:"actions"`
+	Resources []string `json:"resources"`
+}
+
+// S3ExportPolicyRulePatch contains pointer fields for PATCH /s3-export-policies/rules.
+type S3ExportPolicyRulePatch struct {
+	Effect    *string  `json:"effect,omitempty"`
+	Actions   []string `json:"actions,omitempty"`
+	Resources []string `json:"resources,omitempty"`
+}
+
+// ObjectStoreVirtualHost represents a FlashBlade virtual host from GET responses.
+type ObjectStoreVirtualHost struct {
+	ID              string           `json:"id,omitempty"`
+	Name            string           `json:"name"`
+	Hostname        string           `json:"hostname,omitempty"`
+	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
+}
+
+// ObjectStoreVirtualHostPost contains the fields accepted on POST /object-store-virtual-hosts.
+type ObjectStoreVirtualHostPost struct {
+	Hostname        string           `json:"hostname"`
+	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
+}
+
+// ObjectStoreVirtualHostPatch contains pointer fields for PATCH /object-store-virtual-hosts.
+type ObjectStoreVirtualHostPatch struct {
+	Name            *string          `json:"name,omitempty"`
+	Hostname        *string          `json:"hostname,omitempty"`
+	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
+}
