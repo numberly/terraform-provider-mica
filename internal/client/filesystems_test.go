@@ -30,15 +30,15 @@ func newTestClient(t *testing.T, srv *httptest.Server) *client.FlashBladeClient 
 }
 
 // writeJSON writes a JSON response to the ResponseWriter.
-func writeJSON(w http.ResponseWriter, statusCode int, v interface{}) {
+func writeJSON(w http.ResponseWriter, statusCode int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	_ = json.NewEncoder(w).Encode(v)
 }
 
 // listResponse wraps items in a ListResponse JSON envelope.
-func listResponse(items interface{}) map[string]interface{} {
-	return map[string]interface{}{
+func listResponse(items any) map[string]any {
+	return map[string]any{
 		"items":            items,
 		"total_item_count": 1,
 	}
@@ -344,7 +344,7 @@ func TestUnit_FileSystem_PollEradicated(t *testing.T) {
 				fs := client.FileSystem{ID: "fs-id-007", Name: "poll-fs", Destroyed: true}
 				writeJSON(w, http.StatusOK, listResponse([]client.FileSystem{fs}))
 			} else {
-				writeJSON(w, http.StatusOK, map[string]interface{}{"items": []client.FileSystem{}})
+				writeJSON(w, http.StatusOK, map[string]any{"items": []client.FileSystem{}})
 			}
 		default:
 			http.NotFound(w, r)
@@ -401,7 +401,7 @@ func TestUnit_FileSystem_List(t *testing.T) {
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
 		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
-			writeJSON(w, http.StatusOK, map[string]interface{}{
+			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            fsList,
 				"total_item_count": 2,
 			})
@@ -447,14 +447,14 @@ func TestUnit_FileSystem_List_Paginated(t *testing.T) {
 			token := r.URL.Query().Get("continuation_token")
 			if token == "" {
 				// First page: return 2 items + continuation_token.
-				writeJSON(w, http.StatusOK, map[string]interface{}{
+				writeJSON(w, http.StatusOK, map[string]any{
 					"items":              page1,
 					"total_item_count":   3,
 					"continuation_token": "page2-token",
 				})
 			} else if token == "page2-token" {
 				// Second page: return 1 item, no token.
-				writeJSON(w, http.StatusOK, map[string]interface{}{
+				writeJSON(w, http.StatusOK, map[string]any{
 					"items":            page2,
 					"total_item_count": 3,
 				})
@@ -503,7 +503,7 @@ func TestUnit_FileSystem_List_SinglePage(t *testing.T) {
 		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
 			callCount++
 			// No continuation_token in response — single page.
-			writeJSON(w, http.StatusOK, map[string]interface{}{
+			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            fsList,
 				"total_item_count": 2,
 			})
@@ -535,7 +535,7 @@ func TestUnit_FileSystem_List_WithFilter(t *testing.T) {
 		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
 			names := r.URL.Query().Get("names")
 			if names != "specific-fs" {
-				writeJSON(w, http.StatusOK, map[string]interface{}{"items": []client.FileSystem{}})
+				writeJSON(w, http.StatusOK, map[string]any{"items": []client.FileSystem{}})
 				return
 			}
 			fs := client.FileSystem{ID: "fs-id-011", Name: "specific-fs", Provisioned: 1073741824}

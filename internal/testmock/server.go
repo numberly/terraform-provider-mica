@@ -59,7 +59,7 @@ func (ms *MockServer) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (ms *MockServer) handleAPIVersion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]any{
 		"versions": []string{"2.12", "2.15", "2.22"},
 	})
 }

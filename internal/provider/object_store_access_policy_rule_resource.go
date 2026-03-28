@@ -455,11 +455,3 @@ func mapOAPRuleToModel(ctx context.Context, rule *client.ObjectStoreAccessPolicy
 	return diags
 }
 
-// conditionsToRawMessage converts a conditions string to json.RawMessage for API calls.
-// Returns nil if the string is empty or null.
-func conditionsToRawMessage(condStr string) json.RawMessage {
-	if condStr == "" {
-		return nil
-	}
-	return json.RawMessage(condStr)
-}

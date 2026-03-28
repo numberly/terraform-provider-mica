@@ -199,7 +199,7 @@ func (c *FlashBladeClient) HTTPClient() *http.Client {
 }
 
 // do is the shared HTTP execution helper.
-func (c *FlashBladeClient) do(ctx context.Context, method, path string, body interface{}) (*http.Response, error) {
+func (c *FlashBladeClient) do(ctx context.Context, method, path string, body any) (*http.Response, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -223,7 +223,7 @@ func (c *FlashBladeClient) do(ctx context.Context, method, path string, body int
 }
 
 // get performs a GET request and decodes the JSON response into result.
-func (c *FlashBladeClient) get(ctx context.Context, path string, result interface{}) error {
+func (c *FlashBladeClient) get(ctx context.Context, path string, result any) error {
 	resp, err := c.do(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
@@ -237,7 +237,7 @@ func (c *FlashBladeClient) get(ctx context.Context, path string, result interfac
 }
 
 // post performs a POST request and decodes the JSON response into result.
-func (c *FlashBladeClient) post(ctx context.Context, path string, body, result interface{}) error {
+func (c *FlashBladeClient) post(ctx context.Context, path string, body, result any) error {
 	resp, err := c.do(ctx, http.MethodPost, path, body)
 	if err != nil {
 		return err
@@ -254,7 +254,7 @@ func (c *FlashBladeClient) post(ctx context.Context, path string, body, result i
 }
 
 // patch performs a PATCH request and decodes the JSON response into result.
-func (c *FlashBladeClient) patch(ctx context.Context, path string, body, result interface{}) error {
+func (c *FlashBladeClient) patch(ctx context.Context, path string, body, result any) error {
 	resp, err := c.do(ctx, http.MethodPatch, path, body)
 	if err != nil {
 		return err

@@ -13,7 +13,7 @@ import (
 )
 
 // doJSON is a convenience helper for making JSON requests to the mock server.
-func doJSON(t *testing.T, method, url string, body interface{}) *http.Response {
+func doJSON(t *testing.T, method, url string, body any) *http.Response {
 	t.Helper()
 	var bodyReader io.Reader
 	if body != nil {
@@ -36,7 +36,7 @@ func doJSON(t *testing.T, method, url string, body interface{}) *http.Response {
 }
 
 // decodeJSON decodes a JSON response body into v.
-func decodeJSON(t *testing.T, resp *http.Response, v interface{}) {
+func decodeJSON(t *testing.T, resp *http.Response, v any) {
 	t.Helper()
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
@@ -83,7 +83,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 
 	// Step 3: POST /api/2.22/file-systems — create file system.
-	resp = doJSON(t, http.MethodPost, base+"/api/2.22/file-systems", map[string]interface{}{
+	resp = doJSON(t, http.MethodPost, base+"/api/2.22/file-systems", map[string]any{
 		"name":        "test-fs",
 		"provisioned": 1073741824,
 	})
@@ -135,7 +135,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 
 	// Step 5: PATCH /api/2.22/file-systems?ids={id} — update provisioned size.
-	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), map[string]interface{}{
+	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), map[string]any{
 		"provisioned": 2147483648,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -158,7 +158,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 
 	// Step 6: PATCH destroyed=true — soft-delete.
-	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), map[string]interface{}{
+	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), map[string]any{
 		"destroyed": true,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -189,7 +189,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 		t.Fatalf("GET after eradicate: expected 200, got %d", resp.StatusCode)
 	}
 	var afterResp struct {
-		Items []interface{} `json:"items"`
+		Items []any `json:"items"`
 	}
 	decodeJSON(t, resp, &afterResp)
 	if len(afterResp.Items) != 0 {
@@ -241,7 +241,7 @@ func TestUnit_MockServer_DeleteRequiresDestroyed(t *testing.T) {
 	base := ms.URL()
 
 	// Create a file system (not destroyed)
-	resp := doJSON(t, http.MethodPost, base+"/api/2.22/file-systems", map[string]interface{}{
+	resp := doJSON(t, http.MethodPost, base+"/api/2.22/file-systems", map[string]any{
 		"name":        "no-destroy-fs",
 		"provisioned": 1073741824,
 	})

@@ -108,7 +108,7 @@ func mockFlashBladeServer(t *testing.T) *httptest.Server {
 		switch r.URL.Path {
 		case "/api/api_version":
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(map[string]interface{}{
+			if err := json.NewEncoder(w).Encode(map[string]any{
 				"versions": []string{"2.10", "2.22"},
 			}); err != nil {
 				http.Error(w, "encode error", http.StatusInternalServerError)
@@ -289,7 +289,7 @@ func TestUnit_Configure_VersionMismatch(t *testing.T) {
 		switch r.URL.Path {
 		case "/api/api_version":
 			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			_ = json.NewEncoder(w).Encode(map[string]any{
 				"versions": []string{"2.10", "2.15"},
 			})
 		case "/api/login":
