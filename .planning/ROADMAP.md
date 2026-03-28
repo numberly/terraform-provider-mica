@@ -110,7 +110,7 @@ Plans:
 
 - [ ] **Phase 6: Server Resource & Export Consolidation** - Full server CRUD + TDD tests for existing export resources
 - [x] **Phase 7: S3 Export Policies & Virtual Hosts** - S3 export policy/rules and virtual host resources with server attachment (completed 2026-03-28)
-- [ ] **Phase 8: SMB Client Policies, Syslog & Acceptance Tests** - SMB client policy/rules, syslog server, and live acceptance tests for all v1.1 resources
+- [x] **Phase 8: SMB Client Policies, Syslog & Acceptance Tests** - SMB client policy/rules, syslog server, and live acceptance tests for all v1.1 resources (completed 2026-03-28)
 
 ## Phase Details
 
@@ -154,7 +154,7 @@ Plans:
   2. Operator can create a syslog server with URI, services, and sources, update its configuration, and import it into Terraform state
   3. Operator can import SMB client policies and rules into Terraform state with no drift on subsequent plan
   4. All v1.1 resources (server, S3 export policy/rules, virtual hosts, SMB client policy/rules, syslog server) pass acceptance tests against a live FlashBlade array
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 08-01-PLAN.md — SMB client policy resource, rule resource, data source, client CRUD, mock handler, and unit tests
@@ -175,4 +175,4 @@ Phases execute in numeric order: 6 -> 7 -> 8
 | 5. Quality Hardening | v1.0 | 4/4 | Complete | 2026-03-28 |
 | 6. Server Resource & Export Consolidation | v1.1 | 0/2 | Planned | - |
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 3/3 | Complete | 2026-03-28 |
-| 8. SMB Client Policies, Syslog & Acceptance Tests | 1/3 | In Progress|  | - |
+| 8. SMB Client Policies, Syslog & Acceptance Tests | 3/3 | Complete   | 2026-03-28 | - |

@@ -45,7 +45,7 @@ Requirements for milestone v1.1 — Servers & Exports.
 
 - [x] **EXP-01**: File system export resource has proper TDD unit tests and mock handlers
 - [x] **EXP-02**: Account export resource has proper TDD unit tests and mock handlers
-- [ ] **EXP-03**: All export resources pass acceptance tests against live FlashBlade
+- [x] **EXP-03**: All export resources pass acceptance tests against live FlashBlade
 
 ## v1.2 Requirements
 
@@ -96,7 +96,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SYS-03 | Phase 8 | Complete |
 | EXP-01 | Phase 6 | Complete |
 | EXP-02 | Phase 6 | Complete |
-| EXP-03 | Phase 8 | Pending |
+| EXP-03 | Phase 8 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 22 total

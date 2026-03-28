@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Servers & Exports
 status: executing
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-03-28T15:48:49.524Z"
+stopped_at: Completed 08-03-PLAN.md (Phase 8 complete — milestone v1.1 fully acceptance-tested)
+last_updated: "2026-03-28T16:01:10.726Z"
 last_activity: 2026-03-28 — Completed plan 08-02 (Syslog server resource)
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 28
-  completed_plans: 27
+  completed_plans: 28
   percent: 96
 ---
 
@@ -57,6 +57,7 @@ Progress: [██████████] 96%
 | Phase 07 P03 | 4 min | 2 tasks | 4 files |
 | Phase 08 P01 | 7 min | 2 tasks | 9 files |
 | Phase 08 P02 | 4 | 2 tasks | 7 files |
+| Phase 08 P03 | 30 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 08]: SMB client policy version is read-only Computed+UseStateForUnknown (never in POST/PATCH)
 - [Phase 08]: SMB client policy rule fields are client/encryption/permission (not principal/change/full_control/read)
 - [Phase 08]: Syslog server name uses RequiresReplace (not renameable per API)
+- [Phase 08]: S3 export policy rule name must be alphanumeric only, Required field, uses ?names= query param on POST
+- [Phase 08]: S3 export policy rule only valid action is pure:S3Access (not s3:* wildcards)
+- [Phase 08]: Virtual host attached_servers listdefault removed — API auto-attaches default server on creation
 
 ### Pending Todos
 
@@ -93,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T15:48:49.519Z
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-03-28T16:01:10.718Z
+Stopped at: Completed 08-03-PLAN.md (Phase 8 complete — milestone v1.1 fully acceptance-tested)
 Resume file: None
