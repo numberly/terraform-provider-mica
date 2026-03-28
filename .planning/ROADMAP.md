@@ -123,7 +123,11 @@ Plans:
   2. Operator can import an existing FlashBlade server into Terraform state and subsequent plan shows no drift
   3. Server data source reads an existing server by name and exposes its attributes for reference in other resources
   4. File system export and account export resources each have mock handlers and unit tests following TDD patterns established in v1.0
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Server model extension, client CRUD, mock handler, resource, data source update, and tests
+- [ ] 06-02-PLAN.md — Export mock handlers and TDD unit tests for file system and account exports
 
 ### Phase 7: S3 Export Policies & Virtual Hosts
 **Goal**: Operators can manage S3 export access policies and virtual-hosted-style S3 endpoints through Terraform
@@ -159,6 +163,6 @@ Phases execute in numeric order: 6 -> 7 -> 8
 | 3. File-Based Policy Resources | v1.0 | 4/4 | Complete | 2026-03-27 |
 | 4. Object/Network/Quota & Array Admin | v1.0 | 5/5 | Complete | 2026-03-28 |
 | 5. Quality Hardening | v1.0 | 4/4 | Complete | 2026-03-28 |
-| 6. Server Resource & Export Consolidation | v1.1 | 0/? | Not started | - |
+| 6. Server Resource & Export Consolidation | v1.1 | 0/2 | Planned | - |
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 0/? | Not started | - |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 0/? | Not started | - |
