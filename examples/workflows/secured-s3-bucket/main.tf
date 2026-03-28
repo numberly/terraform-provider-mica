@@ -134,7 +134,8 @@ resource "flashblade_network_access_policy_rule" "internal_only" {
 # ---------------------------------------------------------------------------
 
 resource "flashblade_object_store_access_policy" "app_readonly" {
-  name        = "app-readonly"
+  # FlashBlade requires the account-scoped format: account-name/policy-name
+  name        = "${flashblade_object_store_account.this.name}/readonly"
   description = "Read-only S3 access for application tier"
 
   # description is a POST-only field — changing it requires destroy+recreate.

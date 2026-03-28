@@ -68,7 +68,7 @@ func (r *objectStoreAccessPolicyResource) Schema(ctx context.Context, _ resource
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The name of the object store access policy. Can be renamed in-place via PATCH.",
+				Description: "The name of the object store access policy in format `account-name/policy-name` (e.g. `myaccount/readonly`). Can be renamed in-place via PATCH.",
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,

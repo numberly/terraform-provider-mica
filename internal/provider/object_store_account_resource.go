@@ -103,15 +103,8 @@ func (r *objectStoreAccountResource) Schema(ctx context.Context, _ resource.Sche
 				Computed:    true,
 				Description: "The count of objects within the account.",
 			},
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
-				Create: true,
-				Read:   true,
-				Update: true,
-				Delete: true,
-			}),
-		},
-		Blocks: map[string]schema.Block{
-			"space": schema.SingleNestedBlock{
+			"space": schema.SingleNestedAttribute{
+				Computed:    true,
 				Description: "Storage space breakdown (read-only, API-managed).",
 				Attributes: map[string]schema.Attribute{
 					"data_reduction": schema.Float64Attribute{
@@ -140,6 +133,12 @@ func (r *objectStoreAccountResource) Schema(ctx context.Context, _ resource.Sche
 					},
 				},
 			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+			}),
 		},
 	}
 }

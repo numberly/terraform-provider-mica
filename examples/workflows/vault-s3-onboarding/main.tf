@@ -101,7 +101,8 @@ resource "flashblade_object_store_account" "tenant" {
 # the tenant's namespace. Attached to the account's default user.
 
 resource "flashblade_object_store_access_policy" "tenant_rw" {
-  name = "${var.tenant_name}-rw"
+  # FlashBlade requires the account-scoped format: account-name/policy-name
+  name = "${flashblade_object_store_account.tenant.name}/rw"
 }
 
 resource "flashblade_object_store_access_policy_rule" "allow_all_rw" {
