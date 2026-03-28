@@ -304,6 +304,144 @@ func TestNetworkAccessPolicyRuleResource_Import(t *testing.T) {
 	}
 }
 
+// TestUnit_NetworkAccessPolicyRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_NetworkAccessPolicyRule_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
+
+	r := newTestNAPRuleResource(t, ms)
+	s := napRuleResourceSchema(t).Schema
+
+	// Step 1: Create (mock pre-seeds "default" policy).
+	createPlan := napRulePlan(t, "default", "*", "allow", []string{"nfs"})
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel networkAccessPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Client.ValueString() != "*" {
+		t.Errorf("Create: expected client=*, got %s", createModel.Client.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 networkAccessPolicyRuleModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.Effect.ValueString() != "allow" {
+		t.Errorf("Read1: expected effect=allow, got %s", readModel1.Effect.ValueString())
+	}
+
+	// Step 3: Update client to specific subnet.
+	updatePlan := napRulePlan(t, "default", "10.0.0.0/8", "allow", []string{"nfs"})
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel networkAccessPolicyRuleModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Client.ValueString() != "10.0.0.0/8" {
+		t.Errorf("Update: expected client=10.0.0.0/8, got %s", updateModel.Client.ValueString())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 networkAccessPolicyRuleModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Client.ValueString() != "10.0.0.0/8" {
+		t.Errorf("Read2: expected client=10.0.0.0/8, got %s", readModel2.Client.ValueString())
+	}
+
+	// Step 5: Delete.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_NetworkAccessPolicyRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_NetworkAccessPolicyRule_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
+
+	r := newTestNAPRuleResource(t, ms)
+	s := napRuleResourceSchema(t).Schema
+
+	// Create.
+	createPlan := napRulePlan(t, "default", "*", "allow", []string{"nfs", "smb"})
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel networkAccessPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	index := strconv.FormatInt(createModel.Index.ValueInt64(), 10)
+
+	// ImportState using composite ID "policy_name/index".
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default/" + index}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel networkAccessPolicyRuleModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.PolicyName.ValueString() != createModel.PolicyName.ValueString() {
+		t.Errorf("policy_name mismatch: create=%s import=%s", createModel.PolicyName.ValueString(), importedModel.PolicyName.ValueString())
+	}
+	if importedModel.Client.ValueString() != createModel.Client.ValueString() {
+		t.Errorf("client mismatch: create=%s import=%s", createModel.Client.ValueString(), importedModel.Client.ValueString())
+	}
+	if importedModel.Effect.ValueString() != createModel.Effect.ValueString() {
+		t.Errorf("effect mismatch: create=%s import=%s", createModel.Effect.ValueString(), importedModel.Effect.ValueString())
+	}
+}
+
 // TestUnit_NAPRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the network_access_policy_rule resource schema.
 func TestUnit_NAPRule_PlanModifiers(t *testing.T) {

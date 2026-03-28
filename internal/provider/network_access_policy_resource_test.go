@@ -370,6 +370,147 @@ func TestNetworkAccessPolicyDataSource(t *testing.T) {
 	}
 }
 
+// TestUnit_NetworkAccessPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+// NAP is a singleton (GET+PATCH). Create adopts the existing "default" policy.
+func TestUnit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
+
+	r := newTestNAPResource(t, ms)
+	s := napResourceSchema(t).Schema
+
+	// Step 1: Create (adopt singleton via GET+PATCH).
+	createPlan := napPlanWithNameAndEnabled(t, "default", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel networkAccessPolicyModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Name.ValueString() != "default" {
+		t.Errorf("Create: expected name=default, got %s", createModel.Name.ValueString())
+	}
+	if !createModel.Enabled.ValueBool() {
+		t.Error("Create: expected enabled=true")
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 networkAccessPolicyModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if !readModel1.Enabled.ValueBool() {
+		t.Error("Read1: expected enabled=true")
+	}
+
+	// Step 3: Update enabled=false.
+	updatePlan := napPlanWithNameAndEnabled(t, "default", false)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel networkAccessPolicyModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Enabled.ValueBool() {
+		t.Error("Update: expected enabled=false")
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 networkAccessPolicyModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Enabled.ValueBool() {
+		t.Error("Read2: expected enabled=false")
+	}
+
+	// Step 5: Delete (PATCH reset — singleton).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_NetworkAccessPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
+
+	r := newTestNAPResource(t, ms)
+	s := napResourceSchema(t).Schema
+
+	// Create (adopt singleton).
+	createPlan := napPlanWithNameAndEnabled(t, "default", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel networkAccessPolicyModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel networkAccessPolicyModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.Name.ValueString() != createModel.Name.ValueString() {
+		t.Errorf("name mismatch: create=%s import=%s", createModel.Name.ValueString(), importedModel.Name.ValueString())
+	}
+	if importedModel.Enabled.ValueBool() != createModel.Enabled.ValueBool() {
+		t.Errorf("enabled mismatch: create=%v import=%v", createModel.Enabled.ValueBool(), importedModel.Enabled.ValueBool())
+	}
+	if importedModel.ID.ValueString() != createModel.ID.ValueString() {
+		t.Errorf("id mismatch: create=%s import=%s", createModel.ID.ValueString(), importedModel.ID.ValueString())
+	}
+}
+
 // TestUnit_NAP_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the network_access_policy resource schema.
 func TestUnit_NAP_PlanModifiers(t *testing.T) {
