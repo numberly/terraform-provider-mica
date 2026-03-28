@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Servers & Exports
 status: completed
-stopped_at: Completed 07-03-PLAN.md
-last_updated: "2026-03-28T15:14:21.653Z"
-last_activity: 2026-03-28 — Completed plan 07-03 (virtual host resource and data source)
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-28T15:40:34.000Z"
+last_activity: 2026-03-28 — Completed plan 08-01 (SMB client policy resource family)
 progress:
   total_phases: 8
   completed_phases: 7
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v1.1 — Servers & Exports, Phase 7 in progress
+**Current focus:** Milestone v1.1 — Servers & Exports, Phase 8 in progress
 
 ## Current Position
 
-Phase: 7 of 8 (S3 Export Policies & Virtual Hosts)
-Plan: 3 of 3 (complete)
-Status: Phase 7 complete
-Last activity: 2026-03-28 — Completed plan 07-03 (virtual host resource and data source)
+Phase: 8 of 8 (SMB Client Policies, Syslog & Acceptance Tests)
+Plan: 1 of 3
+Status: In progress
+Last activity: 2026-03-28 — Completed plan 08-01 (SMB client policy resource family)
 
 Progress: [██████████] 100%
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100%
 | Phase 07 P01 | 3 | 3 tasks | 5 files |
 | Phase 07 P02 | 5 min | 2 tasks | 6 files |
 | Phase 07 P03 | 4 min | 2 tasks | 4 files |
+| Phase 08 P01 | 7 min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 - [Phase 07]: S3 export policy delete has no member guard (unlike NFS which checks file system attachments)
 - [Phase 07]: Virtual host attached_servers uses listdefault.StaticValue with empty list to prevent null-vs-empty drift
 - [Phase 07]: Virtual host name is Computed (server-assigned); hostname is Required (user-supplied); import uses name
+- [Phase 08]: SMB client policy version is read-only Computed+UseStateForUnknown (never in POST/PATCH)
+- [Phase 08]: SMB client policy rule fields are client/encryption/permission (not principal/change/full_control/read)
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T15:08:00Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-03-28T15:40:34Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None

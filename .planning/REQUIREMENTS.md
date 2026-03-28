@@ -30,10 +30,10 @@ Requirements for milestone v1.1 — Servers & Exports.
 
 ### SMB Client Policies
 
-- [ ] **SMC-01**: Operator can create an SMB client policy with enable toggle
-- [ ] **SMC-02**: Operator can create SMB client policy rules with client/encryption/permission
-- [ ] **SMC-03**: Operator can update and delete SMB client policy rules independently
-- [ ] **SMC-04**: Operator can import SMB client policies and rules into Terraform state
+- [x] **SMC-01**: Operator can create an SMB client policy with enable toggle
+- [x] **SMC-02**: Operator can create SMB client policy rules with client/encryption/permission
+- [x] **SMC-03**: Operator can update and delete SMB client policy rules independently
+- [x] **SMC-04**: Operator can import SMB client policies and rules into Terraform state
 
 ### Syslog
 
@@ -87,10 +87,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VH-01 | Phase 7 | Complete |
 | VH-02 | Phase 7 | Complete |
 | VH-03 | Phase 7 | Complete |
-| SMC-01 | Phase 8 | Pending |
-| SMC-02 | Phase 8 | Pending |
-| SMC-03 | Phase 8 | Pending |
-| SMC-04 | Phase 8 | Pending |
+| SMC-01 | Phase 8 | Complete |
+| SMC-02 | Phase 8 | Complete |
+| SMC-03 | Phase 8 | Complete |
+| SMC-04 | Phase 8 | Complete |
 | SYS-01 | Phase 8 | Pending |
 | SYS-02 | Phase 8 | Pending |
 | SYS-03 | Phase 8 | Pending |
