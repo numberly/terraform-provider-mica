@@ -828,3 +828,26 @@ type ObjectStoreVirtualHostPatch struct {
 	Hostname        *string          `json:"hostname,omitempty"`
 	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
 }
+
+// SyslogServer represents a FlashBlade syslog server from GET responses.
+type SyslogServer struct {
+	ID       string   `json:"id,omitempty"`
+	Name     string   `json:"name,omitempty"`
+	URI      string   `json:"uri,omitempty"`
+	Services []string `json:"services,omitempty"`
+	Sources  []string `json:"sources,omitempty"`
+}
+
+// SyslogServerPost contains the fields accepted on POST /syslog-servers.
+type SyslogServerPost struct {
+	URI      string   `json:"uri,omitempty"`
+	Services []string `json:"services,omitempty"`
+	Sources  []string `json:"sources,omitempty"`
+}
+
+// SyslogServerPatch contains pointer fields for PATCH /syslog-servers.
+type SyslogServerPatch struct {
+	URI      *string   `json:"uri,omitempty"`
+	Services *[]string `json:"services,omitempty"`
+	Sources  *[]string `json:"sources,omitempty"`
+}
