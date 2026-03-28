@@ -37,9 +37,9 @@ Requirements for milestone v1.1 — Servers & Exports.
 
 ### Syslog
 
-- [ ] **SYS-01**: Operator can create a syslog server with URI, services, and sources
-- [ ] **SYS-02**: Operator can update syslog server configuration
-- [ ] **SYS-03**: Operator can import an existing syslog server into Terraform state
+- [x] **SYS-01**: Operator can create a syslog server with URI, services, and sources
+- [x] **SYS-02**: Operator can update syslog server configuration
+- [x] **SYS-03**: Operator can import an existing syslog server into Terraform state
 
 ### Export Consolidation
 
@@ -91,9 +91,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SMC-02 | Phase 8 | Complete |
 | SMC-03 | Phase 8 | Complete |
 | SMC-04 | Phase 8 | Complete |
-| SYS-01 | Phase 8 | Pending |
-| SYS-02 | Phase 8 | Pending |
-| SYS-03 | Phase 8 | Pending |
+| SYS-01 | Phase 8 | Complete |
+| SYS-02 | Phase 8 | Complete |
+| SYS-03 | Phase 8 | Complete |
 | EXP-01 | Phase 6 | Complete |
 | EXP-02 | Phase 6 | Complete |
 | EXP-03 | Phase 8 | Pending |

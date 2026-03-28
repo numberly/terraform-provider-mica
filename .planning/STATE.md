@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Servers & Exports
-status: completed
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-28T15:40:34.000Z"
-last_activity: 2026-03-28 — Completed plan 08-01 (SMB client policy resource family)
+status: executing
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-28T15:48:49.524Z"
+last_activity: 2026-03-28 — Completed plan 08-02 (Syslog server resource)
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 25
-  completed_plans: 25
-  percent: 100
+  total_plans: 28
+  completed_plans: 27
+  percent: 96
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 8 of 8 (SMB Client Policies, Syslog & Acceptance Tests)
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-03-28 — Completed plan 08-01 (SMB client policy resource family)
+Last activity: 2026-03-28 — Completed plan 08-02 (Syslog server resource)
 
-Progress: [██████████] 100%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 07 P02 | 5 min | 2 tasks | 6 files |
 | Phase 07 P03 | 4 min | 2 tasks | 4 files |
 | Phase 08 P01 | 7 min | 2 tasks | 9 files |
+| Phase 08 P02 | 4 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase 07]: Virtual host name is Computed (server-assigned); hostname is Required (user-supplied); import uses name
 - [Phase 08]: SMB client policy version is read-only Computed+UseStateForUnknown (never in POST/PATCH)
 - [Phase 08]: SMB client policy rule fields are client/encryption/permission (not principal/change/full_control/read)
+- [Phase 08]: Syslog server name uses RequiresReplace (not renameable per API)
 
 ### Pending Todos
 
@@ -91,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T15:40:34Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-28T15:48:49.519Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
