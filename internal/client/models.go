@@ -60,12 +60,12 @@ type FileSystem struct {
 	Destroyed        bool          `json:"destroyed"`
 	TimeRemaining    int64         `json:"time_remaining,omitempty"`
 	Created          int64         `json:"created,omitempty"`
-	Space            Space         `json:"space,omitempty"`
-	NFS              NFSConfig     `json:"nfs,omitempty"`
-	SMB              SMBConfig     `json:"smb,omitempty"`
-	HTTP             HTTPConfig    `json:"http,omitempty"`
-	DefaultQuotas    DefaultQuotas `json:"default_quotas,omitempty"`
-	MultiProtocol    MultiProtocol `json:"multi_protocol,omitempty"`
+	Space            Space         `json:"space"`
+	NFS              NFSConfig     `json:"nfs"`
+	SMB              SMBConfig     `json:"smb"`
+	HTTP             HTTPConfig    `json:"http"`
+	DefaultQuotas    DefaultQuotas `json:"default_quotas"`
+	MultiProtocol    MultiProtocol `json:"multi_protocol"`
 	PromotionStatus  string        `json:"promotion_status,omitempty"`
 	RequestNumber    int64         `json:"request_number,omitempty"`
 	Source           *SourceReference `json:"source,omitempty"`
@@ -121,7 +121,7 @@ type ObjectStoreAccount struct {
 	QuotaLimit       int64 `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool   `json:"hard_limit_enabled"`
 	ObjectCount      int64  `json:"object_count,omitempty"`
-	Space            Space  `json:"space,omitempty"`
+	Space            Space  `json:"space"`
 }
 
 // ObjectStoreAccountPost contains the mutable fields for POST /object-store-accounts.
@@ -148,7 +148,7 @@ type ObjectStoreAccountPatch struct {
 type Bucket struct {
 	ID               string         `json:"id"`
 	Name             string         `json:"name"`
-	Account          NamedReference `json:"account,omitempty"`
+	Account          NamedReference `json:"account"`
 	Created          int64          `json:"created,omitempty"`
 	Destroyed        bool           `json:"destroyed"`
 	TimeRemaining    int64          `json:"time_remaining,omitempty"`
@@ -158,7 +158,7 @@ type Bucket struct {
 	ObjectCount      int64          `json:"object_count,omitempty"`
 	BucketType       string         `json:"bucket_type,omitempty"`
 	RetentionLock    string         `json:"retention_lock,omitempty"`
-	Space            Space          `json:"space,omitempty"`
+	Space            Space          `json:"space"`
 }
 
 // BucketPost contains the fields accepted on POST /buckets.
@@ -187,7 +187,7 @@ type ObjectStoreAccessKey struct {
 	SecretAccessKey string         `json:"secret_access_key,omitempty"`
 	Created         int64          `json:"created,omitempty"`
 	Enabled         bool           `json:"enabled"`
-	User            NamedReference `json:"user,omitempty"`
+	User            NamedReference `json:"user"`
 }
 
 // ObjectStoreAccessKeyPost contains the fields for POST /object-store-access-keys.
@@ -232,7 +232,7 @@ type NfsExportPolicyRule struct {
 	ID                        string         `json:"id,omitempty"`
 	Name                      string         `json:"name,omitempty"`
 	Index                     int            `json:"index"`
-	Policy                    NamedReference `json:"policy,omitempty"`
+	Policy                    NamedReference `json:"policy"`
 	PolicyVersion             string         `json:"policy_version,omitempty"`
 	Access                    string         `json:"access,omitempty"`
 	Client                    string         `json:"client,omitempty"`
@@ -319,7 +319,7 @@ type SmbSharePolicyPatch struct {
 type SmbSharePolicyRule struct {
 	ID          string         `json:"id,omitempty"`
 	Name        string         `json:"name,omitempty"`
-	Policy      NamedReference `json:"policy,omitempty"`
+	Policy      NamedReference `json:"policy"`
 	Principal   string         `json:"principal,omitempty"`
 	Change      string         `json:"change,omitempty"`
 	FullControl string         `json:"full_control,omitempty"`
@@ -382,7 +382,7 @@ type SmbClientPolicyRule struct {
 	ID         string         `json:"id,omitempty"`
 	Name       string         `json:"name,omitempty"`
 	Index      int            `json:"index,omitempty"`
-	Policy     NamedReference `json:"policy,omitempty"`
+	Policy     NamedReference `json:"policy"`
 	Client     string         `json:"client,omitempty"`
 	Encryption string         `json:"encryption,omitempty"`
 	Permission string         `json:"permission,omitempty"`
@@ -793,7 +793,7 @@ type S3ExportPolicyRule struct {
 	ID        string         `json:"id,omitempty"`
 	Name      string         `json:"name,omitempty"`
 	Index     int            `json:"index"`
-	Policy    NamedReference `json:"policy,omitempty"`
+	Policy    NamedReference `json:"policy"`
 	Effect    string         `json:"effect,omitempty"`
 	Actions   []string       `json:"actions,omitempty"`
 	Resources []string       `json:"resources,omitempty"`
