@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
@@ -505,4 +506,19 @@ func TestArraySmtpDataSource(t *testing.T) {
 
 	// Ensure the unused attr import is referenced.
 	_ = attr.Value(nil)
+}
+
+// TestUnit_ArraySMTP_PlanModifiers verifies all UseStateForUnknown plan modifiers
+// in the array_smtp resource schema.
+func TestUnit_ArraySMTP_PlanModifiers(t *testing.T) {
+	s := arraySmtpResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
 }

@@ -323,3 +323,36 @@ func TestUnit_ObjectStoreAccount_Read_NotFound(t *testing.T) {
 		t.Error("expected state to be removed (null) when resource not found")
 	}
 }
+
+// TestUnit_ObjectStoreAccount_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the object_store_account resource schema.
+func TestUnit_ObjectStoreAccount_PlanModifiers(t *testing.T) {
+	s := osaResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// name — RequiresReplace
+	nameAttr, ok := s.Attributes["name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("name attribute not found or wrong type")
+	}
+	if len(nameAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on name attribute")
+	}
+
+	// created — int64 UseStateForUnknown
+	createdAttr, ok := s.Attributes["created"].(resschema.Int64Attribute)
+	if !ok {
+		t.Fatal("created attribute not found or wrong type")
+	}
+	if len(createdAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on created attribute")
+	}
+}

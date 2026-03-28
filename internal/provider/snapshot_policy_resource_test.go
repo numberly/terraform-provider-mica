@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
@@ -369,5 +370,47 @@ func TestSnapshotPolicyDataSource(t *testing.T) {
 	}
 	if model.ID.IsNull() || model.ID.ValueString() == "" {
 		t.Error("expected ID to be populated")
+	}
+}
+
+// TestUnit_SnapshotPolicy_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the snapshot_policy resource schema.
+func TestUnit_SnapshotPolicy_PlanModifiers(t *testing.T) {
+	s := snapshotPolicyResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// name — RequiresReplace
+	nameAttr, ok := s.Attributes["name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("name attribute not found or wrong type")
+	}
+	if len(nameAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on name attribute")
+	}
+
+	// is_local — UseStateForUnknown
+	ilAttr, ok := s.Attributes["is_local"].(resschema.BoolAttribute)
+	if !ok {
+		t.Fatal("is_local attribute not found or wrong type")
+	}
+	if len(ilAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on is_local attribute")
+	}
+
+	// retention_lock — UseStateForUnknown
+	rlAttr, ok := s.Attributes["retention_lock"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("retention_lock attribute not found or wrong type")
+	}
+	if len(rlAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on retention_lock attribute")
 	}
 }

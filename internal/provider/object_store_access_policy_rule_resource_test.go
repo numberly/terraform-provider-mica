@@ -6,7 +6,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock"
@@ -403,6 +406,84 @@ func TestObjectStoreAccessPolicyRuleResource_ConditionsRoundTrip(t *testing.T) {
 		gotConditions := model.Conditions.ValueString()
 		if gotConditions != conditions {
 			t.Errorf("expected conditions=%s, got %s", conditions, gotConditions)
+		}
+	}
+}
+
+// TestUnit_OAPRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the OAP rule resource schema.
+func TestUnit_OAPRule_PlanModifiers(t *testing.T) {
+	s := oapRuleResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// policy_name — RequiresReplace
+	pnAttr, ok := s.Attributes["policy_name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("policy_name attribute not found or wrong type")
+	}
+	if len(pnAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on policy_name attribute")
+	}
+
+	// name — RequiresReplace
+	nameAttr, ok := s.Attributes["name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("name attribute not found or wrong type")
+	}
+	if len(nameAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on name attribute")
+	}
+
+	// effect — RequiresReplace
+	effectAttr, ok := s.Attributes["effect"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("effect attribute not found or wrong type")
+	}
+	if len(effectAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on effect attribute")
+	}
+}
+
+// TestUnit_OAPRule_EffectValidator verifies the effect field rejects invalid values
+// and accepts "allow" and "deny".
+func TestUnit_OAPRule_EffectValidator(t *testing.T) {
+	s := oapRuleResourceSchema(t).Schema
+
+	eAttr, ok := s.Attributes["effect"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("effect attribute not found or wrong type")
+	}
+	if len(eAttr.Validators) == 0 {
+		t.Fatal("expected at least one validator on effect attribute")
+	}
+
+	v := eAttr.Validators[0]
+
+	// "invalid" should produce an error.
+	resp := &validator.StringResponse{}
+	v.ValidateString(context.Background(), validator.StringRequest{
+		ConfigValue: types.StringValue("invalid"),
+	}, resp)
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected validator to reject 'invalid' effect value")
+	}
+
+	// Valid values should not produce errors.
+	for _, valid := range []string{"allow", "deny"} {
+		resp := &validator.StringResponse{}
+		v.ValidateString(context.Background(), validator.StringRequest{
+			ConfigValue: types.StringValue(valid),
+		}, resp)
+		if resp.Diagnostics.HasError() {
+			t.Errorf("expected validator to accept %q effect value, got error: %s", valid, resp.Diagnostics)
 		}
 	}
 }

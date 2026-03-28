@@ -293,3 +293,36 @@ func TestUnit_AccessKey_NoImport(t *testing.T) {
 		t.Error("objectStoreAccessKeyResource must NOT implement ResourceWithImportState — secret unavailable after creation")
 	}
 }
+
+// TestUnit_AccessKey_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the object_store_access_key resource schema.
+func TestUnit_AccessKey_PlanModifiers(t *testing.T) {
+	s := accessKeyResourceSchema(t).Schema
+
+	// access_key_id — UseStateForUnknown (write-once)
+	akAttr, ok := s.Attributes["access_key_id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("access_key_id attribute not found or wrong type")
+	}
+	if len(akAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on access_key_id attribute")
+	}
+
+	// object_store_account — RequiresReplace
+	accountAttr, ok := s.Attributes["object_store_account"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("object_store_account attribute not found or wrong type")
+	}
+	if len(accountAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on object_store_account attribute")
+	}
+
+	// enabled — RequiresReplace
+	enabledAttr, ok := s.Attributes["enabled"].(resschema.BoolAttribute)
+	if !ok {
+		t.Fatal("enabled attribute not found or wrong type")
+	}
+	if len(enabledAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on enabled attribute")
+	}
+}

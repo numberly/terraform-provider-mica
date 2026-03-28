@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
@@ -319,5 +320,38 @@ func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
 	}
 	if model.Access.ValueString() != "root-squash" {
 		t.Errorf("expected access=root-squash after import, got %s", model.Access.ValueString())
+	}
+}
+
+// TestUnit_NFSRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the nfs_export_policy_rule resource schema.
+func TestUnit_NFSRule_PlanModifiers(t *testing.T) {
+	s := nfsRuleResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// policy_name — RequiresReplace
+	pnAttr, ok := s.Attributes["policy_name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("policy_name attribute not found or wrong type")
+	}
+	if len(pnAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on policy_name attribute")
+	}
+
+	// name — UseStateForUnknown (computed, server-assigned)
+	nameAttr, ok := s.Attributes["name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("name attribute not found or wrong type")
+	}
+	if len(nameAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on name attribute")
 	}
 }

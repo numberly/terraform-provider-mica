@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
@@ -389,5 +390,38 @@ func TestNfsExportPolicyDataSource(t *testing.T) {
 	}
 	if model.ID.IsNull() || model.ID.ValueString() == "" {
 		t.Error("expected ID to be populated")
+	}
+}
+
+// TestUnit_NFSPolicy_PlanModifiers verifies all UseStateForUnknown plan modifiers
+// in the nfs_export_policy resource schema.
+func TestUnit_NFSPolicy_PlanModifiers(t *testing.T) {
+	s := nfsPolicyResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// is_local — UseStateForUnknown
+	ilAttr, ok := s.Attributes["is_local"].(resschema.BoolAttribute)
+	if !ok {
+		t.Fatal("is_local attribute not found or wrong type")
+	}
+	if len(ilAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on is_local attribute")
+	}
+
+	// policy_type — UseStateForUnknown
+	ptAttr, ok := s.Attributes["policy_type"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("policy_type attribute not found or wrong type")
+	}
+	if len(ptAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on policy_type attribute")
 	}
 }

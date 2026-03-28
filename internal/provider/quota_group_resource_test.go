@@ -7,7 +7,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock"
@@ -366,5 +369,90 @@ func TestQuotaGroupDataSource(t *testing.T) {
 	}
 	if model.Quota.ValueInt64() != 1073741824 {
 		t.Errorf("expected quota=1073741824, got %d", model.Quota.ValueInt64())
+	}
+}
+
+// TestUnit_QuotaGroup_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the quota_group resource schema.
+func TestUnit_QuotaGroup_PlanModifiers(t *testing.T) {
+	s := quotaGroupResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// file_system_name — RequiresReplace
+	fsnAttr, ok := s.Attributes["file_system_name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("file_system_name attribute not found or wrong type")
+	}
+	if len(fsnAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on file_system_name attribute")
+	}
+
+	// gid — RequiresReplace
+	gidAttr, ok := s.Attributes["gid"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("gid attribute not found or wrong type")
+	}
+	if len(gidAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on gid attribute")
+	}
+
+	// usage — UseStateForUnknown
+	usageAttr, ok := s.Attributes["usage"].(resschema.Int64Attribute)
+	if !ok {
+		t.Fatal("usage attribute not found or wrong type")
+	}
+	if len(usageAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on usage attribute")
+	}
+}
+
+// TestUnit_QuotaGroup_QuotaValidator verifies the quota field rejects negative values
+// and accepts 0 and positive values.
+func TestUnit_QuotaGroup_QuotaValidator(t *testing.T) {
+	s := quotaGroupResourceSchema(t).Schema
+
+	qAttr, ok := s.Attributes["quota"].(resschema.Int64Attribute)
+	if !ok {
+		t.Fatal("quota attribute not found or wrong type")
+	}
+	if len(qAttr.Validators) == 0 {
+		t.Fatal("expected at least one validator on quota attribute")
+	}
+
+	v := qAttr.Validators[0]
+
+	// -1 should produce an error.
+	resp := &validator.Int64Response{}
+	v.ValidateInt64(context.Background(), validator.Int64Request{
+		ConfigValue: types.Int64Value(-1),
+	}, resp)
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected validator to reject -1 quota value")
+	}
+
+	// 0 should be valid.
+	resp2 := &validator.Int64Response{}
+	v.ValidateInt64(context.Background(), validator.Int64Request{
+		ConfigValue: types.Int64Value(0),
+	}, resp2)
+	if resp2.Diagnostics.HasError() {
+		t.Errorf("expected validator to accept 0 quota value, got error: %s", resp2.Diagnostics)
+	}
+
+	// 1048576 should be valid.
+	resp3 := &validator.Int64Response{}
+	v.ValidateInt64(context.Background(), validator.Int64Request{
+		ConfigValue: types.Int64Value(1048576),
+	}, resp3)
+	if resp3.Diagnostics.HasError() {
+		t.Errorf("expected validator to accept 1048576 quota value, got error: %s", resp3.Diagnostics)
 	}
 }

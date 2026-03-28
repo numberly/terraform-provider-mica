@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
@@ -778,5 +779,38 @@ func TestUnit_FileSystem_Idempotent(t *testing.T) {
 	if beforeModel.Provisioned.ValueInt64() != afterModel.Provisioned.ValueInt64() {
 		t.Errorf("Provisioned changed after Read: %d -> %d",
 			beforeModel.Provisioned.ValueInt64(), afterModel.Provisioned.ValueInt64())
+	}
+}
+
+// TestUnit_FileSystem_PlanModifiers verifies all UseStateForUnknown plan modifiers
+// in the filesystem resource schema.
+func TestUnit_FileSystem_PlanModifiers(t *testing.T) {
+	s := resourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// created — int64 UseStateForUnknown
+	createdAttr, ok := s.Attributes["created"].(resschema.Int64Attribute)
+	if !ok {
+		t.Fatal("created attribute not found or wrong type")
+	}
+	if len(createdAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on created attribute")
+	}
+
+	// promotion_status — UseStateForUnknown
+	psAttr, ok := s.Attributes["promotion_status"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("promotion_status attribute not found or wrong type")
+	}
+	if len(psAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on promotion_status attribute")
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
@@ -286,5 +287,38 @@ func TestSnapshotPolicyRuleResource_Import(t *testing.T) {
 	}
 	if model.Every.IsNull() || model.Every.ValueInt64() != 86400000 {
 		t.Errorf("expected every=86400000 after import, got %v", model.Every)
+	}
+}
+
+// TestUnit_SnapshotRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the snapshot_policy_rule resource schema.
+func TestUnit_SnapshotRule_PlanModifiers(t *testing.T) {
+	s := snapshotRuleResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// policy_name — RequiresReplace
+	pnAttr, ok := s.Attributes["policy_name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("policy_name attribute not found or wrong type")
+	}
+	if len(pnAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on policy_name attribute")
+	}
+
+	// name — UseStateForUnknown
+	nameAttr, ok := s.Attributes["name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("name attribute not found or wrong type")
+	}
+	if len(nameAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on name attribute")
 	}
 }

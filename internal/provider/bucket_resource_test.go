@@ -7,7 +7,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/testmock"
@@ -495,5 +498,92 @@ func TestUnit_Bucket_NonEmptyDelete(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("expected 'contains objects' diagnostic, got: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_Bucket_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the bucket resource schema.
+func TestUnit_Bucket_PlanModifiers(t *testing.T) {
+	s := bucketResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// name — RequiresReplace
+	nameAttr, ok := s.Attributes["name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("name attribute not found or wrong type")
+	}
+	if len(nameAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on name attribute")
+	}
+
+	// account — RequiresReplace
+	accountAttr, ok := s.Attributes["account"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("account attribute not found or wrong type")
+	}
+	if len(accountAttr.PlanModifiers) == 0 {
+		t.Error("expected RequiresReplace plan modifier on account attribute")
+	}
+
+	// created — UseStateForUnknown (custom int64 modifier)
+	createdAttr, ok := s.Attributes["created"].(resschema.Int64Attribute)
+	if !ok {
+		t.Fatal("created attribute not found or wrong type")
+	}
+	if len(createdAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on created attribute")
+	}
+
+	// bucket_type — UseStateForUnknown
+	btAttr, ok := s.Attributes["bucket_type"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("bucket_type attribute not found or wrong type")
+	}
+	if len(btAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on bucket_type attribute")
+	}
+}
+
+// TestUnit_Bucket_VersioningValidator verifies the versioning field rejects
+// invalid values and accepts the valid enum values.
+func TestUnit_Bucket_VersioningValidator(t *testing.T) {
+	s := bucketResourceSchema(t).Schema
+
+	vAttr, ok := s.Attributes["versioning"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("versioning attribute not found or wrong type")
+	}
+	if len(vAttr.Validators) == 0 {
+		t.Fatal("expected at least one validator on versioning attribute")
+	}
+
+	v := vAttr.Validators[0]
+
+	// "invalid" should produce an error.
+	resp := &validator.StringResponse{}
+	v.ValidateString(context.Background(), validator.StringRequest{
+		ConfigValue: types.StringValue("invalid"),
+	}, resp)
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected validator to reject 'invalid' versioning value")
+	}
+
+	// Valid values should not produce errors.
+	for _, valid := range []string{"none", "enabled", "suspended"} {
+		resp := &validator.StringResponse{}
+		v.ValidateString(context.Background(), validator.StringRequest{
+			ConfigValue: types.StringValue(valid),
+		}, resp)
+		if resp.Diagnostics.HasError() {
+			t.Errorf("expected validator to accept %q versioning value, got error: %s", valid, resp.Diagnostics)
+		}
 	}
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/soulkyu/terraform-provider-flashblade/internal/client"
@@ -380,5 +381,47 @@ func TestObjectStoreAccessPolicyDataSource(t *testing.T) {
 	}
 	if model.Description.ValueString() != "datasource test" {
 		t.Errorf("expected description='datasource test', got %s", model.Description.ValueString())
+	}
+}
+
+// TestUnit_OAP_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
+// plan modifiers in the object_store_access_policy resource schema.
+func TestUnit_OAP_PlanModifiers(t *testing.T) {
+	s := oapResourceSchema(t).Schema
+
+	// id — UseStateForUnknown
+	idAttr, ok := s.Attributes["id"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("id attribute not found or wrong type")
+	}
+	if len(idAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on id attribute")
+	}
+
+	// description — RequiresReplace + UseStateForUnknown
+	descAttr, ok := s.Attributes["description"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("description attribute not found or wrong type")
+	}
+	if len(descAttr.PlanModifiers) < 2 {
+		t.Error("expected RequiresReplace and UseStateForUnknown plan modifiers on description attribute")
+	}
+
+	// is_local — UseStateForUnknown
+	ilAttr, ok := s.Attributes["is_local"].(resschema.BoolAttribute)
+	if !ok {
+		t.Fatal("is_local attribute not found or wrong type")
+	}
+	if len(ilAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on is_local attribute")
+	}
+
+	// policy_type — UseStateForUnknown
+	ptAttr, ok := s.Attributes["policy_type"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("policy_type attribute not found or wrong type")
+	}
+	if len(ptAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on policy_type attribute")
 	}
 }
