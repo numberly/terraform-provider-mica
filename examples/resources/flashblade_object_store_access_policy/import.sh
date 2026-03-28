@@ -1,0 +1,1 @@
+terraform import flashblade_object_store_access_policy.example my-s3-policy

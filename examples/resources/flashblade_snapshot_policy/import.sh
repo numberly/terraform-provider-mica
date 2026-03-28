@@ -1,0 +1,1 @@
+terraform import flashblade_snapshot_policy.example my-snapshot-policy
