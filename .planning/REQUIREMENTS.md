@@ -139,7 +139,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **QUA-03**: Unit tests cover all schema definitions, validators, and plan modifiers
 - [x] **QUA-04**: Mocked API integration tests cover CRUD lifecycle for all resource families
 - [x] **QUA-05**: HTTP client implements retry with exponential backoff for transient API errors
-- [ ] **QUA-06**: Provider documentation generated via terraform-plugin-docs for all resources and data sources
+- [x] **QUA-06**: Provider documentation generated via terraform-plugin-docs for all resources and data sources
 
 ## v2 Requirements
 
@@ -278,7 +278,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUA-03 | Phase 5 | Complete |
 | QUA-04 | Phase 5 | Complete |
 | QUA-05 | Phase 5 | Complete |
-| QUA-06 | Phase 5 | Pending |
+| QUA-06 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 95 total (recount from requirement IDs — REQUIREMENTS.md header had 76 which was incorrect)

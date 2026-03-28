@@ -14,7 +14,7 @@ Building the provider in five phases: establish the shared HTTP client and corre
 - [ ] **Phase 2: Object Store Resources** - Complete object store resource chain: account, bucket, and access key with dependency ordering
 - [x] **Phase 3: File-Based Policy Resources** - NFS export, SMB share, and snapshot policy families with parent/child rule pattern (completed 2026-03-27)
 - [ ] **Phase 4: Object/Network/Quota Policies and Array Admin** - Remaining three policy families plus singleton array administration resources
-- [ ] **Phase 5: Quality Hardening** - Unit tests, mocked integration tests, documentation generation, and release pipeline
+- [x] **Phase 5: Quality Hardening** - Unit tests, mocked integration tests, documentation generation, and release pipeline (completed 2026-03-28)
 
 ## Phase Details
 
@@ -96,7 +96,7 @@ Plans:
   2. Mocked integration tests cover the full CRUD lifecycle for all resource families without a live FlashBlade (CI-safe)
   3. HTTP client retries transparently on 429/503/5xx responses; operator sees no transient failures during `terraform apply`
   4. `terraform-plugin-docs` generates complete documentation for every resource and data source without manual editing
-**Plans:** 2/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 05-01-PLAN.md — Error helpers, validators (bucket versioning, quota limits), plan modifier assertions, and validator tests for all 19 resources
@@ -115,4 +115,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Object Store Resources | 2/3 | In Progress|  |
 | 3. File-Based Policy Resources | 4/4 | Complete   | 2026-03-27 |
 | 4. Object/Network/Quota Policies and Array Admin | 3/5 | In Progress|  |
-| 5. Quality Hardening | 2/4 | In Progress|  |
+| 5. Quality Hardening | 4/4 | Complete   | 2026-03-28 |

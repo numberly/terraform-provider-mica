@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-quality-hardening/05-04-PLAN.md
-last_updated: "2026-03-28T07:46:39.129Z"
+stopped_at: "Checkpoint reached: 05-03 Task 3 human-verify — Tasks 1+2 committed, awaiting docs review"
+last_updated: "2026-03-28T07:55:30.880Z"
 last_activity: 2026-03-27 — NAP singleton resource, rule resource, data source — all tests pass (136 total)
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 20
-  completed_plans: 19
+  completed_plans: 20
   percent: 81
 ---
 
@@ -68,6 +68,7 @@ Progress: [████████░░] 81%
 | Phase 05-quality-hardening P01 | 25 | 2 tasks | 24 files |
 | Phase 05-quality-hardening P02 | 8 | 2 tasks | 32 files |
 | Phase 05-quality-hardening P04 | 90 | 2 tasks | 19 files |
+| Phase 05-quality-hardening P03 | 20 | 2 tasks | 100 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,8 @@ Recent decisions affecting current work:
 - [Phase 05-quality-hardening]: Error-path tests confirmed production code already handled 409/422/404 via AddError — no production changes needed in 05-02
 - [Phase 05-quality-hardening]: AccessKey lifecycle is Create->Read->Delete only (no Update — all fields RequiresReplace; no Import — secret unavailable after creation)
 - [Phase 05-quality-hardening]: Lifecycle test single mock server pattern reused across all 19 resources — no per-step server restart needed
+- [Phase 05-quality-hardening]: go:generate directive placed in main.go — standard Go convention; tfplugindocs discovers it automatically
+- [Phase 05-quality-hardening]: docs-check CI job uses hashicorp/setup-terraform action to ensure tfplugindocs can run terraform init during doc generation
 
 ### Pending Todos
 
@@ -141,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T07:46:39.124Z
-Stopped at: Completed 05-quality-hardening/05-04-PLAN.md
+Last session: 2026-03-28T07:55:30.875Z
+Stopped at: Checkpoint reached: 05-03 Task 3 human-verify — Tasks 1+2 committed, awaiting docs review
 Resume file: None
