@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: executing
-stopped_at: Completed quick-1-PLAN.md — 5 workflow examples created, README updated
-last_updated: "2026-03-28T08:36:45.061Z"
-last_activity: 2026-03-27 — NAP singleton resource, rule resource, data source — all tests pass (136 total)
+milestone: v1.1
+milestone_name: Servers & Exports
+status: planning
+stopped_at: Milestone v1.1 started — defining requirements
+last_updated: "2026-03-28T12:20:00.000Z"
+last_activity: 2026-03-28 — Milestone v1.1 started
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 20
-  completed_plans: 20
-  percent: 81
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises — every plan reflects reality, every apply converges
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Milestone v1.1 — Servers & Exports
 
 ## Current Position
 
-Phase: 4 of 5 (Object/Network/Quota policies and array admin)
-Plan: 3 of 5 in current phase
-Status: In progress
-Last activity: 2026-03-27 — NAP singleton resource, rule resource, data source — all tests pass (136 total)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-28 — Milestone v1.1 started
 
-Progress: [████████░░] 81%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 

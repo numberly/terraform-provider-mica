@@ -8,32 +8,37 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
+## Current Milestone: v1.1 — Servers & Exports
+
+**Goal:** Complete server lifecycle management and export infrastructure so operators can fully manage FlashBlade server topology, S3 export policies, virtual hosts, and SMB client policies through Terraform.
+
+**Target features:**
+- Server resource (full CRUD, not just data source)
+- S3 export policy + rules (referenced by account exports)
+- Object store virtual hosts (S3 virtual-hosted-style access)
+- SMB client policy + rules (parallel to existing SMB share policy)
+- Syslog server configuration
+- Consolidate existing export resources with proper TDD tests
+
 ## Requirements
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Provider authenticates via API token — v1.0
+- ✓ Provider configuration (endpoint, auth, TLS settings) — v1.0
+- ✓ 22 resources: file systems, object store chain, 6 policy families, array admin, exports — v1.0
+- ✓ 227 unit tests, CI pipeline, documentation — v1.0
+- ✓ 14 bugs fixed via live FlashBlade acceptance testing — v1.0
 
 ### Active
 
-- [ ] Provider authenticates via API token and OAuth2 client_credentials
-- [ ] Provider configuration (endpoint, auth, TLS settings)
-- [ ] Resource & data source: file systems
-- [ ] Resource & data source: object store accounts
-- [ ] Resource & data source: object store access keys
-- [ ] Resource & data source: buckets
-- [ ] Resource & data source: NFS export policies & rules
-- [ ] Resource & data source: SMB share policies & rules
-- [ ] Resource & data source: snapshot policies & rules
-- [ ] Resource & data source: object store access policies & rules
-- [ ] Resource & data source: network access policies & rules
-- [ ] Resource & data source: quota policies & rules
-- [ ] Resource & data source: array administration (DNS, NTP, SMTP, alerts)
-- [ ] Accurate drift detection with detailed diff logging for audit
-- [ ] Import support for all resources (adopt existing infra into state)
-- [ ] Comprehensive acceptance tests against real FlashBlade
-- [ ] Unit tests for all logic (schema, planmodifiers, validators)
-- [ ] Integration tests with mocked API for CI without FlashBlade
+- [ ] Server resource with full CRUD (create, DNS config, cascade delete)
+- [ ] S3 export policy resource + rules (IAM-style allow/deny)
+- [ ] Object store virtual host resource (hostname + server attachment)
+- [ ] SMB client policy resource + rules (client auth, encryption)
+- [ ] Syslog server resource (URI, services, sources)
+- [ ] Proper TDD unit + mock tests for all new and existing export resources
+- [ ] Acceptance tests for server/export lifecycle against live FlashBlade
 
 ### Out of Scope
 
@@ -42,6 +47,7 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - Hardware management (drive replacement, shelf operations) — out of API scope
 - Multi-array orchestration — single FlashBlade target per provider instance
 - Data migration tooling — provider manages configuration, not data movement
+- Syslog server settings (CA cert config) — low priority, defer to v1.2
 
 ## Context
 
@@ -74,4 +80,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-26 after initialization*
+*Last updated: 2026-03-28 after milestone v1.1 initialization*
