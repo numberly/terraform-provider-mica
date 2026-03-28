@@ -372,6 +372,147 @@ func TestQuotaUserDataSource(t *testing.T) {
 	}
 }
 
+// TestUnit_QuotaUser_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_QuotaUser_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterQuotaHandlers(ms.Mux)
+
+	r := newTestQuotaUserResource(t, ms)
+	s := quotaUserResourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := quotaUserPlan(t, "lifecycle-fs", "4000", 1073741824)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildQuotaUserType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel quotaUserModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Quota.ValueInt64() != 1073741824 {
+		t.Errorf("Create: expected quota=1GiB, got %d", createModel.Quota.ValueInt64())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 quotaUserModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.UID.ValueString() != "4000" {
+		t.Errorf("Read1: expected uid=4000, got %s", readModel1.UID.ValueString())
+	}
+
+	// Step 3: Update quota to 2GiB.
+	updatePlan := quotaUserPlan(t, "lifecycle-fs", "4000", 2147483648)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildQuotaUserType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel quotaUserModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Quota.ValueInt64() != 2147483648 {
+		t.Errorf("Update: expected quota=2GiB, got %d", updateModel.Quota.ValueInt64())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 quotaUserModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Quota.ValueInt64() != 2147483648 {
+		t.Errorf("Read2: expected quota=2GiB, got %d", readModel2.Quota.ValueInt64())
+	}
+
+	// Step 5: Delete.
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+	_, err := r.client.GetQuotaUser(context.Background(), "lifecycle-fs", "4000")
+	if err == nil || !client.IsNotFound(err) {
+		t.Errorf("expected quota to be deleted, got: %v", err)
+	}
+}
+
+// TestUnit_QuotaUser_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_QuotaUser_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterQuotaHandlers(ms.Mux)
+
+	r := newTestQuotaUserResource(t, ms)
+	s := quotaUserResourceSchema(t).Schema
+
+	// Create.
+	createPlan := quotaUserPlan(t, "idempotent-fs", "6000", 1073741824)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildQuotaUserType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel quotaUserModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState using composite ID "fs_name/uid".
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildQuotaUserType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-fs/6000"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel quotaUserModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.FileSystemName.ValueString() != createModel.FileSystemName.ValueString() {
+		t.Errorf("file_system_name mismatch: create=%s import=%s", createModel.FileSystemName.ValueString(), importedModel.FileSystemName.ValueString())
+	}
+	if importedModel.UID.ValueString() != createModel.UID.ValueString() {
+		t.Errorf("uid mismatch: create=%s import=%s", createModel.UID.ValueString(), importedModel.UID.ValueString())
+	}
+	if importedModel.Quota.ValueInt64() != createModel.Quota.ValueInt64() {
+		t.Errorf("quota mismatch: create=%d import=%d", createModel.Quota.ValueInt64(), importedModel.Quota.ValueInt64())
+	}
+}
+
 // TestUnit_QuotaUser_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the quota_user resource schema.
 func TestUnit_QuotaUser_PlanModifiers(t *testing.T) {
