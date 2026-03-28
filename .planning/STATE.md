@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Servers & Exports
-status: executing
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-28T14:27:00.000Z"
-last_activity: 2026-03-28 — Completed plan 06-01 (server resource)
+status: completed
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-28T14:29:56.865Z"
+last_activity: 2026-03-28 — Completed plan 06-02 (export resource tests)
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 22
-  completed_plans: 21
-  percent: 0
+  completed_plans: 22
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v1.1 — Servers & Exports, Phase 6 plan 1 complete
+**Current focus:** Milestone v1.1 — Servers & Exports, Phase 6 complete
 
 ## Current Position
 
 Phase: 6 of 8 (Server Resource & Export Consolidation)
-Plan: 2 of 2
-Status: Executing
-Last activity: 2026-03-28 — Completed plan 06-01 (server resource)
+Plan: 2 of 2 (complete)
+Status: Phase 6 complete
+Last activity: 2026-03-28 — Completed plan 06-02 (export resource tests)
 
-Progress: [██████████] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [██████████] 95%
 | 04-obj-net-quota-admin | 5 | 423 min | 85 min |
 | 05-quality-hardening | 4 | 143 min | 36 min |
 | 06-server-resource | 1 | 5 min | 5 min |
+| 06-export-tests | 1 | 8 min | 8 min |
 
 *Updated after each plan completion*
 
@@ -66,6 +67,7 @@ Recent decisions affecting current work:
 - [v1.0]: Singleton admin resources use GET-first then PATCH-or-POST pattern
 - [v1.1]: DNS modeled as ListNestedAttribute; cascade_delete is write-only list used only on Delete
 - [v1.1]: Server creation uses ?create_ds= query param (not ?names=) per FlashBlade API convention
+- [v1.1]: Mock DELETE handler for account exports uses lenient lookup (Pitfall 5: data.Name passed as combined name)
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-28T14:29:56.858Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
