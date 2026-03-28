@@ -43,33 +43,39 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Find checksums file
+        id: checksums
+        run: |
+          CHECKSUM_FILE=$(ls dist/*_SHA256SUMS 2>/dev/null | head -1)
+          if [ -z "$CHECKSUM_FILE" ]; then
+            echo "::error::No SHA256SUMS file found in dist/"
+            exit 1
+          fi
+          echo "path=${CHECKSUM_FILE}" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename ${CHECKSUM_FILE})" >> "$GITHUB_OUTPUT"
+
       - name: Sign checksums with Cosign (keyless)
         run: |
           cosign sign-blob \
             --yes \
-            --output-signature dist/${CHECKSUM_FILE}.sig \
-            --output-certificate dist/${CHECKSUM_FILE}.pem \
-            dist/${CHECKSUM_FILE}
-        env:
-          CHECKSUM_FILE: opentofu-provider-flashblade_${{ github.ref_name }}_SHA256SUMS
+            --output-signature "${{ steps.checksums.outputs.path }}.sig" \
+            --output-certificate "${{ steps.checksums.outputs.path }}.pem" \
+            "${{ steps.checksums.outputs.path }}"
 
       - name: Upload Cosign signature to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
-          CHECKSUM_FILE: opentofu-provider-flashblade_${{ github.ref_name }}_SHA256SUMS
         run: |
           gh release upload "${TAG}" \
-            "dist/${CHECKSUM_FILE}.sig" \
-            "dist/${CHECKSUM_FILE}.pem"
+            "${{ steps.checksums.outputs.path }}.sig" \
+            "${{ steps.checksums.outputs.path }}.pem"
 
       - name: Verify Cosign signature
         run: |
           cosign verify-blob \
-            --signature dist/${CHECKSUM_FILE}.sig \
-            --certificate dist/${CHECKSUM_FILE}.pem \
+            --signature "${{ steps.checksums.outputs.path }}.sig" \
+            --certificate "${{ steps.checksums.outputs.path }}.pem" \
             --certificate-identity-regexp "https://github.com/numberly/opentofu-provider-flashblade" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            dist/${CHECKSUM_FILE}
-        env:
-          CHECKSUM_FILE: opentofu-provider-flashblade_${{ github.ref_name }}_SHA256SUMS
+            "${{ steps.checksums.outputs.path }}"
