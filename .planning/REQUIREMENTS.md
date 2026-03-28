@@ -26,7 +26,7 @@ Requirements for milestone v1.1 — Servers & Exports.
 
 - [x] **VH-01**: Operator can create a virtual host with hostname and attached servers
 - [x] **VH-02**: Operator can update attached servers list on a virtual host
-- [ ] **VH-03**: Operator can import an existing virtual host into Terraform state
+- [x] **VH-03**: Operator can import an existing virtual host into Terraform state
 
 ### SMB Client Policies
 
@@ -86,7 +86,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | S3P-04 | Phase 7 | Pending |
 | VH-01 | Phase 7 | Complete |
 | VH-02 | Phase 7 | Complete |
-| VH-03 | Phase 7 | Pending |
+| VH-03 | Phase 7 | Complete |
 | SMC-01 | Phase 8 | Pending |
 | SMC-02 | Phase 8 | Pending |
 | SMC-03 | Phase 8 | Pending |

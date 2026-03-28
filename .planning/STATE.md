@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Servers & Exports
 status: completed
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-28T15:02:48.838Z"
-last_activity: 2026-03-28 — Completed plan 07-01 (client layer and mock handlers)
+stopped_at: Completed 07-03-PLAN.md
+last_updated: "2026-03-28T15:08:00.000Z"
+last_activity: 2026-03-28 — Completed plan 07-03 (virtual host resource and data source)
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 25
-  completed_plans: 23
-  percent: 92
+  completed_plans: 25
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 7 of 8 (S3 Export Policies & Virtual Hosts)
-Plan: 1 of 3 (complete)
-Status: Phase 7 plan 1 complete
-Last activity: 2026-03-28 — Completed plan 07-01 (client layer and mock handlers)
+Plan: 3 of 3 (complete)
+Status: Phase 7 complete
+Last activity: 2026-03-28 — Completed plan 07-03 (virtual host resource and data source)
 
-Progress: [█████████░] 92%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [█████████░] 92%
 
 *Updated after each plan completion*
 | Phase 07 P01 | 3 | 3 tasks | 5 files |
+| Phase 07 P03 | 4 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [v1.1]: Server creation uses ?create_ds= query param (not ?names=) per FlashBlade API convention
 - [v1.1]: Mock DELETE handler for account exports uses lenient lookup (Pitfall 5: data.Name passed as combined name)
 - [Phase 07]: S3 export policy GET does not embed rules (unlike NFS) - rules fetched from separate /rules endpoint
+- [Phase 07]: Virtual host attached_servers uses listdefault.StaticValue with empty list to prevent null-vs-empty drift
+- [Phase 07]: Virtual host name is Computed (server-assigned); hostname is Required (user-supplied); import uses name
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T15:02:35.726Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-28T15:08:00Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None
