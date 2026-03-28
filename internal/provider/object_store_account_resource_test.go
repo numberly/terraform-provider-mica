@@ -59,14 +59,15 @@ func buildOSAType() tftypes.Object {
 		"delete": tftypes.String,
 	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"id":                 tftypes.String,
-		"name":               tftypes.String,
-		"created":            tftypes.Number,
-		"quota_limit":        tftypes.Number,
-		"hard_limit_enabled": tftypes.Bool,
-		"object_count":       tftypes.Number,
-		"space":              spaceType,
-		"timeouts":           timeoutsType,
+		"id":                    tftypes.String,
+		"name":                  tftypes.String,
+		"created":               tftypes.Number,
+		"quota_limit":           tftypes.Number,
+		"hard_limit_enabled":    tftypes.Bool,
+		"object_count":          tftypes.Number,
+		"space":                 spaceType,
+		"skip_default_export":   tftypes.Bool,
+		"timeouts":              timeoutsType,
 	}}
 }
 
@@ -87,14 +88,15 @@ func nullOSAConfig() map[string]tftypes.Value {
 		"delete": tftypes.String,
 	}}
 	return map[string]tftypes.Value{
-		"id":                 tftypes.NewValue(tftypes.String, nil),
-		"name":               tftypes.NewValue(tftypes.String, nil),
-		"created":            tftypes.NewValue(tftypes.Number, nil),
-		"quota_limit":        tftypes.NewValue(tftypes.Number, nil),
-		"hard_limit_enabled": tftypes.NewValue(tftypes.Bool, nil),
-		"object_count":       tftypes.NewValue(tftypes.Number, nil),
-		"space":              tftypes.NewValue(spaceType, nil),
-		"timeouts":           tftypes.NewValue(timeoutsType, nil),
+		"id":                    tftypes.NewValue(tftypes.String, nil),
+		"name":                  tftypes.NewValue(tftypes.String, nil),
+		"created":               tftypes.NewValue(tftypes.Number, nil),
+		"quota_limit":           tftypes.NewValue(tftypes.Number, nil),
+		"hard_limit_enabled":    tftypes.NewValue(tftypes.Bool, nil),
+		"object_count":          tftypes.NewValue(tftypes.Number, nil),
+		"space":                 tftypes.NewValue(spaceType, nil),
+		"skip_default_export":   tftypes.NewValue(tftypes.Bool, false),
+		"timeouts":              tftypes.NewValue(timeoutsType, nil),
 	}
 }
 

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,14 +49,15 @@ type objectStoreAccountSpaceModel struct {
 
 // objectStoreAccountModel is the top-level model for the flashblade_object_store_account resource.
 type objectStoreAccountModel struct {
-	ID               types.String   `tfsdk:"id"`
-	Name             types.String   `tfsdk:"name"`
-	Created          types.Int64    `tfsdk:"created"`
-	QuotaLimit       types.Int64    `tfsdk:"quota_limit"`
-	HardLimitEnabled types.Bool     `tfsdk:"hard_limit_enabled"`
-	ObjectCount      types.Int64    `tfsdk:"object_count"`
-	Space            types.Object   `tfsdk:"space"`
-	Timeouts         timeouts.Value `tfsdk:"timeouts"`
+	ID                  types.String   `tfsdk:"id"`
+	Name                types.String   `tfsdk:"name"`
+	Created             types.Int64    `tfsdk:"created"`
+	QuotaLimit          types.Int64    `tfsdk:"quota_limit"`
+	HardLimitEnabled    types.Bool     `tfsdk:"hard_limit_enabled"`
+	ObjectCount         types.Int64    `tfsdk:"object_count"`
+	Space               types.Object   `tfsdk:"space"`
+	SkipDefaultExport   types.Bool     `tfsdk:"skip_default_export"`
+	Timeouts            timeouts.Value `tfsdk:"timeouts"`
 }
 
 // ---------- resource interface methods --------------------------------------
@@ -134,6 +137,12 @@ func (r *objectStoreAccountResource) Schema(ctx context.Context, _ resource.Sche
 					},
 				},
 			},
+			"skip_default_export": schema.BoolAttribute{
+				Optional:    true,
+				Description: "When true, suppresses the default account export to _array_server at creation time. Use this when you manage exports explicitly via flashblade_object_store_account_export.",
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -184,6 +193,11 @@ func (r *objectStoreAccountResource) Create(ctx context.Context, req resource.Cr
 	}
 	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
 		post.HardLimitEnabled = data.HardLimitEnabled.ValueBool()
+	}
+	if data.SkipDefaultExport.ValueBool() {
+		// Send empty account_exports array to suppress the default _array_server export.
+		emptyExports := json.RawMessage(`[]`)
+		post.AccountExports = &emptyExports
 	}
 
 	_, err := r.client.PostObjectStoreAccount(ctx, data.Name.ValueString(), post)

@@ -130,6 +130,11 @@ type ObjectStoreAccount struct {
 type ObjectStoreAccountPost struct {
 	QuotaLimit       string `json:"quota_limit,omitempty"`
 	HardLimitEnabled bool   `json:"hard_limit_enabled,omitempty"`
+	// AccountExports controls default exports at creation time.
+	// Set to non-nil empty slice to suppress the default _array_server export.
+	// Leave nil to let FlashBlade create the default export.
+	// Note: uses json.RawMessage wrapper to distinguish nil (omit) from [] (send empty array).
+	AccountExports *json.RawMessage `json:"account_exports,omitempty"`
 }
 
 // ObjectStoreAccountPatch contains pointer fields for PATCH semantics.
