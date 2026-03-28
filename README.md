@@ -71,6 +71,18 @@ Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_array_dns` | Array DNS configuration (singleton) |
 | `flashblade_array_ntp` | Array NTP server list (singleton) |
 | `flashblade_array_smtp` | Array SMTP relay and alert watchers (singleton) |
+| **Servers & Exports** |
+| `flashblade_server` | FlashBlade server with DNS configuration |
+| `flashblade_file_system_export` | File system export to a server (NFS) |
+| `flashblade_object_store_account_export` | Object store account export to a server (S3) |
+| `flashblade_s3_export_policy` | S3 export access policy |
+| `flashblade_s3_export_policy_rule` | Rule within an S3 export policy |
+| `flashblade_object_store_virtual_host` | S3 virtual-hosted-style endpoint |
+| **SMB Client Policy** |
+| `flashblade_smb_client_policy` | SMB client authentication policy |
+| `flashblade_smb_client_policy_rule` | Rule within an SMB client policy |
+| **Syslog** |
+| `flashblade_syslog_server` | Syslog server configuration |
 
 ## Data Sources
 
@@ -90,6 +102,13 @@ Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_array_dns` | Read current array DNS configuration |
 | `flashblade_array_ntp` | Read current array NTP configuration |
 | `flashblade_array_smtp` | Read current array SMTP configuration |
+| `flashblade_server` | Look up an existing server |
+| `flashblade_file_system_export` | Look up an existing file system export |
+| `flashblade_object_store_account_export` | Look up an existing account export |
+| `flashblade_s3_export_policy` | Look up an existing S3 export policy |
+| `flashblade_object_store_virtual_host` | Look up an existing virtual host |
+| `flashblade_smb_client_policy` | Look up an existing SMB client policy |
+| `flashblade_syslog_server` | Look up an existing syslog server |
 
 ## Workflow Examples
 
@@ -140,6 +159,23 @@ Production-ready configurations showing how resources compose together:
 
 **Legend:** ✅ = supported | — = intentionally not supported | `soft-delete` = two-phase destroy + eradicate | `singleton` = adopt existing via GET+PATCH | `reset` = destroy resets to defaults
 
+### v1.1 — Servers & Exports
+
+| Resource | Create | Read | Update | Delete | Import | Data Source | Notes |
+|----------|:------:|:----:|:------:|:------:|:------:|:-----------:|-------|
+| **Servers & Exports** |
+| `flashblade_server` | ✅ | ✅ | ✅ DNS | ✅ cascade | ✅ | ✅ | POST uses `?create_ds=` param |
+| `flashblade_file_system_export` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Links FS to server via NFS policy |
+| `flashblade_object_store_account_export` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Links account to server via S3 policy |
+| `flashblade_s3_export_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Controls S3 transport-level access |
+| `flashblade_s3_export_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Only `pure:S3Access` action |
+| `flashblade_object_store_virtual_host` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | S3 virtual-hosted-style endpoint |
+| **SMB Client Policy** |
+| `flashblade_smb_client_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Client auth + encryption control |
+| `flashblade_smb_client_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/rule_name` | — | client/encryption/permission fields |
+| **Syslog** |
+| `flashblade_syslog_server` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | URI format: PROTOCOL://HOST:PORT |
+
 ### v1.x — Planned
 
 | Resource | Description | Priority |
@@ -147,7 +183,7 @@ Production-ready configurations showing how resources compose together:
 | Object Lock / WORM config | `retention_lock`, `object_lock_config` on buckets | P2 |
 | QoS policy attachment | Bandwidth/IOPS control on file systems and buckets | P2 |
 | Eradication config | Custom eradication delay per resource | P2 |
-| Acceptance tests | Tests against real FlashBlade array (`TF_ACC=1`) | P2 |
+| Syslog CA certificate settings | `/syslog-servers/settings` endpoint | P3 |
 | Terraform Registry | Public publication on registry.terraform.io | P2 |
 
 ### v2+ — Future
