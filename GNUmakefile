@@ -1,3 +1,6 @@
+SHELL := /bin/bash
+export PATH := $(PATH):/usr/local/go/bin
+
 BINARY_NAME=terraform-provider-flashblade
 HOSTNAME=registry.terraform.io
 NAMESPACE=numberly
