@@ -53,6 +53,7 @@ Progress: [██████████] 100%
 
 *Updated after each plan completion*
 | Phase 07 P01 | 3 | 3 tasks | 5 files |
+| Phase 07 P02 | 5 min | 2 tasks | 6 files |
 | Phase 07 P03 | 4 min | 2 tasks | 4 files |
 
 ## Accumulated Context
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [v1.1]: Server creation uses ?create_ds= query param (not ?names=) per FlashBlade API convention
 - [v1.1]: Mock DELETE handler for account exports uses lenient lookup (Pitfall 5: data.Name passed as combined name)
 - [Phase 07]: S3 export policy GET does not embed rules (unlike NFS) - rules fetched from separate /rules endpoint
+- [Phase 07]: S3 export policy rule effect is patchable in-place (unlike OAP rules which require replace)
+- [Phase 07]: S3 export policy delete has no member guard (unlike NFS which checks file system attachments)
 - [Phase 07]: Virtual host attached_servers uses listdefault.StaticValue with empty list to prevent null-vs-empty drift
 - [Phase 07]: Virtual host name is Computed (server-assigned); hostname is Required (user-supplied); import uses name
 

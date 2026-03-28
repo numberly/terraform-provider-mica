@@ -20,7 +20,7 @@ Requirements for milestone v1.1 — Servers & Exports.
 - [x] **S3P-01**: Operator can create an S3 export policy with enable/disable toggle
 - [x] **S3P-02**: Operator can create S3 export policy rules with actions/effect/resources (IAM-style)
 - [x] **S3P-03**: Operator can update and delete S3 export policy rules independently
-- [ ] **S3P-04**: Operator can import S3 export policies and rules into Terraform state
+- [x] **S3P-04**: Operator can import S3 export policies and rules into Terraform state
 
 ### Object Store Virtual Hosts
 
@@ -83,7 +83,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | S3P-01 | Phase 7 | Complete |
 | S3P-02 | Phase 7 | Complete |
 | S3P-03 | Phase 7 | Complete |
-| S3P-04 | Phase 7 | Pending |
+| S3P-04 | Phase 7 | Complete |
 | VH-01 | Phase 7 | Complete |
 | VH-02 | Phase 7 | Complete |
 | VH-03 | Phase 7 | Complete |

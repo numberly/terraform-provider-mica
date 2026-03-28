@@ -109,7 +109,7 @@ Plans:
 **Milestone Goal:** Complete server lifecycle management and export infrastructure so operators can fully manage FlashBlade server topology, S3 export policies, virtual hosts, and SMB client policies through Terraform.
 
 - [ ] **Phase 6: Server Resource & Export Consolidation** - Full server CRUD + TDD tests for existing export resources
-- [ ] **Phase 7: S3 Export Policies & Virtual Hosts** - S3 export policy/rules and virtual host resources with server attachment
+- [x] **Phase 7: S3 Export Policies & Virtual Hosts** - S3 export policy/rules and virtual host resources with server attachment (completed 2026-03-28)
 - [ ] **Phase 8: SMB Client Policies, Syslog & Acceptance Tests** - SMB client policy/rules, syslog server, and live acceptance tests for all v1.1 resources
 
 ## Phase Details
@@ -138,7 +138,7 @@ Plans:
   2. Operator can update and delete individual S3 export policy rules without affecting sibling rules
   3. Operator can create a virtual host with a hostname, attach servers to it, and update the server list via Terraform apply
   4. Operator can import existing S3 export policies, rules, and virtual hosts into Terraform state with no drift on subsequent plan
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 07-01-PLAN.md — Model structs, client CRUD methods, and mock handlers for S3 export policies and virtual hosts
@@ -169,5 +169,5 @@ Phases execute in numeric order: 6 -> 7 -> 8
 | 4. Object/Network/Quota & Array Admin | v1.0 | 5/5 | Complete | 2026-03-28 |
 | 5. Quality Hardening | v1.0 | 4/4 | Complete | 2026-03-28 |
 | 6. Server Resource & Export Consolidation | v1.1 | 0/2 | Planned | - |
-| 7. S3 Export Policies & Virtual Hosts | 1/3 | In Progress|  | - |
+| 7. S3 Export Policies & Virtual Hosts | 3/3 | Complete   | 2026-03-28 | - |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 0/? | Not started | - |
