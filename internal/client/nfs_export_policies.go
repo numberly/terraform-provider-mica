@@ -30,6 +30,7 @@ func (c *FlashBladeClient) GetNfsExportPolicy(ctx context.Context, name string) 
 }
 
 // ListNfsExportPolicies returns all NFS export policies matching the optional opts filters.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListNfsExportPolicies(ctx context.Context, opts ListNfsExportPoliciesOpts) ([]NfsExportPolicy, error) {
 	params := url.Values{}
 	if len(opts.Names) > 0 {
@@ -39,16 +40,24 @@ func (c *FlashBladeClient) ListNfsExportPolicies(ctx context.Context, opts ListN
 		params.Set("filter", opts.Filter)
 	}
 
-	path := "/nfs-export-policies"
-	if len(params) > 0 {
-		path += "?" + params.Encode()
-	}
+	var all []NfsExportPolicy
+	for {
+		path := "/nfs-export-policies"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
 
-	var resp ListResponse[NfsExportPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+		var resp ListResponse[NfsExportPolicy]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostNfsExportPolicy creates a new NFS export policy.
@@ -86,13 +95,25 @@ func (c *FlashBladeClient) DeleteNfsExportPolicy(ctx context.Context, name strin
 }
 
 // ListNfsExportPolicyRules returns all rules for the given NFS export policy.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListNfsExportPolicyRules(ctx context.Context, policyName string) ([]NfsExportPolicyRule, error) {
-	path := "/nfs-export-policies/rules?policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[NfsExportPolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+	params := url.Values{}
+	params.Set("policy_names", policyName)
+
+	var all []NfsExportPolicyRule
+	for {
+		path := "/nfs-export-policies/rules?" + params.Encode()
+		var resp ListResponse[NfsExportPolicyRule]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // GetNfsExportPolicyRuleByIndex retrieves an NFS export policy rule by its index within the policy.

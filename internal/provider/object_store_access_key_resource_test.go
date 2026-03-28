@@ -286,6 +286,68 @@ func TestUnit_AccessKey_ForceNew(t *testing.T) {
 	}
 }
 
+// TestUnit_AccessKey_Lifecycle exercises the Create->Read->Delete sequence (no Update — all fields RequiresReplace).
+func TestUnit_AccessKey_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterObjectStoreAccessKeyHandlers(ms.Mux, accountStore)
+
+	seedAccount(t, ms, "lifecycle-account")
+
+	r := newTestAccessKeyResource(t, ms)
+	s := accessKeyResourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := accessKeyPlanWithAccount(t, "lifecycle-account")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildAccessKeyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel objectStoreAccessKeyModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.AccessKeyID.IsNull() || createModel.AccessKeyID.ValueString() == "" {
+		t.Error("Create: expected non-empty access_key_id")
+	}
+	if createModel.SecretAccessKey.IsNull() || createModel.SecretAccessKey.ValueString() == "" {
+		t.Error("Create: expected non-empty secret_access_key")
+	}
+
+	// Step 2: Read — secret must be preserved.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read: %s", readResp.Diagnostics)
+	}
+	var readModel objectStoreAccessKeyModel
+	if diags := readResp.State.Get(context.Background(), &readModel); diags.HasError() {
+		t.Fatalf("Get read state: %s", diags)
+	}
+	if readModel.SecretAccessKey.ValueString() != createModel.SecretAccessKey.ValueString() {
+		t.Error("Read: secret_access_key was overwritten — must be preserved from Create state")
+	}
+	if readModel.AccessKeyID.ValueString() != createModel.AccessKeyID.ValueString() {
+		t.Errorf("Read: access_key_id changed: create=%s read=%s",
+			createModel.AccessKeyID.ValueString(), readModel.AccessKeyID.ValueString())
+	}
+
+	// Step 3: Delete (no Update — access key is fully immutable).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+	_, err := r.client.GetObjectStoreAccessKey(context.Background(), createModel.Name.ValueString())
+	if err == nil || !client.IsNotFound(err) {
+		t.Errorf("expected access key to be deleted, got: %v", err)
+	}
+}
+
 // TestUnit_AccessKey_NoImport verifies the resource does NOT implement ResourceWithImportState.
 func TestUnit_AccessKey_NoImport(t *testing.T) {
 	r := NewAccessKeyResource()

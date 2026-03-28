@@ -31,6 +31,7 @@ func (c *FlashBladeClient) GetObjectStoreAccessKey(ctx context.Context, name str
 }
 
 // ListObjectStoreAccessKeys returns all object store access keys matching the optional opts filters.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListObjectStoreAccessKeys(ctx context.Context, opts ListObjectStoreAccessKeysOpts) ([]ObjectStoreAccessKey, error) {
 	params := url.Values{}
 	if len(opts.Names) > 0 {
@@ -40,16 +41,24 @@ func (c *FlashBladeClient) ListObjectStoreAccessKeys(ctx context.Context, opts L
 		params.Set("filter", opts.Filter)
 	}
 
-	path := "/object-store-access-keys"
-	if len(params) > 0 {
-		path += "?" + params.Encode()
-	}
+	var all []ObjectStoreAccessKey
+	for {
+		path := "/object-store-access-keys"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
 
-	var resp ListResponse[ObjectStoreAccessKey]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+		var resp ListResponse[ObjectStoreAccessKey]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostObjectStoreAccessKey creates a new object store access key.

@@ -30,6 +30,7 @@ func (c *FlashBladeClient) GetSnapshotPolicy(ctx context.Context, name string) (
 }
 
 // ListSnapshotPolicies returns all snapshot policies matching the optional opts filters.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListSnapshotPolicies(ctx context.Context, opts ListSnapshotPoliciesOpts) ([]SnapshotPolicy, error) {
 	params := url.Values{}
 	if len(opts.Names) > 0 {
@@ -39,16 +40,24 @@ func (c *FlashBladeClient) ListSnapshotPolicies(ctx context.Context, opts ListSn
 		params.Set("filter", opts.Filter)
 	}
 
-	path := "/policies"
-	if len(params) > 0 {
-		path += "?" + params.Encode()
-	}
+	var all []SnapshotPolicy
+	for {
+		path := "/policies"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
 
-	var resp ListResponse[SnapshotPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+		var resp ListResponse[SnapshotPolicy]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostSnapshotPolicy creates a new snapshot policy.

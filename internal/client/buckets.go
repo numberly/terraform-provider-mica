@@ -21,6 +21,7 @@ type ListBucketsOpts struct {
 }
 
 // ListBuckets returns all buckets matching the optional opts filters.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListBuckets(ctx context.Context, opts ListBucketsOpts) ([]Bucket, error) {
 	params := url.Values{}
 	if len(opts.Names) > 0 {
@@ -40,16 +41,24 @@ func (c *FlashBladeClient) ListBuckets(ctx context.Context, opts ListBucketsOpts
 		}
 	}
 
-	path := "/buckets"
-	if len(params) > 0 {
-		path += "?" + params.Encode()
-	}
+	var all []Bucket
+	for {
+		path := "/buckets"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
 
-	var resp ListResponse[Bucket]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+		var resp ListResponse[Bucket]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // GetBucket retrieves a bucket by name.

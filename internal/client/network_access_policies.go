@@ -21,12 +21,28 @@ func (c *FlashBladeClient) GetNetworkAccessPolicy(ctx context.Context, name stri
 }
 
 // ListNetworkAccessPolicies returns all network access policies.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListNetworkAccessPolicies(ctx context.Context) ([]NetworkAccessPolicy, error) {
-	var resp ListResponse[NetworkAccessPolicy]
-	if err := c.get(ctx, "/network-access-policies", &resp); err != nil {
-		return nil, err
+	params := url.Values{}
+
+	var all []NetworkAccessPolicy
+	for {
+		path := "/network-access-policies"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
+
+		var resp ListResponse[NetworkAccessPolicy]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PatchNetworkAccessPolicy updates an existing network access policy identified by name.
@@ -44,13 +60,25 @@ func (c *FlashBladeClient) PatchNetworkAccessPolicy(ctx context.Context, name st
 }
 
 // ListNetworkAccessPolicyRules returns all rules for the given network access policy.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListNetworkAccessPolicyRules(ctx context.Context, policyName string) ([]NetworkAccessPolicyRule, error) {
-	path := "/network-access-policies/rules?policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[NetworkAccessPolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+	params := url.Values{}
+	params.Set("policy_names", policyName)
+
+	var all []NetworkAccessPolicyRule
+	for {
+		path := "/network-access-policies/rules?" + params.Encode()
+		var resp ListResponse[NetworkAccessPolicyRule]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // GetNetworkAccessPolicyRuleByName retrieves a network access policy rule by name within a policy.

@@ -424,6 +424,108 @@ func TestUnit_FileSystem_List(t *testing.T) {
 	}
 }
 
+// TestUnit_FileSystem_List_Paginated verifies that ListFileSystems auto-paginates:
+// page 1 returns 2 items + continuation_token, page 2 returns 1 item + no token.
+// ListFileSystems must return all 3 items combined.
+func TestUnit_FileSystem_List_Paginated(t *testing.T) {
+	page1 := []client.FileSystem{
+		{ID: "fs-p1-1", Name: "paginated-fs-1", Provisioned: 1073741824},
+		{ID: "fs-p1-2", Name: "paginated-fs-2", Provisioned: 2147483648},
+	}
+	page2 := []client.FileSystem{
+		{ID: "fs-p2-1", Name: "paginated-fs-3", Provisioned: 4294967296},
+	}
+
+	callCount := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+			callCount++
+			token := r.URL.Query().Get("continuation_token")
+			if token == "" {
+				// First page: return 2 items + continuation_token.
+				writeJSON(w, http.StatusOK, map[string]interface{}{
+					"items":              page1,
+					"total_item_count":   3,
+					"continuation_token": "page2-token",
+				})
+			} else if token == "page2-token" {
+				// Second page: return 1 item, no token.
+				writeJSON(w, http.StatusOK, map[string]interface{}{
+					"items":            page2,
+					"total_item_count": 3,
+				})
+			} else {
+				http.Error(w, "unexpected continuation_token", http.StatusBadRequest)
+			}
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	items, err := c.ListFileSystems(context.Background(), client.ListFileSystemsOpts{})
+	if err != nil {
+		t.Fatalf("ListFileSystems: %v", err)
+	}
+	if len(items) != 3 {
+		t.Errorf("expected 3 items across 2 pages, got %d", len(items))
+	}
+	if callCount != 2 {
+		t.Errorf("expected 2 GET requests (one per page), got %d", callCount)
+	}
+	if items[0].Name != "paginated-fs-1" {
+		t.Errorf("expected first item paginated-fs-1, got %q", items[0].Name)
+	}
+	if items[2].Name != "paginated-fs-3" {
+		t.Errorf("expected third item paginated-fs-3, got %q", items[2].Name)
+	}
+}
+
+// TestUnit_FileSystem_List_SinglePage verifies that ListFileSystems does NOT make
+// extra requests when no continuation_token is present in the response.
+func TestUnit_FileSystem_List_SinglePage(t *testing.T) {
+	fsList := []client.FileSystem{
+		{ID: "fs-sp-1", Name: "single-page-fs-1"},
+		{ID: "fs-sp-2", Name: "single-page-fs-2"},
+	}
+
+	callCount := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+			callCount++
+			// No continuation_token in response — single page.
+			writeJSON(w, http.StatusOK, map[string]interface{}{
+				"items":            fsList,
+				"total_item_count": 2,
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	items, err := c.ListFileSystems(context.Background(), client.ListFileSystemsOpts{})
+	if err != nil {
+		t.Fatalf("ListFileSystems: %v", err)
+	}
+	if len(items) != 2 {
+		t.Errorf("expected 2 items, got %d", len(items))
+	}
+	if callCount != 1 {
+		t.Errorf("expected exactly 1 GET request, got %d", callCount)
+	}
+}
+
 func TestUnit_FileSystem_List_WithFilter(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {

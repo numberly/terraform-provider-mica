@@ -21,13 +21,25 @@ func (c *FlashBladeClient) GetQuotaUser(ctx context.Context, fileSystemName, uid
 }
 
 // ListQuotaUsers returns all user quotas for a given file system.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListQuotaUsers(ctx context.Context, fileSystemName string) ([]QuotaUser, error) {
-	path := "/quotas/users?file_system_names=" + url.QueryEscape(fileSystemName)
-	var resp ListResponse[QuotaUser]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+	params := url.Values{}
+	params.Set("file_system_names", fileSystemName)
+
+	var all []QuotaUser
+	for {
+		path := "/quotas/users?" + params.Encode()
+		var resp ListResponse[QuotaUser]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostQuotaUser creates a new user quota on a file system.
@@ -77,13 +89,25 @@ func (c *FlashBladeClient) GetQuotaGroup(ctx context.Context, fileSystemName, gi
 }
 
 // ListQuotaGroups returns all group quotas for a given file system.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListQuotaGroups(ctx context.Context, fileSystemName string) ([]QuotaGroup, error) {
-	path := "/quotas/groups?file_system_names=" + url.QueryEscape(fileSystemName)
-	var resp ListResponse[QuotaGroup]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+	params := url.Values{}
+	params.Set("file_system_names", fileSystemName)
+
+	var all []QuotaGroup
+	for {
+		path := "/quotas/groups?" + params.Encode()
+		var resp ListResponse[QuotaGroup]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostQuotaGroup creates a new group quota on a file system.

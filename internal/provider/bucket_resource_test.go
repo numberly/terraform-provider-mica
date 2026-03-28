@@ -552,6 +552,155 @@ func TestUnit_Bucket_PlanModifiers(t *testing.T) {
 	}
 }
 
+// TestUnit_Bucket_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_Bucket_Lifecycle(t *testing.T) {
+	ms, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := bucketPlanWithNameAndAccount(t, "lifecycle-bucket", "test-account")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel bucketModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Name.ValueString() != "lifecycle-bucket" {
+		t.Errorf("Create: expected name=lifecycle-bucket, got %s", createModel.Name.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 bucketModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.Account.ValueString() != "test-account" {
+		t.Errorf("Read1: expected account=test-account, got %s", readModel1.Account.ValueString())
+	}
+
+	// Step 3: Update versioning to enabled.
+	updateCfg := nullBucketConfig()
+	updateCfg["name"] = tftypes.NewValue(tftypes.String, "lifecycle-bucket")
+	updateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	updateCfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")
+	updateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+	updatePlan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), updateCfg), Schema: s}
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel bucketModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Versioning.ValueString() != "enabled" {
+		t.Errorf("Update: expected versioning=enabled, got %s", updateModel.Versioning.ValueString())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 bucketModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Versioning.ValueString() != "enabled" {
+		t.Errorf("Read2: expected versioning=enabled, got %s", readModel2.Versioning.ValueString())
+	}
+
+	// Step 5: Delete (soft-delete, eradicate=false default).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_Bucket_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_Bucket_ImportIdempotency(t *testing.T) {
+	ms, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Create.
+	createCfg := nullBucketConfig()
+	createCfg["name"] = tftypes.NewValue(tftypes.String, "idempotent-bucket")
+	createCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	createCfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")
+	createCfg["quota_limit"] = tftypes.NewValue(tftypes.String, "10737418240")
+	createCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+	createPlan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), createCfg), Schema: s}
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel bucketModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-bucket"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel bucketModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.Name.ValueString() != createModel.Name.ValueString() {
+		t.Errorf("name mismatch: create=%s import=%s", createModel.Name.ValueString(), importedModel.Name.ValueString())
+	}
+	if importedModel.Account.ValueString() != createModel.Account.ValueString() {
+		t.Errorf("account mismatch: create=%s import=%s", createModel.Account.ValueString(), importedModel.Account.ValueString())
+	}
+	if importedModel.Versioning.ValueString() != createModel.Versioning.ValueString() {
+		t.Errorf("versioning mismatch: create=%s import=%s", createModel.Versioning.ValueString(), importedModel.Versioning.ValueString())
+	}
+	if importedModel.QuotaLimit.ValueString() != createModel.QuotaLimit.ValueString() {
+		t.Errorf("quota_limit mismatch: create=%s import=%s", createModel.QuotaLimit.ValueString(), importedModel.QuotaLimit.ValueString())
+	}
+}
+
 // TestUnit_Bucket_VersioningValidator verifies the versioning field rejects
 // invalid values and accepts the valid enum values.
 func TestUnit_Bucket_VersioningValidator(t *testing.T) {

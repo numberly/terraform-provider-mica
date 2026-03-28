@@ -30,6 +30,7 @@ func (c *FlashBladeClient) GetSmbSharePolicy(ctx context.Context, name string) (
 }
 
 // ListSmbSharePolicies returns all SMB share policies matching the optional opts filters.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListSmbSharePolicies(ctx context.Context, opts ListSmbSharePoliciesOpts) ([]SmbSharePolicy, error) {
 	params := url.Values{}
 	if len(opts.Names) > 0 {
@@ -39,16 +40,24 @@ func (c *FlashBladeClient) ListSmbSharePolicies(ctx context.Context, opts ListSm
 		params.Set("filter", opts.Filter)
 	}
 
-	path := "/smb-share-policies"
-	if len(params) > 0 {
-		path += "?" + params.Encode()
-	}
+	var all []SmbSharePolicy
+	for {
+		path := "/smb-share-policies"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
 
-	var resp ListResponse[SmbSharePolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+		var resp ListResponse[SmbSharePolicy]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostSmbSharePolicy creates a new SMB share policy.
@@ -86,13 +95,25 @@ func (c *FlashBladeClient) DeleteSmbSharePolicy(ctx context.Context, name string
 }
 
 // ListSmbSharePolicyRules returns all rules for the given SMB share policy.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListSmbSharePolicyRules(ctx context.Context, policyName string) ([]SmbSharePolicyRule, error) {
-	path := "/smb-share-policies/rules?policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[SmbSharePolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+	params := url.Values{}
+	params.Set("policy_names", policyName)
+
+	var all []SmbSharePolicyRule
+	for {
+		path := "/smb-share-policies/rules?" + params.Encode()
+		var resp ListResponse[SmbSharePolicyRule]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // GetSmbSharePolicyRuleByName retrieves an SMB share policy rule by name within a policy.

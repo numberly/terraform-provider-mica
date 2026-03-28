@@ -30,6 +30,7 @@ func (c *FlashBladeClient) GetObjectStoreAccount(ctx context.Context, name strin
 }
 
 // ListObjectStoreAccounts returns all object store accounts matching the optional opts filters.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListObjectStoreAccounts(ctx context.Context, opts ListObjectStoreAccountsOpts) ([]ObjectStoreAccount, error) {
 	params := url.Values{}
 	if len(opts.Names) > 0 {
@@ -39,16 +40,24 @@ func (c *FlashBladeClient) ListObjectStoreAccounts(ctx context.Context, opts Lis
 		params.Set("filter", opts.Filter)
 	}
 
-	path := "/object-store-accounts"
-	if len(params) > 0 {
-		path += "?" + params.Encode()
-	}
+	var all []ObjectStoreAccount
+	for {
+		path := "/object-store-accounts"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
 
-	var resp ListResponse[ObjectStoreAccount]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+		var resp ListResponse[ObjectStoreAccount]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostObjectStoreAccount creates a new object store account.

@@ -782,6 +782,150 @@ func TestUnit_FileSystem_Idempotent(t *testing.T) {
 	}
 }
 
+// TestUnit_FileSystem_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_FileSystem_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterFileSystemHandlers(ms.Mux)
+
+	r := newTestResource(t, ms)
+	s := resourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := planWithName(t, "lifecycle-fs", 1073741824)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel filesystemModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Name.ValueString() != "lifecycle-fs" {
+		t.Errorf("Create: expected name=lifecycle-fs, got %s", createModel.Name.ValueString())
+	}
+	if createModel.ID.IsNull() || createModel.ID.ValueString() == "" {
+		t.Error("Create: expected non-empty ID")
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 filesystemModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.Name.ValueString() != "lifecycle-fs" {
+		t.Errorf("Read1: expected name=lifecycle-fs, got %s", readModel1.Name.ValueString())
+	}
+
+	// Step 3: Update provisioned to 2GiB.
+	updatePlan := planWithName(t, "lifecycle-fs", 2147483648)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel filesystemModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.Provisioned.ValueInt64() != 2147483648 {
+		t.Errorf("Update: expected provisioned=2GiB, got %d", updateModel.Provisioned.ValueInt64())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 filesystemModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.Provisioned.ValueInt64() != 2147483648 {
+		t.Errorf("Read2: expected provisioned=2GiB, got %d", readModel2.Provisioned.ValueInt64())
+	}
+
+	// Step 5: Delete (soft-delete + eradicate).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+	_, err := r.client.GetFileSystem(context.Background(), "lifecycle-fs")
+	if err == nil || !client.IsNotFound(err) {
+		t.Errorf("expected file system to be deleted, got: %v", err)
+	}
+}
+
+// TestUnit_FileSystem_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_FileSystem_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterFileSystemHandlers(ms.Mux)
+
+	r := newTestResource(t, ms)
+	s := resourceSchema(t).Schema
+
+	// Create.
+	createPlan := planWithName(t, "idempotent-fs", 1073741824)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel filesystemModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-fs"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel filesystemModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff: key user-configurable attributes match.
+	if importedModel.Name.ValueString() != createModel.Name.ValueString() {
+		t.Errorf("name mismatch: create=%s import=%s", createModel.Name.ValueString(), importedModel.Name.ValueString())
+	}
+	if importedModel.Provisioned.ValueInt64() != createModel.Provisioned.ValueInt64() {
+		t.Errorf("provisioned mismatch: create=%d import=%d", createModel.Provisioned.ValueInt64(), importedModel.Provisioned.ValueInt64())
+	}
+	if importedModel.ID.ValueString() != createModel.ID.ValueString() {
+		t.Errorf("id mismatch: create=%s import=%s", createModel.ID.ValueString(), importedModel.ID.ValueString())
+	}
+}
+
 // TestUnit_FileSystem_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the filesystem resource schema.
 func TestUnit_FileSystem_PlanModifiers(t *testing.T) {

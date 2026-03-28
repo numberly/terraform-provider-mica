@@ -37,6 +37,7 @@ func (c *FlashBladeClient) GetFileSystem(ctx context.Context, name string) (*Fil
 }
 
 // ListFileSystems returns all file systems matching the optional opts filters.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListFileSystems(ctx context.Context, opts ListFileSystemsOpts) ([]FileSystem, error) {
 	params := url.Values{}
 	if len(opts.Names) > 0 {
@@ -59,16 +60,24 @@ func (c *FlashBladeClient) ListFileSystems(ctx context.Context, opts ListFileSys
 		params.Set("limit", fmt.Sprintf("%d", opts.Limit))
 	}
 
-	path := "/file-systems"
-	if len(params) > 0 {
-		path += "?" + params.Encode()
-	}
+	var all []FileSystem
+	for {
+		path := "/file-systems"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
 
-	var resp ListResponse[FileSystem]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
+		var resp ListResponse[FileSystem]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostFileSystem creates a new file system.

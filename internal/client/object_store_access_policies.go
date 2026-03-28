@@ -21,12 +21,28 @@ func (c *FlashBladeClient) GetObjectStoreAccessPolicy(ctx context.Context, name 
 }
 
 // ListObjectStoreAccessPolicies returns all object store access policies.
+// It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListObjectStoreAccessPolicies(ctx context.Context) ([]ObjectStoreAccessPolicy, error) {
-	var resp ListResponse[ObjectStoreAccessPolicy]
-	if err := c.get(ctx, "/object-store-access-policies", &resp); err != nil {
-		return nil, err
+	params := url.Values{}
+
+	var all []ObjectStoreAccessPolicy
+	for {
+		path := "/object-store-access-policies"
+		if len(params) > 0 {
+			path += "?" + params.Encode()
+		}
+
+		var resp ListResponse[ObjectStoreAccessPolicy]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			break
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
 	}
-	return resp.Items, nil
+	return all, nil
 }
 
 // PostObjectStoreAccessPolicy creates a new object store access policy.
