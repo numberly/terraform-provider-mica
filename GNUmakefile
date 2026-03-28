@@ -1,4 +1,4 @@
-BINARY_NAME=opentofu-provider-flashblade
+BINARY_NAME=terraform-provider-flashblade
 HOSTNAME=registry.terraform.io
 NAMESPACE=numberly
 TYPE=flashblade
