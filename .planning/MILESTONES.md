@@ -14,3 +14,16 @@
 
 **Phases:** 1–5 (20 plans)
 **Last phase number:** 5
+
+### v1.1 — Servers & Exports (completed 2026-03-28)
+
+**Goal:** Complete server lifecycle management and export infrastructure.
+
+**Delivered:**
+- 10 new resources: server, S3 export policy + rule, virtual host, SMB client policy + rule, syslog server, file system export, account export (TDD consolidated)
+- 268 unit tests (41 new), all passing
+- 26 resources tested apply/destroy against live FlashBlade
+- Complete S3 tenant onboarding workflow (server → account → export → policies → bucket)
+
+**Phases:** 6–8 (8 plans)
+**Last phase number:** 8

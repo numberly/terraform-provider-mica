@@ -8,46 +8,50 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v1.1 — Servers & Exports
+## Current Milestone: v1.2 — Code Quality & Robustness
 
-**Goal:** Complete server lifecycle management and export infrastructure so operators can fully manage FlashBlade server topology, S3 export policies, virtual hosts, and SMB client policies through Terraform.
+**Goal:** Fix latent bugs, harden test coverage with idempotence checks and strict mock validation, add input validators, and clean up architectural inconsistencies across the provider.
 
 **Target features:**
-- Server resource (full CRUD, not just data source)
-- S3 export policy + rules (referenced by account exports)
-- Object store virtual hosts (S3 virtual-hosted-style access)
-- SMB client policy + rules (parallel to existing SMB share policy)
-- Syslog server configuration
-- Consolidate existing export resources with proper TDD tests
+- Fix confirmed bugs (account export Delete, filesystem writable drift, IsNotFound too broad)
+- Split monolithic models.go by domain
+- Unified composite ID helper for policy rule import/delete
+- Idempotence tests (Create → Read → plan = 0 changes)
+- Mock handlers that validate query params (catch API mismatches in CI)
+- Terraform validators for resource names (alphanumeric rules, hostname formats)
 
 ## Requirements
 
 ### Validated
 
 - ✓ Provider authenticates via API token — v1.0
-- ✓ Provider configuration (endpoint, auth, TLS settings) — v1.0
-- ✓ 22 resources: file systems, object store chain, 6 policy families, array admin, exports — v1.0
-- ✓ 227 unit tests, CI pipeline, documentation — v1.0
-- ✓ 14 bugs fixed via live FlashBlade acceptance testing — v1.0
+- ✓ 22 core resources with CRUD, import, drift detection — v1.0
+- ✓ 10 server/export resources with TDD tests — v1.1
+- ✓ 268 unit tests, CI pipeline, documentation — v1.1
+- ✓ 26 resources acceptance-tested against live FlashBlade — v1.1
 
 ### Active
 
-- [ ] Server resource with full CRUD (create, DNS config, cascade delete)
-- [ ] S3 export policy resource + rules (IAM-style allow/deny)
-- [ ] Object store virtual host resource (hostname + server attachment)
-- [ ] SMB client policy resource + rules (client auth, encryption)
-- [ ] Syslog server resource (URI, services, sources)
-- [ ] Proper TDD unit + mock tests for all new and existing export resources
-- [ ] Acceptance tests for server/export lifecycle against live FlashBlade
+- [ ] Fix account export Delete bug (combined name vs short name)
+- [ ] Fix filesystem writable drift (permanent 1-change on plan)
+- [ ] Tighten IsNotFound to avoid masking real 400 errors
+- [ ] Split models.go by domain (storage, policies, exports, admin)
+- [ ] Unified compositeID helper for policy rule import/delete
+- [ ] Extract stringOrNull helper to shared location
+- [ ] Idempotence tests for all resource families
+- [ ] Mock query param validation (reject invalid params like real API)
+- [ ] Complete Update tests for resources missing them
+- [ ] Terraform validators (name format, hostname, S3 rule name)
+- [ ] Fix omitempty on nested structs (prevent sending empty objects)
 
 ### Out of Scope
 
-- Pulumi bridge — deferred post-v1, provider structure will be compatible
-- Terraform Registry publishing — internal distribution first, public later
-- Hardware management (drive replacement, shelf operations) — out of API scope
-- Multi-array orchestration — single FlashBlade target per provider instance
-- Data migration tooling — provider manages configuration, not data movement
-- Syslog server settings (CA cert config) — low priority, defer to v1.2
+- Pulumi bridge — deferred, provider structure compatible
+- Terraform Registry publishing — internal distribution first
+- Hardware management — out of API scope
+- Multi-array orchestration — single target per provider instance
+- Syslog server CA cert settings — defer to v1.3
+- New resources — this milestone is quality-only, no new features
 
 ## Context
 
@@ -80,4 +84,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-28 after milestone v1.1 initialization*
+*Last updated: 2026-03-28 after milestone v1.2 initialization*

@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Servers & Exports
-status: executing
-stopped_at: Completed quick-6-PLAN.md (complete provider documentation)
-last_updated: "2026-03-28T16:32:32.007Z"
-last_activity: 2026-03-28 — Completed plan 08-02 (Syslog server resource)
+milestone: v1.2
+milestone_name: Code Quality & Robustness
+status: planning
+stopped_at: Milestone v1.2 started — defining requirements
+last_updated: "2026-03-28T17:00:00.000Z"
+last_activity: 2026-03-28 — Milestone v1.2 started
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 28
-  completed_plans: 28
-  percent: 96
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v1.1 — Servers & Exports, Phase 8 in progress
+**Current focus:** Milestone v1.2 — Code Quality & Robustness
 
 ## Current Position
 
-Phase: 8 of 8 (SMB Client Policies, Syslog & Acceptance Tests)
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-03-28 — Completed plan 08-02 (Syslog server resource)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-28 — Milestone v1.2 started
 
-Progress: [██████████] 96%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
