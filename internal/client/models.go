@@ -346,6 +346,68 @@ type SmbSharePolicyRulePatch struct {
 	Read        *string `json:"read,omitempty"`
 }
 
+// SmbClientPolicy represents a FlashBlade SMB client policy from GET responses.
+type SmbClientPolicy struct {
+	ID                           string                        `json:"id,omitempty"`
+	Name                         string                        `json:"name"`
+	Enabled                      bool                          `json:"enabled"`
+	IsLocal                      bool                          `json:"is_local,omitempty"`
+	PolicyType                   string                        `json:"policy_type,omitempty"`
+	Version                      string                        `json:"version,omitempty"`
+	AccessBasedEnumerationEnabled bool                         `json:"access_based_enumeration_enabled,omitempty"`
+	Rules                        []SmbClientPolicyRuleInPolicy `json:"rules,omitempty"`
+}
+
+// SmbClientPolicyPost contains the fields accepted on POST /smb-client-policies.
+type SmbClientPolicyPost struct {
+	Enabled                      *bool `json:"enabled,omitempty"`
+	AccessBasedEnumerationEnabled *bool `json:"access_based_enumeration_enabled,omitempty"`
+}
+
+// SmbClientPolicyPatch contains pointer fields for PATCH /smb-client-policies.
+// Version is read-only and must NOT be included.
+type SmbClientPolicyPatch struct {
+	Name                         *string `json:"name,omitempty"`
+	Enabled                      *bool   `json:"enabled,omitempty"`
+	AccessBasedEnumerationEnabled *bool   `json:"access_based_enumeration_enabled,omitempty"`
+}
+
+// SmbClientPolicyRule represents a rule from GET /smb-client-policies/rules.
+type SmbClientPolicyRule struct {
+	ID         string         `json:"id,omitempty"`
+	Name       string         `json:"name,omitempty"`
+	Index      int            `json:"index,omitempty"`
+	Policy     NamedReference `json:"policy,omitempty"`
+	Client     string         `json:"client,omitempty"`
+	Encryption string         `json:"encryption,omitempty"`
+	Permission string         `json:"permission,omitempty"`
+}
+
+// SmbClientPolicyRuleInPolicy is an SMB client rule embedded inside a policy GET response.
+type SmbClientPolicyRuleInPolicy struct {
+	Name       string `json:"name,omitempty"`
+	Index      int    `json:"index,omitempty"`
+	Client     string `json:"client,omitempty"`
+	Encryption string `json:"encryption,omitempty"`
+	Permission string `json:"permission,omitempty"`
+}
+
+// SmbClientPolicyRulePost contains the writable fields for POST /smb-client-policies/rules.
+type SmbClientPolicyRulePost struct {
+	Client     string `json:"client,omitempty"`
+	Encryption string `json:"encryption,omitempty"`
+	Permission string `json:"permission,omitempty"`
+	Index      *int   `json:"index,omitempty"`
+}
+
+// SmbClientPolicyRulePatch contains pointer fields for PATCH /smb-client-policies/rules.
+type SmbClientPolicyRulePatch struct {
+	Client     *string `json:"client,omitempty"`
+	Encryption *string `json:"encryption,omitempty"`
+	Permission *string `json:"permission,omitempty"`
+	Index      *int    `json:"index,omitempty"`
+}
+
 // SnapshotPolicy represents a FlashBlade snapshot policy from GET /policies.
 type SnapshotPolicy struct {
 	ID            string                       `json:"id,omitempty"`
