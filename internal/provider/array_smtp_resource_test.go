@@ -508,6 +508,149 @@ func TestArraySmtpDataSource(t *testing.T) {
 	_ = attr.Value(nil)
 }
 
+// TestUnit_ArraySmtp_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_ArraySmtp_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterArrayAdminHandlers(ms.Mux)
+
+	r := newTestArraySmtpResource(t, ms)
+	s := arraySmtpResourceSchema(t).Schema
+
+	// Step 1: Create.
+	watchers := []tftypes.Value{
+		buildAlertWatcherValue("lifecycle@example.com", true, "warning"),
+	}
+	createPlan := arraySmtpPlanWith(t, "smtp.lifecycle.com", "lifecycle.com", watchers)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArraySmtpType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel arraySmtpModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.RelayHost.ValueString() != "smtp.lifecycle.com" {
+		t.Errorf("Create: expected relay_host=smtp.lifecycle.com, got %s", createModel.RelayHost.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 arraySmtpModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.SenderDomain.ValueString() != "lifecycle.com" {
+		t.Errorf("Read1: expected sender_domain=lifecycle.com, got %s", readModel1.SenderDomain.ValueString())
+	}
+
+	// Step 3: Update relay_host.
+	updateWatchers := []tftypes.Value{
+		buildAlertWatcherValue("lifecycle@example.com", true, "warning"),
+	}
+	updatePlan := arraySmtpPlanWith(t, "smtp2.lifecycle.com", "lifecycle.com", updateWatchers)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArraySmtpType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel arraySmtpModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	if updateModel.RelayHost.ValueString() != "smtp2.lifecycle.com" {
+		t.Errorf("Update: expected relay_host=smtp2.lifecycle.com, got %s", updateModel.RelayHost.ValueString())
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 arraySmtpModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	if readModel2.RelayHost.ValueString() != "smtp2.lifecycle.com" {
+		t.Errorf("Read2: expected relay_host=smtp2.lifecycle.com, got %s", readModel2.RelayHost.ValueString())
+	}
+
+	// Step 5: Delete (reset SMTP to defaults).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_ArraySmtp_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_ArraySmtp_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterArrayAdminHandlers(ms.Mux)
+
+	r := newTestArraySmtpResource(t, ms)
+	s := arraySmtpResourceSchema(t).Schema
+
+	// Create.
+	watchers := []tftypes.Value{
+		buildAlertWatcherValue("idempotent@example.com", true, "info"),
+	}
+	createPlan := arraySmtpPlanWith(t, "smtp.idempotent.com", "idempotent.com", watchers)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArraySmtpType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel arraySmtpModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState using "default" singleton ID.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArraySmtpType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel arraySmtpModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.RelayHost.ValueString() != createModel.RelayHost.ValueString() {
+		t.Errorf("relay_host mismatch: create=%s import=%s", createModel.RelayHost.ValueString(), importedModel.RelayHost.ValueString())
+	}
+	if importedModel.SenderDomain.ValueString() != createModel.SenderDomain.ValueString() {
+		t.Errorf("sender_domain mismatch: create=%s import=%s", createModel.SenderDomain.ValueString(), importedModel.SenderDomain.ValueString())
+	}
+}
+
 // TestUnit_ArraySMTP_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the array_smtp resource schema.
 func TestUnit_ArraySMTP_PlanModifiers(t *testing.T) {

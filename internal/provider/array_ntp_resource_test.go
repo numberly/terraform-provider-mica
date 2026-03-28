@@ -349,6 +349,149 @@ func TestArrayNtpDataSource(t *testing.T) {
 	_ = attr.Value(nil)
 }
 
+// TestUnit_ArrayNtp_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+func TestUnit_ArrayNtp_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterArrayAdminHandlers(ms.Mux)
+
+	r := newTestArrayNtpResource(t, ms)
+	s := arrayNtpResourceSchema(t).Schema
+
+	// Step 1: Create.
+	createPlan := arrayNtpPlanWith(t, []string{"ntp1.example.com"})
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayNtpType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel arrayNtpModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	var createServers []string
+	createModel.NtpServers.ElementsAs(context.Background(), &createServers, false)
+	if len(createServers) != 1 || createServers[0] != "ntp1.example.com" {
+		t.Errorf("Create: expected ntp_servers=[ntp1.example.com], got %v", createServers)
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 arrayNtpModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	if readModel1.ID.IsNull() || readModel1.ID.ValueString() == "" {
+		t.Error("Read1: expected non-empty ID")
+	}
+
+	// Step 3: Update NTP servers.
+	updatePlan := arrayNtpPlanWith(t, []string{"ntp1.example.com", "ntp2.example.com"})
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayNtpType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel arrayNtpModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	var updateServers []string
+	updateModel.NtpServers.ElementsAs(context.Background(), &updateServers, false)
+	if len(updateServers) != 2 {
+		t.Errorf("Update: expected 2 NTP servers, got %d", len(updateServers))
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 arrayNtpModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	var readServers2 []string
+	readModel2.NtpServers.ElementsAs(context.Background(), &readServers2, false)
+	if len(readServers2) != 2 {
+		t.Errorf("Read2: expected 2 NTP servers, got %d", len(readServers2))
+	}
+
+	// Step 5: Delete (reset to defaults).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_ArrayNtp_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_ArrayNtp_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterArrayAdminHandlers(ms.Mux)
+
+	r := newTestArrayNtpResource(t, ms)
+	s := arrayNtpResourceSchema(t).Schema
+
+	// Create.
+	createPlan := arrayNtpPlanWith(t, []string{"time.cloudflare.com"})
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayNtpType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel arrayNtpModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState using "default" singleton ID.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayNtpType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel arrayNtpModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	var createServers, importServers []string
+	createModel.NtpServers.ElementsAs(context.Background(), &createServers, false)
+	importedModel.NtpServers.ElementsAs(context.Background(), &importServers, false)
+	if len(createServers) != len(importServers) {
+		t.Errorf("ntp_servers count mismatch: create=%d import=%d", len(createServers), len(importServers))
+	}
+	if len(createServers) > 0 && len(importServers) > 0 && createServers[0] != importServers[0] {
+		t.Errorf("ntp_servers[0] mismatch: create=%s import=%s", createServers[0], importServers[0])
+	}
+}
+
 // TestUnit_ArrayNTP_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the array_ntp resource schema.
 func TestUnit_ArrayNTP_PlanModifiers(t *testing.T) {

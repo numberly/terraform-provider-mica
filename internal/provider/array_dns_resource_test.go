@@ -370,6 +370,150 @@ func TestArrayDnsDataSource(t *testing.T) {
 	_ = attr.Value(nil)
 }
 
+// TestUnit_ArrayDns_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
+// ArrayDns is a singleton: Create=PATCH, Delete=PATCH(reset).
+func TestUnit_ArrayDns_Lifecycle(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterArrayAdminHandlers(ms.Mux)
+
+	r := newTestArrayDnsResource(t, ms)
+	s := arrayDnsResourceSchema(t).Schema
+
+	// Step 1: Create (configure DNS).
+	createPlan := arrayDnsPlanWith(t, "lifecycle.example.com", []string{"8.8.8.8", "8.8.4.4"})
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayDnsType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel arrayDnsModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+	if createModel.Domain.ValueString() != "lifecycle.example.com" {
+		t.Errorf("Create: expected domain=lifecycle.example.com, got %s", createModel.Domain.ValueString())
+	}
+
+	// Step 2: Read post-create.
+	readResp1 := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp1)
+	if readResp1.Diagnostics.HasError() {
+		t.Fatalf("Read post-create: %s", readResp1.Diagnostics)
+	}
+	var readModel1 arrayDnsModel
+	if diags := readResp1.State.Get(context.Background(), &readModel1); diags.HasError() {
+		t.Fatalf("Get read1 state: %s", diags)
+	}
+	var ns1 []string
+	readModel1.Nameservers.ElementsAs(context.Background(), &ns1, false)
+	if len(ns1) != 2 {
+		t.Errorf("Read1: expected 2 nameservers, got %d", len(ns1))
+	}
+
+	// Step 3: Update nameservers.
+	updatePlan := arrayDnsPlanWith(t, "lifecycle.example.com", []string{"1.1.1.1"})
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayDnsType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: readResp1.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+	var updateModel arrayDnsModel
+	if diags := updateResp.State.Get(context.Background(), &updateModel); diags.HasError() {
+		t.Fatalf("Get update state: %s", diags)
+	}
+	var ns2 []string
+	updateModel.Nameservers.ElementsAs(context.Background(), &ns2, false)
+	if len(ns2) != 1 || ns2[0] != "1.1.1.1" {
+		t.Errorf("Update: expected nameservers=[1.1.1.1], got %v", ns2)
+	}
+
+	// Step 4: Read post-update.
+	readResp2 := &resource.ReadResponse{State: updateResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: updateResp.State}, readResp2)
+	if readResp2.Diagnostics.HasError() {
+		t.Fatalf("Read post-update: %s", readResp2.Diagnostics)
+	}
+	var readModel2 arrayDnsModel
+	if diags := readResp2.State.Get(context.Background(), &readModel2); diags.HasError() {
+		t.Fatalf("Get read2 state: %s", diags)
+	}
+	var ns3 []string
+	readModel2.Nameservers.ElementsAs(context.Background(), &ns3, false)
+	if len(ns3) != 1 || ns3[0] != "1.1.1.1" {
+		t.Errorf("Read2: expected nameservers=[1.1.1.1], got %v", ns3)
+	}
+
+	// Step 5: Delete (reset to defaults).
+	deleteResp := &resource.DeleteResponse{}
+	r.Delete(context.Background(), resource.DeleteRequest{State: readResp2.State}, deleteResp)
+	if deleteResp.Diagnostics.HasError() {
+		t.Fatalf("Delete: %s", deleteResp.Diagnostics)
+	}
+}
+
+// TestUnit_ArrayDns_ImportIdempotency verifies ImportState->Read produces state matching original Create.
+func TestUnit_ArrayDns_ImportIdempotency(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterArrayAdminHandlers(ms.Mux)
+
+	r := newTestArrayDnsResource(t, ms)
+	s := arrayDnsResourceSchema(t).Schema
+
+	// Create (configure DNS).
+	createPlan := arrayDnsPlanWith(t, "idempotent.example.com", []string{"8.8.8.8"})
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayDnsType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+	var createModel arrayDnsModel
+	if diags := createResp.State.Get(context.Background(), &createModel); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// ImportState using "default" singleton ID.
+	importResp := &resource.ImportStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayDnsType(), nil), Schema: s},
+	}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default"}, importResp)
+	if importResp.Diagnostics.HasError() {
+		t.Fatalf("ImportState: %s", importResp.Diagnostics)
+	}
+
+	// Read to populate full state.
+	readResp := &resource.ReadResponse{State: importResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: importResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read post-import: %s", readResp.Diagnostics)
+	}
+	var importedModel arrayDnsModel
+	if diags := readResp.State.Get(context.Background(), &importedModel); diags.HasError() {
+		t.Fatalf("Get imported state: %s", diags)
+	}
+
+	// Verify 0-diff.
+	if importedModel.Domain.ValueString() != createModel.Domain.ValueString() {
+		t.Errorf("domain mismatch: create=%s import=%s", createModel.Domain.ValueString(), importedModel.Domain.ValueString())
+	}
+	var createNS, importNS []string
+	createModel.Nameservers.ElementsAs(context.Background(), &createNS, false)
+	importedModel.Nameservers.ElementsAs(context.Background(), &importNS, false)
+	if len(createNS) != len(importNS) {
+		t.Errorf("nameservers count mismatch: create=%d import=%d", len(createNS), len(importNS))
+	}
+}
+
 // TestUnit_ArrayDNS_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the array_dns resource schema.
 func TestUnit_ArrayDNS_PlanModifiers(t *testing.T) {
