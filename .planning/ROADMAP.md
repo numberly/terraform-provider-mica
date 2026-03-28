@@ -96,7 +96,12 @@ Plans:
   2. Mocked integration tests cover the full CRUD lifecycle for all resource families without a live FlashBlade (CI-safe)
   3. HTTP client retries transparently on 429/503/5xx responses; operator sees no transient failures during `terraform apply`
   4. `terraform-plugin-docs` generates complete documentation for every resource and data source without manual editing
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Error helpers (IsConflict/IsUnprocessable), plan modifier assertions, and validator tests for all 19 resources
+- [ ] 05-02-PLAN.md — Auto-pagination in client list methods, error-path tests (409/422/404), and retry verification
+- [ ] 05-03-PLAN.md — HCL examples, terraform-plugin-docs generation, GitHub Actions CI, and README
 
 ## Progress
 
@@ -109,4 +114,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Object Store Resources | 2/3 | In Progress|  |
 | 3. File-Based Policy Resources | 4/4 | Complete   | 2026-03-27 |
 | 4. Object/Network/Quota Policies and Array Admin | 3/5 | In Progress|  |
-| 5. Quality Hardening | 0/TBD | Not started | - |
+| 5. Quality Hardening | 0/3 | Not started | - |
