@@ -1,182 +1,73 @@
 # Requirements: Terraform Provider FlashBlade
 
-**Defined:** 2026-03-26
+**Defined:** 2026-03-28
 **Core Value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
 
-## v1 Requirements
+## v1.1 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for milestone v1.1 — Servers & Exports.
 
-### Provider Foundation
+### Server Management
 
-- [x] **PROV-01**: Provider accepts endpoint URL, API token, and TLS CA certificate via config block
-- [x] **PROV-02**: Provider accepts OAuth2 client_id, key_id, and issuer for client_credentials auth
-- [x] **PROV-03**: Provider falls back to FLASHBLADE_ENDPOINT, FLASHBLADE_API_TOKEN, FLASHBLADE_OAUTH2_* environment variables when config block values are absent
-- [x] **PROV-04**: Provider negotiates API version on startup via GET /api/api_version and targets v2.22
-- [x] **PROV-05**: Provider marks api_token, oauth2 private key, and access key secrets as Sensitive in schema
-- [x] **PROV-06**: Provider logs all operations with structured tflog output (resource name, operation, API path)
-- [x] **PROV-07**: Provider supports custom CA certificate for TLS verification (ca_cert_file or inline ca_cert)
+- [ ] **SRV-01**: Operator can create a FlashBlade server with DNS configuration via Terraform
+- [ ] **SRV-02**: Operator can update server DNS configuration via Terraform apply
+- [ ] **SRV-03**: Operator can destroy a server with cascade delete option for dependent exports
+- [ ] **SRV-04**: Operator can import an existing server into Terraform state
+- [ ] **SRV-05**: Server data source reads existing server by name (consolidate existing)
 
-### File System
+### S3 Export Policies
 
-- [x] **FS-01**: User can create a file system with name, provisioned size, and optional policy attachments
-- [x] **FS-02**: User can update file system attributes (size, policies, NFS settings, SMB settings)
-- [x] **FS-03**: User can destroy a file system (two-phase: mark destroyed, then eradicate)
-- [x] **FS-04**: User can read file system state including all computed attributes (space, created timestamp)
-- [x] **FS-05**: User can import an existing file system into Terraform state by name
-- [x] **FS-06**: Data source returns file system attributes by name or filter
-- [x] **FS-07**: Drift detection logs field-level diffs via tflog when Read finds state divergence
+- [ ] **S3P-01**: Operator can create an S3 export policy with enable/disable toggle
+- [ ] **S3P-02**: Operator can create S3 export policy rules with actions/effect/resources (IAM-style)
+- [ ] **S3P-03**: Operator can update and delete S3 export policy rules independently
+- [ ] **S3P-04**: Operator can import S3 export policies and rules into Terraform state
 
-### Object Store Account
+### Object Store Virtual Hosts
 
-- [x] **OSA-01**: User can create an object store account with name
-- [x] **OSA-02**: User can update object store account attributes
-- [x] **OSA-03**: User can destroy an object store account (two-phase soft-delete)
-- [x] **OSA-04**: User can import an existing object store account into Terraform state by name
-- [x] **OSA-05**: Data source returns object store account attributes by name or filter
+- [ ] **VH-01**: Operator can create a virtual host with hostname and attached servers
+- [ ] **VH-02**: Operator can update attached servers list on a virtual host
+- [ ] **VH-03**: Operator can import an existing virtual host into Terraform state
 
-### Bucket
+### SMB Client Policies
 
-- [x] **BKT-01**: User can create a bucket with name, account reference, and optional settings
-- [x] **BKT-02**: User can update bucket attributes (quotas, versioning, policies)
-- [x] **BKT-03**: User can destroy a bucket (two-phase: mark destroyed, then eradicate)
-- [x] **BKT-04**: User can import an existing bucket into Terraform state by name
-- [x] **BKT-05**: Data source returns bucket attributes by name or filter
-- [x] **BKT-06**: Drift detection logs field-level diffs via tflog when Read finds state divergence
+- [ ] **SMC-01**: Operator can create an SMB client policy with enable toggle
+- [ ] **SMC-02**: Operator can create SMB client policy rules with client/encryption/permission
+- [ ] **SMC-03**: Operator can update and delete SMB client policy rules independently
+- [ ] **SMC-04**: Operator can import SMB client policies and rules into Terraform state
 
-### Object Store Access Key
+### Syslog
 
-- [x] **OAK-01**: User can create an object store access key for a given account
-- [x] **OAK-02**: User can delete an object store access key
-- [x] **OAK-03**: Secret access key is marked Sensitive and only available at creation time
-- [x] **OAK-04**: User can import an existing access key into Terraform state by name
-- [x] **OAK-05**: Data source returns access key attributes by name or filter
+- [ ] **SYS-01**: Operator can create a syslog server with URI, services, and sources
+- [ ] **SYS-02**: Operator can update syslog server configuration
+- [ ] **SYS-03**: Operator can import an existing syslog server into Terraform state
 
-### NFS Export Policy
+### Export Consolidation
 
-- [x] **NFP-01**: User can create an NFS export policy with name and optional settings
-- [x] **NFP-02**: User can update NFS export policy attributes
-- [x] **NFP-03**: User can destroy an NFS export policy
-- [x] **NFP-04**: User can import an existing NFS export policy into Terraform state by name
-- [x] **NFP-05**: Data source returns NFS export policy attributes by name or filter
-- [x] **NFR-01**: User can create NFS export policy rules (client, access, permissions)
-- [x] **NFR-02**: User can update NFS export policy rules
-- [x] **NFR-03**: User can destroy NFS export policy rules
-- [x] **NFR-04**: User can import NFS export policy rules using composite ID (policy_name:rule_index)
+- [ ] **EXP-01**: File system export resource has proper TDD unit tests and mock handlers
+- [ ] **EXP-02**: Account export resource has proper TDD unit tests and mock handlers
+- [ ] **EXP-03**: All export resources pass acceptance tests against live FlashBlade
 
-### SMB Share Policy
+## v1.2 Requirements
 
-- [x] **SMP-01**: User can create an SMB share policy with name and optional settings
-- [x] **SMP-02**: User can update SMB share policy attributes
-- [x] **SMP-03**: User can destroy an SMB share policy
-- [x] **SMP-04**: User can import an existing SMB share policy into Terraform state by name
-- [x] **SMP-05**: Data source returns SMB share policy attributes by name or filter
-- [x] **SMR-01**: User can create SMB share policy rules
-- [x] **SMR-02**: User can update SMB share policy rules
-- [x] **SMR-03**: User can destroy SMB share policy rules
-- [x] **SMR-04**: User can import SMB share policy rules using composite ID
+Deferred to future release.
 
-### Snapshot Policy
+### Syslog Settings
 
-- [x] **SNP-01**: User can create a snapshot policy with name and optional settings
-- [x] **SNP-02**: User can update snapshot policy attributes
-- [x] **SNP-03**: User can destroy a snapshot policy
-- [x] **SNP-04**: User can import an existing snapshot policy into Terraform state by name
-- [x] **SNP-05**: Data source returns snapshot policy attributes by name or filter
-- [x] **SNR-01**: User can create snapshot policy rules (schedule, retention)
-- [x] **SNR-02**: User can update snapshot policy rules
-- [x] **SNR-03**: User can destroy snapshot policy rules
-- [x] **SNR-04**: User can import snapshot policy rules using composite ID
+- **SYSS-01**: Operator can configure syslog CA certificate settings
 
-### Object Store Access Policy
+### OAuth2 Authentication
 
-- [x] **OAP-01**: User can create an object store access policy with name and rules
-- [x] **OAP-02**: User can update object store access policy attributes
-- [x] **OAP-03**: User can destroy an object store access policy
-- [x] **OAP-04**: User can import an existing object store access policy into Terraform state by name
-- [x] **OAP-05**: Data source returns object store access policy attributes by name or filter
-- [x] **OAR-01**: User can create object store access policy rules (effect, action, resource, condition)
-- [x] **OAR-02**: User can update object store access policy rules
-- [x] **OAR-03**: User can destroy object store access policy rules
-- [x] **OAR-04**: User can import object store access policy rules using composite ID
-
-### Network Access Policy
-
-- [x] **NAP-01**: User can create a network access policy with name
-- [x] **NAP-02**: User can update network access policy attributes
-- [x] **NAP-03**: User can destroy a network access policy
-- [x] **NAP-04**: User can import an existing network access policy into Terraform state by name
-- [x] **NAP-05**: Data source returns network access policy attributes by name or filter
-- [x] **NAR-01**: User can create network access policy rules (client, interfaces, effect)
-- [x] **NAR-02**: User can update network access policy rules
-- [x] **NAR-03**: User can destroy network access policy rules
-- [x] **NAR-04**: User can import network access policy rules using composite ID
-
-### Quota Policy
-
-- [x] **QTP-01**: User can create a quota policy with name
-- [x] **QTP-02**: User can update quota policy attributes
-- [x] **QTP-03**: User can destroy a quota policy
-- [ ] **QTP-04**: User can import an existing quota policy into Terraform state by name
-- [ ] **QTP-05**: Data source returns quota policy attributes by name or filter
-- [x] **QTR-01**: User can create quota policy rules (quota_limit, enforced)
-- [x] **QTR-02**: User can update quota policy rules
-- [x] **QTR-03**: User can destroy quota policy rules
-- [ ] **QTR-04**: User can import quota policy rules using composite ID
-
-### Array Administration
-
-- [x] **ADM-01**: User can manage array DNS configuration (nameservers, domain, search)
-- [x] **ADM-02**: User can manage array NTP configuration (servers)
-- [x] **ADM-03**: User can manage array SMTP configuration (relay host, sender)
-- [x] **ADM-04**: Data sources for DNS, NTP, SMTP read-only access
-- [x] **ADM-05**: User can import existing array admin configuration into Terraform state
-
-### Cross-Cutting Quality
-
-- [x] **QUA-01**: All resources implement correct plan modifiers (UseStateForUnknown for stable computed, RequiresReplace for immutable)
-- [x] **QUA-02**: All resources validate input at plan time (invalid quota values, enum fields, required references)
-- [x] **QUA-03**: Unit tests cover all schema definitions, validators, and plan modifiers
-- [x] **QUA-04**: Mocked API integration tests cover CRUD lifecycle for all resource families
-- [x] **QUA-05**: HTTP client implements retry with exponential backoff for transient API errors
-- [x] **QUA-06**: Provider documentation generated via terraform-plugin-docs for all resources and data sources
-
-## v2 Requirements
-
-Deferred to future release. Tracked but not in current roadmap.
-
-### Enhanced Storage
-
-- **ESR-01**: Object Lock and WORM configuration on buckets
-- **ESR-02**: QoS policy attachment on file systems and buckets
-- **ESR-03**: Eradication config management (custom eradication delay)
-- **ESR-04**: Bucket replica links for DR automation
-- **ESR-05**: File system replica links for DR automation
-
-### Extended Admin
-
-- **EAD-01**: Array connection management (multi-array connectivity)
-- **EAD-02**: API client management (service accounts)
-- **EAD-03**: Active Directory integration
-- **EAD-04**: Alert watchers and routing configuration
-
-### Testing & Distribution
-
-- **TDR-01**: Acceptance tests against real FlashBlade
-- **TDR-02**: Terraform Registry publication (public)
-- **TDR-03**: Pulumi bridge
+- **AUTH-01**: Provider supports OAuth2 client_credentials grant type
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Performance metrics resources | Time-series data, not configuration state — use Prometheus/Datadog |
-| Snapshot management as resources | Operational artifacts, not declarative infra — use snapshot policies |
-| Multi-array in one provider block | Breaks state isolation — use provider aliases |
-| Hardware management (blades, drives) | Read-only hardware state, cannot be declared |
-| Audit log target resources | Circular dependencies with storage resources — manage separately |
-| Session/client management | Ephemeral runtime state — operational runbooks, not IaC |
-| Automatic resource name generation | Unstable state — user supplies names, use random_id if needed |
+| Pulumi bridge | Deferred post-v1, provider structure will be compatible |
+| Terraform Registry publishing | Internal distribution first, public later |
+| Hardware management | Out of API scope |
+| Multi-array orchestration | Single FlashBlade target per provider instance |
+| Data migration tooling | Provider manages configuration, not data movement |
 
 ## Traceability
 
@@ -184,107 +75,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROV-01 | Phase 1 | Complete |
-| PROV-02 | Phase 1 | Complete |
-| PROV-03 | Phase 1 | Complete |
-| PROV-04 | Phase 1 | Complete |
-| PROV-05 | Phase 1 | Complete |
-| PROV-06 | Phase 1 | Complete |
-| PROV-07 | Phase 1 | Complete |
-| FS-01 | Phase 1 | Complete |
-| FS-02 | Phase 1 | Complete |
-| FS-03 | Phase 1 | Complete |
-| FS-04 | Phase 1 | Complete |
-| FS-05 | Phase 1 | Complete |
-| FS-06 | Phase 1 | Complete |
-| FS-07 | Phase 1 | Complete |
-| OSA-01 | Phase 2 | Complete |
-| OSA-02 | Phase 2 | Complete |
-| OSA-03 | Phase 2 | Complete |
-| OSA-04 | Phase 2 | Complete |
-| OSA-05 | Phase 2 | Complete |
-| BKT-01 | Phase 2 | Complete |
-| BKT-02 | Phase 2 | Complete |
-| BKT-03 | Phase 2 | Complete |
-| BKT-04 | Phase 2 | Complete |
-| BKT-05 | Phase 2 | Complete |
-| BKT-06 | Phase 2 | Complete |
-| OAK-01 | Phase 2 | Complete |
-| OAK-02 | Phase 2 | Complete |
-| OAK-03 | Phase 2 | Complete |
-| OAK-04 | Phase 2 | Complete |
-| OAK-05 | Phase 2 | Complete |
-| NFP-01 | Phase 3 | Complete |
-| NFP-02 | Phase 3 | Complete |
-| NFP-03 | Phase 3 | Complete |
-| NFP-04 | Phase 3 | Complete |
-| NFP-05 | Phase 3 | Complete |
-| NFR-01 | Phase 3 | Complete |
-| NFR-02 | Phase 3 | Complete |
-| NFR-03 | Phase 3 | Complete |
-| NFR-04 | Phase 3 | Complete |
-| SMP-01 | Phase 3 | Complete |
-| SMP-02 | Phase 3 | Complete |
-| SMP-03 | Phase 3 | Complete |
-| SMP-04 | Phase 3 | Complete |
-| SMP-05 | Phase 3 | Complete |
-| SMR-01 | Phase 3 | Complete |
-| SMR-02 | Phase 3 | Complete |
-| SMR-03 | Phase 3 | Complete |
-| SMR-04 | Phase 3 | Complete |
-| SNP-01 | Phase 3 | Complete |
-| SNP-02 | Phase 3 | Complete |
-| SNP-03 | Phase 3 | Complete |
-| SNP-04 | Phase 3 | Complete |
-| SNP-05 | Phase 3 | Complete |
-| SNR-01 | Phase 3 | Complete |
-| SNR-02 | Phase 3 | Complete |
-| SNR-03 | Phase 3 | Complete |
-| SNR-04 | Phase 3 | Complete |
-| OAP-01 | Phase 4 | Complete |
-| OAP-02 | Phase 4 | Complete |
-| OAP-03 | Phase 4 | Complete |
-| OAP-04 | Phase 4 | Complete |
-| OAP-05 | Phase 4 | Complete |
-| OAR-01 | Phase 4 | Complete |
-| OAR-02 | Phase 4 | Complete |
-| OAR-03 | Phase 4 | Complete |
-| OAR-04 | Phase 4 | Complete |
-| NAP-01 | Phase 4 | Complete |
-| NAP-02 | Phase 4 | Complete |
-| NAP-03 | Phase 4 | Complete |
-| NAP-04 | Phase 4 | Complete |
-| NAP-05 | Phase 4 | Complete |
-| NAR-01 | Phase 4 | Complete |
-| NAR-02 | Phase 4 | Complete |
-| NAR-03 | Phase 4 | Complete |
-| NAR-04 | Phase 4 | Complete |
-| QTP-01 | Phase 4 | Complete |
-| QTP-02 | Phase 4 | Complete |
-| QTP-03 | Phase 4 | Complete |
-| QTP-04 | Phase 4 | Pending |
-| QTP-05 | Phase 4 | Pending |
-| QTR-01 | Phase 4 | Complete |
-| QTR-02 | Phase 4 | Complete |
-| QTR-03 | Phase 4 | Complete |
-| QTR-04 | Phase 4 | Pending |
-| ADM-01 | Phase 4 | Complete |
-| ADM-02 | Phase 4 | Complete |
-| ADM-03 | Phase 4 | Complete |
-| ADM-04 | Phase 4 | Complete |
-| ADM-05 | Phase 4 | Complete |
-| QUA-01 | Phase 5 | Complete |
-| QUA-02 | Phase 5 | Complete |
-| QUA-03 | Phase 5 | Complete |
-| QUA-04 | Phase 5 | Complete |
-| QUA-05 | Phase 5 | Complete |
-| QUA-06 | Phase 5 | Complete |
+| SRV-01 | — | Pending |
+| SRV-02 | — | Pending |
+| SRV-03 | — | Pending |
+| SRV-04 | — | Pending |
+| SRV-05 | — | Pending |
+| S3P-01 | — | Pending |
+| S3P-02 | — | Pending |
+| S3P-03 | — | Pending |
+| S3P-04 | — | Pending |
+| VH-01 | — | Pending |
+| VH-02 | — | Pending |
+| VH-03 | — | Pending |
+| SMC-01 | — | Pending |
+| SMC-02 | — | Pending |
+| SMC-03 | — | Pending |
+| SMC-04 | — | Pending |
+| SYS-01 | — | Pending |
+| SYS-02 | — | Pending |
+| SYS-03 | — | Pending |
+| EXP-01 | — | Pending |
+| EXP-02 | — | Pending |
+| EXP-03 | — | Pending |
 
 **Coverage:**
-- v1 requirements: 95 total (recount from requirement IDs — REQUIREMENTS.md header had 76 which was incorrect)
-- Mapped to phases: 95
-- Unmapped: 0
+- v1.1 requirements: 22 total
+- Mapped to phases: 0
+- Unmapped: 22
 
 ---
-*Requirements defined: 2026-03-26*
-*Last updated: 2026-03-26 — traceability populated after roadmap creation*
+*Requirements defined: 2026-03-28*
+*Last updated: 2026-03-28 after milestone v1.1 initialization*
