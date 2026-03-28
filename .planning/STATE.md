@@ -4,7 +4,7 @@ milestone: v1.1
 milestone_name: Servers & Exports
 status: completed
 stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-28T14:29:56.865Z"
+last_updated: "2026-03-28T14:34:19.526Z"
 last_activity: 2026-03-28 — Completed plan 06-02 (export resource tests)
 progress:
   total_phases: 8
