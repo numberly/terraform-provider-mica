@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-03-27T18:30:00.000Z"
-last_activity: 2026-03-27 — Phase 4 plan 03 complete — NAP singleton resource, rule resource, data source
+status: executing
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-28T06:07:15.294Z"
+last_activity: 2026-03-27 — NAP singleton resource, rule resource, data source — all tests pass (136 total)
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 16
   percent: 81
 ---
 
@@ -63,6 +63,8 @@ Progress: [████████░░] 81%
 | Phase 03-file-based-policy-resources P03 | 30 | 2 tasks | 5 files |
 | Phase 04-object-network-quota-policies-and-array-admin P01 | 324 | 2 tasks | 9 files |
 | Phase 04-object-network-quota-policies-and-array-admin P03 | 12 | 2 tasks | 6 files |
+| Phase 04-object-network-quota-policies-and-array-admin P02 | 67 | 2 tasks | 7 files |
+| Phase 04-object-network-quota-policies-and-array-admin P05 | 20 | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -109,6 +111,9 @@ Recent decisions affecting current work:
 - [Phase 04-object-network-quota-policies-and-array-admin]: ArrayNtpPatch sends only ntp_servers field to avoid unintentional modification of other array settings
 - [Phase 04-object-network-quota-policies-and-array-admin P03]: NAP Delete=PATCH(enabled=false) — singleton reset pattern, no DELETE endpoint at policy level
 - [Phase 04-object-network-quota-policies-and-array-admin P03]: NAP rule readIntoState returns diag.Diagnostics — composition-friendly, mirrors Phase 3 NFS pattern
+- [Phase 04-object-network-quota-policies-and-array-admin]: OAP description RequiresReplace — POST-only field, PATCH rejects it; OAP rule effect RequiresReplace — read-only after creation
+- [Phase 04-object-network-quota-policies-and-array-admin]: OAP conditions stored as types.String with jsonencode convention — json.RawMessage round-trip at API boundary
+- [Phase 04-object-network-quota-policies-and-array-admin]: OAP delete guard: ListObjectStoreAccessPolicyMembers before DELETE — prevents detach errors on policies attached to buckets
 
 ### Pending Todos
 
@@ -124,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T18:30:00.000Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-03-28T06:07:01.376Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

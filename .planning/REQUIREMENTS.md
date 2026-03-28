@@ -93,12 +93,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **OAP-01**: User can create an object store access policy with name and rules
 - [x] **OAP-02**: User can update object store access policy attributes
 - [x] **OAP-03**: User can destroy an object store access policy
-- [ ] **OAP-04**: User can import an existing object store access policy into Terraform state by name
-- [ ] **OAP-05**: Data source returns object store access policy attributes by name or filter
+- [x] **OAP-04**: User can import an existing object store access policy into Terraform state by name
+- [x] **OAP-05**: Data source returns object store access policy attributes by name or filter
 - [x] **OAR-01**: User can create object store access policy rules (effect, action, resource, condition)
 - [x] **OAR-02**: User can update object store access policy rules
 - [x] **OAR-03**: User can destroy object store access policy rules
-- [ ] **OAR-04**: User can import object store access policy rules using composite ID
+- [x] **OAR-04**: User can import object store access policy rules using composite ID
 
 ### Network Access Policy
 
@@ -244,12 +244,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OAP-01 | Phase 4 | Complete |
 | OAP-02 | Phase 4 | Complete |
 | OAP-03 | Phase 4 | Complete |
-| OAP-04 | Phase 4 | Pending |
-| OAP-05 | Phase 4 | Pending |
+| OAP-04 | Phase 4 | Complete |
+| OAP-05 | Phase 4 | Complete |
 | OAR-01 | Phase 4 | Complete |
 | OAR-02 | Phase 4 | Complete |
 | OAR-03 | Phase 4 | Complete |
-| OAR-04 | Phase 4 | Pending |
+| OAR-04 | Phase 4 | Complete |
 | NAP-01 | Phase 4 | Complete |
 | NAP-02 | Phase 4 | Complete |
 | NAP-03 | Phase 4 | Complete |
