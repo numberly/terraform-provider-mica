@@ -51,24 +51,24 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | — | Pending |
-| BUG-02 | — | Pending |
-| BUG-03 | — | Pending |
-| BUG-04 | — | Pending |
-| ARC-01 | — | Pending |
-| ARC-02 | — | Pending |
-| ARC-03 | — | Pending |
-| TST-01 | — | Pending |
-| TST-02 | — | Pending |
-| TST-03 | — | Pending |
-| VAL-01 | — | Pending |
-| VAL-02 | — | Pending |
+| BUG-01 | Phase 9 | Pending |
+| BUG-02 | Phase 9 | Pending |
+| BUG-03 | Phase 9 | Pending |
+| BUG-04 | Phase 9 | Pending |
+| ARC-01 | Phase 10 | Pending |
+| ARC-02 | Phase 10 | Pending |
+| ARC-03 | Phase 10 | Pending |
+| TST-01 | Phase 11 | Pending |
+| TST-02 | Phase 11 | Pending |
+| TST-03 | Phase 11 | Pending |
+| VAL-01 | Phase 11 | Pending |
+| VAL-02 | Phase 11 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after milestone v1.2 initialization*
+*Last updated: 2026-03-28 after v1.2 roadmap creation*

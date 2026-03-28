@@ -3,7 +3,8 @@
 ## Milestones
 
 - v1.0 Core Provider (Phases 1-5) -- shipped 2026-03-28
-- v1.1 Servers & Exports (Phases 6-8) -- in progress
+- v1.1 Servers & Exports (Phases 6-8) -- shipped 2026-03-28
+- v1.2 Code Quality & Robustness (Phases 9-11) -- in progress
 
 ## Phases
 
@@ -104,15 +105,8 @@ Plans:
 
 </details>
 
-### v1.1 Servers & Exports (In Progress)
-
-**Milestone Goal:** Complete server lifecycle management and export infrastructure so operators can fully manage FlashBlade server topology, S3 export policies, virtual hosts, and SMB client policies through Terraform.
-
-- [ ] **Phase 6: Server Resource & Export Consolidation** - Full server CRUD + TDD tests for existing export resources
-- [x] **Phase 7: S3 Export Policies & Virtual Hosts** - S3 export policy/rules and virtual host resources with server attachment (completed 2026-03-28)
-- [x] **Phase 8: SMB Client Policies, Syslog & Acceptance Tests** - SMB client policy/rules, syslog server, and live acceptance tests for all v1.1 resources (completed 2026-03-28)
-
-## Phase Details
+<details>
+<summary>v1.1 Servers & Exports (Phases 6-8) - SHIPPED 2026-03-28</summary>
 
 ### Phase 6: Server Resource & Export Consolidation
 **Goal**: Operators can manage FlashBlade servers through Terraform and existing export resources have proper TDD test coverage
@@ -123,11 +117,11 @@ Plans:
   2. Operator can import an existing FlashBlade server into Terraform state and subsequent plan shows no drift
   3. Server data source reads an existing server by name and exposes its attributes for reference in other resources
   4. File system export and account export resources each have mock handlers and unit tests following TDD patterns established in v1.0
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 06-01-PLAN.md — Server model extension, client CRUD, mock handler, resource, data source update, and tests
-- [ ] 06-02-PLAN.md — Export mock handlers and TDD unit tests for file system and account exports
+- [x] 06-01-PLAN.md — Server model extension, client CRUD, mock handler, resource, data source update, and tests
+- [x] 06-02-PLAN.md — Export mock handlers and TDD unit tests for file system and account exports
 
 ### Phase 7: S3 Export Policies & Virtual Hosts
 **Goal**: Operators can manage S3 export access policies and virtual-hosted-style S3 endpoints through Terraform
@@ -141,9 +135,9 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 07-01-PLAN.md — Model structs, client CRUD methods, and mock handlers for S3 export policies and virtual hosts
-- [ ] 07-02-PLAN.md — S3 export policy resource, rule resource, data source, and unit tests
-- [ ] 07-03-PLAN.md — Object store virtual host resource, data source, and unit tests
+- [x] 07-01-PLAN.md — Model structs, client CRUD methods, and mock handlers for S3 export policies and virtual hosts
+- [x] 07-02-PLAN.md — S3 export policy resource, rule resource, data source, and unit tests
+- [x] 07-03-PLAN.md — Object store virtual host resource, data source, and unit tests
 
 ### Phase 8: SMB Client Policies, Syslog & Acceptance Tests
 **Goal**: Remaining resource types are implemented and all v1.1 resources pass acceptance tests against a live FlashBlade
@@ -157,14 +151,68 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 08-01-PLAN.md — SMB client policy resource, rule resource, data source, client CRUD, mock handler, and unit tests
-- [ ] 08-02-PLAN.md — Syslog server resource, data source, client CRUD, mock handler, and unit tests
-- [ ] 08-03-PLAN.md — Acceptance test HCL configs and live FlashBlade validation for all v1.1 resources
+- [x] 08-01-PLAN.md — SMB client policy resource, rule resource, data source, client CRUD, mock handler, and unit tests
+- [x] 08-02-PLAN.md — Syslog server resource, data source, client CRUD, mock handler, and unit tests
+- [x] 08-03-PLAN.md — Acceptance test HCL configs and live FlashBlade validation for all v1.1 resources
+
+</details>
+
+### v1.2 Code Quality & Robustness (In Progress)
+
+**Milestone Goal:** Fix latent bugs, harden test coverage, add input validators, and clean up architectural inconsistencies across the provider. No new features -- quality only.
+
+- [ ] **Phase 9: Bug Fixes** - Fix confirmed bugs in account export Delete, filesystem writable drift, IsNotFound, and omitempty
+- [ ] **Phase 10: Architecture Cleanup** - Split models.go by domain, unified compositeID helper, extract stringOrNull
+- [ ] **Phase 11: Test Hardening & Validators** - Idempotence tests, mock param validation, Update tests, Terraform validators
+
+## Phase Details
+
+### Phase 9: Bug Fixes
+**Goal**: All confirmed bugs are fixed so the provider produces correct plans and correct API calls for every existing resource
+**Depends on**: Phase 8 (v1.1 complete)
+**Requirements**: BUG-01, BUG-02, BUG-03, BUG-04
+**Success Criteria** (what must be TRUE):
+  1. `terraform destroy` on an account export sends the short export name to the API (not the combined account/export name) and deletes successfully
+  2. `terraform plan` on an existing file system with `writable = true` shows 0 changes (no permanent 1-change drift)
+  3. A 400 error from the API that is not "does not exist" propagates as a real error to the operator (IsNotFound no longer masks non-404 failures)
+  4. PATCH/POST requests for resources with nested structs do not send empty `{}` objects for unset fields (omitempty works correctly with pointer types)
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01: TBD
+
+### Phase 10: Architecture Cleanup
+**Goal**: Codebase is organized by domain with shared helpers so that future development is faster and less error-prone
+**Depends on**: Phase 9 (fixes applied before refactoring)
+**Requirements**: ARC-01, ARC-02, ARC-03
+**Success Criteria** (what must be TRUE):
+  1. `models.go` is split into domain files (storage, policies, exports, admin) and `go build ./...` compiles without errors
+  2. All policy rule resources use a single `compositeID` helper for import parsing and delete ID construction (no duplicated split/join logic)
+  3. All rule resources that convert nullable strings use a shared `stringOrNull` helper from a common package (no inline duplicates)
+**Plans**: TBD
+
+Plans:
+- [ ] 10-01: TBD
+
+### Phase 11: Test Hardening & Validators
+**Goal**: Test suite catches API mismatches and regressions; operators get clear plan-time errors for invalid inputs instead of API-time failures
+**Depends on**: Phase 10 (tests validate refactored code, validators reference clean models)
+**Requirements**: TST-01, TST-02, TST-03, VAL-01, VAL-02
+**Success Criteria** (what must be TRUE):
+  1. Every resource family has an idempotence test: Create -> Read -> plan shows 0 changes (catches writable-style drift bugs before release)
+  2. Mock handlers reject unknown query params and require mandatory ones (catches client-side API mismatches in CI, not production)
+  3. Resources that were missing Update lifecycle tests now have them, covering at least one mutable field per resource
+  4. `terraform validate` rejects invalid resource names (e.g., dots in virtual host names, non-alphanumeric S3 rule names) with a clear error before any API call
+  5. `terraform validate` rejects invalid enum values (e.g., invalid effect, permission, versioning) with the set of allowed values in the error message
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 6 -> 7 -> 8
+Phases execute in numeric order: 9 -> 10 -> 11
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -173,6 +221,9 @@ Phases execute in numeric order: 6 -> 7 -> 8
 | 3. File-Based Policy Resources | v1.0 | 4/4 | Complete | 2026-03-27 |
 | 4. Object/Network/Quota & Array Admin | v1.0 | 5/5 | Complete | 2026-03-28 |
 | 5. Quality Hardening | v1.0 | 4/4 | Complete | 2026-03-28 |
-| 6. Server Resource & Export Consolidation | v1.1 | 0/2 | Planned | - |
+| 6. Server Resource & Export Consolidation | v1.1 | 2/2 | Complete | 2026-03-28 |
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 3/3 | Complete | 2026-03-28 |
-| 8. SMB Client Policies, Syslog & Acceptance Tests | 3/3 | Complete   | 2026-03-28 | - |
+| 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 3/3 | Complete | 2026-03-28 |
+| 9. Bug Fixes | v1.2 | 0/? | Not started | - |
+| 10. Architecture Cleanup | v1.2 | 0/? | Not started | - |
+| 11. Test Hardening & Validators | v1.2 | 0/? | Not started | - |
