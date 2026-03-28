@@ -87,6 +87,12 @@ Recent decisions affecting current work:
 - [Phase 08]: Virtual host attached_servers listdefault removed — API auto-attaches default server on creation
 - [Phase quick]: Example .tf files use minimal required fields only for clarity
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 6 | Generate complete provider documentation with tfplugindocs | 2026-03-28 | f8a64d3 | [6-generate-complete-provider-documentation](./quick/6-generate-complete-provider-documentation/) |
+
 ### Pending Todos
 
 None yet.
