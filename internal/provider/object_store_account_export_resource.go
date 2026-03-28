@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -260,7 +261,12 @@ func (r *objectStoreAccountExportResource) Delete(ctx context.Context, req resou
 	defer cancel()
 
 	memberName := data.AccountName.ValueString()
-	exportName := data.Name.ValueString()
+	combinedName := data.Name.ValueString()
+	// The API returns Name as "account/export" but Delete expects just the short export name.
+	exportName := combinedName
+	if idx := strings.LastIndex(combinedName, "/"); idx >= 0 {
+		exportName = combinedName[idx+1:]
+	}
 
 	err := r.client.DeleteObjectStoreAccountExport(ctx, memberName, exportName)
 	if err != nil {
