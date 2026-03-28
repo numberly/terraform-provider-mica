@@ -75,34 +75,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRV-01 | — | Pending |
-| SRV-02 | — | Pending |
-| SRV-03 | — | Pending |
-| SRV-04 | — | Pending |
-| SRV-05 | — | Pending |
-| S3P-01 | — | Pending |
-| S3P-02 | — | Pending |
-| S3P-03 | — | Pending |
-| S3P-04 | — | Pending |
-| VH-01 | — | Pending |
-| VH-02 | — | Pending |
-| VH-03 | — | Pending |
-| SMC-01 | — | Pending |
-| SMC-02 | — | Pending |
-| SMC-03 | — | Pending |
-| SMC-04 | — | Pending |
-| SYS-01 | — | Pending |
-| SYS-02 | — | Pending |
-| SYS-03 | — | Pending |
-| EXP-01 | — | Pending |
-| EXP-02 | — | Pending |
-| EXP-03 | — | Pending |
+| SRV-01 | Phase 6 | Pending |
+| SRV-02 | Phase 6 | Pending |
+| SRV-03 | Phase 6 | Pending |
+| SRV-04 | Phase 6 | Pending |
+| SRV-05 | Phase 6 | Pending |
+| S3P-01 | Phase 7 | Pending |
+| S3P-02 | Phase 7 | Pending |
+| S3P-03 | Phase 7 | Pending |
+| S3P-04 | Phase 7 | Pending |
+| VH-01 | Phase 7 | Pending |
+| VH-02 | Phase 7 | Pending |
+| VH-03 | Phase 7 | Pending |
+| SMC-01 | Phase 8 | Pending |
+| SMC-02 | Phase 8 | Pending |
+| SMC-03 | Phase 8 | Pending |
+| SMC-04 | Phase 8 | Pending |
+| SYS-01 | Phase 8 | Pending |
+| SYS-02 | Phase 8 | Pending |
+| SYS-03 | Phase 8 | Pending |
+| EXP-01 | Phase 6 | Pending |
+| EXP-02 | Phase 6 | Pending |
+| EXP-03 | Phase 8 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22
+- Mapped to phases: 22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after milestone v1.1 initialization*
+*Last updated: 2026-03-28 after roadmap v1.1 creation*
