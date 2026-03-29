@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Cross-Array Bucket Replication
 status: executing
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-03-29T09:07:23.558Z"
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-29T09:09:06.401Z"
 last_activity: 2026-03-29 — Completed 14-02 array connection data source
 progress:
   total_phases: 17
-  completed_phases: 13
+  completed_phases: 14
   total_plans: 41
-  completed_plans: 40
+  completed_plans: 41
   percent: 98
 ---
 
@@ -55,6 +55,8 @@ Recent decisions affecting current work:
 - [v2.0-roadmap]: Array connection is data source only (resource deferred to v2.1)
 - [Phase 14-02]: Array connection data-source-only — mock uses Seed method for read-only test setup
 - [Phase 14-02]: Array connection is data-source-only with Seed-based mock test setup
+- [Phase 14-01]: secret_access_key uses Optional+Computed+Sensitive with RequiresReplace for cross-array replication
+- [Phase 14-01]: Bucket versioning warning (not error) for replication readiness via ValidateConfig
 
 ### Pending Todos
 
@@ -66,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T09:07:23.553Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-03-29T09:09:02.464Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None

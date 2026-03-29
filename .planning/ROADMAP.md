@@ -247,7 +247,7 @@ Plans:
 
 **Milestone Goal:** Enable operators to set up bidirectional S3 bucket replication between two FlashBlade arrays through Terraform, with shared credentials for transparent failover.
 
-- [ ] **Phase 14: Access Key Enhancement & Array Connection** - Optional secret input for cross-array key sharing + array connection data source
+- [x] **Phase 14: Access Key Enhancement & Array Connection** - Optional secret input for cross-array key sharing + array connection data source (completed 2026-03-29)
 - [ ] **Phase 15: Replication Resources** - Remote credentials resource + bucket replica link resource with full CRUD
 - [ ] **Phase 16: Workflow & Documentation** - Dual-provider replication example + HCL examples + import docs + tfplugindocs + README
 - [ ] **Phase 17: Testing** - TDD unit tests with mock handlers + acceptance tests on live FlashBlade pair
@@ -263,7 +263,7 @@ Plans:
   2. When `secret_access_key` is omitted, existing behavior is unchanged (API generates the secret); when provided, the POST body includes it and the API accepts it
   3. `flashblade_array_connection` data source reads an existing connection by remote array name and exposes id, status, management_address, and replication_addresses
   4. Bucket resource validates that `versioning` is set to `"enabled"` when the bucket participates in replication (plan-time error, not API-time)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 14-01-PLAN.md — Access key resource enhancement (optional secret_access_key input) + bucket versioning warning
@@ -334,7 +334,7 @@ Phases execute in numeric order: 14 -> 15 -> 16 -> 17
 | 11. Test Hardening & Validators | v1.2 | 3/3 | Complete | 2026-03-29 |
 | 12. Infrastructure Hardening | v1.3 | 2/2 | Complete | 2026-03-29 |
 | 13. Documentation & Sensitive Data | v1.3 | 2/2 | Complete | 2026-03-29 |
-| 14. Access Key Enhancement & Array Connection | 1/2 | In Progress|  | - |
+| 14. Access Key Enhancement & Array Connection | 2/2 | Complete   | 2026-03-29 | - |
 | 15. Replication Resources | v2.0 | 0/2 | Not started | - |
 | 16. Workflow & Documentation | v2.0 | 0/2 | Not started | - |
 | 17. Testing | v2.0 | 0/2 | Not started | - |

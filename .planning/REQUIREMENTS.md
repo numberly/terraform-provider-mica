@@ -9,9 +9,9 @@ Requirements for milestone v2.0 — Cross-Array Bucket Replication.
 
 ### Access Key Enhancement
 
-- [ ] **AKE-01**: Access key resource accepts optional `secret_access_key` input to import an existing key pair onto a second FlashBlade
-- [ ] **AKE-02**: When `secret_access_key` is provided, POST sends it in the body; when omitted, API generates it
-- [ ] **AKE-03**: Bucket `versioning` attribute validated as required when bucket is used with replication
+- [x] **AKE-01**: Access key resource accepts optional `secret_access_key` input to import an existing key pair onto a second FlashBlade
+- [x] **AKE-02**: When `secret_access_key` is provided, POST sends it in the body; when omitted, API generates it
+- [x] **AKE-03**: Bucket `versioning` attribute validated as required when bucket is used with replication
 
 ### Remote Credentials
 
@@ -67,9 +67,9 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AKE-01 | Phase 14 | Pending |
-| AKE-02 | Phase 14 | Pending |
-| AKE-03 | Phase 14 | Pending |
+| AKE-01 | Phase 14 | Complete |
+| AKE-02 | Phase 14 | Complete |
+| AKE-03 | Phase 14 | Complete |
 | RCR-01 | Phase 15 | Pending |
 | RCR-02 | Phase 15 | Pending |
 | RCR-03 | Phase 15 | Pending |
