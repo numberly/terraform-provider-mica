@@ -94,7 +94,7 @@ func TestUnit_APIError_NotFound(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
 		RetryBaseDelay: 1,
 	})

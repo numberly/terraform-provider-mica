@@ -101,7 +101,7 @@ func TestUnit_NewClient_WithAPIToken(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(loginHandler))
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint: srv.URL,
 		APIToken: "test-api-token",
 	})
@@ -114,7 +114,7 @@ func TestUnit_NewClient_WithAPIToken(t *testing.T) {
 }
 
 func TestUnit_NewClient_MissingEndpoint(t *testing.T) {
-	_, err := client.NewClient(client.Config{
+	_, err := client.NewClient(context.Background(), client.Config{
 		APIToken: "some-token",
 	})
 	if err == nil {
@@ -141,7 +141,7 @@ func TestUnit_CustomCATLS(t *testing.T) {
 	srv.StartTLS()
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:   srv.URL,
 		APIToken:   "test-token",
 		CACertFile: f.Name(),
@@ -162,7 +162,7 @@ func TestUnit_CustomCATLS_InlinePEM(t *testing.T) {
 	srv.StartTLS()
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint: srv.URL,
 		APIToken: "test-token",
 		CACert:   string(caPEM),
@@ -179,7 +179,7 @@ func TestUnit_InsecureSkipVerify(t *testing.T) {
 	srv := httptest.NewTLSServer(http.HandlerFunc(loginHandler))
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           srv.URL,
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -208,7 +208,7 @@ func TestUnit_NegotiateVersion(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint: srv.URL,
 		APIToken: "test-token",
 	})
@@ -237,7 +237,7 @@ func TestUnit_NegotiateVersion_Missing(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint: srv.URL,
 		APIToken: "test-token",
 	})
@@ -247,5 +247,38 @@ func TestUnit_NegotiateVersion_Missing(t *testing.T) {
 
 	if err := c.NegotiateVersion(context.Background()); err == nil {
 		t.Fatal("expected version negotiation to fail when v2.22 is absent")
+	}
+}
+
+func TestUnit_NewClient_HTTPTimeout(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(loginHandler))
+	defer srv.Close()
+
+	c, err := client.NewClient(context.Background(), client.Config{
+		Endpoint: srv.URL,
+		APIToken: "test-token",
+	})
+	if err != nil {
+		t.Fatalf("new client: %v", err)
+	}
+
+	if c.HTTPClient().Timeout != 30*time.Second {
+		t.Errorf("expected HTTP client timeout of 30s, got %v", c.HTTPClient().Timeout)
+	}
+}
+
+func TestUnit_NewClient_ContextPropagation(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(loginHandler))
+	defer srv.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel immediately.
+
+	_, err := client.NewClient(ctx, client.Config{
+		Endpoint: srv.URL,
+		APIToken: "test-token",
+	})
+	if err == nil {
+		t.Fatal("expected error from cancelled context, got nil")
 	}
 }
