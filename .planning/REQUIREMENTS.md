@@ -36,7 +36,7 @@ Requirements for milestone v2.0 — Cross-Array Bucket Replication.
 
 - [x] **WFL-01**: Complete dual-provider replication workflow example (FB-A + FB-B, same tenant, shared credentials, bidirectional replica links)
 - [ ] **WFL-02**: TDD unit tests + mock handlers for all new resources
-- [ ] **WFL-03**: Acceptance test for replication lifecycle on live FlashBlade pair
+- [x] **WFL-03**: Acceptance test for replication lifecycle on live FlashBlade pair
 
 ### Documentation
 
@@ -82,7 +82,7 @@ Deferred to future release.
 | ACN-02 | Phase 14 | Complete |
 | WFL-01 | Phase 16 | Complete |
 | WFL-02 | Phase 17 | Pending |
-| WFL-03 | Phase 17 | Pending |
+| WFL-03 | Phase 17 | Complete |
 | DOC-01 | Phase 16 | Complete |
 | DOC-02 | Phase 16 | Complete |
 | DOC-03 | Phase 16 | Complete |
