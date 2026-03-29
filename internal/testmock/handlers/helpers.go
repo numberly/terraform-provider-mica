@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"reflect"
 	"strconv"
 )
 
@@ -31,18 +32,13 @@ func WriteJSONError(w http.ResponseWriter, statusCode int, message string) {
 	})
 }
 
-// countItems returns the length of the items slice using JSON round-trip.
-// This is a helper that avoids reflection — items is re-marshaled and counted.
+// countItems returns the length of the items slice using reflect.
 func countItems(items any) int {
-	b, err := json.Marshal(items)
-	if err != nil {
+	v := reflect.ValueOf(items)
+	if !v.IsValid() || v.Kind() != reflect.Slice {
 		return 0
 	}
-	var arr []json.RawMessage
-	if err := json.Unmarshal(b, &arr); err != nil {
-		return 0
-	}
-	return len(arr)
+	return v.Len()
 }
 
 // parseQuotaLimit converts a string quota_limit (as sent by POST/PATCH) to int64 (as stored internally).

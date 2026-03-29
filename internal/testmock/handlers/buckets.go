@@ -12,8 +12,8 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// bucketStore is the thread-safe in-memory state for bucket handlers.
-type bucketStore struct {
+// BucketStore is the thread-safe in-memory state for bucket handlers.
+type BucketStore struct {
 	mu       sync.Mutex
 	byName   map[string]*client.Bucket
 	byID     map[string]*client.Bucket
@@ -23,8 +23,8 @@ type bucketStore struct {
 // RegisterBucketHandlers registers CRUD handlers for /api/2.22/buckets against the provided
 // ServeMux. The accounts store is used to validate account references on POST.
 // The returned store pointer can be used by other handlers that need bucket cross-reference.
-func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *bucketStore {
-	store := &bucketStore{
+func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *BucketStore {
+	store := &BucketStore{
 		byName:   make(map[string]*client.Bucket),
 		byID:     make(map[string]*client.Bucket),
 		accounts: accounts,
@@ -34,7 +34,7 @@ func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStor
 }
 
 // handle dispatches bucket requests by HTTP method.
-func (s *bucketStore) handle(w http.ResponseWriter, r *http.Request) {
+func (s *BucketStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.handleGet(w, r)
@@ -51,7 +51,7 @@ func (s *bucketStore) handle(w http.ResponseWriter, r *http.Request) {
 
 // handleGet handles GET /api/2.22/buckets with optional ?names=, ?ids=, ?destroyed=,
 // and ?account_names= query parameters.
-func (s *bucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
+func (s *BucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "ids", "destroyed", "account_names"}) {
 		return
 	}
@@ -123,7 +123,7 @@ func (s *bucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
 
 // handlePost handles POST /api/2.22/buckets?names={name}.
 // Validates the account reference against the account store before creating the bucket.
-func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
+func (s *BucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
 	}
@@ -190,7 +190,7 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 
 // handlePatch handles PATCH /api/2.22/buckets?ids={id}.
 // Uses raw map for true PATCH semantics — only provided fields are updated.
-func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
+func (s *BucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
 		return
 	}
@@ -273,7 +273,7 @@ func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 
 // handleDelete handles DELETE /api/2.22/buckets?ids={id}.
 // The bucket must already be soft-deleted (destroyed=true) before eradication.
-func (s *bucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
+func (s *BucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
 		return
 	}
@@ -302,4 +302,14 @@ func (s *bucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	delete(s.byID, b.ID)
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// SetObjectCount sets the ObjectCount field on a bucket identified by name.
+// This is a test helper for simulating non-empty buckets.
+func (s *BucketStore) SetObjectCount(name string, count int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if b, ok := s.byName[name]; ok {
+		b.ObjectCount = count
+	}
 }

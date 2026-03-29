@@ -131,12 +131,12 @@ func bucketPlanWithNameAndAccount(t *testing.T, name, account string) tfsdk.Plan
 }
 
 // setupBucketMockServer creates a mock server with account and bucket handlers,
-// pre-seeds an account, and returns the server and client.
-func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBladeClient) {
+// pre-seeds an account, and returns the server, client, and bucket store.
+func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBladeClient, *handlers.BucketStore) {
 	t.Helper()
 	ms := testmock.NewMockServer()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
-	handlers.RegisterBucketHandlers(ms.Mux, accountStore)
+	bucketStore := handlers.RegisterBucketHandlers(ms.Mux, accountStore)
 
 	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
@@ -155,14 +155,14 @@ func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBla
 		t.Fatalf("PostObjectStoreAccount: %v", err)
 	}
 
-	return ms, c
+	return ms, c, bucketStore
 }
 
 // ---- tests ------------------------------------------------------------------
 
 // TestUnit_Bucket_Create verifies Create populates ID, account, versioning, and created.
 func TestUnit_Bucket_Create(t *testing.T) {
-	ms, _ := setupBucketMockServer(t)
+	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	r := newTestBucketResource(t, ms)
@@ -204,7 +204,7 @@ func TestUnit_Bucket_Create(t *testing.T) {
 
 // TestUnit_Bucket_Update verifies PATCH updates quota_limit, versioning, and hard_limit_enabled.
 func TestUnit_Bucket_Update(t *testing.T) {
-	ms, _ := setupBucketMockServer(t)
+	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	r := newTestBucketResource(t, ms)
@@ -262,7 +262,7 @@ func TestUnit_Bucket_Update(t *testing.T) {
 // TestUnit_Bucket_Destroy verifies that when destroy_eradicate_on_delete=false,
 // only soft-delete is performed (no DELETE/eradication).
 func TestUnit_Bucket_Destroy(t *testing.T) {
-	ms, c := setupBucketMockServer(t)
+	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	r := newTestBucketResource(t, ms)
@@ -306,7 +306,7 @@ func TestUnit_Bucket_Destroy(t *testing.T) {
 // TestUnit_Bucket_Destroy_WithEradicate verifies that when destroy_eradicate_on_delete=true,
 // the bucket is soft-deleted AND eradicated.
 func TestUnit_Bucket_Destroy_WithEradicate(t *testing.T) {
-	ms, c := setupBucketMockServer(t)
+	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	r := newTestBucketResource(t, ms)
@@ -352,7 +352,7 @@ func TestUnit_Bucket_Destroy_WithEradicate(t *testing.T) {
 // TestUnit_Bucket_Import verifies ImportState populates all attributes including account ref,
 // and that a subsequent Read produces 0 diff.
 func TestUnit_Bucket_Import(t *testing.T) {
-	ms, c := setupBucketMockServer(t)
+	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	// Pre-create a bucket directly via the client.
@@ -406,7 +406,7 @@ func TestUnit_Bucket_Import(t *testing.T) {
 // TestUnit_Bucket_DriftLog verifies that Read logs diffs via tflog when quota_limit
 // or versioning diverge from state.
 func TestUnit_Bucket_DriftLog(t *testing.T) {
-	ms, c := setupBucketMockServer(t)
+	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	// Create a bucket via client.
@@ -462,26 +462,24 @@ func TestUnit_Bucket_DriftLog(t *testing.T) {
 // TestUnit_Bucket_NonEmptyDelete verifies that attempting to delete a bucket with
 // objects returns a clear diagnostic error.
 func TestUnit_Bucket_NonEmptyDelete(t *testing.T) {
-	ms, c := setupBucketMockServer(t)
+	ms, c, bs := setupBucketMockServer(t)
 	defer ms.Close()
 
-	// Create a bucket via client and manually set object_count > 0 by creating via PATCH
-	// is not possible in mock. Instead, let's create directly and tweak via mock.
-	// For this test, we create a bucket and use client to verify the guard works.
-	// We need to test the bucket resource Delete guard for object_count > 0.
-	// Since the mock doesn't automatically set object_count, we'll test by
-	// creating a bucket and simulating a state with ObjectCount set > 0.
+	// Create a bucket and set its ObjectCount > 0 in the mock store so the
+	// fresh GET inside Delete returns a non-empty bucket.
 	bkt, err := c.PostBucket(context.Background(), "nonempty-bucket", client.BucketPost{
 		Account: client.NamedReference{Name: "test-account"},
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
 	}
+	bs.SetObjectCount("nonempty-bucket", 5)
 
 	r := newTestBucketResource(t, ms)
 	s := bucketResourceSchema(t).Schema
 
-	// Build state with object_count > 0 to trigger the guard.
+	// Build state — object_count in state no longer matters since Delete
+	// performs a fresh GET, but we still need valid state for deserialization.
 	stateCfg := nullBucketConfig()
 	stateCfg["id"] = tftypes.NewValue(tftypes.String, bkt.ID)
 	stateCfg["name"] = tftypes.NewValue(tftypes.String, "nonempty-bucket")
@@ -564,7 +562,7 @@ func TestUnit_Bucket_PlanModifiers(t *testing.T) {
 
 // TestUnit_Bucket_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
 func TestUnit_Bucket_Lifecycle(t *testing.T) {
-	ms, _ := setupBucketMockServer(t)
+	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	r := newTestBucketResource(t, ms)
@@ -650,7 +648,7 @@ func TestUnit_Bucket_Lifecycle(t *testing.T) {
 
 // TestUnit_Bucket_ImportIdempotency verifies ImportState->Read produces state matching original Create.
 func TestUnit_Bucket_ImportIdempotency(t *testing.T) {
-	ms, _ := setupBucketMockServer(t)
+	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
 	r := newTestBucketResource(t, ms)

@@ -412,21 +412,30 @@ func (r *bucketResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	// Guard: bucket must be empty before deletion.
-	if !data.ObjectCount.IsNull() && !data.ObjectCount.IsUnknown() && data.ObjectCount.ValueInt64() > 0 {
+	id := data.ID.ValueString()
+	name := data.Name.ValueString()
+
+	// Fresh GET to check current object count (state data may be stale).
+	freshBucket, err := r.client.GetBucket(ctx, name)
+	if err != nil {
+		if client.IsNotFound(err) {
+			// Already gone -- nothing to delete.
+			return
+		}
+		resp.Diagnostics.AddError("Error reading bucket before deletion", err.Error())
+		return
+	}
+	if freshBucket.ObjectCount > 0 {
 		resp.Diagnostics.AddError(
 			"Cannot delete bucket: bucket contains objects",
-			fmt.Sprintf("Bucket %q contains %d object(s). Empty the bucket before deleting it.", data.Name.ValueString(), data.ObjectCount.ValueInt64()),
+			fmt.Sprintf("Bucket %q contains %d object(s). Empty the bucket before deleting it.", name, freshBucket.ObjectCount),
 		)
 		return
 	}
 
-	id := data.ID.ValueString()
-	name := data.Name.ValueString()
-
 	// Phase 1: Soft-delete.
 	destroyed := true
-	_, err := r.client.PatchBucket(ctx, id, client.BucketPatch{Destroyed: &destroyed})
+	_, err = r.client.PatchBucket(ctx, id, client.BucketPatch{Destroyed: &destroyed})
 	if err != nil {
 		if client.IsNotFound(err) {
 			// Already gone — no error.
