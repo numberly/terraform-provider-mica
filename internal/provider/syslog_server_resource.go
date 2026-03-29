@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -287,14 +286,7 @@ func (r *syslogServerResource) ImportState(ctx context.Context, req resource.Imp
 
 	var data syslogServerModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
 	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
@@ -308,11 +300,7 @@ func (r *syslogServerResource) ImportState(ctx context.Context, req resource.Imp
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSyslogServer and maps the result into the provided model.
-func (r *syslogServerResource) readIntoState(ctx context.Context, name string, data *syslogServerModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-	Append(...diag.Diagnostic)
-}) {
+func (r *syslogServerResource) readIntoState(ctx context.Context, name string, data *syslogServerModel, diags DiagnosticReporter) {
 	srv, err := r.client.GetSyslogServer(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading syslog server after write", err.Error())

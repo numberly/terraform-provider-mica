@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -310,14 +309,7 @@ func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req r
 
 	var data objectStoreAccessPolicyModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
@@ -332,10 +324,7 @@ func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req r
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreAccessPolicy and maps the result into the provided model.
-func (r *objectStoreAccessPolicyResource) readIntoState(ctx context.Context, name string, data *objectStoreAccessPolicyModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *objectStoreAccessPolicyResource) readIntoState(ctx context.Context, name string, data *objectStoreAccessPolicyModel, diags DiagnosticReporter) {
 	policy, err := r.client.GetObjectStoreAccessPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store access policy after write", err.Error())

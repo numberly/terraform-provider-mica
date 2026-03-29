@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -303,14 +302,7 @@ func (r *snapshotPolicyResource) ImportState(ctx context.Context, req resource.I
 
 	var data snapshotPolicyModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
@@ -325,10 +317,7 @@ func (r *snapshotPolicyResource) ImportState(ctx context.Context, req resource.I
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSnapshotPolicy and maps the result into the provided model.
-func (r *snapshotPolicyResource) readIntoState(ctx context.Context, name string, data *snapshotPolicyModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *snapshotPolicyResource) readIntoState(ctx context.Context, name string, data *snapshotPolicyModel, diags DiagnosticReporter) {
 	policy, err := r.client.GetSnapshotPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading snapshot policy after write", err.Error())

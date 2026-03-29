@@ -377,14 +377,7 @@ func (r *objectStoreAccessPolicyRuleResource) ImportState(ctx context.Context, r
 
 	var data objectStoreAccessPolicyRuleModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	data.PolicyName = types.StringValue(policyName)
 	data.Name = types.StringValue(ruleName)
 

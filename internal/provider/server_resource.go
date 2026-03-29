@@ -315,14 +315,7 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 
 	var data serverResourceModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	// Initialize cascade_delete as null (write-only, never comes from API).
 	data.CascadeDelete = types.ListNull(types.StringType)
 

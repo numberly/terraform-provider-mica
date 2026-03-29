@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -296,14 +295,7 @@ func (r *objectStoreAccountExportResource) ImportState(ctx context.Context, req 
 
 	var data objectStoreAccountExportModel
 	// Initialize timeouts with a proper null value.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 
 	mapObjectStoreAccountExportToModel(export, &data)
 
@@ -313,10 +305,7 @@ func (r *objectStoreAccountExportResource) ImportState(ctx context.Context, req 
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreAccountExport and maps the result into the provided model.
-func (r *objectStoreAccountExportResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountExportModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *objectStoreAccountExportResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountExportModel, diags DiagnosticReporter) {
 	export, err := r.client.GetObjectStoreAccountExport(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store account export after write", err.Error())

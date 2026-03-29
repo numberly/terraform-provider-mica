@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -190,22 +189,7 @@ func (d *bucketDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config.BucketType = types.StringValue(bkt.BucketType)
 	config.RetentionLock = types.StringValue(bkt.RetentionLock)
 
-	spaceAttrTypes := map[string]attr.Type{
-		"data_reduction":      types.Float64Type,
-		"snapshots":           types.Int64Type,
-		"total_physical":      types.Int64Type,
-		"unique":              types.Int64Type,
-		"virtual":             types.Int64Type,
-		"snapshots_effective": types.Int64Type,
-	}
-	spaceObj, spaceDiags := types.ObjectValue(spaceAttrTypes, map[string]attr.Value{
-		"data_reduction":      types.Float64Value(bkt.Space.DataReduction),
-		"snapshots":           types.Int64Value(bkt.Space.Snapshots),
-		"total_physical":      types.Int64Value(bkt.Space.TotalPhysical),
-		"unique":              types.Int64Value(bkt.Space.Unique),
-		"virtual":             types.Int64Value(bkt.Space.Virtual),
-		"snapshots_effective": types.Int64Value(bkt.Space.SnapshotsEffective),
-	})
+	spaceObj, spaceDiags := mapSpaceToObject(bkt.Space)
 	resp.Diagnostics.Append(spaceDiags...)
 	if resp.Diagnostics.HasError() {
 		return

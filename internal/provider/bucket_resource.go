@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -342,7 +342,10 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 		}
 	}
 
-	mapBucketToModel(bkt, &data)
+	resp.Diagnostics.Append(mapBucketToModel(bkt, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -474,50 +477,36 @@ func (r *bucketResource) ImportState(ctx context.Context, req resource.ImportSta
 	// Default for the provider-only field.
 	data.DestroyEradicateOnDelete = types.BoolValue(false)
 	// Initialize timeouts with a proper null value.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 
-	mapBucketToModel(bkt, &data)
+	resp.Diagnostics.Append(mapBucketToModel(bkt, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // ---------- helpers ---------------------------------------------------------
 
-// bucketSpaceAttrTypes returns the attribute types for the bucket space object.
-func bucketSpaceAttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"data_reduction":      types.Float64Type,
-		"snapshots":           types.Int64Type,
-		"total_physical":      types.Int64Type,
-		"unique":              types.Int64Type,
-		"virtual":             types.Int64Type,
-		"snapshots_effective": types.Int64Type,
-	}
-}
-
 // readIntoState calls GetBucket and maps the result into the provided model.
-func (r *bucketResource) readIntoState(ctx context.Context, name string, data *bucketModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *bucketResource) readIntoState(ctx context.Context, name string, data *bucketModel, diags DiagnosticReporter) {
 	bkt, err := r.client.GetBucket(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading bucket after write", err.Error())
 		return
 	}
-	mapBucketToModel(bkt, data)
+	for _, d := range mapBucketToModel(bkt, data) {
+		diags.AddError(d.Summary(), d.Detail())
+	}
 }
 
 // mapBucketToModel maps a client.Bucket to a bucketModel.
 // It preserves user-managed fields (DestroyEradicateOnDelete, Timeouts).
-func mapBucketToModel(bkt *client.Bucket, data *bucketModel) {
+// Returns diagnostics instead of panicking on object construction errors.
+func mapBucketToModel(bkt *client.Bucket, data *bucketModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	data.ID = types.StringValue(bkt.ID)
 	data.Name = types.StringValue(bkt.Name)
 	data.Account = types.StringValue(bkt.Account.Name)
@@ -531,17 +520,12 @@ func mapBucketToModel(bkt *client.Bucket, data *bucketModel) {
 	data.BucketType = types.StringValue(bkt.BucketType)
 	data.RetentionLock = types.StringValue(bkt.RetentionLock)
 
-	spaceObj, diags := types.ObjectValue(bucketSpaceAttrTypes(), map[string]attr.Value{
-		"data_reduction":      types.Float64Value(bkt.Space.DataReduction),
-		"snapshots":           types.Int64Value(bkt.Space.Snapshots),
-		"total_physical":      types.Int64Value(bkt.Space.TotalPhysical),
-		"unique":              types.Int64Value(bkt.Space.Unique),
-		"virtual":             types.Int64Value(bkt.Space.Virtual),
-		"snapshots_effective": types.Int64Value(bkt.Space.SnapshotsEffective),
-	})
-	// ObjectValue only fails if keys/types mismatch — treat as a coding error.
+	spaceObj, spaceDiags := mapSpaceToObject(bkt.Space)
+	diags.Append(spaceDiags...)
 	if diags.HasError() {
-		panic("mapBucketToModel: failed to build space object: " + diags[0].Detail())
+		return diags
 	}
 	data.Space = spaceObj
+
+	return diags
 }

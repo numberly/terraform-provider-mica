@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -320,14 +319,7 @@ func (r *networkAccessPolicyResource) ImportState(ctx context.Context, req resou
 
 	var data networkAccessPolicyModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
 	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
@@ -341,10 +333,7 @@ func (r *networkAccessPolicyResource) ImportState(ctx context.Context, req resou
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetNetworkAccessPolicy and maps the result into the provided model.
-func (r *networkAccessPolicyResource) readIntoState(ctx context.Context, name string, data *networkAccessPolicyModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *networkAccessPolicyResource) readIntoState(ctx context.Context, name string, data *networkAccessPolicyModel, diags DiagnosticReporter) {
 	policy, err := r.client.GetNetworkAccessPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading network access policy after write", err.Error())

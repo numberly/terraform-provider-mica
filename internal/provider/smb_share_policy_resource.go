@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -297,14 +296,7 @@ func (r *smbSharePolicyResource) ImportState(ctx context.Context, req resource.I
 
 	var data smbSharePolicyModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
@@ -319,10 +311,7 @@ func (r *smbSharePolicyResource) ImportState(ctx context.Context, req resource.I
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSmbSharePolicy and maps the result into the provided model.
-func (r *smbSharePolicyResource) readIntoState(ctx context.Context, name string, data *smbSharePolicyModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *smbSharePolicyResource) readIntoState(ctx context.Context, name string, data *smbSharePolicyModel, diags DiagnosticReporter) {
 	policy, err := r.client.GetSmbSharePolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading SMB share policy after write", err.Error())

@@ -589,14 +589,7 @@ func (r *filesystemResource) ImportState(ctx context.Context, req resource.Impor
 	// Set defaults for optional fields not returned by the API.
 	data.DestroyEradicateOnDelete = types.BoolValue(true)
 	// Initialize timeouts with a proper null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 
 	resp.Diagnostics.Append(mapFSToModel(fs, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -607,17 +600,6 @@ func (r *filesystemResource) ImportState(ctx context.Context, req resource.Impor
 }
 
 // ---------- attr type helpers -----------------------------------------------
-
-func fsSpaceAttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"data_reduction":      types.Float64Type,
-		"snapshots":           types.Int64Type,
-		"total_physical":      types.Int64Type,
-		"unique":              types.Int64Type,
-		"virtual":             types.Int64Type,
-		"snapshots_effective": types.Int64Type,
-	}
-}
 
 func fsNFSAttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{

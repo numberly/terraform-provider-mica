@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -260,7 +260,10 @@ func (r *objectStoreAccountResource) Read(ctx context.Context, req resource.Read
 		}
 	}
 
-	mapOSAToModel(acct, &data)
+	resp.Diagnostics.Append(mapOSAToModel(acct, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -392,14 +395,7 @@ func (r *objectStoreAccountResource) ImportState(ctx context.Context, req resour
 
 	var data objectStoreAccountModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	// Set Name so Read can look up the account.
 	data.Name = types.StringValue(name)
 
@@ -413,34 +409,24 @@ func (r *objectStoreAccountResource) ImportState(ctx context.Context, req resour
 
 // ---------- helpers ---------------------------------------------------------
 
-// objectStoreAccountSpaceAttrTypes returns the attribute types for the space object.
-func objectStoreAccountSpaceAttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"data_reduction":      types.Float64Type,
-		"snapshots":           types.Int64Type,
-		"total_physical":      types.Int64Type,
-		"unique":              types.Int64Type,
-		"virtual":             types.Int64Type,
-		"snapshots_effective": types.Int64Type,
-	}
-}
-
 // readIntoState calls GetObjectStoreAccount and maps the result into the provided model.
-func (r *objectStoreAccountResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *objectStoreAccountResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountModel, diags DiagnosticReporter) {
 	acct, err := r.client.GetObjectStoreAccount(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store account after write", err.Error())
 		return
 	}
-	mapOSAToModel(acct, data)
+	for _, d := range mapOSAToModel(acct, data) {
+		diags.AddError(d.Summary(), d.Detail())
+	}
 }
 
 // mapOSAToModel maps a client.ObjectStoreAccount to an objectStoreAccountModel.
 // It preserves user-managed fields (Timeouts).
-func mapOSAToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountModel) {
+// Returns diagnostics instead of panicking on object construction errors.
+func mapOSAToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	data.ID = types.StringValue(acct.ID)
 	data.Name = types.StringValue(acct.Name)
 	data.Created = types.Int64Value(acct.Created)
@@ -448,17 +434,12 @@ func mapOSAToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountMode
 	data.HardLimitEnabled = types.BoolValue(acct.HardLimitEnabled)
 	data.ObjectCount = types.Int64Value(acct.ObjectCount)
 
-	spaceObj, diags := types.ObjectValue(objectStoreAccountSpaceAttrTypes(), map[string]attr.Value{
-		"data_reduction":      types.Float64Value(acct.Space.DataReduction),
-		"snapshots":           types.Int64Value(acct.Space.Snapshots),
-		"total_physical":      types.Int64Value(acct.Space.TotalPhysical),
-		"unique":              types.Int64Value(acct.Space.Unique),
-		"virtual":             types.Int64Value(acct.Space.Virtual),
-		"snapshots_effective": types.Int64Value(acct.Space.SnapshotsEffective),
-	})
-	// ObjectValue only fails if keys/types mismatch — treat as a coding error.
+	spaceObj, spaceDiags := mapSpaceToObject(acct.Space)
+	diags.Append(spaceDiags...)
 	if diags.HasError() {
-		panic("mapOSAToModel: failed to build space object: " + diags[0].Detail())
+		return diags
 	}
 	data.Space = spaceObj
+
+	return diags
 }

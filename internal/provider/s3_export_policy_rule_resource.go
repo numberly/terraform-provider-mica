@@ -370,14 +370,7 @@ func (r *s3ExportPolicyRuleResource) ImportState(ctx context.Context, req resour
 
 	var data s3ExportPolicyRuleModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	data.PolicyName = types.StringValue(policyName)
 	data.Name = types.StringValue(rule.Name)
 

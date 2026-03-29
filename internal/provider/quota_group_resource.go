@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -306,14 +305,7 @@ func (r *quotaGroupResource) ImportState(ctx context.Context, req resource.Impor
 
 	var data quotaGroupModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	data.FileSystemName = types.StringValue(fsName)
 	data.GID = types.StringValue(gid)
 
@@ -328,10 +320,7 @@ func (r *quotaGroupResource) ImportState(ctx context.Context, req resource.Impor
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetQuotaGroup and maps the result into the provided model.
-func (r *quotaGroupResource) readIntoState(ctx context.Context, fsName, gid string, data *quotaGroupModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *quotaGroupResource) readIntoState(ctx context.Context, fsName, gid string, data *quotaGroupModel, diags DiagnosticReporter) {
 	qg, err := r.client.GetQuotaGroup(ctx, fsName, gid)
 	if err != nil {
 		diags.AddError("Error reading group quota after write", err.Error())

@@ -289,14 +289,7 @@ func (r *objectStoreVirtualHostResource) ImportState(ctx context.Context, req re
 
 	var data objectStoreVirtualHostModel
 	// Initialize timeouts with a null value so the framework can serialize it.
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
 	r.readIntoState(ctx, name, &data, &resp.Diagnostics)

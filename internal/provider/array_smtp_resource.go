@@ -418,14 +418,7 @@ func (r *arraySmtpResource) Delete(ctx context.Context, req resource.DeleteReque
 // ImportState imports the singleton SMTP config using "default" as the import ID.
 func (r *arraySmtpResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	var data arraySmtpModel
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"update": types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValue()
 
 	resp.Diagnostics.Append(r.readIntoState(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
