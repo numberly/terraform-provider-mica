@@ -1,8 +1,10 @@
 package provider
 
 import (
+	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -59,6 +61,88 @@ func TestParseCompositeID(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInt64UseStateForUnknown(t *testing.T) {
+	ctx := context.Background()
+	mod := int64UseStateForUnknown()
+
+	t.Run("preserves state when plan is unknown", func(t *testing.T) {
+		req := planmodifier.Int64Request{
+			PlanValue:  types.Int64Unknown(),
+			StateValue: types.Int64Value(42),
+		}
+		resp := &planmodifier.Int64Response{PlanValue: req.PlanValue}
+		mod.PlanModifyInt64(ctx, req, resp)
+		if !resp.PlanValue.Equal(types.Int64Value(42)) {
+			t.Errorf("expected 42, got %v", resp.PlanValue)
+		}
+	})
+
+	t.Run("does nothing when plan is not unknown", func(t *testing.T) {
+		req := planmodifier.Int64Request{
+			PlanValue:  types.Int64Value(10),
+			StateValue: types.Int64Value(42),
+		}
+		resp := &planmodifier.Int64Response{PlanValue: req.PlanValue}
+		mod.PlanModifyInt64(ctx, req, resp)
+		if !resp.PlanValue.Equal(types.Int64Value(10)) {
+			t.Errorf("expected 10, got %v", resp.PlanValue)
+		}
+	})
+
+	t.Run("does nothing when state is null", func(t *testing.T) {
+		req := planmodifier.Int64Request{
+			PlanValue:  types.Int64Unknown(),
+			StateValue: types.Int64Null(),
+		}
+		resp := &planmodifier.Int64Response{PlanValue: req.PlanValue}
+		mod.PlanModifyInt64(ctx, req, resp)
+		if !resp.PlanValue.IsUnknown() {
+			t.Errorf("expected unknown, got %v", resp.PlanValue)
+		}
+	})
+}
+
+func TestFloat64UseStateForUnknown(t *testing.T) {
+	ctx := context.Background()
+	mod := float64UseStateForUnknown()
+
+	t.Run("preserves state when plan is unknown", func(t *testing.T) {
+		req := planmodifier.Float64Request{
+			PlanValue:  types.Float64Unknown(),
+			StateValue: types.Float64Value(3.14),
+		}
+		resp := &planmodifier.Float64Response{PlanValue: req.PlanValue}
+		mod.PlanModifyFloat64(ctx, req, resp)
+		if !resp.PlanValue.Equal(types.Float64Value(3.14)) {
+			t.Errorf("expected 3.14, got %v", resp.PlanValue)
+		}
+	})
+
+	t.Run("does nothing when plan is not unknown", func(t *testing.T) {
+		req := planmodifier.Float64Request{
+			PlanValue:  types.Float64Value(1.0),
+			StateValue: types.Float64Value(3.14),
+		}
+		resp := &planmodifier.Float64Response{PlanValue: req.PlanValue}
+		mod.PlanModifyFloat64(ctx, req, resp)
+		if !resp.PlanValue.Equal(types.Float64Value(1.0)) {
+			t.Errorf("expected 1.0, got %v", resp.PlanValue)
+		}
+	})
+
+	t.Run("does nothing when state is null", func(t *testing.T) {
+		req := planmodifier.Float64Request{
+			PlanValue:  types.Float64Unknown(),
+			StateValue: types.Float64Null(),
+		}
+		resp := &planmodifier.Float64Response{PlanValue: req.PlanValue}
+		mod.PlanModifyFloat64(ctx, req, resp)
+		if !resp.PlanValue.IsUnknown() {
+			t.Errorf("expected unknown, got %v", resp.PlanValue)
+		}
+	})
 }
 
 func TestStringOrNull(t *testing.T) {
