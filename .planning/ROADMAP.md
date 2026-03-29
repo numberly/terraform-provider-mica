@@ -307,11 +307,11 @@ Plans:
   1. TDD unit tests exist for all new resources (remote credentials, bucket replica link) and the enhanced access key resource -- including mock handlers that validate API request bodies
   2. Array connection data source has unit tests covering read-by-name, not-found error, and attribute mapping
   3. Acceptance tests execute the full replication lifecycle on a live FlashBlade pair: create credentials, create replica link, verify status fields, pause/resume, destroy cleanly
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 17-01: TDD unit tests + mock handlers for remote credentials, bucket replica link, array connection DS, and access key enhancement
-- [ ] 17-02: Acceptance tests on live FlashBlade pair for replication lifecycle
+- [ ] 17-01-PLAN.md — Unit tests for remote credentials and bucket replica link resources (Create, Read, Update, Delete, Import, Idempotence)
+- [ ] 17-02-PLAN.md — Acceptance test HCL for replication lifecycle on live FlashBlade pair (checkpoint-gated)
 
 ## Progress
 
