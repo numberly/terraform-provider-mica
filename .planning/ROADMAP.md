@@ -330,7 +330,7 @@ Plans:
   3. `fetchToken()` and `NewClient()` accept a `context.Context` parameter -- no `context.Background()` calls remain in auth.go or client.go initialization paths
   4. HTTP client has a global safety-net timeout (e.g., 30s) so a hung FlashBlade API does not block `terraform apply` indefinitely
   5. `LoginWithAPIToken` constructs the HTTP request with `http.NewRequestWithContext` directly (no nil-check workaround)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 18-01-PLAN.md — OAuth2 error sanitization, TLS warning, context propagation, HTTP timeout, API token request cleanup
