@@ -118,7 +118,15 @@ Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_array_smtp` | ✅ | Array SMTP relay and alert watchers (singleton) |
 | `flashblade_syslog_server` | ✅ | Syslog server configuration |
 
-**Total: 28 resources, 21 data sources**
+### Replication
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_object_store_remote_credentials` | ✅ | S3 credentials for cross-array replication |
+| `flashblade_bucket_replica_link` | ✅ | Bucket-to-bucket replica link (pause/resume) |
+| — | `flashblade_array_connection` | Array connection status (read-only) |
+
+**Total: 30 resources, 24 data sources**
 
 ## Workflow Examples
 
@@ -133,6 +141,7 @@ Production-ready configurations showing how resources compose together:
 | [Secured S3 Bucket](examples/workflows/secured-s3-bucket/) | Bucket with network + access policies | bucket, network_access_policy, object_store_access_policy |
 | [S3 Tenant Full-Stack](examples/workflows/s3-tenant-full-stack/) | Complete S3 onboarding: server → account → export → policies → key → bucket | server (DS), account, account_export, s3_export_policy, access_policy, access_key, bucket |
 | [Vault S3 Onboarding](examples/workflows/vault-s3-onboarding/) | Same as above + Vault for zero-secret credential management | server (DS), account, account_export, s3_export_policy, access_policy, access_key, bucket, **vault** |
+| [S3 Bucket Replication](examples/workflows/s3-bucket-replication/) | Bidirectional cross-array S3 replication with shared credentials | remote_credentials, bucket_replica_link, array_connection (DS), access_key, bucket |
 
 ## Resource Coverage Roadmap
 
@@ -197,13 +206,22 @@ Production-ready configurations showing how resources compose together:
 | Syslog CA certificate settings | `/syslog-servers/settings` endpoint | P3 |
 | Terraform Registry | Public publication on registry.terraform.io | P2 |
 
+### v2.0 — Cross-Array Bucket Replication
+
+| Resource | Create | Read | Update | Delete | Import | Data Source | Notes |
+|----------|:------:|:----:|:------:|:------:|:------:|:-----------:|-------|
+| **Replication** |
+| `flashblade_object_store_remote_credentials` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | S3 credentials for cross-array auth |
+| `flashblade_bucket_replica_link` | ✅ | ✅ | ✅ pause | ✅ | ✅ `local/remote` | ✅ | Bidirectional replication links |
+| `flashblade_array_connection` | — | ✅ | — | — | — | ✅ | Read-only data source |
+| **Enhanced** |
+| `flashblade_object_store_access_key` | ✅ | ✅ | — | ✅ | — | ✅ | Added `secret_access_key` input for cross-array key sharing |
+
 ### v2+ — Future
 
 | Resource | Description | Complexity |
 |----------|-------------|------------|
-| Bucket replica links | DR automation between arrays | High |
 | File system replica links | Cross-array replication | High |
-| Array connections | Multi-array connectivity management | High |
 | API client management | Service account provisioning | Medium |
 | Active Directory | Domain join via Terraform | High |
 | Pulumi bridge | Pulumi SDK from Terraform provider | Medium |
