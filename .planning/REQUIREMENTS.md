@@ -17,9 +17,9 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 
 ### Error Handling
 
-- [ ] **ERR-01**: IsNotFound, IsConflict, IsUnprocessable use errors.As() instead of direct type assertion (errors.go:67,88,97)
-- [ ] **ERR-02**: Resource-level error checks use errors.As() pattern (quota_group, quota_user, object_store_account)
-- [ ] **ERR-03**: ParseAPIError handles io.ReadAll failure gracefully instead of silently ignoring (errors.go:46)
+- [x] **ERR-01**: IsNotFound, IsConflict, IsUnprocessable use errors.As() instead of direct type assertion (errors.go:67,88,97)
+- [x] **ERR-02**: Resource-level error checks use errors.As() pattern (quota_group, quota_user, object_store_account)
+- [x] **ERR-03**: ParseAPIError handles io.ReadAll failure gracefully instead of silently ignoring (errors.go:46)
 - [x] **ERR-04**: LoginWithAPIToken uses http.NewRequestWithContext directly instead of nil-check workaround (auth.go:26-32)
 
 ### Code Quality — Validators
@@ -62,8 +62,8 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 
 ### Code Consistency
 
-- [ ] **CON-01**: Bucket delete guard does fresh GET before object count check instead of using stale state (bucket_resource.go:416-423)
-- [ ] **CON-02**: countItems in test mock helpers uses reflect or param instead of JSON round-trip (testmock/handlers/helpers.go:36-46)
+- [x] **CON-01**: Bucket delete guard does fresh GET before object count check instead of using stale state (bucket_resource.go:416-423)
+- [x] **CON-02**: countItems in test mock helpers uses reflect or param instead of JSON round-trip (testmock/handlers/helpers.go:36-46)
 
 ## Future Requirements
 
@@ -94,9 +94,9 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 | SEC-03 | Phase 18 | Complete |
 | SEC-04 | Phase 18 | Complete |
 | SEC-05 | Phase 18 | Complete |
-| ERR-01 | Phase 19 | Pending |
-| ERR-02 | Phase 19 | Pending |
-| ERR-03 | Phase 19 | Pending |
+| ERR-01 | Phase 19 | Complete |
+| ERR-02 | Phase 19 | Complete |
+| ERR-03 | Phase 19 | Complete |
 | ERR-04 | Phase 18 | Complete |
 | VAL-01 | Phase 20 | Pending |
 | DUP-01 | Phase 20 | Pending |
@@ -121,8 +121,8 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 | TST-06 | Phase 22 | Pending |
 | TST-07 | Phase 22 | Pending |
 | TST-08 | Phase 22 | Pending |
-| CON-01 | Phase 19 | Pending |
-| CON-02 | Phase 19 | Pending |
+| CON-01 | Phase 19 | Complete |
+| CON-02 | Phase 19 | Complete |
 
 **Coverage:**
 - v2.0.1 requirements: 34 total

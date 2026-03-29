@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 18-01-PLAN.md
-last_updated: "2026-03-29T16:05:02.683Z"
+stopped_at: Completed 19-01-PLAN.md
+last_updated: "2026-03-29T16:45:03.032Z"
 last_activity: 2026-03-29 — Completed Phase 18 Plan 01 (Security & Auth Hardening)
 progress:
   total_phases: 22
-  completed_phases: 18
-  total_plans: 48
-  completed_plans: 48
+  completed_phases: 19
+  total_plans: 49
+  completed_plans: 49
   percent: 14
 ---
 
@@ -55,6 +55,8 @@ Recent decisions affecting current work:
 - [v2.0.1-roadmap]: ERR-04 grouped with Phase 18 (security) since it touches auth.go
 - [18-01]: FetchTokenWithContext exported for context-aware callers; Token() uses context.Background() due to oauth2.TokenSource interface
 - [18-01]: 30s HTTP safety-net timeout chosen (long enough for slow ops, prevents indefinite hangs)
+- [Phase 19]: Exported BucketStore type to enable test helpers for mock object count manipulation
+- [Phase 19]: Used errors.As universally -- no direct *APIError type assertions remain in codebase
 
 ### Pending Todos
 
@@ -66,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T14:14:51.967Z
-Stopped at: Completed 18-01-PLAN.md
+Last session: 2026-03-29T16:45:03.024Z
+Stopped at: Completed 19-01-PLAN.md
 Resume file: None
