@@ -98,3 +98,15 @@ type SyslogServerPatch struct {
 	Services *[]string `json:"services,omitempty"`
 	Sources  *[]string `json:"sources,omitempty"`
 }
+
+// ArrayConnection represents a FlashBlade array connection from GET /array-connections.
+type ArrayConnection struct {
+	ID                   string         `json:"id"`
+	Status               string         `json:"status,omitempty"`
+	Remote               NamedReference `json:"remote"`
+	ManagementAddress    string         `json:"management_address,omitempty"`
+	ReplicationAddresses []string       `json:"replication_addresses,omitempty"`
+	Encrypted            bool           `json:"encrypted"`
+	Type                 string         `json:"type,omitempty"`
+	Version              string         `json:"version,omitempty"`
+}
