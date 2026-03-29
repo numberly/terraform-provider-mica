@@ -345,7 +345,7 @@ Plans:
   3. `ParseAPIError` returns a meaningful error when `io.ReadAll` fails instead of silently returning an empty error
   4. Bucket delete performs a fresh GET before the object-count safety check instead of relying on potentially stale state data
   5. `countItems` in test mock helpers uses `reflect` or a typed parameter instead of JSON marshal/unmarshal round-trip
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 19-01-PLAN.md — errors.As() migration, ParseAPIError hardening, bucket delete guard, countItems fix
