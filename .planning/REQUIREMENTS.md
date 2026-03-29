@@ -1,37 +1,36 @@
 # Requirements: Terraform Provider FlashBlade
 
-**Defined:** 2026-03-28
+**Defined:** 2026-03-29
 **Core Value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
 
-## v1.2 Requirements
-
-Requirements for milestone v1.2 — Code Quality & Robustness.
-
-### Bug Fixes
-
-- [x] **BUG-01**: Account export Delete passes correct short export name (not combined)
-- [x] **BUG-02**: File system `writable` field mapped correctly in Read (0 drift on plan)
-- [x] **BUG-03**: IsNotFound scoped to actual "not found" messages (not all 400s)
-- [x] **BUG-04**: Fix omitempty on nested structs (use pointers or json:"-" where needed)
-
-### Architecture Cleanup
-
-- [x] **ARC-01**: Split models.go into domain files (storage, policies, exports, admin)
-- [x] **ARC-02**: Unified compositeID helper for policy rule import/delete
-- [x] **ARC-03**: Extract stringOrNull to shared helper (used by all rule resources)
-
-### Test Hardening
-
-- [x] **TST-01**: Idempotence tests — Create → Read → plan shows 0 changes for each resource family
-- [x] **TST-02**: Mock handlers validate query params (reject unknown params, require mandatory ones)
-- [x] **TST-03**: Complete Update lifecycle tests for resources missing them
-
-### Validators
-
-- [x] **VAL-01**: Name format validators (S3 rule: alphanumeric, virtual host: no dots, etc.)
-- [x] **VAL-02**: Terraform plan-time validation for enum fields (effect, permission, versioning)
-
 ## v1.3 Requirements
+
+Requirements for milestone v1.3 — Release Readiness.
+
+### State Migration
+
+- [ ] **MIG-01**: All 28 resources declare SchemaVersion 0 explicitly
+- [ ] **MIG-02**: UpgradeState framework wired with empty upgrader list (ready for future schema changes)
+
+### Import Documentation
+
+- [ ] **DOC-01**: import.md file for all 27 importable resources with correct syntax
+- [ ] **DOC-02**: tfplugindocs regenerated to include import sections in Registry docs
+
+### Helper Consolidation
+
+- [ ] **HLP-01**: int64UseStateForUnknown moved from filesystem_resource.go to helpers.go
+- [ ] **HLP-02**: float64UseStateForUnknown added to helpers.go for consistency
+
+### Transport Hardening
+
+- [ ] **TRN-01**: Exponential backoff includes ±20% random jitter to prevent thundering herds
+
+### Sensitive Data
+
+- [ ] **SEC-01**: secret_access_key uses write-only argument pattern (Terraform 1.11+ compatible)
+
+## v1.4 Requirements
 
 Deferred to future release.
 
@@ -42,33 +41,28 @@ Deferred to future release.
 
 | Feature | Reason |
 |---------|--------|
-| New resources | v1.2 is quality-only, no new features |
+| New resources | v1.3 is release-readiness only |
 | Pulumi bridge | Deferred, provider structure compatible |
-| Terraform Registry | Internal distribution first |
-| Hardware management | Out of API scope |
+| Terraform Registry publishing | This milestone prepares for it, next milestone publishes |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 9 | Complete |
-| BUG-02 | Phase 9 | Complete |
-| BUG-03 | Phase 9 | Complete |
-| BUG-04 | Phase 9 | Complete |
-| ARC-01 | Phase 10 | Complete |
-| ARC-02 | Phase 10 | Complete |
-| ARC-03 | Phase 10 | Complete |
-| TST-01 | Phase 11 | Complete |
-| TST-02 | Phase 11 | Complete |
-| TST-03 | Phase 11 | Complete |
-| VAL-01 | Phase 11 | Complete |
-| VAL-02 | Phase 11 | Complete |
+| MIG-01 | — | Pending |
+| MIG-02 | — | Pending |
+| DOC-01 | — | Pending |
+| DOC-02 | — | Pending |
+| HLP-01 | — | Pending |
+| HLP-02 | — | Pending |
+| TRN-01 | — | Pending |
+| SEC-01 | — | Pending |
 
 **Coverage:**
-- v1.2 requirements: 12 total
-- Mapped to phases: 12
-- Unmapped: 0
+- v1.3 requirements: 8 total
+- Mapped to phases: 0
+- Unmapped: 8
 
 ---
-*Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after v1.2 roadmap creation*
+*Requirements defined: 2026-03-29*
+*Last updated: 2026-03-29 after milestone v1.3 initialization*
