@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"time"
 )
 
 // ListFileSystemsOpts contains optional query parameters for ListFileSystems.
@@ -25,15 +24,7 @@ type ListFileSystemsOpts struct {
 // GetFileSystem retrieves a file system by name.
 // Returns an IsNotFound error if the file system does not exist.
 func (c *FlashBladeClient) GetFileSystem(ctx context.Context, name string) (*FileSystem, error) {
-	path := "/file-systems?names=" + url.QueryEscape(name)
-	var resp ListResponse[FileSystem]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("file system %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[FileSystem](c, ctx, "/file-systems?names="+url.QueryEscape(name), "file system", name)
 }
 
 // ListFileSystems returns all file systems matching the optional opts filters.
@@ -120,35 +111,5 @@ func (c *FlashBladeClient) DeleteFileSystem(ctx context.Context, id string) erro
 // file system is fully eradicated (empty items response). Respects context deadline.
 // The caller should provide a context with an appropriate timeout (e.g., Terraform resource timeout).
 func (c *FlashBladeClient) PollUntilEradicated(ctx context.Context, name string) error {
-	for {
-		// Check context before polling.
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("PollUntilEradicated: context cancelled while waiting for %q to eradicate: %w", name, ctx.Err())
-		default:
-		}
-
-		path := "/file-systems?names=" + url.QueryEscape(name) + "&destroyed=true"
-		var resp ListResponse[FileSystem]
-		err := c.get(ctx, path, &resp)
-		if err != nil {
-			if IsNotFound(err) {
-				return nil
-			}
-			return fmt.Errorf("PollUntilEradicated: GET error: %w", err)
-		}
-
-		if len(resp.Items) == 0 {
-			// Eradication complete.
-			return nil
-		}
-
-		// Still present — wait before retrying.
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("PollUntilEradicated: context cancelled while waiting for %q to eradicate: %w", name, ctx.Err())
-		case <-time.After(2 * time.Second):
-			// Continue polling.
-		}
-	}
+	return pollUntilGone[FileSystem](c, ctx, "/file-systems", "file system", name)
 }

@@ -9,15 +9,7 @@ import (
 // GetObjectStoreAccessPolicy retrieves an object store access policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetObjectStoreAccessPolicy(ctx context.Context, name string) (*ObjectStoreAccessPolicy, error) {
-	path := "/object-store-access-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccessPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("object store access policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ObjectStoreAccessPolicy](c, ctx, "/object-store-access-policies?names="+url.QueryEscape(name), "object store access policy", name)
 }
 
 // ListObjectStoreAccessPolicies returns all object store access policies.

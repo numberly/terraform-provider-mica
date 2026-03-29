@@ -18,15 +18,7 @@ type ListS3ExportPoliciesOpts struct {
 // GetS3ExportPolicy retrieves an S3 export policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetS3ExportPolicy(ctx context.Context, name string) (*S3ExportPolicy, error) {
-	path := "/s3-export-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[S3ExportPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("S3 export policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[S3ExportPolicy](c, ctx, "/s3-export-policies?names="+url.QueryEscape(name), "S3 export policy", name)
 }
 
 // ListS3ExportPolicies returns all S3 export policies matching the optional opts filters.

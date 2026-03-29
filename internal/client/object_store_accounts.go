@@ -18,15 +18,7 @@ type ListObjectStoreAccountsOpts struct {
 // GetObjectStoreAccount retrieves an object store account by name.
 // Returns an IsNotFound error if the account does not exist.
 func (c *FlashBladeClient) GetObjectStoreAccount(ctx context.Context, name string) (*ObjectStoreAccount, error) {
-	path := "/object-store-accounts?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccount]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("object store account %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ObjectStoreAccount](c, ctx, "/object-store-accounts?names="+url.QueryEscape(name), "object store account", name)
 }
 
 // ListObjectStoreAccounts returns all object store accounts matching the optional opts filters.

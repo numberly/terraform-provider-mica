@@ -9,15 +9,7 @@ import (
 // GetRemoteCredentials retrieves an object store remote credentials entry by name.
 // Returns an IsNotFound error if the entry does not exist.
 func (c *FlashBladeClient) GetRemoteCredentials(ctx context.Context, name string) (*ObjectStoreRemoteCredentials, error) {
-	path := "/object-store-remote-credentials?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreRemoteCredentials]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("remote credentials %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ObjectStoreRemoteCredentials](c, ctx, "/object-store-remote-credentials?names="+url.QueryEscape(name), "remote credentials", name)
 }
 
 // ListRemoteCredentials returns all object store remote credentials.

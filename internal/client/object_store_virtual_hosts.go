@@ -18,15 +18,7 @@ type ListObjectStoreVirtualHostsOpts struct {
 // GetObjectStoreVirtualHost retrieves an object store virtual host by name.
 // Returns an IsNotFound error if the virtual host does not exist.
 func (c *FlashBladeClient) GetObjectStoreVirtualHost(ctx context.Context, name string) (*ObjectStoreVirtualHost, error) {
-	path := "/object-store-virtual-hosts?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreVirtualHost]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("object store virtual host %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ObjectStoreVirtualHost](c, ctx, "/object-store-virtual-hosts?names="+url.QueryEscape(name), "object store virtual host", name)
 }
 
 // ListObjectStoreVirtualHosts returns all object store virtual hosts matching the optional opts filters.

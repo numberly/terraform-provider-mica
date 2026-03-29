@@ -9,15 +9,7 @@ import (
 // GetFileSystemExport retrieves a file system export by its combined name (e.g. "fs/export").
 // Returns an IsNotFound error if the export does not exist.
 func (c *FlashBladeClient) GetFileSystemExport(ctx context.Context, name string) (*FileSystemExport, error) {
-	path := "/file-system-exports?names=" + url.QueryEscape(name)
-	var resp ListResponse[FileSystemExport]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("file system export %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[FileSystemExport](c, ctx, "/file-system-exports?names="+url.QueryEscape(name), "file system export", name)
 }
 
 // PostFileSystemExport creates a new file system export.

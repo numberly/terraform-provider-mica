@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -284,4 +285,53 @@ func (c *FlashBladeClient) delete(ctx context.Context, path string) error {
 	defer resp.Body.Close()
 
 	return ParseAPIError(resp)
+}
+
+// getOneByName queries a FlashBlade list endpoint filtered by name and returns the single
+// matching item. Returns a 404 APIError if no items match.
+// path is the API endpoint with ?names= query param already set (e.g., "/buckets?names=mybucket").
+// label is a human-readable resource type for the error message (e.g., "bucket").
+func getOneByName[T any](c *FlashBladeClient, ctx context.Context, path, label, name string) (*T, error) {
+	var resp ListResponse[T]
+	if err := c.get(ctx, path, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("%s %q not found", label, name)}
+	}
+	return &resp.Items[0], nil
+}
+
+// pollUntilGone polls a FlashBlade list endpoint with ?destroyed=true until the item
+// disappears (empty items response), indicating eradication is complete.
+// basePath is the endpoint without query params (e.g., "/buckets").
+// label is a human-readable resource type for error messages.
+func pollUntilGone[T any](c *FlashBladeClient, ctx context.Context, basePath, label, name string) error {
+	path := basePath + "?names=" + url.QueryEscape(name) + "&destroyed=true"
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("pollUntilGone(%s): context cancelled while waiting for %q to eradicate: %w", label, name, ctx.Err())
+		default:
+		}
+
+		var resp ListResponse[T]
+		err := c.get(ctx, path, &resp)
+		if err != nil {
+			if IsNotFound(err) {
+				return nil
+			}
+			return fmt.Errorf("pollUntilGone(%s): GET error: %w", label, err)
+		}
+
+		if len(resp.Items) == 0 {
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("pollUntilGone(%s): context cancelled while waiting for %q to eradicate: %w", label, name, ctx.Err())
+		case <-time.After(2 * time.Second):
+		}
+	}
 }

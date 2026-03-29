@@ -18,15 +18,7 @@ type ListSnapshotPoliciesOpts struct {
 // GetSnapshotPolicy retrieves a snapshot policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetSnapshotPolicy(ctx context.Context, name string) (*SnapshotPolicy, error) {
-	path := "/policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[SnapshotPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("snapshot policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[SnapshotPolicy](c, ctx, "/policies?names="+url.QueryEscape(name), "snapshot policy", name)
 }
 
 // ListSnapshotPolicies returns all snapshot policies matching the optional opts filters.

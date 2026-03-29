@@ -19,15 +19,7 @@ type ListObjectStoreAccessKeysOpts struct {
 // Returns an IsNotFound error if the key does not exist.
 // NOTE: The API does NOT return secret_access_key in GET responses — it is only available on POST.
 func (c *FlashBladeClient) GetObjectStoreAccessKey(ctx context.Context, name string) (*ObjectStoreAccessKey, error) {
-	path := "/object-store-access-keys?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccessKey]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("object store access key %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ObjectStoreAccessKey](c, ctx, "/object-store-access-keys?names="+url.QueryEscape(name), "object store access key", name)
 }
 
 // ListObjectStoreAccessKeys returns all object store access keys matching the optional opts filters.

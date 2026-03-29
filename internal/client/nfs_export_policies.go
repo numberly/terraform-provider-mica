@@ -18,15 +18,7 @@ type ListNfsExportPoliciesOpts struct {
 // GetNfsExportPolicy retrieves an NFS export policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetNfsExportPolicy(ctx context.Context, name string) (*NfsExportPolicy, error) {
-	path := "/nfs-export-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[NfsExportPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("NFS export policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[NfsExportPolicy](c, ctx, "/nfs-export-policies?names="+url.QueryEscape(name), "NFS export policy", name)
 }
 
 // ListNfsExportPolicies returns all NFS export policies matching the optional opts filters.

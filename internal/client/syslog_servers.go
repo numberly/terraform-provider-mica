@@ -18,15 +18,7 @@ type ListSyslogServersOpts struct {
 // GetSyslogServer retrieves a syslog server by name.
 // Returns an IsNotFound error if the server does not exist.
 func (c *FlashBladeClient) GetSyslogServer(ctx context.Context, name string) (*SyslogServer, error) {
-	path := "/syslog-servers?names=" + url.QueryEscape(name)
-	var resp ListResponse[SyslogServer]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("syslog server %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[SyslogServer](c, ctx, "/syslog-servers?names="+url.QueryEscape(name), "syslog server", name)
 }
 
 // ListSyslogServers returns all syslog servers matching the optional opts filters.

@@ -9,15 +9,7 @@ import (
 // GetObjectStoreAccountExport retrieves an object store account export by its combined name (e.g. "account/export").
 // Returns an IsNotFound error if the export does not exist.
 func (c *FlashBladeClient) GetObjectStoreAccountExport(ctx context.Context, name string) (*ObjectStoreAccountExport, error) {
-	path := "/object-store-account-exports?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccountExport]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("object store account export %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ObjectStoreAccountExport](c, ctx, "/object-store-account-exports?names="+url.QueryEscape(name), "object store account export", name)
 }
 
 // PostObjectStoreAccountExport creates a new object store account export.

@@ -9,15 +9,7 @@ import (
 // GetNetworkAccessPolicy retrieves a network access policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetNetworkAccessPolicy(ctx context.Context, name string) (*NetworkAccessPolicy, error) {
-	path := "/network-access-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[NetworkAccessPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("network access policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[NetworkAccessPolicy](c, ctx, "/network-access-policies?names="+url.QueryEscape(name), "network access policy", name)
 }
 
 // ListNetworkAccessPolicies returns all network access policies.

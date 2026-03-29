@@ -18,15 +18,7 @@ type ListSmbSharePoliciesOpts struct {
 // GetSmbSharePolicy retrieves an SMB share policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetSmbSharePolicy(ctx context.Context, name string) (*SmbSharePolicy, error) {
-	path := "/smb-share-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[SmbSharePolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("SMB share policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[SmbSharePolicy](c, ctx, "/smb-share-policies?names="+url.QueryEscape(name), "SMB share policy", name)
 }
 
 // ListSmbSharePolicies returns all SMB share policies matching the optional opts filters.

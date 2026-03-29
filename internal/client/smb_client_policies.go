@@ -18,15 +18,7 @@ type ListSmbClientPoliciesOpts struct {
 // GetSmbClientPolicy retrieves an SMB client policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetSmbClientPolicy(ctx context.Context, name string) (*SmbClientPolicy, error) {
-	path := "/smb-client-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[SmbClientPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("SMB client policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[SmbClientPolicy](c, ctx, "/smb-client-policies?names="+url.QueryEscape(name), "SMB client policy", name)
 }
 
 // ListSmbClientPolicies returns all SMB client policies matching the optional opts filters.
