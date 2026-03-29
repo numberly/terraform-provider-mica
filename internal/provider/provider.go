@@ -321,5 +321,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewObjectStoreVirtualHostDataSource,
 		NewS3ExportPolicyDataSource,
 		NewSyslogServerDataSource,
+		NewArrayConnectionDataSource,
 	}
 }
