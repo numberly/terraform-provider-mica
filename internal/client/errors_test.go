@@ -40,29 +40,6 @@ func TestUnit_IsConflict_NonAPIError(t *testing.T) {
 	}
 }
 
-// TestUnit_IsUnprocessable_True verifies IsUnprocessable returns true for HTTP 422.
-func TestUnit_IsUnprocessable_True(t *testing.T) {
-	err := &APIError{StatusCode: 422}
-	if !IsUnprocessable(err) {
-		t.Error("expected IsUnprocessable to return true for HTTP 422")
-	}
-}
-
-// TestUnit_IsUnprocessable_False verifies IsUnprocessable returns false for non-422 errors.
-func TestUnit_IsUnprocessable_False(t *testing.T) {
-	err := &APIError{StatusCode: 404}
-	if IsUnprocessable(err) {
-		t.Error("expected IsUnprocessable to return false for HTTP 404")
-	}
-}
-
-// TestUnit_IsUnprocessable_Nil verifies IsUnprocessable returns false for nil.
-func TestUnit_IsUnprocessable_Nil(t *testing.T) {
-	if IsUnprocessable(nil) {
-		t.Error("expected IsUnprocessable to return false for nil")
-	}
-}
-
 // TestUnit_IsNotFound verifies IsNotFound handles all edge cases correctly.
 func TestUnit_IsNotFound(t *testing.T) {
 	tests := []struct {
@@ -176,15 +153,6 @@ func TestUnit_IsConflict_WrappedError(t *testing.T) {
 	wrapped := fmt.Errorf("wrapped: %w", apiErr)
 	if !IsConflict(wrapped) {
 		t.Error("expected IsConflict to return true for wrapped 409 APIError")
-	}
-}
-
-// TestUnit_IsUnprocessable_WrappedError verifies IsUnprocessable handles wrapped APIError.
-func TestUnit_IsUnprocessable_WrappedError(t *testing.T) {
-	apiErr := &APIError{StatusCode: 422}
-	wrapped := fmt.Errorf("wrapped: %w", apiErr)
-	if !IsUnprocessable(wrapped) {
-		t.Error("expected IsUnprocessable to return true for wrapped 422 APIError")
 	}
 }
 

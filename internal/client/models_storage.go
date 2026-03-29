@@ -36,12 +36,6 @@ type MultiProtocol struct {
 	SafeguardACLsOnDestroy bool `json:"safeguard_acls_on_destroy,omitempty"`
 }
 
-// SourceReference refers to a source file system (for snapshots/clones).
-type SourceReference struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
 // FileSystem represents a FlashBlade file system object from GET responses.
 type FileSystem struct {
 	ID               string        `json:"id"`
@@ -58,7 +52,7 @@ type FileSystem struct {
 	MultiProtocol    MultiProtocol `json:"multi_protocol"`
 	PromotionStatus  string        `json:"promotion_status,omitempty"`
 	RequestNumber    int64         `json:"request_number,omitempty"`
-	Source           *SourceReference `json:"source,omitempty"`
+	Source           *NamedReference `json:"source,omitempty"`
 	Writable         bool          `json:"writable"`
 }
 

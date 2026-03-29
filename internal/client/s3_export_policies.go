@@ -4,52 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 )
-
-// ListS3ExportPoliciesOpts contains optional query parameters for ListS3ExportPolicies.
-type ListS3ExportPoliciesOpts struct {
-	// Names filters results to specific policy names.
-	Names []string
-	// Filter is a free-form filter expression.
-	Filter string
-}
 
 // GetS3ExportPolicy retrieves an S3 export policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetS3ExportPolicy(ctx context.Context, name string) (*S3ExportPolicy, error) {
 	return getOneByName[S3ExportPolicy](c, ctx, "/s3-export-policies?names="+url.QueryEscape(name), "S3 export policy", name)
-}
-
-// ListS3ExportPolicies returns all S3 export policies matching the optional opts filters.
-// It automatically follows continuation_token pagination to collect all results.
-func (c *FlashBladeClient) ListS3ExportPolicies(ctx context.Context, opts ListS3ExportPoliciesOpts) ([]S3ExportPolicy, error) {
-	params := url.Values{}
-	if len(opts.Names) > 0 {
-		params.Set("names", strings.Join(opts.Names, ","))
-	}
-	if opts.Filter != "" {
-		params.Set("filter", opts.Filter)
-	}
-
-	var all []S3ExportPolicy
-	for {
-		path := "/s3-export-policies"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[S3ExportPolicy]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
 }
 
 // PostS3ExportPolicy creates a new S3 export policy.

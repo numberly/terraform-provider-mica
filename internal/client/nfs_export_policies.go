@@ -4,52 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 )
-
-// ListNfsExportPoliciesOpts contains optional query parameters for ListNfsExportPolicies.
-type ListNfsExportPoliciesOpts struct {
-	// Names filters results to specific policy names.
-	Names []string
-	// Filter is a free-form filter expression.
-	Filter string
-}
 
 // GetNfsExportPolicy retrieves an NFS export policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetNfsExportPolicy(ctx context.Context, name string) (*NfsExportPolicy, error) {
 	return getOneByName[NfsExportPolicy](c, ctx, "/nfs-export-policies?names="+url.QueryEscape(name), "NFS export policy", name)
-}
-
-// ListNfsExportPolicies returns all NFS export policies matching the optional opts filters.
-// It automatically follows continuation_token pagination to collect all results.
-func (c *FlashBladeClient) ListNfsExportPolicies(ctx context.Context, opts ListNfsExportPoliciesOpts) ([]NfsExportPolicy, error) {
-	params := url.Values{}
-	if len(opts.Names) > 0 {
-		params.Set("names", strings.Join(opts.Names, ","))
-	}
-	if opts.Filter != "" {
-		params.Set("filter", opts.Filter)
-	}
-
-	var all []NfsExportPolicy
-	for {
-		path := "/nfs-export-policies"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[NfsExportPolicy]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
 }
 
 // PostNfsExportPolicy creates a new NFS export policy.

@@ -99,18 +99,6 @@ func IsConflict(err error) bool {
 	return apiErr.StatusCode == http.StatusConflict
 }
 
-// IsUnprocessable returns true when err is an *APIError with HTTP 422.
-func IsUnprocessable(err error) bool {
-	if err == nil {
-		return false
-	}
-	var apiErr *APIError
-	if !errors.As(err, &apiErr) {
-		return false
-	}
-	return apiErr.StatusCode == http.StatusUnprocessableEntity
-}
-
 // IsRetryable returns true for HTTP status codes that represent transient
 // failures: 429 (rate limit) and 5xx server errors.
 func IsRetryable(statusCode int) bool {

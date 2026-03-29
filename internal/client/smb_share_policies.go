@@ -4,52 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 )
-
-// ListSmbSharePoliciesOpts contains optional query parameters for ListSmbSharePolicies.
-type ListSmbSharePoliciesOpts struct {
-	// Names filters results to specific policy names.
-	Names []string
-	// Filter is a free-form filter expression.
-	Filter string
-}
 
 // GetSmbSharePolicy retrieves an SMB share policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetSmbSharePolicy(ctx context.Context, name string) (*SmbSharePolicy, error) {
 	return getOneByName[SmbSharePolicy](c, ctx, "/smb-share-policies?names="+url.QueryEscape(name), "SMB share policy", name)
-}
-
-// ListSmbSharePolicies returns all SMB share policies matching the optional opts filters.
-// It automatically follows continuation_token pagination to collect all results.
-func (c *FlashBladeClient) ListSmbSharePolicies(ctx context.Context, opts ListSmbSharePoliciesOpts) ([]SmbSharePolicy, error) {
-	params := url.Values{}
-	if len(opts.Names) > 0 {
-		params.Set("names", strings.Join(opts.Names, ","))
-	}
-	if opts.Filter != "" {
-		params.Set("filter", opts.Filter)
-	}
-
-	var all []SmbSharePolicy
-	for {
-		path := "/smb-share-policies"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[SmbSharePolicy]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
 }
 
 // PostSmbSharePolicy creates a new SMB share policy.

@@ -4,52 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 )
-
-// ListSmbClientPoliciesOpts contains optional query parameters for ListSmbClientPolicies.
-type ListSmbClientPoliciesOpts struct {
-	// Names filters results to specific policy names.
-	Names []string
-	// Filter is a free-form filter expression.
-	Filter string
-}
 
 // GetSmbClientPolicy retrieves an SMB client policy by name.
 // Returns an IsNotFound error if the policy does not exist.
 func (c *FlashBladeClient) GetSmbClientPolicy(ctx context.Context, name string) (*SmbClientPolicy, error) {
 	return getOneByName[SmbClientPolicy](c, ctx, "/smb-client-policies?names="+url.QueryEscape(name), "SMB client policy", name)
-}
-
-// ListSmbClientPolicies returns all SMB client policies matching the optional opts filters.
-// It automatically follows continuation_token pagination to collect all results.
-func (c *FlashBladeClient) ListSmbClientPolicies(ctx context.Context, opts ListSmbClientPoliciesOpts) ([]SmbClientPolicy, error) {
-	params := url.Values{}
-	if len(opts.Names) > 0 {
-		params.Set("names", strings.Join(opts.Names, ","))
-	}
-	if opts.Filter != "" {
-		params.Set("filter", opts.Filter)
-	}
-
-	var all []SmbClientPolicy
-	for {
-		path := "/smb-client-policies"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[SmbClientPolicy]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
 }
 
 // PostSmbClientPolicy creates a new SMB client policy.
