@@ -19,7 +19,7 @@ import (
 // newTestSnapshotRuleResource creates a snapshotPolicyRuleResource wired to the given mock server.
 func newTestSnapshotRuleResource(t *testing.T, ms *testmock.MockServer) *snapshotPolicyRuleResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

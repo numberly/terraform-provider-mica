@@ -18,7 +18,7 @@ import (
 // newTestFSExportResource creates a fileSystemExportResource wired to the given mock server.
 func newTestFSExportResource(t *testing.T, ms *testmock.MockServer) *fileSystemExportResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

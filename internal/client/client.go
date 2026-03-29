@@ -57,7 +57,9 @@ type FlashBladeClient struct {
 }
 
 // NewClient constructs a FlashBladeClient from the given Config.
-func NewClient(cfg Config) (*FlashBladeClient, error) {
+// The provided context is used for authentication requests and can be
+// used by callers to propagate cancellation from Terraform operations.
+func NewClient(ctx context.Context, cfg Config) (*FlashBladeClient, error) {
 	if cfg.Endpoint == "" {
 		return nil, fmt.Errorf("client: Endpoint is required")
 	}
@@ -81,7 +83,10 @@ func NewClient(cfg Config) (*FlashBladeClient, error) {
 		return nil, fmt.Errorf("client: build transport: %w", err)
 	}
 
-	httpClient := &http.Client{Transport: transport}
+	httpClient := &http.Client{
+		Transport: transport,
+		Timeout:   30 * time.Second,
+	}
 
 	endpoint := strings.TrimRight(cfg.Endpoint, "/")
 	baseURL := endpoint + "/api/" + APIVersion
@@ -93,7 +98,7 @@ func NewClient(cfg Config) (*FlashBladeClient, error) {
 
 	// Authenticate using API token session login (preferred for simplicity).
 	if cfg.APIToken != "" {
-		sessionToken, err := LoginWithAPIToken(context.Background(), httpClient, endpoint, cfg.APIToken)
+		sessionToken, err := LoginWithAPIToken(ctx, httpClient, endpoint, cfg.APIToken)
 		if err != nil {
 			return nil, fmt.Errorf("client: login: %w", err)
 		}
@@ -104,7 +109,7 @@ func NewClient(cfg Config) (*FlashBladeClient, error) {
 	// Fall back to OAuth2 token exchange.
 	if cfg.OAuth2ClientID != "" || cfg.OAuth2KeyID != "" {
 		ts := NewFlashBladeTokenSource(endpoint, cfg.OAuth2ClientID, httpClient)
-		oauthHTTPClient := oauth2.NewClient(context.Background(), ts)
+		oauthHTTPClient := oauth2.NewClient(ctx, ts)
 		// Wrap the oauth2 client's transport with the retry transport too.
 		oauthHTTPClient.Transport = &retryTransport{
 			base:       oauthHTTPClient.Transport,

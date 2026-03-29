@@ -21,7 +21,7 @@ import (
 // newTestOAPResource creates an objectStoreAccessPolicyResource wired to the given mock server.
 func newTestOAPResource(t *testing.T, ms *testmock.MockServer) *objectStoreAccessPolicyResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -277,7 +277,7 @@ func TestObjectStoreAccessPolicyResource_Import(t *testing.T) {
 // newTestOAPDataSource creates an objectStoreAccessPolicyDataSource wired to the given mock server.
 func newTestOAPDataSource(t *testing.T, ms *testmock.MockServer) *objectStoreAccessPolicyDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -332,7 +332,7 @@ func TestObjectStoreAccessPolicyDataSource(t *testing.T) {
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
 
 	// Create a policy via the client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

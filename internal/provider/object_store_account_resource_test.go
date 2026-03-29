@@ -20,7 +20,7 @@ import (
 // newTestOSAResource creates an objectStoreAccountResource wired to the given mock server.
 func newTestOSAResource(t *testing.T, ms *testmock.MockServer) *objectStoreAccountResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

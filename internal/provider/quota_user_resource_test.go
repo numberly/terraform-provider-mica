@@ -22,7 +22,7 @@ import (
 // newTestQuotaUserResource creates a quotaUserResource wired to the given mock server.
 func newTestQuotaUserResource(t *testing.T, ms *testmock.MockServer) *quotaUserResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -220,7 +220,7 @@ func TestQuotaUserResource_Import(t *testing.T) {
 	s := quotaUserResourceSchema(t).Schema
 
 	// Create first via client directly.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -269,7 +269,7 @@ func TestQuotaUserResource_Import(t *testing.T) {
 // newTestQuotaUserDataSource creates a quotaUserDataSource wired to the given mock server.
 func newTestQuotaUserDataSource(t *testing.T, ms *testmock.MockServer) *quotaUserDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -320,7 +320,7 @@ func TestQuotaUserDataSource(t *testing.T) {
 	handlers.RegisterQuotaHandlers(ms.Mux)
 
 	// Create a quota via the client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

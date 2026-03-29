@@ -18,7 +18,7 @@ import (
 // newTestOSADataSource creates an objectStoreAccountDataSource wired to the given mock server.
 func newTestOSADataSource(t *testing.T, ms *testmock.MockServer) *objectStoreAccountDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -91,7 +91,7 @@ func TestUnit_ObjectStoreAccountDataSource(t *testing.T) {
 	handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
 
 	// Create an account via the resource client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

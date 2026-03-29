@@ -20,7 +20,7 @@ import (
 // newTestSMBPolicyResource creates an smbSharePolicyResource wired to the given mock server.
 func newTestSMBPolicyResource(t *testing.T, ms *testmock.MockServer) *smbSharePolicyResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -287,7 +287,7 @@ func TestSmbSharePolicyResource_Import(t *testing.T) {
 // newTestSMBPolicyDataSource creates an smbSharePolicyDataSource wired to the given mock server.
 func newTestSMBPolicyDataSource(t *testing.T, ms *testmock.MockServer) *smbSharePolicyDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -338,7 +338,7 @@ func TestSmbSharePolicyDataSource(t *testing.T) {
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
 
 	// Create a policy via the resource client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

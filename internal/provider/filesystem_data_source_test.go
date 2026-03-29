@@ -19,7 +19,7 @@ import (
 // newTestDataSource creates a filesystemDataSource wired to the given mock server.
 func newTestDataSource(t *testing.T, ms *testmock.MockServer) *filesystemDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -165,7 +165,7 @@ func TestUnit_FileSystemDataSource(t *testing.T) {
 	handlers.RegisterFileSystemHandlers(ms.Mux)
 
 	// Create a file system via the resource client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

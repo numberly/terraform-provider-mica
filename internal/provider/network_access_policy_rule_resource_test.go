@@ -20,7 +20,7 @@ import (
 // newTestNAPRuleResource creates a networkAccessPolicyRuleResource wired to the given mock server.
 func newTestNAPRuleResource(t *testing.T, ms *testmock.MockServer) *networkAccessPolicyRuleResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

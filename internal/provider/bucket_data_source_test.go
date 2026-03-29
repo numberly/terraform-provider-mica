@@ -18,7 +18,7 @@ import (
 // newTestBucketDataSource creates a bucketDataSource wired to the given mock server.
 func newTestBucketDataSource(t *testing.T, ms *testmock.MockServer) *bucketDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -104,7 +104,7 @@ func TestUnit_BucketDataSource(t *testing.T) {
 	handlers.RegisterBucketHandlers(ms.Mux, accountStore)
 
 	// Pre-seed account and bucket.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

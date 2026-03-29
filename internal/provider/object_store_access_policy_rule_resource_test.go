@@ -21,7 +21,7 @@ import (
 // newTestOAPRuleResource creates an objectStoreAccessPolicyRuleResource wired to the given mock server.
 func newTestOAPRuleResource(t *testing.T, ms *testmock.MockServer) *objectStoreAccessPolicyRuleResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -141,7 +141,7 @@ func oapRulePlanWithConditions(t *testing.T, policyName, ruleName, effect string
 // createTestOAPPolicy creates a policy in the mock server.
 func createTestOAPPolicy(t *testing.T, ms *testmock.MockServer, policyName string) {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -298,7 +298,7 @@ func TestObjectStoreAccessPolicyRuleResource_Delete(t *testing.T) {
 	}
 
 	// Verify rule is gone.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

@@ -19,7 +19,7 @@ import (
 // newTestBucketReplicaLinkResource creates a bucketReplicaLinkResource wired to the given mock server.
 func newTestBucketReplicaLinkResource(t *testing.T, ms *testmock.MockServer) *bucketReplicaLinkResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

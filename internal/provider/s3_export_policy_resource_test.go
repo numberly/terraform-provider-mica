@@ -20,7 +20,7 @@ import (
 // newTestS3PolicyResource creates an s3ExportPolicyResource wired to the given mock server.
 func newTestS3PolicyResource(t *testing.T, ms *testmock.MockServer) *s3ExportPolicyResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -289,7 +289,7 @@ func TestUnit_S3ExportPolicy_PlanModifiers(t *testing.T) {
 // newTestS3PolicyDataSource creates an s3ExportPolicyDataSource wired to the given mock server.
 func newTestS3PolicyDataSource(t *testing.T, ms *testmock.MockServer) *s3ExportPolicyDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -342,7 +342,7 @@ func TestUnit_S3ExportPolicy_DataSource(t *testing.T) {
 	handlers.RegisterS3ExportPolicyHandlers(ms.Mux)
 
 	// Create a policy via the client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

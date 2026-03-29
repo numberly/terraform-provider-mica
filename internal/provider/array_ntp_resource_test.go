@@ -20,7 +20,7 @@ import (
 
 func newTestArrayNtpResource(t *testing.T, ms *testmock.MockServer) *arrayNtpResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -256,7 +256,7 @@ func TestArrayNtpResource_Import(t *testing.T) {
 
 func newTestArrayNtpDataSource(t *testing.T, ms *testmock.MockServer) *arrayNtpDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -291,7 +291,7 @@ func TestArrayNtpDataSource(t *testing.T) {
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
 
 	// Set up NTP config via client.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

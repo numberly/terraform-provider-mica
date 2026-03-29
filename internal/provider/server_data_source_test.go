@@ -18,7 +18,7 @@ import (
 // newTestServerDataSource creates a serverDataSource wired to the given mock server.
 func newTestServerDataSource(t *testing.T, ms *testmock.MockServer) *serverDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

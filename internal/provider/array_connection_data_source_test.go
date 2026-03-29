@@ -18,7 +18,7 @@ import (
 // newTestArrayConnectionDataSource creates an arrayConnectionDataSource wired to the given mock server.
 func newTestArrayConnectionDataSource(t *testing.T, ms *testmock.MockServer) *arrayConnectionDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

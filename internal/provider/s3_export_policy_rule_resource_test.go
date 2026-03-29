@@ -20,7 +20,7 @@ import (
 // newTestS3RuleResource creates an s3ExportPolicyRuleResource wired to the given mock server.
 func newTestS3RuleResource(t *testing.T, ms *testmock.MockServer) *s3ExportPolicyRuleResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

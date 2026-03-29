@@ -20,7 +20,7 @@ import (
 
 func newTestArrayDnsResource(t *testing.T, ms *testmock.MockServer) *arrayDnsResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -267,7 +267,7 @@ func TestArrayDnsResource_Import(t *testing.T) {
 
 func newTestArrayDnsDataSource(t *testing.T, ms *testmock.MockServer) *arrayDnsDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -305,7 +305,7 @@ func TestArrayDnsDataSource(t *testing.T) {
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
 
 	// Set up DNS config via client.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

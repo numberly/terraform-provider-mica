@@ -18,7 +18,7 @@ import (
 // newTestVirtualHostResource creates an objectStoreVirtualHostResource wired to the given mock server.
 func newTestVirtualHostResource(t *testing.T, ms *testmock.MockServer) *objectStoreVirtualHostResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

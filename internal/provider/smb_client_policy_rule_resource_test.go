@@ -19,7 +19,7 @@ import (
 // newTestSMBClientRuleResource creates an smbClientPolicyRuleResource wired to the given mock server.
 func newTestSMBClientRuleResource(t *testing.T, ms *testmock.MockServer) *smbClientPolicyRuleResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -105,7 +105,7 @@ func smbClientRulePlan(t *testing.T, policyName, clientMatch, encryption, permis
 // createSMBClientPolicyForRuleTest creates an SMB client policy in the mock server so rule tests can attach rules to it.
 func createSMBClientPolicyForRuleTest(t *testing.T, ms *testmock.MockServer, policyName string) {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

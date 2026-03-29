@@ -17,7 +17,7 @@ import (
 // newTestAccessKeyDataSource creates an objectStoreAccessKeyDataSource wired to the given mock server.
 func newTestAccessKeyDataSource(t *testing.T, ms *testmock.MockServer) *objectStoreAccessKeyDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -21,7 +22,7 @@ func TestUnit_RetryTransport_429(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
 		RetryBaseDelay: 1, // 1ms for tests
 	})
@@ -55,7 +56,7 @@ func TestUnit_RetryTransport_503(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
 		RetryBaseDelay: 1,
 	})
@@ -83,7 +84,7 @@ func TestUnit_RetryTransport_MaxRetries(t *testing.T) {
 	defer srv.Close()
 
 	maxRetries := 3
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
 		MaxRetries:     maxRetries,
 		RetryBaseDelay: 1,

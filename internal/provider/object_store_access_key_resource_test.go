@@ -19,7 +19,7 @@ import (
 // newTestAccessKeyResource creates an objectStoreAccessKeyResource wired to the given mock server.
 func newTestAccessKeyResource(t *testing.T, ms *testmock.MockServer) *objectStoreAccessKeyResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -90,7 +90,7 @@ func accessKeyPlanWithAccount(t *testing.T, accountName string) tfsdk.Plan {
 // seedAccount pre-creates an account in the mock so access key tests can reference it.
 func seedAccount(t *testing.T, ms *testmock.MockServer, accountName string) {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -197,7 +197,7 @@ func TestUnit_AccessKey_Delete(t *testing.T) {
 	}
 
 	// Verify it's gone via the client.
-	c, _ := client.NewClient(client.Config{
+	c, _ := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

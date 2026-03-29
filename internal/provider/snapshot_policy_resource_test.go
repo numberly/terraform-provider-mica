@@ -20,7 +20,7 @@ import (
 // newTestSnapshotPolicyResource creates a snapshotPolicyResource wired to the given mock server.
 func newTestSnapshotPolicyResource(t *testing.T, ms *testmock.MockServer) *snapshotPolicyResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -269,7 +269,7 @@ func TestSnapshotPolicyResource_Import(t *testing.T) {
 // newTestSnapshotPolicyDataSource creates a snapshotPolicyDataSource wired to the given mock server.
 func newTestSnapshotPolicyDataSource(t *testing.T, ms *testmock.MockServer) *snapshotPolicyDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -322,7 +322,7 @@ func TestSnapshotPolicyDataSource(t *testing.T) {
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
 
 	// Create a policy via the resource client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

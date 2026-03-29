@@ -19,7 +19,7 @@ import (
 // newTestRemoteCredentialsResource creates a remoteCredentialsResource wired to the given mock server.
 func newTestRemoteCredentialsResource(t *testing.T, ms *testmock.MockServer) *remoteCredentialsResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

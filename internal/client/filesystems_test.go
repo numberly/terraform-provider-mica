@@ -17,7 +17,7 @@ func newTestClient(t *testing.T, srv *httptest.Server) *client.FlashBladeClient 
 	t.Helper()
 	// We build a client manually using a minimal login mock.
 	// The test server must handle /api/login.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
 		APIToken:       "test-api-token",
 		MaxRetries:     1,

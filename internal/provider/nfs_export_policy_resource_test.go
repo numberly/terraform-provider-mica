@@ -21,7 +21,7 @@ import (
 // newTestNFSPolicyResource creates an nfsExportPolicyResource wired to the given mock server.
 func newTestNFSPolicyResource(t *testing.T, ms *testmock.MockServer) *nfsExportPolicyResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -435,7 +435,7 @@ func TestUnit_NfsExportPolicy_ImportIdempotency(t *testing.T) {
 // newTestNFSPolicyDataSource creates an nfsExportPolicyDataSource wired to the given mock server.
 func newTestNFSPolicyDataSource(t *testing.T, ms *testmock.MockServer) *nfsExportPolicyDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -488,7 +488,7 @@ func TestNfsExportPolicyDataSource(t *testing.T) {
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
 
 	// Create a policy via the resource client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

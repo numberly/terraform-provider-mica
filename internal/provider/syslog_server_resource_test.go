@@ -19,7 +19,7 @@ import (
 // newTestSyslogServerResource creates a syslogServerResource wired to the given mock server.
 func newTestSyslogServerResource(t *testing.T, ms *testmock.MockServer) *syslogServerResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -275,7 +275,7 @@ func TestUnit_SyslogServer_Import(t *testing.T) {
 // newTestSyslogServerDataSource creates a syslogServerDataSource wired to the given mock server.
 func newTestSyslogServerDataSource(t *testing.T, ms *testmock.MockServer) *syslogServerDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -326,7 +326,7 @@ func TestUnit_SyslogServer_DataSource(t *testing.T) {
 	handlers.RegisterSyslogServerHandlers(ms.Mux)
 
 	// Create a syslog server via the client so the data source can find it.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

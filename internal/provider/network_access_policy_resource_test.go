@@ -20,7 +20,7 @@ import (
 // newTestNAPResource creates a networkAccessPolicyResource wired to the given mock server.
 func newTestNAPResource(t *testing.T, ms *testmock.MockServer) *networkAccessPolicyResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -284,7 +284,7 @@ func TestNetworkAccessPolicyResource_Import(t *testing.T) {
 // newTestNAPDataSource creates a networkAccessPolicyDataSource wired to the given mock server.
 func newTestNAPDataSource(t *testing.T, ms *testmock.MockServer) *networkAccessPolicyDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

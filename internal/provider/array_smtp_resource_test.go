@@ -20,7 +20,7 @@ import (
 
 func newTestArraySmtpResource(t *testing.T, ms *testmock.MockServer) *arraySmtpResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -391,7 +391,7 @@ func TestArraySmtpResource_WatcherRemoval(t *testing.T) {
 
 func newTestArraySmtpDataSource(t *testing.T, ms *testmock.MockServer) *arraySmtpDataSource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -429,7 +429,7 @@ func TestArraySmtpDataSource(t *testing.T) {
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
 
 	// Seed state via client.
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

@@ -24,7 +24,7 @@ import (
 // newTestBucketResource creates a bucketResource wired to the given mock server.
 func newTestBucketResource(t *testing.T, ms *testmock.MockServer) *bucketResource {
 	t.Helper()
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
@@ -138,7 +138,7 @@ func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBla
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
 	handlers.RegisterBucketHandlers(ms.Mux, accountStore)
 
-	c, err := client.NewClient(client.Config{
+	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,

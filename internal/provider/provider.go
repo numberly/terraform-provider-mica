@@ -201,6 +201,9 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 	caCertFile := config.CACertFile.ValueString()
 	caCert := config.CACert.ValueString()
 	insecureSkipVerify := config.InsecureSkipVerify.ValueBool()
+	if insecureSkipVerify {
+		tflog.Warn(ctx, "TLS certificate verification is disabled (insecure_skip_verify = true). This is unsafe for production use.")
+	}
 
 	// Resolve retry config.
 	maxRetries := int(config.MaxRetries.ValueInt64())
@@ -235,7 +238,7 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 		InsecureSkipVerify: insecureSkipVerify,
 	}
 
-	c, err := client.NewClient(cfg)
+	c, err := client.NewClient(ctx, cfg)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create FlashBlade client",
