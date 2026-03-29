@@ -77,7 +77,7 @@ func TestUnit_LoginWithAPIToken(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	tok, err := client.LoginWithAPIToken(context.TODO(), srv.Client(), srv.URL, "my-api-token")
+	tok, err := client.LoginWithAPIToken(context.Background(), srv.Client(), srv.URL, "my-api-token")
 	if err != nil {
 		t.Fatalf("LoginWithAPIToken(): %v", err)
 	}
@@ -115,6 +115,94 @@ func TestUnit_APIError_NotFound(t *testing.T) {
 	if !client.IsNotFound(apiErr) {
 		t.Errorf("expected IsNotFound=true for 404, got false; err=%v", apiErr)
 	}
+}
+
+func TestUnit_OAuth2TokenSource_ErrorSanitized(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(`{"error":"invalid_grant","error_description":"token expired"}`))
+	}))
+	defer srv.Close()
+
+	ts := client.NewFlashBladeTokenSource(srv.URL, "bad-token", srv.Client())
+
+	_, err := ts.Token()
+	if err == nil {
+		t.Fatal("expected error from 401 response, got nil")
+	}
+
+	errMsg := err.Error()
+	// Must contain the sanitized info.
+	if !contains(errMsg, "unexpected HTTP 401") {
+		t.Errorf("error should mention 'unexpected HTTP 401', got: %s", errMsg)
+	}
+	// Must NOT leak response body content.
+	if contains(errMsg, "invalid_grant") {
+		t.Errorf("error must not contain response body content 'invalid_grant', got: %s", errMsg)
+	}
+	if contains(errMsg, "token expired") {
+		t.Errorf("error must not contain response body content 'token expired', got: %s", errMsg)
+	}
+}
+
+func TestUnit_OAuth2TokenSource_ContextCancelled(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"access_token":"tok","expires_in":3600,"token_type":"Bearer"}`))
+	}))
+	defer srv.Close()
+
+	ts := client.NewFlashBladeTokenSource(srv.URL, "my-api-token", srv.Client())
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel immediately.
+
+	_, err := ts.FetchTokenWithContext(ctx)
+	if err == nil {
+		t.Fatal("expected error from cancelled context, got nil")
+	}
+	if !contains(err.Error(), "context canceled") {
+		t.Errorf("expected context canceled error, got: %v", err)
+	}
+}
+
+func TestUnit_OAuth2TokenSource_InvalidJSON(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`not-json`))
+	}))
+	defer srv.Close()
+
+	ts := client.NewFlashBladeTokenSource(srv.URL, "my-api-token", srv.Client())
+
+	_, err := ts.Token()
+	if err == nil {
+		t.Fatal("expected parse error, got nil")
+	}
+	errMsg := err.Error()
+	if !contains(errMsg, "parse response") {
+		t.Errorf("expected 'parse response' in error, got: %s", errMsg)
+	}
+	// Must not leak the body.
+	if contains(errMsg, "not-json") {
+		t.Errorf("error must not contain raw body 'not-json', got: %s", errMsg)
+	}
+}
+
+// contains is a helper to avoid importing strings in tests.
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && searchString(s, substr)
+}
+
+func searchString(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
 
 func TestUnit_APIError_Retryable(t *testing.T) {
