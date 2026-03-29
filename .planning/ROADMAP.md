@@ -315,7 +315,7 @@ Plans:
 - [x] **Phase 18: Security & Auth Hardening** - Sanitize OAuth2 errors, add context propagation, set HTTP safety-net timeout (completed 2026-03-29)
 - [x] **Phase 19: Error Handling & Consistency** - Migrate to errors.As(), fix ParseAPIError, harden bucket delete and test helpers (completed 2026-03-29)
 - [x] **Phase 20: Code Quality -- Validators & Deduplication** - Compile regex at init, extract 8 shared helpers, safer mustObjectValue (completed 2026-03-29)
-- [ ] **Phase 21: Dead Code Removal & Modernization** - Remove unused List* functions, SourceReference, empty UpgradeState; update math/rand
+- [x] **Phase 21: Dead Code Removal & Modernization** - Remove unused List* functions, SourceReference, empty UpgradeState; update math/rand (completed 2026-03-29)
 - [ ] **Phase 22: Test Coverage** - Unit tests for 5 uncovered data sources, OAuth2 config test, HCL acceptance tests, pagination tests
 
 ## Phase Details
@@ -423,5 +423,5 @@ Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22
 | 18. Security & Auth Hardening | 1/1 | Complete    | 2026-03-29 | - |
 | 19. Error Handling & Consistency | 1/1 | Complete    | 2026-03-29 | - |
 | 20. Code Quality -- Validators & Dedup | 2/2 | Complete    | 2026-03-29 | - |
-| 21. Dead Code Removal & Modernization | v2.0.1 | 0/1 | Not started | - |
+| 21. Dead Code Removal & Modernization | 1/1 | Complete   | 2026-03-29 | - |
 | 22. Test Coverage | v2.0.1 | 0/2 | Not started | - |

@@ -39,14 +39,14 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 
 ### Dead Code Removal
 
-- [ ] **DCR-01**: Remove 5 unused List* functions and their List*Opts types from client (nfs_export_policies, smb_share_policies, smb_client_policies, snapshot_policies, s3_export_policies)
-- [ ] **DCR-02**: Remove unused IsUnprocessable helper from errors.go
-- [ ] **DCR-03**: Replace SourceReference with NamedReference (identical types) in models_storage.go
-- [ ] **DCR-04**: Remove 29 empty UpgradeState implementations (add back only when schema version bump needed)
+- [x] **DCR-01**: Remove 5 unused List* functions and their List*Opts types from client (nfs_export_policies, smb_share_policies, smb_client_policies, snapshot_policies, s3_export_policies)
+- [x] **DCR-02**: Remove unused IsUnprocessable helper from errors.go
+- [x] **DCR-03**: Replace SourceReference with NamedReference (identical types) in models_storage.go
+- [x] **DCR-04**: Remove 29 empty UpgradeState implementations (add back only when schema version bump needed)
 
 ### Modernization
 
-- [ ] **MOD-01**: Replace math/rand with math/rand/v2 for Go 1.25 idiomatic usage (transport.go:101)
+- [x] **MOD-01**: Replace math/rand with math/rand/v2 for Go 1.25 idiomatic usage (transport.go:101)
 - [x] **MOD-02**: mustObjectValue returns diagnostics instead of panic() for safer error handling
 
 ### Test Coverage
@@ -107,11 +107,11 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 | DUP-06 | Phase 20 | Complete |
 | DUP-07 | Phase 20 | Complete |
 | DUP-08 | Phase 20 | Complete |
-| DCR-01 | Phase 21 | Pending |
-| DCR-02 | Phase 21 | Pending |
-| DCR-03 | Phase 21 | Pending |
-| DCR-04 | Phase 21 | Pending |
-| MOD-01 | Phase 21 | Pending |
+| DCR-01 | Phase 21 | Complete |
+| DCR-02 | Phase 21 | Complete |
+| DCR-03 | Phase 21 | Complete |
+| DCR-04 | Phase 21 | Complete |
+| MOD-01 | Phase 21 | Complete |
 | MOD-02 | Phase 20 | Complete |
 | TST-01 | Phase 22 | Pending |
 | TST-02 | Phase 22 | Pending |

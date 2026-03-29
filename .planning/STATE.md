@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 20-02-PLAN.md
-last_updated: "2026-03-29T18:35:06.625Z"
-last_activity: 2026-03-29 — Completed Phase 20 Plan 01 (Shared Helpers & Dedup)
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-03-29T18:48:24.694Z"
+last_activity: 2026-03-29 — Completed Phase 21 Plan 01 (Dead Code Removal & Modernization)
 progress:
   total_phases: 22
-  completed_phases: 20
-  total_plans: 51
-  completed_plans: 51
-  percent: 28
+  completed_phases: 21
+  total_plans: 52
+  completed_plans: 52
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 20 - Code Quality Validators Dedup (v2.0.1)
+**Current focus:** Phase 21 - Dead Code Removal & Modernization (v2.0.1)
 
 ## Current Position
 
-Phase: 20 of 22 (Code Quality Validators Dedup)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-03-29 — Completed Phase 20 Plan 01 (Shared Helpers & Dedup)
+Phase: 21 of 22 (Dead Code Removal & Modernization)
+Plan: 1 of 1 in current phase (complete)
+Status: Phase 21 complete
+Last activity: 2026-03-29 — Completed Phase 21 Plan 01 (Dead Code Removal & Modernization)
 
-Progress: [##........] 28% (2/7 plans in v2.0.1)
+Progress: [██████████] 100% (52/52 plans)
 
 ## Performance Metrics
 
@@ -62,6 +62,8 @@ Recent decisions affecting current work:
 - [Phase 20]: nullTimeoutsValue() replaces 29 inline timeout initialization blocks
 - [Phase 20]: Used package-level generic functions for getOneByName[T] and pollUntilGone[T] (Go limitation: no generic methods)
 - [Phase 20]: Shared mapFSToModel via temporary filesystemModel copy to data source model
+- [Phase 21]: Kept encoding/json import in models_storage.go (json.RawMessage used by ObjectStoreAccountPost)
+- [Phase 21]: Updated rand.Intn to rand.IntN for math/rand/v2 API compatibility
 
 ### Pending Todos
 
@@ -73,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T18:34:10.420Z
-Stopped at: Completed 20-02-PLAN.md
+Last session: 2026-03-29T18:48:00Z
+Stopped at: Completed 21-01-PLAN.md
 Resume file: None
