@@ -20,7 +20,6 @@ import (
 var _ resource.Resource = &fileSystemExportResource{}
 var _ resource.ResourceWithConfigure = &fileSystemExportResource{}
 var _ resource.ResourceWithImportState = &fileSystemExportResource{}
-var _ resource.ResourceWithUpgradeState = &fileSystemExportResource{}
 
 // fileSystemExportResource implements the flashblade_file_system_export resource.
 type fileSystemExportResource struct {
@@ -60,7 +59,6 @@ func (r *fileSystemExportResource) Metadata(_ context.Context, _ resource.Metada
 func (r *fileSystemExportResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade file system export.",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -135,9 +133,6 @@ func (r *fileSystemExportResource) Schema(ctx context.Context, _ resource.Schema
 	}
 }
 
-func (r *fileSystemExportResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *fileSystemExportResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

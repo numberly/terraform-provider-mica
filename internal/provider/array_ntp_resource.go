@@ -21,7 +21,6 @@ import (
 var _ resource.Resource = &arrayNtpResource{}
 var _ resource.ResourceWithConfigure = &arrayNtpResource{}
 var _ resource.ResourceWithImportState = &arrayNtpResource{}
-var _ resource.ResourceWithUpgradeState = &arrayNtpResource{}
 
 // arrayNtpResource implements the flashblade_array_ntp singleton resource.
 type arrayNtpResource struct {
@@ -53,7 +52,6 @@ func (r *arrayNtpResource) Metadata(_ context.Context, _ resource.MetadataReques
 func (r *arrayNtpResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages the NTP server list of a FlashBlade array. This is a singleton resource that wraps the ntp_servers field of the /arrays endpoint.",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -77,9 +75,6 @@ func (r *arrayNtpResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 	}
 }
 
-func (r *arrayNtpResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *arrayNtpResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

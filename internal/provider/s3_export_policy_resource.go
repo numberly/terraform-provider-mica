@@ -22,7 +22,6 @@ import (
 var _ resource.Resource = &s3ExportPolicyResource{}
 var _ resource.ResourceWithConfigure = &s3ExportPolicyResource{}
 var _ resource.ResourceWithImportState = &s3ExportPolicyResource{}
-var _ resource.ResourceWithUpgradeState = &s3ExportPolicyResource{}
 
 // s3ExportPolicyResource implements the flashblade_s3_export_policy resource.
 type s3ExportPolicyResource struct {
@@ -58,7 +57,6 @@ func (r *s3ExportPolicyResource) Metadata(_ context.Context, _ resource.Metadata
 func (r *s3ExportPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade S3 export policy.",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -105,9 +103,6 @@ func (r *s3ExportPolicyResource) Schema(ctx context.Context, _ resource.SchemaRe
 	}
 }
 
-func (r *s3ExportPolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *s3ExportPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

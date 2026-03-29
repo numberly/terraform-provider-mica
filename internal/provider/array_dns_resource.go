@@ -21,7 +21,6 @@ import (
 var _ resource.Resource = &arrayDnsResource{}
 var _ resource.ResourceWithConfigure = &arrayDnsResource{}
 var _ resource.ResourceWithImportState = &arrayDnsResource{}
-var _ resource.ResourceWithUpgradeState = &arrayDnsResource{}
 
 // arrayDnsResource implements the flashblade_array_dns singleton resource.
 type arrayDnsResource struct {
@@ -56,7 +55,6 @@ func (r *arrayDnsResource) Metadata(_ context.Context, _ resource.MetadataReques
 func (r *arrayDnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages the DNS configuration of a FlashBlade array. This is a singleton resource — Create/Delete patches the existing configuration rather than creating or deleting a record.",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -98,9 +96,6 @@ func (r *arrayDnsResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 	}
 }
 
-func (r *arrayDnsResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *arrayDnsResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

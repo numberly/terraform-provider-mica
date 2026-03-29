@@ -21,7 +21,6 @@ import (
 var _ resource.Resource = &smbSharePolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &smbSharePolicyRuleResource{}
 var _ resource.ResourceWithImportState = &smbSharePolicyRuleResource{}
-var _ resource.ResourceWithUpgradeState = &smbSharePolicyRuleResource{}
 
 // smbSharePolicyRuleResource implements the flashblade_smb_share_policy_rule resource.
 type smbSharePolicyRuleResource struct {
@@ -58,7 +57,6 @@ func (r *smbSharePolicyRuleResource) Metadata(_ context.Context, _ resource.Meta
 func (r *smbSharePolicyRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a rule within a FlashBlade SMB share policy.",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -110,9 +108,6 @@ func (r *smbSharePolicyRuleResource) Schema(ctx context.Context, _ resource.Sche
 	}
 }
 
-func (r *smbSharePolicyRuleResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *smbSharePolicyRuleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

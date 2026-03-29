@@ -22,7 +22,6 @@ import (
 var _ resource.Resource = &snapshotPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &snapshotPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &snapshotPolicyRuleResource{}
-var _ resource.ResourceWithUpgradeState = &snapshotPolicyRuleResource{}
 
 // snapshotPolicyRuleResource implements the flashblade_snapshot_policy_rule resource.
 // IMPORTANT: There is NO dedicated API endpoint for snapshot rules.
@@ -65,7 +64,6 @@ func (r *snapshotPolicyRuleResource) Schema(ctx context.Context, _ resource.Sche
 	resp.Schema = schema.Schema{
 		Description: "Manages a rule within a FlashBlade snapshot policy. " +
 			"Rules are managed via PATCH add_rules / remove_rules on the parent policy — there is no dedicated rules endpoint.",
-		Version: 0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -122,9 +120,6 @@ func (r *snapshotPolicyRuleResource) Schema(ctx context.Context, _ resource.Sche
 	}
 }
 
-func (r *snapshotPolicyRuleResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *snapshotPolicyRuleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

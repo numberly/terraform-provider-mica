@@ -25,7 +25,6 @@ import (
 var _ resource.Resource = &filesystemResource{}
 var _ resource.ResourceWithConfigure = &filesystemResource{}
 var _ resource.ResourceWithImportState = &filesystemResource{}
-var _ resource.ResourceWithUpgradeState = &filesystemResource{}
 
 // filesystemResource implements the flashblade_file_system resource.
 type filesystemResource struct {
@@ -90,7 +89,6 @@ func (r *filesystemResource) Metadata(_ context.Context, _ resource.MetadataRequ
 func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade file system.",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -317,9 +315,6 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 	}
 }
 
-func (r *filesystemResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *filesystemResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

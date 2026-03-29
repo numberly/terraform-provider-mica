@@ -19,7 +19,6 @@ import (
 var _ resource.Resource = &remoteCredentialsResource{}
 var _ resource.ResourceWithConfigure = &remoteCredentialsResource{}
 var _ resource.ResourceWithImportState = &remoteCredentialsResource{}
-var _ resource.ResourceWithUpgradeState = &remoteCredentialsResource{}
 
 // remoteCredentialsResource implements the flashblade_object_store_remote_credentials resource.
 type remoteCredentialsResource struct {
@@ -54,7 +53,6 @@ func (r *remoteCredentialsResource) Metadata(_ context.Context, _ resource.Metad
 func (r *remoteCredentialsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages FlashBlade object store remote credentials for cross-array bucket replication.",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -97,9 +95,6 @@ func (r *remoteCredentialsResource) Schema(ctx context.Context, _ resource.Schem
 	}
 }
 
-func (r *remoteCredentialsResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *remoteCredentialsResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

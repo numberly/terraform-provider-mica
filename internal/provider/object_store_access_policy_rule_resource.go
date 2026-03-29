@@ -27,7 +27,6 @@ import (
 var _ resource.Resource = &objectStoreAccessPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccessPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccessPolicyRuleResource{}
-var _ resource.ResourceWithUpgradeState = &objectStoreAccessPolicyRuleResource{}
 
 // objectStoreAccessPolicyRuleResource implements the flashblade_object_store_access_policy_rule resource.
 type objectStoreAccessPolicyRuleResource struct {
@@ -64,7 +63,6 @@ func (r *objectStoreAccessPolicyRuleResource) Metadata(_ context.Context, _ reso
 func (r *objectStoreAccessPolicyRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a rule within a FlashBlade object store access policy (IAM-style S3 policy rule).",
-		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -131,9 +129,6 @@ func (r *objectStoreAccessPolicyRuleResource) Schema(ctx context.Context, _ reso
 	}
 }
 
-func (r *objectStoreAccessPolicyRuleResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
-}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *objectStoreAccessPolicyRuleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
