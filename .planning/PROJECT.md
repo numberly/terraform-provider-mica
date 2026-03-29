@@ -8,41 +8,34 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v1.2 — Code Quality & Robustness
+## Current Milestone: v1.3 — Release Readiness
 
-**Goal:** Fix latent bugs, harden test coverage with idempotence checks and strict mock validation, add input validators, and clean up architectural inconsistencies across the provider.
+**Goal:** Implement best practices from major providers (AWS, Cloudflare) to prepare for public release: state migration framework, import documentation, transport hardening, and write-only sensitive fields.
 
 **Target features:**
-- Fix confirmed bugs (account export Delete, filesystem writable drift, IsNotFound too broad)
-- Split monolithic models.go by domain
-- Unified composite ID helper for policy rule import/delete
-- Idempotence tests (Create → Read → plan = 0 changes)
-- Mock handlers that validate query params (catch API mismatches in CI)
-- Terraform validators for resource names (alphanumeric rules, hostname formats)
+- State migration framework (SchemaVersion + UpgradeState on all resources)
+- Import documentation (import.md for every resource)
+- Move int64UseStateForUnknown to shared helpers
+- Jitter in exponential backoff (±20%)
+- Write-only argument for secret_access_key (Terraform 1.11+)
 
 ## Requirements
 
 ### Validated
 
 - ✓ Provider authenticates via API token — v1.0
-- ✓ 22 core resources with CRUD, import, drift detection — v1.0
-- ✓ 10 server/export resources with TDD tests — v1.1
-- ✓ 268 unit tests, CI pipeline, documentation — v1.1
-- ✓ 26 resources acceptance-tested against live FlashBlade — v1.1
+- ✓ 28 resources with CRUD, import, drift detection — v1.0+v1.1
+- ✓ 329 unit tests with idempotence + mock param validation — v1.2
+- ✓ 4 bug fixes, architecture cleanup, validators — v1.2
+- ✓ CI/CD with GoReleaser + Cosign keyless signing
 
 ### Active
 
-- [ ] Fix account export Delete bug (combined name vs short name)
-- [ ] Fix filesystem writable drift (permanent 1-change on plan)
-- [ ] Tighten IsNotFound to avoid masking real 400 errors
-- [ ] Split models.go by domain (storage, policies, exports, admin)
-- [ ] Unified compositeID helper for policy rule import/delete
-- [ ] Extract stringOrNull helper to shared location
-- [ ] Idempotence tests for all resource families
-- [ ] Mock query param validation (reject invalid params like real API)
-- [ ] Complete Update tests for resources missing them
-- [ ] Terraform validators (name format, hostname, S3 rule name)
-- [ ] Fix omitempty on nested structs (prevent sending empty objects)
+- [ ] SchemaVersion 0 + UpgradeState framework on all 28 resources
+- [ ] import.md files for all 27 importable resources
+- [ ] Move int64UseStateForUnknown to helpers.go
+- [ ] Jitter ±20% in exponential backoff
+- [ ] Write-only argument for secret_access_key
 
 ### Out of Scope
 
@@ -84,4 +77,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-28 after milestone v1.2 initialization*
+*Last updated: 2026-03-29 after milestone v1.3 initialization*

@@ -27,3 +27,17 @@
 
 **Phases:** 6–8 (8 plans)
 **Last phase number:** 8
+
+### v1.2 — Code Quality & Robustness (completed 2026-03-29)
+
+**Goal:** Fix latent bugs, harden test coverage, add validators, clean up architecture.
+
+**Delivered:**
+- 4 bug fixes (account export Delete, filesystem writable drift, IsNotFound scoping, omitempty)
+- models.go split into 5 domain files, compositeID + stringOrNull shared helpers
+- 9 idempotence tests, 4 mock handlers hardened with query param validation
+- 2 custom validators (Alphanumeric, HostnameNoDot) + enum OneOf validators
+- 329 unit tests (61 new), all passing
+
+**Phases:** 9–11 (7 plans)
+**Last phase number:** 11
