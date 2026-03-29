@@ -9,18 +9,18 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 
 ### Security
 
-- [ ] **SEC-01**: OAuth2 token exchange error sanitizes response body instead of dumping raw content (auth.go:130)
-- [ ] **SEC-02**: Provider emits tflog.Warn when insecure_skip_verify is enabled for visibility
-- [ ] **SEC-03**: fetchToken() accepts context parameter for cancellation support (auth.go:112)
-- [ ] **SEC-04**: NewClient() accepts context parameter instead of using context.Background() (client.go:96,107)
-- [ ] **SEC-05**: HTTP client has a global safety-net timeout configured (client.go:84)
+- [x] **SEC-01**: OAuth2 token exchange error sanitizes response body instead of dumping raw content (auth.go:130)
+- [x] **SEC-02**: Provider emits tflog.Warn when insecure_skip_verify is enabled for visibility
+- [x] **SEC-03**: fetchToken() accepts context parameter for cancellation support (auth.go:112)
+- [x] **SEC-04**: NewClient() accepts context parameter instead of using context.Background() (client.go:96,107)
+- [x] **SEC-05**: HTTP client has a global safety-net timeout configured (client.go:84)
 
 ### Error Handling
 
 - [ ] **ERR-01**: IsNotFound, IsConflict, IsUnprocessable use errors.As() instead of direct type assertion (errors.go:67,88,97)
 - [ ] **ERR-02**: Resource-level error checks use errors.As() pattern (quota_group, quota_user, object_store_account)
 - [ ] **ERR-03**: ParseAPIError handles io.ReadAll failure gracefully instead of silently ignoring (errors.go:46)
-- [ ] **ERR-04**: LoginWithAPIToken uses http.NewRequestWithContext directly instead of nil-check workaround (auth.go:26-32)
+- [x] **ERR-04**: LoginWithAPIToken uses http.NewRequestWithContext directly instead of nil-check workaround (auth.go:26-32)
 
 ### Code Quality — Validators
 
@@ -89,15 +89,15 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 18 | Pending |
-| SEC-02 | Phase 18 | Pending |
-| SEC-03 | Phase 18 | Pending |
-| SEC-04 | Phase 18 | Pending |
-| SEC-05 | Phase 18 | Pending |
+| SEC-01 | Phase 18 | Complete |
+| SEC-02 | Phase 18 | Complete |
+| SEC-03 | Phase 18 | Complete |
+| SEC-04 | Phase 18 | Complete |
+| SEC-05 | Phase 18 | Complete |
 | ERR-01 | Phase 19 | Pending |
 | ERR-02 | Phase 19 | Pending |
 | ERR-03 | Phase 19 | Pending |
-| ERR-04 | Phase 18 | Pending |
+| ERR-04 | Phase 18 | Complete |
 | VAL-01 | Phase 20 | Pending |
 | DUP-01 | Phase 20 | Pending |
 | DUP-02 | Phase 20 | Pending |
