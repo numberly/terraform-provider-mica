@@ -28,8 +28,8 @@ Requirements for milestone v1.2 — Code Quality & Robustness.
 
 ### Validators
 
-- [ ] **VAL-01**: Name format validators (S3 rule: alphanumeric, virtual host: no dots, etc.)
-- [ ] **VAL-02**: Terraform plan-time validation for enum fields (effect, permission, versioning)
+- [x] **VAL-01**: Name format validators (S3 rule: alphanumeric, virtual host: no dots, etc.)
+- [x] **VAL-02**: Terraform plan-time validation for enum fields (effect, permission, versioning)
 
 ## v1.3 Requirements
 
@@ -61,8 +61,8 @@ Deferred to future release.
 | TST-01 | Phase 11 | Pending |
 | TST-02 | Phase 11 | Pending |
 | TST-03 | Phase 11 | Pending |
-| VAL-01 | Phase 11 | Pending |
-| VAL-02 | Phase 11 | Pending |
+| VAL-01 | Phase 11 | Complete |
+| VAL-02 | Phase 11 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 12 total

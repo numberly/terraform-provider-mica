@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Code Quality & Robustness
 status: executing
-stopped_at: Completed 10-02-PLAN.md
-last_updated: "2026-03-28T21:18:12.331Z"
-last_activity: 2026-03-28 — Completed 10-01 split models.go into domain files (ARC-01)
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-03-29T06:45:00Z"
+last_activity: 2026-03-29 — Completed 11-02 query param validation for mock handlers (TST-02)
 progress:
   total_phases: 11
   completed_phases: 10
-  total_plans: 32
-  completed_plans: 32
-  percent: 97
+  total_plans: 35
+  completed_plans: 34
+  percent: 98
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v1.2 — Code Quality & Robustness, Phase 10 Architecture Cleanup
+**Current focus:** Milestone v1.2 — Code Quality & Robustness, Phase 11 Test Hardening & Validators
 
 ## Current Position
 
-Phase: 10 of 11 (Architecture Cleanup)
-Plan: 1 of 2 complete
-Status: Phase 10 in progress
-Last activity: 2026-03-28 — Completed 10-01 split models.go into domain files (ARC-01)
+Phase: 11 of 11 (Test Hardening & Validators)
+Plan: 2 of 3 complete
+Status: Phase 11 in progress
+Last activity: 2026-03-29 — Completed 11-02 query param validation for mock handlers (TST-02)
 
-Progress: [██████████] 97%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Recent decisions affecting current work:
 - [Phase 09-bug-fixes]: IsNotFound uses HasSuffix on Errors[0].Message instead of Contains on Error() to prevent false-positive not-found matching
 - [Phase 10-01]: Split monolithic models.go into 5 domain files for navigability and reduced merge conflicts
 - [Phase 10]: parseCompositeID returns error for reusability outside ImportState
+- [Phase 11-01]: Custom validators implement validator.String interface directly (no external library wrapper needed)
 
 ### Pending Todos
 
@@ -68,6 +69,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T21:15:00.739Z
-Stopped at: Completed 10-02-PLAN.md
+Last session: 2026-03-29T06:43:14Z
+Stopped at: Completed 11-01-PLAN.md
 Resume file: None
