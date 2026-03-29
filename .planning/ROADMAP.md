@@ -294,11 +294,10 @@ Plans:
   2. Every new resource and data source (remote credentials, bucket replica link, array connection DS) has an `import.sh` file with realistic identifiers
   3. `tfplugindocs generate` produces documentation including all new resources without errors or manual edits
   4. README coverage table includes the replication resources category with correct resource counts
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 16-01: Dual-provider replication workflow example + HCL examples + import.sh for new resources
-- [ ] 16-02: tfplugindocs regeneration + README update with replication category
+- [ ] 16-01-PLAN.md — HCL examples, replication workflow, docs regeneration, README update
 
 ### Phase 17: Testing
 **Goal**: All new replication resources have comprehensive test coverage and pass validation against a live FlashBlade pair
@@ -336,5 +335,5 @@ Phases execute in numeric order: 14 -> 15 -> 16 -> 17
 | 13. Documentation & Sensitive Data | v1.3 | 2/2 | Complete | 2026-03-29 |
 | 14. Access Key Enhancement & Array Connection | 2/2 | Complete    | 2026-03-29 | - |
 | 15. Replication Resources | 3/3 | Complete    | 2026-03-29 | - |
-| 16. Workflow & Documentation | v2.0 | 0/2 | Not started | - |
+| 16. Workflow & Documentation | v2.0 | 0/1 | Not started | - |
 | 17. Testing | v2.0 | 0/2 | Not started | - |
