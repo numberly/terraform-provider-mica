@@ -437,3 +437,55 @@ func TestUnit_SmbClientPolicy_Idempotent(t *testing.T) {
 		t.Errorf("Version changed after Read: %s -> %s", beforeModel.Version.ValueString(), afterModel.Version.ValueString())
 	}
 }
+
+// TestUnit_SmbClientPolicy_Update verifies PATCH updates enabled toggle and name is unchanged.
+func TestUnit_SmbClientPolicy_Update(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSmbClientPolicyHandlers(ms.Mux)
+	handlers.RegisterFileSystemHandlers(ms.Mux)
+
+	r := newTestSMBClientPolicyResource(t, ms)
+	s := smbClientPolicyResourceSchema(t).Schema
+
+	// Create with enabled=true.
+	plan := smbClientPolicyPlanWithNameAndEnabled(t, "update-smb-policy", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Update enabled=false.
+	updateCfg := nullSMBClientPolicyConfig()
+	updateCfg["name"] = tftypes.NewValue(tftypes.String, "update-smb-policy")
+	updateCfg["enabled"] = tftypes.NewValue(tftypes.Bool, false)
+	updatePlan := tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildSMBClientPolicyType(), updateCfg),
+		Schema: s,
+	}
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: createResp.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+
+	var model smbClientPolicyModel
+	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.Enabled.ValueBool() {
+		t.Error("expected enabled=false after Update")
+	}
+	if model.Name.ValueString() != "update-smb-policy" {
+		t.Errorf("expected name unchanged=update-smb-policy, got %s", model.Name.ValueString())
+	}
+}

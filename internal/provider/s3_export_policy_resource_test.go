@@ -436,3 +436,48 @@ func TestUnit_S3ExportPolicy_Idempotent(t *testing.T) {
 		t.Errorf("Enabled changed after Read: %v -> %v", beforeModel.Enabled.ValueBool(), afterModel.Enabled.ValueBool())
 	}
 }
+
+// TestUnit_S3ExportPolicy_Update verifies PATCH updates enabled toggle and name is unchanged.
+func TestUnit_S3ExportPolicy_Update(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterS3ExportPolicyHandlers(ms.Mux)
+
+	r := newTestS3PolicyResource(t, ms)
+	s := s3PolicyResourceSchema(t).Schema
+
+	// Create with enabled=true.
+	createPlan := s3PolicyPlanWithNameAndEnabled(t, "update-s3-policy", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildS3PolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Update enabled=false.
+	updatePlan := s3PolicyPlanWithNameAndEnabled(t, "update-s3-policy", false)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildS3PolicyType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: createResp.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+
+	var model s3ExportPolicyModel
+	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.Enabled.ValueBool() {
+		t.Error("expected enabled=false after Update")
+	}
+	if model.Name.ValueString() != "update-s3-policy" {
+		t.Errorf("expected name unchanged=update-s3-policy, got %s", model.Name.ValueString())
+	}
+}

@@ -428,3 +428,48 @@ func TestUnit_SyslogServer_Idempotent(t *testing.T) {
 		t.Errorf("URI changed after Read: %s -> %s", beforeModel.URI.ValueString(), afterModel.URI.ValueString())
 	}
 }
+
+// TestUnit_SyslogServer_Update verifies PATCH updates URI and name is unchanged.
+func TestUnit_SyslogServer_Update(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSyslogServerHandlers(ms.Mux)
+
+	r := newTestSyslogServerResource(t, ms)
+	s := syslogServerResourceSchema(t).Schema
+
+	// Create with initial URI.
+	createPlan := syslogServerPlan(t, "update-syslog", "tcp://syslog1.example.com:514", []string{"data-audit"}, nil)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSyslogServerType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Update URI.
+	updatePlan := syslogServerPlan(t, "update-syslog", "tcp://syslog2.example.com:514", []string{"data-audit"}, nil)
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSyslogServerType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: createResp.State,
+	}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update: %s", updateResp.Diagnostics)
+	}
+
+	var model syslogServerModel
+	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.URI.ValueString() != "tcp://syslog2.example.com:514" {
+		t.Errorf("expected uri=tcp://syslog2.example.com:514, got %s", model.URI.ValueString())
+	}
+	if model.Name.ValueString() != "update-syslog" {
+		t.Errorf("expected name unchanged=update-syslog, got %s", model.Name.ValueString())
+	}
+}
