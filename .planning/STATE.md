@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 19-01-PLAN.md
-last_updated: "2026-03-29T16:46:55.607Z"
-last_activity: 2026-03-29 — Completed Phase 18 Plan 01 (Security & Auth Hardening)
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-03-29T17:49:18Z"
+last_activity: 2026-03-29 — Completed Phase 20 Plan 01 (Shared Helpers & Dedup)
 progress:
   total_phases: 22
   completed_phases: 19
   total_plans: 49
-  completed_plans: 49
-  percent: 14
+  completed_plans: 50
+  percent: 28
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 19 - Error Handling (v2.0.1)
+**Current focus:** Phase 20 - Code Quality Validators Dedup (v2.0.1)
 
 ## Current Position
 
-Phase: 19 of 22 (Error Handling)
-Plan: 0 of 1 in current phase
-Status: Ready to plan
-Last activity: 2026-03-29 — Completed Phase 18 Plan 01 (Security & Auth Hardening)
+Phase: 20 of 22 (Code Quality Validators Dedup)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-03-29 — Completed Phase 20 Plan 01 (Shared Helpers & Dedup)
 
-Progress: [#.........] 14% (1/7 plans in v2.0.1)
+Progress: [##........] 28% (2/7 plans in v2.0.1)
 
 ## Performance Metrics
 
@@ -57,6 +57,9 @@ Recent decisions affecting current work:
 - [18-01]: 30s HTTP safety-net timeout chosen (long enough for slow ops, prevents indefinite hangs)
 - [Phase 19]: Exported BucketStore type to enable test helpers for mock object count manipulation
 - [Phase 19]: Used errors.As universally -- no direct *APIError type assertions remain in codebase
+- [Phase 20]: map*ToModel functions return diag.Diagnostics instead of panicking
+- [Phase 20]: DiagnosticReporter interface replaces 15 inline readIntoState interface declarations
+- [Phase 20]: nullTimeoutsValue() replaces 29 inline timeout initialization blocks
 
 ### Pending Todos
 
@@ -68,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T16:45:03.024Z
-Stopped at: Completed 19-01-PLAN.md
+Last session: 2026-03-29T17:49:18Z
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None

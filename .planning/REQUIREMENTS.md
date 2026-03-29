@@ -24,15 +24,15 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 
 ### Code Quality — Validators
 
-- [ ] **VAL-01**: Regex patterns compiled once at package level instead of per-invocation (validators.go:33,66)
+- [x] **VAL-01**: Regex patterns compiled once at package level instead of per-invocation (validators.go:33,66)
 
 ### Code Quality — Helpers & Deduplication
 
-- [ ] **DUP-01**: Shared spaceAttrTypes() helper replaces 4 duplicated space schema definitions
-- [ ] **DUP-02**: Shared mapSpaceToObject() helper used by filesystem, bucket, and data sources
-- [ ] **DUP-03**: nullTimeoutsValue() helper replaces 29 duplicated timeout initialization blocks in ImportState
-- [ ] **DUP-04**: mustObjectValue() consolidated into single shared helper in helpers.go (used by filesystem, bucket, object_store_account)
-- [ ] **DUP-05**: DiagnosticReporter named interface type replaces inline interface in readIntoState signatures
+- [x] **DUP-01**: Shared spaceAttrTypes() helper replaces 4 duplicated space schema definitions
+- [x] **DUP-02**: Shared mapSpaceToObject() helper used by filesystem, bucket, and data sources
+- [x] **DUP-03**: nullTimeoutsValue() helper replaces 29 duplicated timeout initialization blocks in ImportState
+- [x] **DUP-04**: mustObjectValue() consolidated into single shared helper in helpers.go (used by filesystem, bucket, object_store_account)
+- [x] **DUP-05**: DiagnosticReporter named interface type replaces inline interface in readIntoState signatures
 - [ ] **DUP-06**: Generic getOneByName[T] client helper replaces ~15 identical Get*ByName patterns
 - [ ] **DUP-07**: Generic pollUntilGone[T] helper unifies PollUntilEradicated and PollBucketUntilEradicated
 - [ ] **DUP-08**: mapFSToModel shared between filesystem resource and data source instead of duplicated
@@ -98,12 +98,12 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 | ERR-02 | Phase 19 | Complete |
 | ERR-03 | Phase 19 | Complete |
 | ERR-04 | Phase 18 | Complete |
-| VAL-01 | Phase 20 | Pending |
-| DUP-01 | Phase 20 | Pending |
-| DUP-02 | Phase 20 | Pending |
-| DUP-03 | Phase 20 | Pending |
-| DUP-04 | Phase 20 | Pending |
-| DUP-05 | Phase 20 | Pending |
+| VAL-01 | Phase 20 | Complete |
+| DUP-01 | Phase 20 | Complete |
+| DUP-02 | Phase 20 | Complete |
+| DUP-03 | Phase 20 | Complete |
+| DUP-04 | Phase 20 | Complete |
+| DUP-05 | Phase 20 | Complete |
 | DUP-06 | Phase 20 | Pending |
 | DUP-07 | Phase 20 | Pending |
 | DUP-08 | Phase 20 | Pending |
