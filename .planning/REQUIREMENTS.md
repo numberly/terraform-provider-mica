@@ -3,95 +3,132 @@
 **Defined:** 2026-03-29
 **Core Value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
 
-## v2.0 Requirements
+## v2.0.1 Requirements
 
-Requirements for milestone v2.0 — Cross-Array Bucket Replication.
+Requirements for quality & hardening release. Derived from comprehensive 5-agent audit (code review, security, linting, test coverage, dead code analysis).
 
-### Access Key Enhancement
+### Security
 
-- [x] **AKE-01**: Access key resource accepts optional `secret_access_key` input to import an existing key pair onto a second FlashBlade
-- [x] **AKE-02**: When `secret_access_key` is provided, POST sends it in the body; when omitted, API generates it
-- [x] **AKE-03**: Bucket `versioning` attribute validated as required when bucket is used with replication
+- [ ] **SEC-01**: OAuth2 token exchange error sanitizes response body instead of dumping raw content (auth.go:130)
+- [ ] **SEC-02**: Provider emits tflog.Warn when insecure_skip_verify is enabled for visibility
+- [ ] **SEC-03**: fetchToken() accepts context parameter for cancellation support (auth.go:112)
+- [ ] **SEC-04**: NewClient() accepts context parameter instead of using context.Background() (client.go:96,107)
+- [ ] **SEC-05**: HTTP client has a global safety-net timeout configured (client.go:84)
 
-### Remote Credentials
+### Error Handling
 
-- [x] **RCR-01**: Operator can create remote credentials with access_key_id + secret_access_key referencing a remote array
-- [x] **RCR-02**: Operator can update remote credentials (rotate keys)
-- [x] **RCR-03**: Operator can import existing remote credentials into Terraform state
+- [ ] **ERR-01**: IsNotFound, IsConflict, IsUnprocessable use errors.As() instead of direct type assertion (errors.go:67,88,97)
+- [ ] **ERR-02**: Resource-level error checks use errors.As() pattern (quota_group, quota_user, object_store_account)
+- [ ] **ERR-03**: ParseAPIError handles io.ReadAll failure gracefully instead of silently ignoring (errors.go:46)
+- [ ] **ERR-04**: LoginWithAPIToken uses http.NewRequestWithContext directly instead of nil-check workaround (auth.go:26-32)
 
-### Bucket Replica Link
+### Code Quality — Validators
 
-- [x] **BRL-01**: Operator can create a bucket replica link between a local bucket and a remote bucket
-- [x] **BRL-02**: Operator can pause/resume a replica link via Terraform apply
-- [x] **BRL-03**: Operator can destroy a replica link cleanly
-- [x] **BRL-04**: Operator can import an existing replica link into Terraform state
-- [x] **BRL-05**: Replica link exposes read-only status fields (direction, lag, recovery_point, status)
+- [ ] **VAL-01**: Regex patterns compiled once at package level instead of per-invocation (validators.go:33,66)
 
-### Array Connection
+### Code Quality — Helpers & Deduplication
 
-- [x] **ACN-01**: Data source reads an existing array connection by remote name
-- [x] **ACN-02**: Data source exposes id, status, remote name, management_address, replication_addresses
+- [ ] **DUP-01**: Shared spaceAttrTypes() helper replaces 4 duplicated space schema definitions
+- [ ] **DUP-02**: Shared mapSpaceToObject() helper used by filesystem, bucket, and data sources
+- [ ] **DUP-03**: nullTimeoutsValue() helper replaces 29 duplicated timeout initialization blocks in ImportState
+- [ ] **DUP-04**: mustObjectValue() consolidated into single shared helper in helpers.go (used by filesystem, bucket, object_store_account)
+- [ ] **DUP-05**: DiagnosticReporter named interface type replaces inline interface in readIntoState signatures
+- [ ] **DUP-06**: Generic getOneByName[T] client helper replaces ~15 identical Get*ByName patterns
+- [ ] **DUP-07**: Generic pollUntilGone[T] helper unifies PollUntilEradicated and PollBucketUntilEradicated
+- [ ] **DUP-08**: mapFSToModel shared between filesystem resource and data source instead of duplicated
 
-### Workflow
+### Dead Code Removal
 
-- [x] **WFL-01**: Complete dual-provider replication workflow example (FB-A + FB-B, same tenant, shared credentials, bidirectional replica links)
-- [x] **WFL-02**: TDD unit tests + mock handlers for all new resources
-- [x] **WFL-03**: Acceptance test for replication lifecycle on live FlashBlade pair
+- [ ] **DCR-01**: Remove 5 unused List* functions and their List*Opts types from client (nfs_export_policies, smb_share_policies, smb_client_policies, snapshot_policies, s3_export_policies)
+- [ ] **DCR-02**: Remove unused IsUnprocessable helper from errors.go
+- [ ] **DCR-03**: Replace SourceReference with NamedReference (identical types) in models_storage.go
+- [ ] **DCR-04**: Remove 29 empty UpgradeState implementations (add back only when schema version bump needed)
 
-### Documentation
+### Modernization
 
-- [x] **DOC-01**: HCL examples + import.sh for all new resources (remote credentials, replica link, array connection DS)
-- [x] **DOC-02**: tfplugindocs regenerated with new resources included
-- [x] **DOC-03**: README updated with replication resources category + coverage table
+- [ ] **MOD-01**: Replace math/rand with math/rand/v2 for Go 1.25 idiomatic usage (transport.go:101)
+- [ ] **MOD-02**: mustObjectValue returns diagnostics instead of panic() for safer error handling
 
-## v2.1 Requirements
+### Test Coverage
 
-Deferred to future release.
+- [ ] **TST-01**: Unit tests for object_store_virtual_host data source (Read + NotFound)
+- [ ] **TST-02**: Unit tests for remote_credentials data source (Read + NotFound)
+- [ ] **TST-03**: Unit tests for bucket_replica_link data source (Read + NotFound)
+- [ ] **TST-04**: Unit tests for file_system_export data source (Read + NotFound)
+- [ ] **TST-05**: Unit tests for object_store_account_export data source (Read + NotFound)
+- [ ] **TST-06**: OAuth2 provider configuration test (client_id + key_id + issuer flow)
+- [ ] **TST-07**: HCL-based acceptance tests using resource.UnitTest with mock server for full Terraform lifecycle (plan → apply → refresh → import → destroy)
+- [ ] **TST-08**: Pagination tests for client methods beyond filesystems (at least buckets + one policy type)
 
-- Target resource (external S3 replication to AWS/Backblaze/OCI)
-- Array connection resource (create/delete, not just data source)
-- File system replica links
-- Cascading replication (A → B → C)
+### Code Consistency
+
+- [ ] **CON-01**: Bucket delete guard does fresh GET before object count check instead of using stale state (bucket_resource.go:416-423)
+- [ ] **CON-02**: countItems in test mock helpers uses reflect or param instead of JSON round-trip (testmock/handlers/helpers.go:36-46)
+
+## Future Requirements
+
+### v2.1
+
+- **FUT-01**: FlashBladeClient.Close()/Logout() method for session cleanup
+- **FUT-02**: Generic Configure helper to reduce 54 identical Configure method bodies
+- **FUT-03**: Acceptance tests on live FlashBlade pair for replication resources
+- **FUT-04**: Client package direct unit tests for all 21 untested client files
+- **FUT-05**: Concurrent operation testing for thread-safety validation
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| External S3 target replication | v2.1 — different topology, needs target + credentials model |
-| Array connection management | v2.1 — connection key workflow is complex, data source sufficient for now |
-| File system replication | v2.1 — different API family (ActiveDR), not S3 replication |
-| Cascading replication | v2.1 — advanced topology, requires cascading_enabled support |
-| Sync replication | Not supported by FlashBlade for S3 (async only) |
+| New resources or data sources | This is a hardening-only milestone |
+| API version upgrade | No new API features needed |
+| CI/CD pipeline changes | Pipeline already functional from v1.3 |
+| Documentation regeneration | No schema changes that affect docs |
+| Policy resource CRUD abstraction | High complexity, low ROI given framework limitations — track as tech debt |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AKE-01 | Phase 14 | Complete |
-| AKE-02 | Phase 14 | Complete |
-| AKE-03 | Phase 14 | Complete |
-| RCR-01 | Phase 15 | Complete |
-| RCR-02 | Phase 15 | Complete |
-| RCR-03 | Phase 15 | Complete |
-| BRL-01 | Phase 15 | Complete |
-| BRL-02 | Phase 15 | Complete |
-| BRL-03 | Phase 15 | Complete |
-| BRL-04 | Phase 15 | Complete |
-| BRL-05 | Phase 15 | Complete |
-| ACN-01 | Phase 14 | Complete |
-| ACN-02 | Phase 14 | Complete |
-| WFL-01 | Phase 16 | Complete |
-| WFL-02 | Phase 17 | Complete |
-| WFL-03 | Phase 17 | Complete |
-| DOC-01 | Phase 16 | Complete |
-| DOC-02 | Phase 16 | Complete |
-| DOC-03 | Phase 16 | Complete |
+| SEC-01 | — | Pending |
+| SEC-02 | — | Pending |
+| SEC-03 | — | Pending |
+| SEC-04 | — | Pending |
+| SEC-05 | — | Pending |
+| ERR-01 | — | Pending |
+| ERR-02 | — | Pending |
+| ERR-03 | — | Pending |
+| ERR-04 | — | Pending |
+| VAL-01 | — | Pending |
+| DUP-01 | — | Pending |
+| DUP-02 | — | Pending |
+| DUP-03 | — | Pending |
+| DUP-04 | — | Pending |
+| DUP-05 | — | Pending |
+| DUP-06 | — | Pending |
+| DUP-07 | — | Pending |
+| DUP-08 | — | Pending |
+| DCR-01 | — | Pending |
+| DCR-02 | — | Pending |
+| DCR-03 | — | Pending |
+| DCR-04 | — | Pending |
+| MOD-01 | — | Pending |
+| MOD-02 | — | Pending |
+| TST-01 | — | Pending |
+| TST-02 | — | Pending |
+| TST-03 | — | Pending |
+| TST-04 | — | Pending |
+| TST-05 | — | Pending |
+| TST-06 | — | Pending |
+| TST-07 | — | Pending |
+| TST-08 | — | Pending |
+| CON-01 | — | Pending |
+| CON-02 | — | Pending |
 
 **Coverage:**
-- v2.0 requirements: 19 total
-- Mapped to phases: 19
-- Unmapped: 0
+- v2.0.1 requirements: 34 total
+- Mapped to phases: 0
+- Unmapped: 34 ⚠️
 
 ---
 *Requirements defined: 2026-03-29*
-*Last updated: 2026-03-29 after v2.0 roadmap creation*
+*Last updated: 2026-03-29 after quality audit analysis*
