@@ -237,14 +237,14 @@ Plans:
 **Depends on**: Phase 12 (infrastructure changes landed before docs generation)
 **Requirements**: DOC-01, DOC-02, SEC-01
 **Success Criteria** (what must be TRUE):
-  1. Every importable resource (27 of 28) has an `import.md` template file with correct `terraform import` syntax and an example using realistic identifiers
+  1. Every importable resource (27 of 28) has an `import.sh` file with correct `terraform import` syntax and an example using realistic identifiers
   2. `tfplugindocs generate` produces documentation that includes import sections for all importable resources without errors or manual edits
   3. `secret_access_key` on `flashblade_object_store_access_key` uses the write-only attribute pattern: the value is never stored in state, never appears in plan diff, and is only sent to the API on create
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 13-01: Import documentation (import.md) for all 27 importable resources + tfplugindocs regeneration
-- [ ] 13-02: Write-only argument pattern for secret_access_key
+- [ ] 13-01-PLAN.md — Import documentation (import.sh) for 10 remaining importable resources + tfplugindocs regeneration
+- [ ] 13-02-PLAN.md — Write-only argument pattern for secret_access_key (WriteOnly: true, framework v1.19.0)
 
 ## Progress
 
@@ -264,5 +264,5 @@ Phases execute in numeric order: 12 -> 13
 | 9. Bug Fixes | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 10. Architecture Cleanup | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 11. Test Hardening & Validators | v1.2 | 3/3 | Complete | 2026-03-29 |
-| 12. Infrastructure Hardening | 2/2 | Complete    | 2026-03-29 | - |
+| 12. Infrastructure Hardening | v1.3 | 2/2 | Complete | 2026-03-29 |
 | 13. Documentation & Sensitive Data | v1.3 | 0/2 | Not started | - |
