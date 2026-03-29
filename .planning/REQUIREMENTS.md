@@ -49,20 +49,20 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MIG-01 | — | Pending |
-| MIG-02 | — | Pending |
-| DOC-01 | — | Pending |
-| DOC-02 | — | Pending |
-| HLP-01 | — | Pending |
-| HLP-02 | — | Pending |
-| TRN-01 | — | Pending |
-| SEC-01 | — | Pending |
+| MIG-01 | Phase 12 | Pending |
+| MIG-02 | Phase 12 | Pending |
+| DOC-01 | Phase 13 | Pending |
+| DOC-02 | Phase 13 | Pending |
+| HLP-01 | Phase 12 | Pending |
+| HLP-02 | Phase 12 | Pending |
+| TRN-01 | Phase 12 | Pending |
+| SEC-01 | Phase 13 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8
+- Mapped to phases: 8
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-29*
-*Last updated: 2026-03-29 after milestone v1.3 initialization*
+*Last updated: 2026-03-29 after roadmap creation*

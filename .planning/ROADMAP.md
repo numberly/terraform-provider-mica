@@ -4,7 +4,8 @@
 
 - v1.0 Core Provider (Phases 1-5) -- shipped 2026-03-28
 - v1.1 Servers & Exports (Phases 6-8) -- shipped 2026-03-28
-- v1.2 Code Quality & Robustness (Phases 9-11) -- in progress
+- v1.2 Code Quality & Robustness (Phases 9-11) -- shipped 2026-03-29
+- v1.3 Release Readiness (Phases 12-13) -- in progress
 
 ## Phases
 
@@ -157,15 +158,8 @@ Plans:
 
 </details>
 
-### v1.2 Code Quality & Robustness (In Progress)
-
-**Milestone Goal:** Fix latent bugs, harden test coverage, add input validators, and clean up architectural inconsistencies across the provider. No new features -- quality only.
-
-- [ ] **Phase 9: Bug Fixes** - Fix confirmed bugs in account export Delete, filesystem writable drift, IsNotFound, and omitempty
-- [x] **Phase 10: Architecture Cleanup** - Split models.go by domain, unified compositeID helper, extract stringOrNull (completed 2026-03-28)
-- [x] **Phase 11: Test Hardening & Validators** - Idempotence tests, mock param validation, Update tests, Terraform validators (completed 2026-03-29)
-
-## Phase Details
+<details>
+<summary>v1.2 Code Quality & Robustness (Phases 9-11) - SHIPPED 2026-03-29</summary>
 
 ### Phase 9: Bug Fixes
 **Goal**: All confirmed bugs are fixed so the provider produces correct plans and correct API calls for every existing resource
@@ -176,11 +170,11 @@ Plans:
   2. `terraform plan` on an existing file system with `writable = true` shows 0 changes (no permanent 1-change drift)
   3. A 400 error from the API that is not "does not exist" propagates as a real error to the operator (IsNotFound no longer masks non-404 failures)
   4. PATCH/POST requests for resources with nested structs do not send empty `{}` objects for unset fields (omitempty works correctly with pointer types)
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 09-01-PLAN.md — Fix account export Delete name extraction and filesystem writable drift
-- [ ] 09-02-PLAN.md — Scope IsNotFound matching and audit omitempty on struct fields
+- [x] 09-01-PLAN.md — Fix account export Delete name extraction and filesystem writable drift
+- [x] 09-02-PLAN.md — Scope IsNotFound matching and audit omitempty on struct fields
 
 ### Phase 10: Architecture Cleanup
 **Goal**: Codebase is organized by domain with shared helpers so that future development is faster and less error-prone
@@ -193,8 +187,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 10-01-PLAN.md — Split models.go into 5 domain files (storage, policies, exports, admin, common)
-- [ ] 10-02-PLAN.md — Shared compositeID/parseCompositeID helpers and stringOrNull extraction
+- [x] 10-01-PLAN.md — Split models.go into 5 domain files (storage, policies, exports, admin, common)
+- [x] 10-02-PLAN.md — Shared compositeID/parseCompositeID helpers and stringOrNull extraction
 
 ### Phase 11: Test Hardening & Validators
 **Goal**: Test suite catches API mismatches and regressions; operators get clear plan-time errors for invalid inputs instead of API-time failures
@@ -209,14 +203,53 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 11-01-PLAN.md — Custom name format validators and enum OneOf validators for 6 resource schemas
-- [ ] 11-02-PLAN.md — Shared query param validation helper and mock handler hardening for 4 handlers
-- [ ] 11-03-PLAN.md — Idempotence tests for 9 v1.1 resources and standalone Update tests for 3 resources
+- [x] 11-01-PLAN.md — Custom name format validators and enum OneOf validators for 6 resource schemas
+- [x] 11-02-PLAN.md — Shared query param validation helper and mock handler hardening for 4 handlers
+- [x] 11-03-PLAN.md — Idempotence tests for 9 v1.1 resources and standalone Update tests for 3 resources
+
+</details>
+
+### v1.3 Release Readiness (In Progress)
+
+**Milestone Goal:** Implement best practices from major providers (AWS, Cloudflare) to prepare for public release: state migration framework, import documentation, transport hardening, and write-only sensitive fields.
+
+- [ ] **Phase 12: Infrastructure Hardening** - State migration framework, helper consolidation, and transport jitter across all resources
+- [ ] **Phase 13: Documentation & Sensitive Data** - Import docs for all resources and write-only secret_access_key
+
+## Phase Details
+
+### Phase 12: Infrastructure Hardening
+**Goal**: All 28 resources have a state migration framework ready for future schema changes, shared plan modifier helpers are consolidated, and retry logic prevents thundering herds
+**Depends on**: Phase 11 (v1.2 complete)
+**Requirements**: MIG-01, MIG-02, HLP-01, HLP-02, TRN-01
+**Success Criteria** (what must be TRUE):
+  1. Every resource schema declares `SchemaVersion: 0` and wires an `UpgradeState` method with an empty upgrader slice -- `go build ./...` compiles and `go test ./...` passes
+  2. `int64UseStateForUnknown` and `float64UseStateForUnknown` plan modifiers live in `helpers.go` and are referenced from all resource files that need them (no inline definitions remain)
+  3. Retry backoff intervals vary by at least 20% between consecutive identical requests (jitter prevents synchronized retries from multiple provider instances)
+**Plans**: TBD
+
+Plans:
+- [ ] 12-01: State migration framework (SchemaVersion 0 + UpgradeState) on all 28 resources
+- [ ] 12-02: Helper consolidation (int64/float64 UseStateForUnknown) and transport jitter
+
+### Phase 13: Documentation & Sensitive Data
+**Goal**: Every importable resource has Registry-ready import documentation, and the access key secret uses the write-only argument pattern for Terraform 1.11+ compatibility
+**Depends on**: Phase 12 (infrastructure changes landed before docs generation)
+**Requirements**: DOC-01, DOC-02, SEC-01
+**Success Criteria** (what must be TRUE):
+  1. Every importable resource (27 of 28) has an `import.md` template file with correct `terraform import` syntax and an example using realistic identifiers
+  2. `tfplugindocs generate` produces documentation that includes import sections for all importable resources without errors or manual edits
+  3. `secret_access_key` on `flashblade_object_store_access_key` uses the write-only attribute pattern: the value is never stored in state, never appears in plan diff, and is only sent to the API on create
+**Plans**: TBD
+
+Plans:
+- [ ] 13-01: Import documentation (import.md) for all 27 importable resources + tfplugindocs regeneration
+- [ ] 13-02: Write-only argument pattern for secret_access_key
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 9 -> 10 -> 11
+Phases execute in numeric order: 12 -> 13
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -228,6 +261,8 @@ Phases execute in numeric order: 9 -> 10 -> 11
 | 6. Server Resource & Export Consolidation | v1.1 | 2/2 | Complete | 2026-03-28 |
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 3/3 | Complete | 2026-03-28 |
-| 9. Bug Fixes | v1.2 | 0/2 | In progress | - |
+| 9. Bug Fixes | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 10. Architecture Cleanup | v1.2 | 2/2 | Complete | 2026-03-28 |
-| 11. Test Hardening & Validators | 3/3 | Complete    | 2026-03-29 | - |
+| 11. Test Hardening & Validators | v1.2 | 3/3 | Complete | 2026-03-29 |
+| 12. Infrastructure Hardening | v1.3 | 0/2 | Not started | - |
+| 13. Documentation & Sensitive Data | v1.3 | 0/2 | Not started | - |
