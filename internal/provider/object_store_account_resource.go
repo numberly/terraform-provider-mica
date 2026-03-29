@@ -24,6 +24,7 @@ import (
 var _ resource.Resource = &objectStoreAccountResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccountResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccountResource{}
+var _ resource.ResourceWithUpgradeState = &objectStoreAccountResource{}
 
 // objectStoreAccountResource implements the flashblade_object_store_account resource.
 type objectStoreAccountResource struct {
@@ -61,6 +62,7 @@ func (r *objectStoreAccountResource) Metadata(_ context.Context, _ resource.Meta
 func (r *objectStoreAccountResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade object store account.",
+		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -141,6 +143,10 @@ func (r *objectStoreAccountResource) Schema(ctx context.Context, _ resource.Sche
 			}),
 		},
 	}
+}
+
+func (r *objectStoreAccountResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // Configure injects the FlashBladeClient into the resource.

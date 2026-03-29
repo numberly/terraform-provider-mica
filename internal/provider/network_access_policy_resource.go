@@ -23,6 +23,7 @@ import (
 var _ resource.Resource = &networkAccessPolicyResource{}
 var _ resource.ResourceWithConfigure = &networkAccessPolicyResource{}
 var _ resource.ResourceWithImportState = &networkAccessPolicyResource{}
+var _ resource.ResourceWithUpgradeState = &networkAccessPolicyResource{}
 
 // networkAccessPolicyResource implements the flashblade_network_access_policy resource.
 // NAP policies are system-managed singletons: no POST or DELETE at the policy level.
@@ -62,6 +63,7 @@ func (r *networkAccessPolicyResource) Schema(ctx context.Context, _ resource.Sch
 		Description: "Manages a FlashBlade network access policy (singleton). Network access policies are " +
 			"system-managed — they cannot be created or deleted. Create adopts the existing policy via " +
 			"GET+PATCH. Delete resets the policy to disabled state via PATCH.",
+		Version: 0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -106,6 +108,10 @@ func (r *networkAccessPolicyResource) Schema(ctx context.Context, _ resource.Sch
 			}),
 		},
 	}
+}
+
+func (r *networkAccessPolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // Configure injects the FlashBladeClient into the resource.

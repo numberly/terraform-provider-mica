@@ -23,6 +23,7 @@ import (
 var _ resource.Resource = &syslogServerResource{}
 var _ resource.ResourceWithConfigure = &syslogServerResource{}
 var _ resource.ResourceWithImportState = &syslogServerResource{}
+var _ resource.ResourceWithUpgradeState = &syslogServerResource{}
 
 // syslogServerResource implements the flashblade_syslog_server resource.
 type syslogServerResource struct {
@@ -57,6 +58,7 @@ func (r *syslogServerResource) Metadata(_ context.Context, _ resource.MetadataRe
 func (r *syslogServerResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade syslog server that receives audit and management logs.",
+		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -98,6 +100,10 @@ func (r *syslogServerResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			}),
 		},
 	}
+}
+
+func (r *syslogServerResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // Configure injects the FlashBladeClient into the resource.

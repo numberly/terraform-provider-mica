@@ -22,6 +22,7 @@ import (
 var _ resource.Resource = &objectStoreAccountExportResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccountExportResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccountExportResource{}
+var _ resource.ResourceWithUpgradeState = &objectStoreAccountExportResource{}
 
 // objectStoreAccountExportResource implements the flashblade_object_store_account_export resource.
 type objectStoreAccountExportResource struct {
@@ -57,6 +58,7 @@ func (r *objectStoreAccountExportResource) Metadata(_ context.Context, _ resourc
 func (r *objectStoreAccountExportResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade object store account export.",
+		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -107,6 +109,10 @@ func (r *objectStoreAccountExportResource) Schema(ctx context.Context, _ resourc
 			}),
 		},
 	}
+}
+
+func (r *objectStoreAccountExportResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // Configure injects the FlashBladeClient into the resource.

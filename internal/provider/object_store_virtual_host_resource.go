@@ -23,6 +23,7 @@ import (
 var _ resource.Resource = &objectStoreVirtualHostResource{}
 var _ resource.ResourceWithConfigure = &objectStoreVirtualHostResource{}
 var _ resource.ResourceWithImportState = &objectStoreVirtualHostResource{}
+var _ resource.ResourceWithUpgradeState = &objectStoreVirtualHostResource{}
 
 // objectStoreVirtualHostResource implements the flashblade_object_store_virtual_host resource.
 type objectStoreVirtualHostResource struct {
@@ -56,6 +57,7 @@ func (r *objectStoreVirtualHostResource) Metadata(_ context.Context, _ resource.
 func (r *objectStoreVirtualHostResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade object store virtual host for virtual-hosted-style S3 endpoints.",
+		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -92,6 +94,10 @@ func (r *objectStoreVirtualHostResource) Schema(ctx context.Context, _ resource.
 			}),
 		},
 	}
+}
+
+func (r *objectStoreVirtualHostResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // Configure injects the FlashBladeClient into the resource.

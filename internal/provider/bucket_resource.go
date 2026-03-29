@@ -25,6 +25,7 @@ import (
 var _ resource.Resource = &bucketResource{}
 var _ resource.ResourceWithConfigure = &bucketResource{}
 var _ resource.ResourceWithImportState = &bucketResource{}
+var _ resource.ResourceWithUpgradeState = &bucketResource{}
 
 // bucketResource implements the flashblade_bucket resource.
 type bucketResource struct {
@@ -68,6 +69,7 @@ func (r *bucketResource) Metadata(_ context.Context, _ resource.MetadataRequest,
 func (r *bucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade object store bucket.",
+		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -183,6 +185,10 @@ func (r *bucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			},
 		},
 	}
+}
+
+func (r *bucketResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // Configure injects the FlashBladeClient into the resource.
