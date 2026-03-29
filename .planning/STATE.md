@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: Code Quality & Robustness
 status: executing
 stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-03-29T06:45:00Z"
+last_updated: "2026-03-29T06:45:01.654Z"
 last_activity: 2026-03-29 — Completed 11-02 query param validation for mock handlers (TST-02)
 progress:
   total_phases: 11
@@ -58,6 +58,8 @@ Recent decisions affecting current work:
 - [Phase 10-01]: Split monolithic models.go into 5 domain files for navigability and reduced merge conflicts
 - [Phase 10]: parseCompositeID returns error for reusability outside ImportState
 - [Phase 11-01]: Custom validators implement validator.String interface directly (no external library wrapper needed)
+- [Phase 11-02]: ValidateQueryParams placed before mutex lock to avoid holding lock on error paths
+- [Phase 11-02]: Global framework params always allowed automatically in mock handlers
 
 ### Pending Todos
 
@@ -69,6 +71,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T06:43:14Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-29T06:45:01.646Z
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None

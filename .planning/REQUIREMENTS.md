@@ -23,7 +23,7 @@ Requirements for milestone v1.2 — Code Quality & Robustness.
 ### Test Hardening
 
 - [ ] **TST-01**: Idempotence tests — Create → Read → plan shows 0 changes for each resource family
-- [ ] **TST-02**: Mock handlers validate query params (reject unknown params, require mandatory ones)
+- [x] **TST-02**: Mock handlers validate query params (reject unknown params, require mandatory ones)
 - [ ] **TST-03**: Complete Update lifecycle tests for resources missing them
 
 ### Validators
@@ -59,7 +59,7 @@ Deferred to future release.
 | ARC-02 | Phase 10 | Complete |
 | ARC-03 | Phase 10 | Complete |
 | TST-01 | Phase 11 | Pending |
-| TST-02 | Phase 11 | Pending |
+| TST-02 | Phase 11 | Complete |
 | TST-03 | Phase 11 | Pending |
 | VAL-01 | Phase 11 | Complete |
 | VAL-02 | Phase 11 | Complete |
