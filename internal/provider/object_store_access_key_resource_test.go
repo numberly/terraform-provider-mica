@@ -109,7 +109,8 @@ func seedAccount(t *testing.T, ms *testmock.MockServer, accountName string) {
 // ---- tests ------------------------------------------------------------------
 
 // TestUnit_AccessKey_Create verifies POST creates a key and state contains
-// secret_access_key and access_key_id.
+// access_key_id (and other non-secret fields). With WriteOnly, secret_access_key
+// is NOT stored in state but the Create call itself does not error.
 func TestUnit_AccessKey_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
@@ -145,8 +146,11 @@ func TestUnit_AccessKey_Create(t *testing.T) {
 	if model.AccessKeyID.IsNull() || model.AccessKeyID.ValueString() == "" {
 		t.Error("expected non-empty access_key_id after Create")
 	}
-	if model.SecretAccessKey.IsNull() || model.SecretAccessKey.ValueString() == "" {
-		t.Error("expected non-empty secret_access_key after Create — it is write-once and must be captured")
+	// With WriteOnly: true, secret_access_key is NOT persisted in state.
+	// The framework strips write-only values from state after resp.State.Set().
+	if !model.SecretAccessKey.IsNull() {
+		t.Errorf("expected secret_access_key to be null in state after Create (write-only), got %q",
+			model.SecretAccessKey.ValueString())
 	}
 	if model.Created.IsNull() || model.Created.ValueInt64() == 0 {
 		t.Error("expected created timestamp to be populated after Create")
@@ -203,10 +207,11 @@ func TestUnit_AccessKey_Delete(t *testing.T) {
 	}
 }
 
-// TestUnit_AccessKey_SecretPreserved verifies that calling Read after Create does NOT
-// overwrite secret_access_key with empty string. UseStateForUnknown + Read-does-not-overwrite
-// preserves the secret captured at creation time.
-func TestUnit_AccessKey_SecretPreserved(t *testing.T) {
+// TestUnit_AccessKey_SecretWriteOnly verifies write-only behavior:
+// - After Create, secret_access_key is NOT stored in Terraform state (write-only)
+// - After Read, secret_access_key is null in state (never returned by API, never stored)
+// - No plan diff is generated for secret_access_key (it is always null in state)
+func TestUnit_AccessKey_SecretWriteOnly(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
@@ -218,7 +223,7 @@ func TestUnit_AccessKey_SecretPreserved(t *testing.T) {
 	r := newTestAccessKeyResource(t, ms)
 	s := accessKeyResourceSchema(t).Schema
 
-	// Step 1: Create — secret should be present in state.
+	// Step 1: Create — with WriteOnly, the framework does NOT persist secret_access_key in state.
 	plan := accessKeyPlanWithAccount(t, "secret-account")
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildAccessKeyType(), nil), Schema: s},
@@ -232,12 +237,15 @@ func TestUnit_AccessKey_SecretPreserved(t *testing.T) {
 	if diags := createResp.State.Get(context.Background(), &afterCreate); diags.HasError() {
 		t.Fatalf("Get create state: %s", diags)
 	}
-	originalSecret := afterCreate.SecretAccessKey.ValueString()
-	if originalSecret == "" {
-		t.Fatal("expected secret_access_key to be set after Create")
+
+	// With WriteOnly: true, the framework strips the value from state after Set().
+	// The state value must be null (not persisted).
+	if !afterCreate.SecretAccessKey.IsNull() {
+		t.Errorf("secret_access_key must be null in state after Create (write-only — not persisted), got %q",
+			afterCreate.SecretAccessKey.ValueString())
 	}
 
-	// Step 2: Read — state is refreshed from API. Secret MUST NOT be overwritten.
+	// Step 2: Read — state is refreshed from API. Secret remains null (API never returns it, Write-only never stores it).
 	readResp := &resource.ReadResponse{
 		State: createResp.State,
 	}
@@ -252,9 +260,10 @@ func TestUnit_AccessKey_SecretPreserved(t *testing.T) {
 		t.Fatalf("Get read state: %s", diags)
 	}
 
-	if afterRead.SecretAccessKey.ValueString() != originalSecret {
-		t.Errorf("secret_access_key was overwritten by Read: want %q, got %q",
-			originalSecret, afterRead.SecretAccessKey.ValueString())
+	// After Read, secret_access_key must still be null — no diff, no plan change.
+	if !afterRead.SecretAccessKey.IsNull() {
+		t.Errorf("secret_access_key must be null in state after Read (write-only), got %q",
+			afterRead.SecretAccessKey.ValueString())
 	}
 }
 
@@ -318,11 +327,13 @@ func TestUnit_AccessKey_Lifecycle(t *testing.T) {
 	if createModel.AccessKeyID.IsNull() || createModel.AccessKeyID.ValueString() == "" {
 		t.Error("Create: expected non-empty access_key_id")
 	}
-	if createModel.SecretAccessKey.IsNull() || createModel.SecretAccessKey.ValueString() == "" {
-		t.Error("Create: expected non-empty secret_access_key")
+	// With WriteOnly: true, secret_access_key is NOT persisted in state.
+	if !createModel.SecretAccessKey.IsNull() {
+		t.Errorf("Create: expected secret_access_key null in state (write-only), got %q",
+			createModel.SecretAccessKey.ValueString())
 	}
 
-	// Step 2: Read — secret must be preserved.
+	// Step 2: Read — secret_access_key remains null in state (write-only, API never returns it).
 	readResp := &resource.ReadResponse{State: createResp.State}
 	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
 	if readResp.Diagnostics.HasError() {
@@ -332,8 +343,9 @@ func TestUnit_AccessKey_Lifecycle(t *testing.T) {
 	if diags := readResp.State.Get(context.Background(), &readModel); diags.HasError() {
 		t.Fatalf("Get read state: %s", diags)
 	}
-	if readModel.SecretAccessKey.ValueString() != createModel.SecretAccessKey.ValueString() {
-		t.Error("Read: secret_access_key was overwritten — must be preserved from Create state")
+	if !readModel.SecretAccessKey.IsNull() {
+		t.Errorf("Read: secret_access_key must remain null in state (write-only), got %q",
+			readModel.SecretAccessKey.ValueString())
 	}
 	if readModel.AccessKeyID.ValueString() != createModel.AccessKeyID.ValueString() {
 		t.Errorf("Read: access_key_id changed: create=%s read=%s",
@@ -357,6 +369,30 @@ func TestUnit_AccessKey_NoImport(t *testing.T) {
 	r := NewAccessKeyResource()
 	if _, ok := r.(resource.ResourceWithImportState); ok {
 		t.Error("objectStoreAccessKeyResource must NOT implement ResourceWithImportState — secret unavailable after creation")
+	}
+}
+
+// TestUnit_AccessKey_WriteOnly verifies that secret_access_key is a write-only attribute
+// (not stored in Terraform state) and that Sensitive is false (superseded by WriteOnly).
+func TestUnit_AccessKey_WriteOnly(t *testing.T) {
+	s := accessKeyResourceSchema(t).Schema
+
+	attr, ok := s.Attributes["secret_access_key"]
+	if !ok {
+		t.Fatal("secret_access_key attribute not found in schema")
+	}
+	strAttr, ok := attr.(resschema.StringAttribute)
+	if !ok {
+		t.Fatalf("secret_access_key is not a resschema.StringAttribute, got %T", attr)
+	}
+	if !strAttr.WriteOnly {
+		t.Error("secret_access_key: expected WriteOnly=true, got false")
+	}
+	if strAttr.Sensitive {
+		t.Error("secret_access_key: expected Sensitive=false (superseded by WriteOnly), got true")
+	}
+	if len(strAttr.PlanModifiers) != 0 {
+		t.Errorf("secret_access_key: expected no PlanModifiers (UseStateForUnknown removed), got %d", len(strAttr.PlanModifiers))
 	}
 }
 
