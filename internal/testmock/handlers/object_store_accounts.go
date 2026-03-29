@@ -48,6 +48,10 @@ func (s *objectStoreAccountStore) handle(w http.ResponseWriter, r *http.Request)
 
 // handleGet handles GET /api/2.22/object-store-accounts with optional ?names= param.
 func (s *objectStoreAccountStore) handleGet(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "ids"}) {
+		return
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -76,6 +80,10 @@ func (s *objectStoreAccountStore) handleGet(w http.ResponseWriter, r *http.Reque
 // handlePost handles POST /api/2.22/object-store-accounts?names={name}.
 // The account name comes from the ?names= query parameter.
 func (s *objectStoreAccountStore) handlePost(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for POST")
@@ -113,6 +121,10 @@ func (s *objectStoreAccountStore) handlePost(w http.ResponseWriter, r *http.Requ
 
 // handlePatch handles PATCH /api/2.22/object-store-accounts?names={name}.
 func (s *objectStoreAccountStore) handlePatch(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for PATCH")
@@ -159,6 +171,10 @@ func (s *objectStoreAccountStore) handlePatch(w http.ResponseWriter, r *http.Req
 // handleDelete handles DELETE /api/2.22/object-store-accounts?names={name}.
 // Single-phase delete (no soft-delete for object store accounts).
 func (s *objectStoreAccountStore) handleDelete(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for DELETE")

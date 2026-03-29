@@ -67,6 +67,10 @@ func (s *nfsExportPolicyStore) handleRules(w http.ResponseWriter, r *http.Reques
 
 // handlePolicyGet handles GET /api/2.22/nfs-export-policies with optional ?names= param.
 func (s *nfsExportPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "ids"}) {
+		return
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -129,6 +133,10 @@ func (s *nfsExportPolicyStore) policyWithRules(policy *client.NfsExportPolicy) c
 
 // handlePolicyPost handles POST /api/2.22/nfs-export-policies?names={name}.
 func (s *nfsExportPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for POST")
@@ -172,6 +180,10 @@ func (s *nfsExportPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.R
 
 // handlePolicyPatch handles PATCH /api/2.22/nfs-export-policies?names={name}.
 func (s *nfsExportPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for PATCH")
@@ -236,6 +248,10 @@ func (s *nfsExportPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.
 
 // handlePolicyDelete handles DELETE /api/2.22/nfs-export-policies?names={name}.
 func (s *nfsExportPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for DELETE")
@@ -260,6 +276,10 @@ func (s *nfsExportPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http
 // handleRulesGet handles GET /api/2.22/nfs-export-policies/rules.
 // Filters by ?policy_names= and optionally ?names=.
 func (s *nfsExportPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "policy_names"}) {
+		return
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -303,6 +323,10 @@ func (s *nfsExportPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Req
 
 // handleRulesPost handles POST /api/2.22/nfs-export-policies/rules?policy_names={name}.
 func (s *nfsExportPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"policy_names"}) {
+		return
+	}
+
 	policyName := r.URL.Query().Get("policy_names")
 	if policyName == "" {
 		WriteJSONError(w, http.StatusBadRequest, "policy_names query parameter is required for POST")
@@ -369,6 +393,10 @@ func (s *nfsExportPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Re
 
 // handleRulesPatch handles PATCH /api/2.22/nfs-export-policies/rules?names={name}&policy_names={policy}.
 func (s *nfsExportPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "policy_names"}) {
+		return
+	}
+
 	ruleName := r.URL.Query().Get("names")
 	policyName := r.URL.Query().Get("policy_names")
 	if ruleName == "" || policyName == "" {
@@ -460,6 +488,10 @@ func (s *nfsExportPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.R
 
 // handleRulesDelete handles DELETE /api/2.22/nfs-export-policies/rules?names={name}&policy_names={policy}.
 func (s *nfsExportPolicyStore) handleRulesDelete(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "policy_names"}) {
+		return
+	}
+
 	ruleName := r.URL.Query().Get("names")
 	policyName := r.URL.Query().Get("policy_names")
 	if ruleName == "" || policyName == "" {

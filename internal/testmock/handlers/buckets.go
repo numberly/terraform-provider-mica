@@ -52,6 +52,10 @@ func (s *bucketStore) handle(w http.ResponseWriter, r *http.Request) {
 // handleGet handles GET /api/2.22/buckets with optional ?names=, ?ids=, ?destroyed=,
 // and ?account_names= query parameters.
 func (s *bucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "ids", "destroyed", "account_names"}) {
+		return
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -120,6 +124,10 @@ func (s *bucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
 // handlePost handles POST /api/2.22/buckets?names={name}.
 // Validates the account reference against the account store before creating the bucket.
 func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for POST")
@@ -183,6 +191,10 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 // handlePatch handles PATCH /api/2.22/buckets?ids={id}.
 // Uses raw map for true PATCH semantics — only provided fields are updated.
 func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"ids"}) {
+		return
+	}
+
 	id := r.URL.Query().Get("ids")
 	if id == "" {
 		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for PATCH")
@@ -262,6 +274,10 @@ func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 // handleDelete handles DELETE /api/2.22/buckets?ids={id}.
 // The bucket must already be soft-deleted (destroyed=true) before eradication.
 func (s *bucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"ids"}) {
+		return
+	}
+
 	id := r.URL.Query().Get("ids")
 	if id == "" {
 		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for DELETE")

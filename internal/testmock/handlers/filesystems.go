@@ -50,6 +50,10 @@ func (s *fileSystemStore) handle(w http.ResponseWriter, r *http.Request) {
 
 // handleGet handles GET /api/2.22/file-systems with optional ?names=, ?ids=, ?destroyed= params.
 func (s *fileSystemStore) handleGet(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "ids", "destroyed"}) {
+		return
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -93,6 +97,10 @@ func (s *fileSystemStore) handleGet(w http.ResponseWriter, r *http.Request) {
 // handlePost handles POST /api/2.22/file-systems?names={name}.
 // The FlashBlade API requires the name as a ?names= query parameter, not in the body.
 func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "Names query parameter is missing")
@@ -147,6 +155,10 @@ func derefSMB(p *client.SMBConfig) client.SMBConfig {
 
 // handlePatch handles PATCH /api/2.22/file-systems?ids={id}.
 func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"ids"}) {
+		return
+	}
+
 	id := r.URL.Query().Get("ids")
 	if id == "" {
 		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for PATCH")
@@ -237,6 +249,10 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 // handleDelete handles DELETE /api/2.22/file-systems?ids={id}.
 // Only works on file systems that are already soft-deleted (destroyed=true).
 func (s *fileSystemStore) handleDelete(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"ids"}) {
+		return
+	}
+
 	id := r.URL.Query().Get("ids")
 	if id == "" {
 		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for DELETE")
