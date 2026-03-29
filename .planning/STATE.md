@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Cross-Array Bucket Replication
 status: executing
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-03-29T11:36:50.529Z"
-last_activity: 2026-03-29 — Completed 15-02 remote credentials resource and data source
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-29T11:49:54.306Z"
+last_activity: 2026-03-29 — Completed 16-01 workflow and documentation
 progress:
   total_phases: 17
-  completed_phases: 15
-  total_plans: 44
-  completed_plans: 44
-  percent: 98
+  completed_phases: 16
+  total_plans: 45
+  completed_plans: 45
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v2.0 — Cross-Array Bucket Replication — Phase 15
+**Current focus:** Milestone v2.0 — Cross-Array Bucket Replication — Phase 16
 
 ## Current Position
 
-Phase: 15 of 17 (Replication Resources)
-Plan: 2 of 3 in current phase
+Phase: 16 of 17 (Workflow and Documentation)
+Plan: 1 of 1 in current phase
 Status: Executing
-Last activity: 2026-03-29 — Completed 15-02 remote credentials resource and data source
+Last activity: 2026-03-29 — Completed 16-01 workflow and documentation
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -62,6 +62,8 @@ Recent decisions affecting current work:
 - [Phase 15]: Secret preservation: secret_access_key kept from plan values in state (API strips on GET)
 - [Phase 15]: Import sets secret_access_key to empty; user must provide in config or use ignore_changes
 - [Phase 15]: Flattened ObjectBacklog into top-level attributes for simpler HCL
+- [Phase 16]: Workflow uses symmetric infrastructure on both arrays for bidirectional replication
+- [Phase 16]: Secondary access key shares primary's secret via secret_access_key input
 
 ### Pending Todos
 
@@ -73,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T11:34:33.353Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-03-29T11:49:07Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None

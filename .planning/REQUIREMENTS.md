@@ -34,15 +34,15 @@ Requirements for milestone v2.0 — Cross-Array Bucket Replication.
 
 ### Workflow
 
-- [ ] **WFL-01**: Complete dual-provider replication workflow example (FB-A + FB-B, same tenant, shared credentials, bidirectional replica links)
+- [x] **WFL-01**: Complete dual-provider replication workflow example (FB-A + FB-B, same tenant, shared credentials, bidirectional replica links)
 - [ ] **WFL-02**: TDD unit tests + mock handlers for all new resources
 - [ ] **WFL-03**: Acceptance test for replication lifecycle on live FlashBlade pair
 
 ### Documentation
 
-- [ ] **DOC-01**: HCL examples + import.sh for all new resources (remote credentials, replica link, array connection DS)
-- [ ] **DOC-02**: tfplugindocs regenerated with new resources included
-- [ ] **DOC-03**: README updated with replication resources category + coverage table
+- [x] **DOC-01**: HCL examples + import.sh for all new resources (remote credentials, replica link, array connection DS)
+- [x] **DOC-02**: tfplugindocs regenerated with new resources included
+- [x] **DOC-03**: README updated with replication resources category + coverage table
 
 ## v2.1 Requirements
 
@@ -80,12 +80,12 @@ Deferred to future release.
 | BRL-05 | Phase 15 | Complete |
 | ACN-01 | Phase 14 | Complete |
 | ACN-02 | Phase 14 | Complete |
-| WFL-01 | Phase 16 | Pending |
+| WFL-01 | Phase 16 | Complete |
 | WFL-02 | Phase 17 | Pending |
 | WFL-03 | Phase 17 | Pending |
-| DOC-01 | Phase 16 | Pending |
-| DOC-02 | Phase 16 | Pending |
-| DOC-03 | Phase 16 | Pending |
+| DOC-01 | Phase 16 | Complete |
+| DOC-02 | Phase 16 | Complete |
+| DOC-03 | Phase 16 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 19 total
