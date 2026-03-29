@@ -55,7 +55,7 @@ func (r *objectStoreAccessKeyResource) Metadata(_ context.Context, _ resource.Me
 // Schema defines the resource schema.
 func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key is returned only at creation and preserved in state; it cannot be imported.",
+		Description: "Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key is a write-only attribute: it is returned at creation time only and is never stored in Terraform state. Capture it via a Terraform output at apply time. Requires Terraform 1.11+.",
 		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -81,11 +81,8 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 			},
 			"secret_access_key": schema.StringAttribute{
 				Computed:    true,
-				Sensitive:   true,
-				Description: "The secret access key. Returned only at creation and preserved in state. Never returned by subsequent API reads.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				WriteOnly:   true,
+				Description: "The secret access key. Returned only at creation time. This is a write-only attribute: the value is never stored in Terraform state. Requires Terraform 1.11+.",
 			},
 			"created": schema.Int64Attribute{
 				Computed:    true,
@@ -134,7 +131,8 @@ func (r *objectStoreAccessKeyResource) Configure(_ context.Context, req resource
 // ---------- CRUD methods ----------------------------------------------------
 
 // Create creates a new object store access key.
-// The secret_access_key is returned only here and stored in state immediately.
+// The secret_access_key is returned only here — it is a write-only attribute and will
+// not be persisted in Terraform state. Operators must capture it via a Terraform output.
 func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreAccessKeyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -179,8 +177,8 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 }
 
 // Read refreshes Terraform state from the API.
-// CRITICAL: Does NOT overwrite SecretAccessKey — it is not returned by GET.
-// UseStateForUnknown preserves the secret from state.
+// SecretAccessKey is intentionally not set — it is a write-only attribute and is never
+// returned by GET. The framework ensures write-only values are always null in state.
 func (r *objectStoreAccessKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreAccessKeyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
