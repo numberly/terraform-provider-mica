@@ -381,9 +381,11 @@ func TestUnit_AccessKey_NoImport(t *testing.T) {
 	}
 }
 
-// TestUnit_AccessKey_WriteOnly verifies that secret_access_key is a write-only attribute
-// (not stored in Terraform state) and that Sensitive is false (superseded by WriteOnly).
-func TestUnit_AccessKey_WriteOnly(t *testing.T) {
+// TestUnit_AccessKey_SecretSensitive verifies that secret_access_key is Sensitive
+// (hidden from plan output) and has UseStateForUnknown (preserved across reads).
+// NOTE: WriteOnly was reverted because it strips the value from state, breaking
+// outputs and cross-resource references (e.g. writing to Vault).
+func TestUnit_AccessKey_SecretSensitive(t *testing.T) {
 	s := accessKeyResourceSchema(t).Schema
 
 	attr, ok := s.Attributes["secret_access_key"]
@@ -394,14 +396,11 @@ func TestUnit_AccessKey_WriteOnly(t *testing.T) {
 	if !ok {
 		t.Fatalf("secret_access_key is not a resschema.StringAttribute, got %T", attr)
 	}
-	if !strAttr.WriteOnly {
-		t.Error("secret_access_key: expected WriteOnly=true, got false")
+	if !strAttr.Sensitive {
+		t.Error("secret_access_key: expected Sensitive=true")
 	}
-	if strAttr.Sensitive {
-		t.Error("secret_access_key: expected Sensitive=false (superseded by WriteOnly), got true")
-	}
-	if len(strAttr.PlanModifiers) != 0 {
-		t.Errorf("secret_access_key: expected no PlanModifiers (UseStateForUnknown removed), got %d", len(strAttr.PlanModifiers))
+	if len(strAttr.PlanModifiers) == 0 {
+		t.Error("secret_access_key: expected UseStateForUnknown PlanModifier")
 	}
 }
 

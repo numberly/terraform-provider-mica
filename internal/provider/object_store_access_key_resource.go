@@ -81,8 +81,11 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 			},
 			"secret_access_key": schema.StringAttribute{
 				Computed:    true,
-				WriteOnly:   true,
-				Description: "The secret access key. Returned only at creation time. This is a write-only attribute: the value is never stored in Terraform state. Requires Terraform 1.11+.",
+				Sensitive:   true,
+				Description: "The secret access key. Returned only at creation time and stored in state (encrypted). Never shown in plan output.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"created": schema.Int64Attribute{
 				Computed:    true,
