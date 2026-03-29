@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-03-29T17:49:18Z"
+status: executing
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-03-29T18:34:10.426Z"
 last_activity: 2026-03-29 — Completed Phase 20 Plan 01 (Shared Helpers & Dedup)
 progress:
   total_phases: 22
-  completed_phases: 19
-  total_plans: 49
-  completed_plans: 50
+  completed_phases: 20
+  total_plans: 51
+  completed_plans: 51
   percent: 28
 ---
 
@@ -60,6 +60,8 @@ Recent decisions affecting current work:
 - [Phase 20]: map*ToModel functions return diag.Diagnostics instead of panicking
 - [Phase 20]: DiagnosticReporter interface replaces 15 inline readIntoState interface declarations
 - [Phase 20]: nullTimeoutsValue() replaces 29 inline timeout initialization blocks
+- [Phase 20]: Used package-level generic functions for getOneByName[T] and pollUntilGone[T] (Go limitation: no generic methods)
+- [Phase 20]: Shared mapFSToModel via temporary filesystemModel copy to data source model
 
 ### Pending Todos
 
@@ -71,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T17:49:18Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-03-29T18:34:10.420Z
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None

@@ -33,9 +33,9 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 - [x] **DUP-03**: nullTimeoutsValue() helper replaces 29 duplicated timeout initialization blocks in ImportState
 - [x] **DUP-04**: mustObjectValue() consolidated into single shared helper in helpers.go (used by filesystem, bucket, object_store_account)
 - [x] **DUP-05**: DiagnosticReporter named interface type replaces inline interface in readIntoState signatures
-- [ ] **DUP-06**: Generic getOneByName[T] client helper replaces ~15 identical Get*ByName patterns
-- [ ] **DUP-07**: Generic pollUntilGone[T] helper unifies PollUntilEradicated and PollBucketUntilEradicated
-- [ ] **DUP-08**: mapFSToModel shared between filesystem resource and data source instead of duplicated
+- [x] **DUP-06**: Generic getOneByName[T] client helper replaces ~15 identical Get*ByName patterns
+- [x] **DUP-07**: Generic pollUntilGone[T] helper unifies PollUntilEradicated and PollBucketUntilEradicated
+- [x] **DUP-08**: mapFSToModel shared between filesystem resource and data source instead of duplicated
 
 ### Dead Code Removal
 
@@ -47,7 +47,7 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 ### Modernization
 
 - [ ] **MOD-01**: Replace math/rand with math/rand/v2 for Go 1.25 idiomatic usage (transport.go:101)
-- [ ] **MOD-02**: mustObjectValue returns diagnostics instead of panic() for safer error handling
+- [x] **MOD-02**: mustObjectValue returns diagnostics instead of panic() for safer error handling
 
 ### Test Coverage
 
@@ -104,15 +104,15 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 | DUP-03 | Phase 20 | Complete |
 | DUP-04 | Phase 20 | Complete |
 | DUP-05 | Phase 20 | Complete |
-| DUP-06 | Phase 20 | Pending |
-| DUP-07 | Phase 20 | Pending |
-| DUP-08 | Phase 20 | Pending |
+| DUP-06 | Phase 20 | Complete |
+| DUP-07 | Phase 20 | Complete |
+| DUP-08 | Phase 20 | Complete |
 | DCR-01 | Phase 21 | Pending |
 | DCR-02 | Phase 21 | Pending |
 | DCR-03 | Phase 21 | Pending |
 | DCR-04 | Phase 21 | Pending |
 | MOD-01 | Phase 21 | Pending |
-| MOD-02 | Phase 20 | Pending |
+| MOD-02 | Phase 20 | Complete |
 | TST-01 | Phase 22 | Pending |
 | TST-02 | Phase 22 | Pending |
 | TST-03 | Phase 22 | Pending |
