@@ -423,5 +423,5 @@ Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22
 | 18. Security & Auth Hardening | 1/1 | Complete    | 2026-03-29 | - |
 | 19. Error Handling & Consistency | 1/1 | Complete    | 2026-03-29 | - |
 | 20. Code Quality -- Validators & Dedup | 2/2 | Complete    | 2026-03-29 | - |
-| 21. Dead Code Removal & Modernization | 1/1 | Complete   | 2026-03-29 | - |
+| 21. Dead Code Removal & Modernization | 1/1 | Complete    | 2026-03-29 | - |
 | 22. Test Coverage | v2.0.1 | 0/2 | Not started | - |
