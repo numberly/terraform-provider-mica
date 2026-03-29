@@ -89,46 +89,46 @@ Requirements for quality & hardening release. Derived from comprehensive 5-agent
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
-| SEC-04 | — | Pending |
-| SEC-05 | — | Pending |
-| ERR-01 | — | Pending |
-| ERR-02 | — | Pending |
-| ERR-03 | — | Pending |
-| ERR-04 | — | Pending |
-| VAL-01 | — | Pending |
-| DUP-01 | — | Pending |
-| DUP-02 | — | Pending |
-| DUP-03 | — | Pending |
-| DUP-04 | — | Pending |
-| DUP-05 | — | Pending |
-| DUP-06 | — | Pending |
-| DUP-07 | — | Pending |
-| DUP-08 | — | Pending |
-| DCR-01 | — | Pending |
-| DCR-02 | — | Pending |
-| DCR-03 | — | Pending |
-| DCR-04 | — | Pending |
-| MOD-01 | — | Pending |
-| MOD-02 | — | Pending |
-| TST-01 | — | Pending |
-| TST-02 | — | Pending |
-| TST-03 | — | Pending |
-| TST-04 | — | Pending |
-| TST-05 | — | Pending |
-| TST-06 | — | Pending |
-| TST-07 | — | Pending |
-| TST-08 | — | Pending |
-| CON-01 | — | Pending |
-| CON-02 | — | Pending |
+| SEC-01 | Phase 18 | Pending |
+| SEC-02 | Phase 18 | Pending |
+| SEC-03 | Phase 18 | Pending |
+| SEC-04 | Phase 18 | Pending |
+| SEC-05 | Phase 18 | Pending |
+| ERR-01 | Phase 19 | Pending |
+| ERR-02 | Phase 19 | Pending |
+| ERR-03 | Phase 19 | Pending |
+| ERR-04 | Phase 18 | Pending |
+| VAL-01 | Phase 20 | Pending |
+| DUP-01 | Phase 20 | Pending |
+| DUP-02 | Phase 20 | Pending |
+| DUP-03 | Phase 20 | Pending |
+| DUP-04 | Phase 20 | Pending |
+| DUP-05 | Phase 20 | Pending |
+| DUP-06 | Phase 20 | Pending |
+| DUP-07 | Phase 20 | Pending |
+| DUP-08 | Phase 20 | Pending |
+| DCR-01 | Phase 21 | Pending |
+| DCR-02 | Phase 21 | Pending |
+| DCR-03 | Phase 21 | Pending |
+| DCR-04 | Phase 21 | Pending |
+| MOD-01 | Phase 21 | Pending |
+| MOD-02 | Phase 20 | Pending |
+| TST-01 | Phase 22 | Pending |
+| TST-02 | Phase 22 | Pending |
+| TST-03 | Phase 22 | Pending |
+| TST-04 | Phase 22 | Pending |
+| TST-05 | Phase 22 | Pending |
+| TST-06 | Phase 22 | Pending |
+| TST-07 | Phase 22 | Pending |
+| TST-08 | Phase 22 | Pending |
+| CON-01 | Phase 19 | Pending |
+| CON-02 | Phase 19 | Pending |
 
 **Coverage:**
 - v2.0.1 requirements: 34 total
-- Mapped to phases: 0
-- Unmapped: 34 ⚠️
+- Mapped to phases: 34/34
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-29*
-*Last updated: 2026-03-29 after quality audit analysis*
+*Last updated: 2026-03-29 after roadmap creation (phases 18-22)*

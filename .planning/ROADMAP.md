@@ -6,7 +6,8 @@
 - v1.1 Servers & Exports (Phases 6-8) -- shipped 2026-03-28
 - v1.2 Code Quality & Robustness (Phases 9-11) -- shipped 2026-03-29
 - v1.3 Release Readiness (Phases 12-13) -- shipped 2026-03-29
-- v2.0 Cross-Array Bucket Replication (Phases 14-17) -- in progress
+- v2.0 Cross-Array Bucket Replication (Phases 14-17) -- shipped 2026-03-29
+- v2.0.1 Quality & Hardening (Phases 18-22) -- in progress
 
 ## Phases
 
@@ -243,16 +244,8 @@ Plans:
 
 </details>
 
-### v2.0 Cross-Array Bucket Replication (In Progress)
-
-**Milestone Goal:** Enable operators to set up bidirectional S3 bucket replication between two FlashBlade arrays through Terraform, with shared credentials for transparent failover.
-
-- [x] **Phase 14: Access Key Enhancement & Array Connection** - Optional secret input for cross-array key sharing + array connection data source (completed 2026-03-29)
-- [x] **Phase 15: Replication Resources** - Remote credentials resource + bucket replica link resource with full CRUD (completed 2026-03-29)
-- [x] **Phase 16: Workflow & Documentation** - Dual-provider replication example + HCL examples + import docs + tfplugindocs + README (completed 2026-03-29)
-- [x] **Phase 17: Testing** - TDD unit tests with mock handlers + acceptance tests on live FlashBlade pair (completed 2026-03-29)
-
-## Phase Details
+<details>
+<summary>v2.0 Cross-Array Bucket Replication (Phases 14-17) - SHIPPED 2026-03-29</summary>
 
 ### Phase 14: Access Key Enhancement & Array Connection
 **Goal**: Operators can share an S3 access key pair across two FlashBlade arrays and query existing array connections -- the foundation for cross-array replication
@@ -266,8 +259,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 14-01-PLAN.md — Access key resource enhancement (optional secret_access_key input) + bucket versioning warning
-- [ ] 14-02-PLAN.md — Array connection data source (model, client, mock handler, data source, tests)
+- [x] 14-01-PLAN.md — Access key resource enhancement (optional secret_access_key input) + bucket versioning warning
+- [x] 14-02-PLAN.md — Array connection data source (model, client, mock handler, data source, tests)
 
 ### Phase 15: Replication Resources
 **Goal**: Operators can create the credential and link infrastructure required for bidirectional bucket replication between two FlashBlade arrays
@@ -279,11 +272,11 @@ Plans:
   3. Operator can create a bucket replica link between a local and remote bucket, pause/resume it via attribute change, and destroy it cleanly
   4. Bucket replica link exposes read-only status fields (direction, lag, recovery_point, status) that reflect current replication state after `terraform refresh`
   5. Operator can import existing remote credentials and bucket replica links into Terraform state; subsequent `plan` shows 0 diff
-**Plans**: TBD
+**Plans**: 3/3 plans complete
 
 Plans:
-- [ ] 15-01: Remote credentials resource (model, client CRUD, mock handler, resource, data source, tests)
-- [ ] 15-02: Bucket replica link resource (model, client CRUD, mock handler, resource, data source, tests)
+- [x] 15-01-PLAN.md — Remote credentials resource (model, client CRUD, mock handler, resource, data source, tests)
+- [x] 15-02-PLAN.md — Bucket replica link resource (model, client CRUD, mock handler, resource, data source, tests)
 
 ### Phase 16: Workflow & Documentation
 **Goal**: Operators have a complete, copy-pasteable dual-provider replication example and all new resources are documented for the Terraform Registry
@@ -297,7 +290,7 @@ Plans:
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 16-01-PLAN.md — HCL examples, replication workflow, docs regeneration, README update
+- [x] 16-01-PLAN.md — HCL examples, replication workflow, docs regeneration, README update
 
 ### Phase 17: Testing
 **Goal**: All new replication resources have comprehensive test coverage and pass validation against a live FlashBlade pair
@@ -310,13 +303,103 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 17-01-PLAN.md — Unit tests for remote credentials and bucket replica link resources (Create, Read, Update, Delete, Import, Idempotence)
-- [ ] 17-02-PLAN.md — Acceptance test HCL for replication lifecycle on live FlashBlade pair (checkpoint-gated)
+- [x] 17-01-PLAN.md — Unit tests for remote credentials and bucket replica link resources (Create, Read, Update, Delete, Import, Idempotence)
+- [x] 17-02-PLAN.md — Acceptance test HCL for replication lifecycle on live FlashBlade pair (checkpoint-gated)
+
+</details>
+
+### v2.0.1 Quality & Hardening (In Progress)
+
+**Milestone Goal:** Harden the codebase post-v2.0 release with security fixes, code quality improvements, dead code removal, duplication reduction, and test coverage gap closure identified by comprehensive 5-agent audit.
+
+- [ ] **Phase 18: Security & Auth Hardening** - Sanitize OAuth2 errors, add context propagation, set HTTP safety-net timeout
+- [ ] **Phase 19: Error Handling & Consistency** - Migrate to errors.As(), fix ParseAPIError, harden bucket delete and test helpers
+- [ ] **Phase 20: Code Quality -- Validators & Deduplication** - Compile regex at init, extract 8 shared helpers, safer mustObjectValue
+- [ ] **Phase 21: Dead Code Removal & Modernization** - Remove unused List* functions, SourceReference, empty UpgradeState; update math/rand
+- [ ] **Phase 22: Test Coverage** - Unit tests for 5 uncovered data sources, OAuth2 config test, HCL acceptance tests, pagination tests
+
+## Phase Details
+
+### Phase 18: Security & Auth Hardening
+**Goal**: Auth paths are hardened against information leaks and support proper context propagation for cancellation and tracing
+**Depends on**: Phase 17 (v2.0 complete)
+**Requirements**: SEC-01, SEC-02, SEC-03, SEC-04, SEC-05, ERR-04
+**Success Criteria** (what must be TRUE):
+  1. OAuth2 token exchange failure logs a sanitized error (no raw response body in error message or logs) and returns a diagnostic the operator can act on
+  2. Provider emits a `tflog.Warn` when `insecure_skip_verify` is enabled so operators see the security risk in plan output
+  3. `fetchToken()` and `NewClient()` accept a `context.Context` parameter -- no `context.Background()` calls remain in auth.go or client.go initialization paths
+  4. HTTP client has a global safety-net timeout (e.g., 30s) so a hung FlashBlade API does not block `terraform apply` indefinitely
+  5. `LoginWithAPIToken` constructs the HTTP request with `http.NewRequestWithContext` directly (no nil-check workaround)
+**Plans**: TBD
+
+Plans:
+- [ ] 18-01-PLAN.md — OAuth2 error sanitization, TLS warning, context propagation, HTTP timeout, API token request cleanup
+
+### Phase 19: Error Handling & Consistency
+**Goal**: Error classification is resilient to wrapped errors and edge cases across the entire codebase
+**Depends on**: Phase 18 (auth changes landed so error patterns are consistent)
+**Requirements**: ERR-01, ERR-02, ERR-03, CON-01, CON-02
+**Success Criteria** (what must be TRUE):
+  1. `IsNotFound`, `IsConflict`, and `IsUnprocessable` use `errors.As()` so they correctly classify errors even when wrapped with `fmt.Errorf("%w", ...)`
+  2. Resource-level error checks in quota_group, quota_user, and object_store_account use the same `errors.As()` pattern (no direct type assertions remain)
+  3. `ParseAPIError` returns a meaningful error when `io.ReadAll` fails instead of silently returning an empty error
+  4. Bucket delete performs a fresh GET before the object-count safety check instead of relying on potentially stale state data
+  5. `countItems` in test mock helpers uses `reflect` or a typed parameter instead of JSON marshal/unmarshal round-trip
+**Plans**: TBD
+
+Plans:
+- [ ] 19-01-PLAN.md — errors.As() migration, ParseAPIError hardening, bucket delete guard, countItems fix
+
+### Phase 20: Code Quality -- Validators & Deduplication
+**Goal**: Shared helpers eliminate duplicated code across resources, and validators execute without per-call regex compilation overhead
+**Depends on**: Phase 19 (error patterns stable before extracting helpers that may reference them)
+**Requirements**: VAL-01, DUP-01, DUP-02, DUP-03, DUP-04, DUP-05, DUP-06, DUP-07, DUP-08, MOD-02
+**Success Criteria** (what must be TRUE):
+  1. Regex patterns in validators.go are compiled once at package level (`var` block with `regexp.MustCompile`) -- no `regexp.Compile` or `regexp.MustCompile` calls inside function bodies
+  2. `spaceAttrTypes()` and `mapSpaceToObject()` helpers exist in a shared location and are called by filesystem, bucket, and data source files (no duplicated space schema definitions remain)
+  3. `nullTimeoutsValue()` helper replaces all 29 inline timeout initialization blocks in ImportState methods -- verified by searching for the old pattern
+  4. Generic `getOneByName[T]` client helper exists and is called by at least 10 Get*ByName methods (reducing ~15 identical implementations to thin wrappers)
+  5. `mustObjectValue` returns diagnostics instead of calling `panic()` -- callers check the returned diagnostics and append to response diagnostics
+**Plans**: TBD
+
+Plans:
+- [ ] 20-01-PLAN.md — Regex pre-compilation, space schema helpers, nullTimeoutsValue, DiagnosticReporter interface
+- [ ] 20-02-PLAN.md — Generic getOneByName[T], pollUntilGone[T], mapFSToModel sharing, mustObjectValue diagnostics
+
+### Phase 21: Dead Code Removal & Modernization
+**Goal**: Unused code is removed and deprecated stdlib usage is updated so the codebase is clean for future development
+**Depends on**: Phase 20 (shared helpers must exist before removing code that may be replaced by them)
+**Requirements**: DCR-01, DCR-02, DCR-03, DCR-04, MOD-01
+**Success Criteria** (what must be TRUE):
+  1. The 5 unused `List*` functions and their `List*Opts` types are removed from the client package -- `go build ./...` compiles and no test references them
+  2. `IsUnprocessable` is removed from errors.go (confirmed unused by all resources)
+  3. `SourceReference` type is removed and all references use `NamedReference` instead -- `go build ./...` compiles
+  4. The 29 empty `UpgradeState` implementations are removed from resources (only resources with actual schema version bumps keep them)
+  5. `math/rand` import is replaced with `math/rand/v2` in transport.go -- jitter behavior unchanged, `go vet ./...` shows no deprecation warnings
+**Plans**: TBD
+
+Plans:
+- [ ] 21-01-PLAN.md — Remove unused List* functions, IsUnprocessable, SourceReference, empty UpgradeState, update math/rand
+
+### Phase 22: Test Coverage
+**Goal**: All data sources and auth paths have unit tests, and HCL-based acceptance tests validate the full Terraform lifecycle through the provider
+**Depends on**: Phase 21 (all code changes landed so tests validate final state)
+**Requirements**: TST-01, TST-02, TST-03, TST-04, TST-05, TST-06, TST-07, TST-08
+**Success Criteria** (what must be TRUE):
+  1. Unit tests exist for all 5 previously uncovered data sources (virtual host, remote credentials, bucket replica link, file system export, account export) covering Read success and NotFound error paths
+  2. OAuth2 provider configuration test verifies that `client_id` + `key_id` + `issuer` flow initializes the provider without errors (mock token endpoint)
+  3. At least 3 resources have HCL-based acceptance tests using `resource.UnitTest` with a mock server that exercise plan, apply, refresh, import, and destroy
+  4. Pagination tests exist for at least buckets and one policy type (in addition to existing filesystem pagination tests)
+**Plans**: TBD
+
+Plans:
+- [ ] 22-01-PLAN.md — Unit tests for 5 uncovered data sources + OAuth2 provider config test
+- [ ] 22-02-PLAN.md — HCL-based acceptance tests with mock server + pagination tests for buckets and policies
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 14 -> 15 -> 16 -> 17
+Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -333,7 +416,12 @@ Phases execute in numeric order: 14 -> 15 -> 16 -> 17
 | 11. Test Hardening & Validators | v1.2 | 3/3 | Complete | 2026-03-29 |
 | 12. Infrastructure Hardening | v1.3 | 2/2 | Complete | 2026-03-29 |
 | 13. Documentation & Sensitive Data | v1.3 | 2/2 | Complete | 2026-03-29 |
-| 14. Access Key Enhancement & Array Connection | 2/2 | Complete    | 2026-03-29 | - |
-| 15. Replication Resources | 3/3 | Complete    | 2026-03-29 | - |
-| 16. Workflow & Documentation | 1/1 | Complete    | 2026-03-29 | - |
-| 17. Testing | 2/2 | Complete    | 2026-03-29 | - |
+| 14. Access Key Enhancement & Array Connection | v2.0 | 2/2 | Complete | 2026-03-29 |
+| 15. Replication Resources | v2.0 | 3/3 | Complete | 2026-03-29 |
+| 16. Workflow & Documentation | v2.0 | 1/1 | Complete | 2026-03-29 |
+| 17. Testing | v2.0 | 2/2 | Complete | 2026-03-29 |
+| 18. Security & Auth Hardening | v2.0.1 | 0/1 | Not started | - |
+| 19. Error Handling & Consistency | v2.0.1 | 0/1 | Not started | - |
+| 20. Code Quality -- Validators & Dedup | v2.0.1 | 0/2 | Not started | - |
+| 21. Dead Code Removal & Modernization | v2.0.1 | 0/1 | Not started | - |
+| 22. Test Coverage | v2.0.1 | 0/2 | Not started | - |
