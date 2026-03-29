@@ -248,7 +248,7 @@ Plans:
 **Milestone Goal:** Enable operators to set up bidirectional S3 bucket replication between two FlashBlade arrays through Terraform, with shared credentials for transparent failover.
 
 - [x] **Phase 14: Access Key Enhancement & Array Connection** - Optional secret input for cross-array key sharing + array connection data source (completed 2026-03-29)
-- [ ] **Phase 15: Replication Resources** - Remote credentials resource + bucket replica link resource with full CRUD
+- [x] **Phase 15: Replication Resources** - Remote credentials resource + bucket replica link resource with full CRUD (completed 2026-03-29)
 - [ ] **Phase 16: Workflow & Documentation** - Dual-provider replication example + HCL examples + import docs + tfplugindocs + README
 - [ ] **Phase 17: Testing** - TDD unit tests with mock handlers + acceptance tests on live FlashBlade pair
 
@@ -335,6 +335,6 @@ Phases execute in numeric order: 14 -> 15 -> 16 -> 17
 | 12. Infrastructure Hardening | v1.3 | 2/2 | Complete | 2026-03-29 |
 | 13. Documentation & Sensitive Data | v1.3 | 2/2 | Complete | 2026-03-29 |
 | 14. Access Key Enhancement & Array Connection | 2/2 | Complete    | 2026-03-29 | - |
-| 15. Replication Resources | 2/3 | In Progress|  | - |
+| 15. Replication Resources | 3/3 | Complete   | 2026-03-29 | - |
 | 16. Workflow & Documentation | v2.0 | 0/2 | Not started | - |
 | 17. Testing | v2.0 | 0/2 | Not started | - |

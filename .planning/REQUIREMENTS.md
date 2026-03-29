@@ -24,8 +24,8 @@ Requirements for milestone v2.0 — Cross-Array Bucket Replication.
 - [x] **BRL-01**: Operator can create a bucket replica link between a local bucket and a remote bucket
 - [x] **BRL-02**: Operator can pause/resume a replica link via Terraform apply
 - [x] **BRL-03**: Operator can destroy a replica link cleanly
-- [ ] **BRL-04**: Operator can import an existing replica link into Terraform state
-- [ ] **BRL-05**: Replica link exposes read-only status fields (direction, lag, recovery_point, status)
+- [x] **BRL-04**: Operator can import an existing replica link into Terraform state
+- [x] **BRL-05**: Replica link exposes read-only status fields (direction, lag, recovery_point, status)
 
 ### Array Connection
 
@@ -76,8 +76,8 @@ Deferred to future release.
 | BRL-01 | Phase 15 | Complete |
 | BRL-02 | Phase 15 | Complete |
 | BRL-03 | Phase 15 | Complete |
-| BRL-04 | Phase 15 | Pending |
-| BRL-05 | Phase 15 | Pending |
+| BRL-04 | Phase 15 | Complete |
+| BRL-05 | Phase 15 | Complete |
 | ACN-01 | Phase 14 | Complete |
 | ACN-02 | Phase 14 | Complete |
 | WFL-01 | Phase 16 | Pending |

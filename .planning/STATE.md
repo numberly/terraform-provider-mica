@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Cross-Array Bucket Replication
 status: executing
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-03-29T11:34:01.804Z"
+stopped_at: Completed 15-03-PLAN.md
+last_updated: "2026-03-29T11:34:33.359Z"
 last_activity: 2026-03-29 — Completed 15-02 remote credentials resource and data source
 progress:
   total_phases: 17
-  completed_phases: 14
+  completed_phases: 15
   total_plans: 44
-  completed_plans: 43
+  completed_plans: 44
   percent: 98
 ---
 
@@ -61,6 +61,7 @@ Recent decisions affecting current work:
 - [Phase 15-01]: RemoteCredentials POST takes remoteName as separate param for query string
 - [Phase 15]: Secret preservation: secret_access_key kept from plan values in state (API strips on GET)
 - [Phase 15]: Import sets secret_access_key to empty; user must provide in config or use ignore_changes
+- [Phase 15]: Flattened ObjectBacklog into top-level attributes for simpler HCL
 
 ### Pending Todos
 
@@ -72,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T11:34:01.798Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-03-29T11:34:33.353Z
+Stopped at: Completed 15-03-PLAN.md
 Resume file: None
