@@ -17,7 +17,7 @@ Requirements for milestone v2.0 — Cross-Array Bucket Replication.
 
 - [x] **RCR-01**: Operator can create remote credentials with access_key_id + secret_access_key referencing a remote array
 - [x] **RCR-02**: Operator can update remote credentials (rotate keys)
-- [ ] **RCR-03**: Operator can import existing remote credentials into Terraform state
+- [x] **RCR-03**: Operator can import existing remote credentials into Terraform state
 
 ### Bucket Replica Link
 
@@ -72,7 +72,7 @@ Deferred to future release.
 | AKE-03 | Phase 14 | Complete |
 | RCR-01 | Phase 15 | Complete |
 | RCR-02 | Phase 15 | Complete |
-| RCR-03 | Phase 15 | Pending |
+| RCR-03 | Phase 15 | Complete |
 | BRL-01 | Phase 15 | Complete |
 | BRL-02 | Phase 15 | Complete |
 | BRL-03 | Phase 15 | Complete |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Cross-Array Bucket Replication
 status: executing
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-29T11:21:30Z"
-last_activity: 2026-03-29 — Completed 15-01 replication client models and CRUD
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-03-29T11:34:01.804Z"
+last_activity: 2026-03-29 — Completed 15-02 remote credentials resource and data source
 progress:
   total_phases: 17
   completed_phases: 14
   total_plans: 44
-  completed_plans: 42
-  percent: 95
+  completed_plans: 43
+  percent: 98
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 15 of 17 (Replication Resources)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: Executing
-Last activity: 2026-03-29 — Completed 15-01 replication client models and CRUD
+Last activity: 2026-03-29 — Completed 15-02 remote credentials resource and data source
 
-Progress: [██████████] 95%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -59,6 +59,8 @@ Recent decisions affecting current work:
 - [Phase 14-01]: Bucket versioning warning (not error) for replication readiness via ValidateConfig
 - [Phase 15-01]: BucketReplicaLink PATCH uses ID for stability (same pattern as PatchBucket)
 - [Phase 15-01]: RemoteCredentials POST takes remoteName as separate param for query string
+- [Phase 15]: Secret preservation: secret_access_key kept from plan values in state (API strips on GET)
+- [Phase 15]: Import sets secret_access_key to empty; user must provide in config or use ignore_changes
 
 ### Pending Todos
 
@@ -70,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T11:21:30Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-29T11:34:01.798Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
