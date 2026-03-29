@@ -8,43 +8,43 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v1.3 — Release Readiness
+## Current Milestone: v2.0 — Cross-Array Bucket Replication
 
-**Goal:** Implement best practices from major providers (AWS, Cloudflare) to prepare for public release: state migration framework, import documentation, transport hardening, and write-only sensitive fields.
+**Goal:** Enable operators to set up bidirectional S3 bucket replication between two FlashBlade arrays through Terraform, with shared credentials for transparent failover.
 
 **Target features:**
-- State migration framework (SchemaVersion + UpgradeState on all resources)
-- Import documentation (import.md for every resource)
-- Move int64UseStateForUnknown to shared helpers
-- Jitter in exponential backoff (±20%)
-- Write-only argument for secret_access_key (Terraform 1.11+)
+- Access key resource accepts optional secret_access_key input (import existing key to second array)
+- Object store remote credentials resource (each FB authenticates to the other)
+- Bucket replica link resource (bidirectional replication between two FB arrays)
+- Array connection data source (read existing inter-array connection)
+- Complete replication workflow example (dual-provider, same tenant on both arrays)
 
 ## Requirements
 
 ### Validated
 
-- ✓ Provider authenticates via API token — v1.0
-- ✓ 28 resources with CRUD, import, drift detection — v1.0+v1.1
-- ✓ 329 unit tests with idempotence + mock param validation — v1.2
-- ✓ 4 bug fixes, architecture cleanup, validators — v1.2
-- ✓ CI/CD with GoReleaser + Cosign keyless signing
+- ✓ 28 resources + 21 data sources with CRUD, import, drift detection — v1.0+v1.1
+- ✓ 340 unit tests, state migration framework, validators — v1.2+v1.3
+- ✓ CI/CD with GoReleaser + Cosign, import docs, jitter backoff — v1.3
+- ✓ S3 tenant onboarding workflow (server → account → export → policies → bucket)
 
 ### Active
 
-- [ ] SchemaVersion 0 + UpgradeState framework on all 28 resources
-- [ ] import.md files for all 27 importable resources
-- [ ] Move int64UseStateForUnknown to helpers.go
-- [ ] Jitter ±20% in exponential backoff
-- [ ] Write-only argument for secret_access_key
+- [ ] Access key accepts optional secret_access_key input for cross-array credential sharing
+- [ ] Object store remote credentials resource (CRUD)
+- [ ] Bucket replica link resource (bidirectional, CRUD)
+- [ ] Array connection data source (read existing connection)
+- [ ] Bucket versioning must be enforced/validated for replication
+- [ ] Complete dual-provider replication workflow example
+- [ ] TDD tests for all new resources + acceptance test on live FlashBlade pair
 
 ### Out of Scope
 
 - Pulumi bridge — deferred, provider structure compatible
-- Terraform Registry publishing — internal distribution first
-- Hardware management — out of API scope
-- Multi-array orchestration — single target per provider instance
-- Syslog server CA cert settings — defer to v1.3
-- New resources — this milestone is quality-only, no new features
+- Target resource (external S3 replication) — defer to v2.1
+- Array connection resource (create/delete) — defer to v2.1
+- File system replica links — defer to v2.1
+- Cascading replication — defer to v2.1
 
 ## Context
 
@@ -77,4 +77,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-29 after milestone v1.3 initialization*
+*Last updated: 2026-03-29 after milestone v2.0 initialization*

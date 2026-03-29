@@ -41,3 +41,17 @@
 
 **Phases:** 9–11 (7 plans)
 **Last phase number:** 11
+
+### v1.3 — Release Readiness (completed 2026-03-29)
+
+**Goal:** Best practices from major providers: state migration, import docs, transport hardening.
+
+**Delivered:**
+- SchemaVersion 0 + UpgradeState on all 28 resources
+- int64/float64UseStateForUnknown helpers consolidated
+- ±20% jitter in exponential backoff
+- 27 import.sh files + tfplugindocs regenerated
+- 340 unit tests, all passing
+
+**Phases:** 12–13 (4 plans)
+**Last phase number:** 13

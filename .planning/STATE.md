@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Release Readiness
-status: executing
-stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-03-29T08:05:53.175Z"
-last_activity: 2026-03-29 — Completed 12-01 (state migration framework)
+milestone: v2.0
+milestone_name: Cross-Array Bucket Replication
+status: planning
+stopped_at: Milestone v2.0 started — defining requirements
+last_updated: "2026-03-29T09:00:00.000Z"
+last_activity: 2026-03-29 — Milestone v2.0 started
 progress:
-  total_phases: 13
-  completed_phases: 13
-  total_plans: 39
-  completed_plans: 39
-  percent: 97
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v1.3 — Release Readiness (Phase 12: Infrastructure Hardening)
+**Current focus:** Milestone v2.0 — Cross-Array Bucket Replication
 
 ## Current Position
 
-Phase: 12 of 13 (Infrastructure Hardening)
-Plan: 1 of 2
-Status: In progress
-Last activity: 2026-03-29 — Completed 12-01 (state migration framework)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-29 — Milestone v2.0 started
 
-Progress: [██████████] 97%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
