@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Cross-Array Bucket Replication
 status: executing
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-03-29T12:07:05.740Z"
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-03-29T12:07:42.900Z"
 last_activity: 2026-03-29 — Completed 16-01 workflow and documentation
 progress:
   total_phases: 17
-  completed_phases: 16
+  completed_phases: 17
   total_plans: 47
-  completed_plans: 46
+  completed_plans: 47
   percent: 100
 ---
 
@@ -65,6 +65,7 @@ Recent decisions affecting current work:
 - [Phase 16]: Workflow uses symmetric infrastructure on both arrays for bidirectional replication
 - [Phase 16]: Secondary access key shares primary's secret via secret_access_key input
 - [Phase 17-testing]: Acceptance test HCL committed to tmp/test-purestorage repo; live execution gated behind human checkpoint
+- [Phase 17-testing]: Followed exact test patterns from object_store_access_key_resource_test.go for consistency
 
 ### Pending Todos
 
@@ -76,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T12:07:00.107Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-03-29T12:07:42.895Z
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
