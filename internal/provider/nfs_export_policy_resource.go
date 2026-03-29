@@ -22,6 +22,7 @@ import (
 var _ resource.Resource = &nfsExportPolicyResource{}
 var _ resource.ResourceWithConfigure = &nfsExportPolicyResource{}
 var _ resource.ResourceWithImportState = &nfsExportPolicyResource{}
+var _ resource.ResourceWithUpgradeState = &nfsExportPolicyResource{}
 
 // nfsExportPolicyResource implements the flashblade_nfs_export_policy resource.
 type nfsExportPolicyResource struct {
@@ -56,6 +57,7 @@ func (r *nfsExportPolicyResource) Metadata(_ context.Context, _ resource.Metadat
 // Schema defines the resource schema.
 func (r *nfsExportPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a FlashBlade NFS export policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -103,6 +105,11 @@ func (r *nfsExportPolicyResource) Schema(ctx context.Context, _ resource.SchemaR
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *nfsExportPolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *nfsExportPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

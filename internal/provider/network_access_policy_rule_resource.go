@@ -26,6 +26,7 @@ import (
 var _ resource.Resource = &networkAccessPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &networkAccessPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &networkAccessPolicyRuleResource{}
+var _ resource.ResourceWithUpgradeState = &networkAccessPolicyRuleResource{}
 
 // networkAccessPolicyRuleResource implements the flashblade_network_access_policy_rule resource.
 type networkAccessPolicyRuleResource struct {
@@ -62,6 +63,7 @@ func (r *networkAccessPolicyRuleResource) Metadata(_ context.Context, _ resource
 // Schema defines the resource schema.
 func (r *networkAccessPolicyRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a rule within a FlashBlade network access policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -123,6 +125,11 @@ func (r *networkAccessPolicyRuleResource) Schema(ctx context.Context, _ resource
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *networkAccessPolicyRuleResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *networkAccessPolicyRuleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

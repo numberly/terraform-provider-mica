@@ -20,6 +20,7 @@ import (
 // Intentionally does NOT implement ResourceWithImportState — secret is unavailable after creation.
 var _ resource.Resource = &objectStoreAccessKeyResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccessKeyResource{}
+var _ resource.ResourceWithUpgradeState = &objectStoreAccessKeyResource{}
 
 // objectStoreAccessKeyResource implements the flashblade_object_store_access_key resource.
 type objectStoreAccessKeyResource struct {
@@ -54,6 +55,7 @@ func (r *objectStoreAccessKeyResource) Metadata(_ context.Context, _ resource.Me
 // Schema defines the resource schema.
 func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key can be optionally provided for cross-array replication (sharing the same credentials across arrays). When omitted, the API generates a random secret. The secret is stored in state (encrypted) and marked sensitive.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -111,6 +113,11 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *objectStoreAccessKeyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *objectStoreAccessKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

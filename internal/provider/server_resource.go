@@ -22,6 +22,7 @@ import (
 var _ resource.Resource = &serverResource{}
 var _ resource.ResourceWithConfigure = &serverResource{}
 var _ resource.ResourceWithImportState = &serverResource{}
+var _ resource.ResourceWithUpgradeState = &serverResource{}
 
 // serverResource implements the flashblade_server resource.
 type serverResource struct {
@@ -78,6 +79,7 @@ func (r *serverResource) Metadata(_ context.Context, _ resource.MetadataRequest,
 // Schema defines the resource schema.
 func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a FlashBlade server.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -142,6 +144,11 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *serverResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *serverResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

@@ -21,6 +21,7 @@ import (
 var _ resource.Resource = &bucketReplicaLinkResource{}
 var _ resource.ResourceWithConfigure = &bucketReplicaLinkResource{}
 var _ resource.ResourceWithImportState = &bucketReplicaLinkResource{}
+var _ resource.ResourceWithUpgradeState = &bucketReplicaLinkResource{}
 
 // bucketReplicaLinkResource implements the flashblade_bucket_replica_link resource.
 type bucketReplicaLinkResource struct {
@@ -63,6 +64,7 @@ func (r *bucketReplicaLinkResource) Metadata(_ context.Context, _ resource.Metad
 // Schema defines the resource schema.
 func (r *bucketReplicaLinkResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a FlashBlade bucket replica link for cross-array bucket replication.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -168,6 +170,11 @@ func (r *bucketReplicaLinkResource) Schema(ctx context.Context, _ resource.Schem
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *bucketReplicaLinkResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *bucketReplicaLinkResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

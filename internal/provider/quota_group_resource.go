@@ -24,6 +24,7 @@ import (
 var _ resource.Resource = &quotaGroupResource{}
 var _ resource.ResourceWithConfigure = &quotaGroupResource{}
 var _ resource.ResourceWithImportState = &quotaGroupResource{}
+var _ resource.ResourceWithUpgradeState = &quotaGroupResource{}
 
 // quotaGroupResource implements the flashblade_quota_group resource.
 type quotaGroupResource struct {
@@ -57,6 +58,7 @@ func (r *quotaGroupResource) Metadata(_ context.Context, _ resource.MetadataRequ
 // Schema defines the resource schema.
 func (r *quotaGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a per-filesystem group quota on a FlashBlade array.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -104,6 +106,11 @@ func (r *quotaGroupResource) Schema(ctx context.Context, _ resource.SchemaReques
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *quotaGroupResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *quotaGroupResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

@@ -22,6 +22,7 @@ import (
 var _ resource.Resource = &smbClientPolicyResource{}
 var _ resource.ResourceWithConfigure = &smbClientPolicyResource{}
 var _ resource.ResourceWithImportState = &smbClientPolicyResource{}
+var _ resource.ResourceWithUpgradeState = &smbClientPolicyResource{}
 
 // smbClientPolicyResource implements the flashblade_smb_client_policy resource.
 type smbClientPolicyResource struct {
@@ -57,6 +58,7 @@ func (r *smbClientPolicyResource) Metadata(_ context.Context, _ resource.Metadat
 // Schema defines the resource schema.
 func (r *smbClientPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a FlashBlade SMB client policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -113,6 +115,11 @@ func (r *smbClientPolicyResource) Schema(ctx context.Context, _ resource.SchemaR
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *smbClientPolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *smbClientPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

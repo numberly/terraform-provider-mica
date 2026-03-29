@@ -26,6 +26,7 @@ import (
 var _ resource.Resource = &arraySmtpResource{}
 var _ resource.ResourceWithConfigure = &arraySmtpResource{}
 var _ resource.ResourceWithImportState = &arraySmtpResource{}
+var _ resource.ResourceWithUpgradeState = &arraySmtpResource{}
 
 // arraySmtpResource implements the flashblade_array_smtp composite singleton resource.
 // It manages both the SMTP relay config and alert watchers (email recipients) in a single resource.
@@ -76,6 +77,7 @@ func (r *arraySmtpResource) Metadata(_ context.Context, _ resource.MetadataReque
 // Schema defines the resource schema.
 func (r *arraySmtpResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages the SMTP relay configuration and alert watchers of a FlashBlade array. This is a composite singleton resource — Delete resets SMTP config and removes all alert watchers.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -141,6 +143,11 @@ func (r *arraySmtpResource) Schema(ctx context.Context, _ resource.SchemaRequest
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *arraySmtpResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *arraySmtpResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

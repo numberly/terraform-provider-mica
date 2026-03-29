@@ -24,6 +24,7 @@ import (
 var _ resource.Resource = &quotaUserResource{}
 var _ resource.ResourceWithConfigure = &quotaUserResource{}
 var _ resource.ResourceWithImportState = &quotaUserResource{}
+var _ resource.ResourceWithUpgradeState = &quotaUserResource{}
 
 // quotaUserResource implements the flashblade_quota_user resource.
 type quotaUserResource struct {
@@ -57,6 +58,7 @@ func (r *quotaUserResource) Metadata(_ context.Context, _ resource.MetadataReque
 // Schema defines the resource schema.
 func (r *quotaUserResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a per-filesystem user quota on a FlashBlade array.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -104,6 +106,11 @@ func (r *quotaUserResource) Schema(ctx context.Context, _ resource.SchemaRequest
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *quotaUserResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *quotaUserResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

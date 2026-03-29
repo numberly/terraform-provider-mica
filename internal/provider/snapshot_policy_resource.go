@@ -22,6 +22,7 @@ import (
 var _ resource.Resource = &snapshotPolicyResource{}
 var _ resource.ResourceWithConfigure = &snapshotPolicyResource{}
 var _ resource.ResourceWithImportState = &snapshotPolicyResource{}
+var _ resource.ResourceWithUpgradeState = &snapshotPolicyResource{}
 
 // snapshotPolicyResource implements the flashblade_snapshot_policy resource.
 type snapshotPolicyResource struct {
@@ -56,6 +57,7 @@ func (r *snapshotPolicyResource) Metadata(_ context.Context, _ resource.Metadata
 // Schema defines the resource schema.
 func (r *snapshotPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:     0,
 		Description: "Manages a FlashBlade snapshot policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -110,6 +112,11 @@ func (r *snapshotPolicyResource) Schema(ctx context.Context, _ resource.SchemaRe
 	}
 }
 
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *snapshotPolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
 
 // Configure injects the FlashBladeClient into the resource.
 func (r *snapshotPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
