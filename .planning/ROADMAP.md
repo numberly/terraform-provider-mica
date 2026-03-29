@@ -5,7 +5,8 @@
 - v1.0 Core Provider (Phases 1-5) -- shipped 2026-03-28
 - v1.1 Servers & Exports (Phases 6-8) -- shipped 2026-03-28
 - v1.2 Code Quality & Robustness (Phases 9-11) -- shipped 2026-03-29
-- v1.3 Release Readiness (Phases 12-13) -- in progress
+- v1.3 Release Readiness (Phases 12-13) -- shipped 2026-03-29
+- v2.0 Cross-Array Bucket Replication (Phases 14-17) -- in progress
 
 ## Phases
 
@@ -209,14 +210,8 @@ Plans:
 
 </details>
 
-### v1.3 Release Readiness (In Progress)
-
-**Milestone Goal:** Implement best practices from major providers (AWS, Cloudflare) to prepare for public release: state migration framework, import documentation, transport hardening, and write-only sensitive fields.
-
-- [x] **Phase 12: Infrastructure Hardening** - State migration framework, helper consolidation, and transport jitter across all resources (completed 2026-03-29)
-- [x] **Phase 13: Documentation & Sensitive Data** - Import docs for all resources and write-only secret_access_key (completed 2026-03-29)
-
-## Phase Details
+<details>
+<summary>v1.3 Release Readiness (Phases 12-13) - SHIPPED 2026-03-29</summary>
 
 ### Phase 12: Infrastructure Hardening
 **Goal**: All 28 resources have a state migration framework ready for future schema changes, shared plan modifier helpers are consolidated, and retry logic prevents thundering herds
@@ -226,11 +221,11 @@ Plans:
   1. Every resource schema declares `SchemaVersion: 0` and wires an `UpgradeState` method with an empty upgrader slice -- `go build ./...` compiles and `go test ./...` passes
   2. `int64UseStateForUnknown` and `float64UseStateForUnknown` plan modifiers live in `helpers.go` and are referenced from all resource files that need them (no inline definitions remain)
   3. Retry backoff intervals vary by at least 20% between consecutive identical requests (jitter prevents synchronized retries from multiple provider instances)
-**Plans**: TBD
+**Plans**: 2/2 plans complete
 
 Plans:
-- [ ] 12-01: State migration framework (SchemaVersion 0 + UpgradeState) on all 28 resources
-- [ ] 12-02: Helper consolidation (int64/float64 UseStateForUnknown) and transport jitter
+- [x] 12-01-PLAN.md — State migration framework (SchemaVersion 0 + UpgradeState) on all 28 resources
+- [x] 12-02-PLAN.md — Helper consolidation (int64/float64 UseStateForUnknown) and transport jitter
 
 ### Phase 13: Documentation & Sensitive Data
 **Goal**: Every importable resource has Registry-ready import documentation, and the access key secret uses the write-only argument pattern for Terraform 1.11+ compatibility
@@ -240,16 +235,89 @@ Plans:
   1. Every importable resource (27 of 28) has an `import.sh` file with correct `terraform import` syntax and an example using realistic identifiers
   2. `tfplugindocs generate` produces documentation that includes import sections for all importable resources without errors or manual edits
   3. `secret_access_key` on `flashblade_object_store_access_key` uses the write-only attribute pattern: the value is never stored in state, never appears in plan diff, and is only sent to the API on create
-**Plans**: 2 plans
+**Plans**: 2/2 plans complete
 
 Plans:
-- [ ] 13-01-PLAN.md — Import documentation (import.sh) for 10 remaining importable resources + tfplugindocs regeneration
-- [ ] 13-02-PLAN.md — Write-only argument pattern for secret_access_key (WriteOnly: true, framework v1.19.0)
+- [x] 13-01-PLAN.md — Import documentation (import.sh) for 10 remaining importable resources + tfplugindocs regeneration
+- [x] 13-02-PLAN.md — Write-only argument pattern for secret_access_key (WriteOnly: true, framework v1.19.0)
+
+</details>
+
+### v2.0 Cross-Array Bucket Replication (In Progress)
+
+**Milestone Goal:** Enable operators to set up bidirectional S3 bucket replication between two FlashBlade arrays through Terraform, with shared credentials for transparent failover.
+
+- [ ] **Phase 14: Access Key Enhancement & Array Connection** - Optional secret input for cross-array key sharing + array connection data source
+- [ ] **Phase 15: Replication Resources** - Remote credentials resource + bucket replica link resource with full CRUD
+- [ ] **Phase 16: Workflow & Documentation** - Dual-provider replication example + HCL examples + import docs + tfplugindocs + README
+- [ ] **Phase 17: Testing** - TDD unit tests with mock handlers + acceptance tests on live FlashBlade pair
+
+## Phase Details
+
+### Phase 14: Access Key Enhancement & Array Connection
+**Goal**: Operators can share an S3 access key pair across two FlashBlade arrays and query existing array connections -- the foundation for cross-array replication
+**Depends on**: Phase 13 (v1.3 complete)
+**Requirements**: AKE-01, AKE-02, AKE-03, ACN-01, ACN-02
+**Success Criteria** (what must be TRUE):
+  1. Operator can create an access key on FB-A (API generates secret), then create the same key on FB-B by providing `secret_access_key` in HCL -- both keys have identical credentials
+  2. When `secret_access_key` is omitted, existing behavior is unchanged (API generates the secret); when provided, the POST body includes it and the API accepts it
+  3. `flashblade_array_connection` data source reads an existing connection by remote array name and exposes id, status, management_address, and replication_addresses
+  4. Bucket resource validates that `versioning` is set to `"enabled"` when the bucket participates in replication (plan-time error, not API-time)
+**Plans**: TBD
+
+Plans:
+- [ ] 14-01: Access key resource enhancement (optional secret_access_key input) + bucket versioning validation
+- [ ] 14-02: Array connection data source (model, client, mock handler, data source, tests)
+
+### Phase 15: Replication Resources
+**Goal**: Operators can create the credential and link infrastructure required for bidirectional bucket replication between two FlashBlade arrays
+**Depends on**: Phase 14 (access keys with shared secrets and array connection data must exist)
+**Requirements**: RCR-01, RCR-02, RCR-03, BRL-01, BRL-02, BRL-03, BRL-04, BRL-05
+**Success Criteria** (what must be TRUE):
+  1. Operator can create remote credentials on each FlashBlade pointing to the other array's access key -- `terraform apply` succeeds on both providers
+  2. Operator can rotate remote credentials (update access_key_id + secret_access_key) via `terraform apply` without destroying the credential resource
+  3. Operator can create a bucket replica link between a local and remote bucket, pause/resume it via attribute change, and destroy it cleanly
+  4. Bucket replica link exposes read-only status fields (direction, lag, recovery_point, status) that reflect current replication state after `terraform refresh`
+  5. Operator can import existing remote credentials and bucket replica links into Terraform state; subsequent `plan` shows 0 diff
+**Plans**: TBD
+
+Plans:
+- [ ] 15-01: Remote credentials resource (model, client CRUD, mock handler, resource, data source, tests)
+- [ ] 15-02: Bucket replica link resource (model, client CRUD, mock handler, resource, data source, tests)
+
+### Phase 16: Workflow & Documentation
+**Goal**: Operators have a complete, copy-pasteable dual-provider replication example and all new resources are documented for the Terraform Registry
+**Depends on**: Phase 15 (all replication resources must exist before the workflow references them)
+**Requirements**: WFL-01, DOC-01, DOC-02, DOC-03
+**Success Criteria** (what must be TRUE):
+  1. A complete HCL example in `examples/replication/` demonstrates the full workflow: dual provider config, account, bucket with versioning, access keys (shared secret), remote credentials, and bidirectional replica links
+  2. Every new resource and data source (remote credentials, bucket replica link, array connection DS) has an `import.sh` file with realistic identifiers
+  3. `tfplugindocs generate` produces documentation including all new resources without errors or manual edits
+  4. README coverage table includes the replication resources category with correct resource counts
+**Plans**: TBD
+
+Plans:
+- [ ] 16-01: Dual-provider replication workflow example + HCL examples + import.sh for new resources
+- [ ] 16-02: tfplugindocs regeneration + README update with replication category
+
+### Phase 17: Testing
+**Goal**: All new replication resources have comprehensive test coverage and pass validation against a live FlashBlade pair
+**Depends on**: Phase 16 (workflow example informs acceptance test structure)
+**Requirements**: WFL-02, WFL-03
+**Success Criteria** (what must be TRUE):
+  1. TDD unit tests exist for all new resources (remote credentials, bucket replica link) and the enhanced access key resource -- including mock handlers that validate API request bodies
+  2. Array connection data source has unit tests covering read-by-name, not-found error, and attribute mapping
+  3. Acceptance tests execute the full replication lifecycle on a live FlashBlade pair: create credentials, create replica link, verify status fields, pause/resume, destroy cleanly
+**Plans**: TBD
+
+Plans:
+- [ ] 17-01: TDD unit tests + mock handlers for remote credentials, bucket replica link, array connection DS, and access key enhancement
+- [ ] 17-02: Acceptance tests on live FlashBlade pair for replication lifecycle
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 12 -> 13
+Phases execute in numeric order: 14 -> 15 -> 16 -> 17
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -265,4 +333,8 @@ Phases execute in numeric order: 12 -> 13
 | 10. Architecture Cleanup | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 11. Test Hardening & Validators | v1.2 | 3/3 | Complete | 2026-03-29 |
 | 12. Infrastructure Hardening | v1.3 | 2/2 | Complete | 2026-03-29 |
-| 13. Documentation & Sensitive Data | 2/2 | Complete    | 2026-03-29 | - |
+| 13. Documentation & Sensitive Data | v1.3 | 2/2 | Complete | 2026-03-29 |
+| 14. Access Key Enhancement & Array Connection | v2.0 | 0/2 | Not started | - |
+| 15. Replication Resources | v2.0 | 0/2 | Not started | - |
+| 16. Workflow & Documentation | v2.0 | 0/2 | Not started | - |
+| 17. Testing | v2.0 | 0/2 | Not started | - |

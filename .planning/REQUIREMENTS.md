@@ -67,31 +67,31 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AKE-01 | — | Pending |
-| AKE-02 | — | Pending |
-| AKE-03 | — | Pending |
-| RCR-01 | — | Pending |
-| RCR-02 | — | Pending |
-| RCR-03 | — | Pending |
-| BRL-01 | — | Pending |
-| BRL-02 | — | Pending |
-| BRL-03 | — | Pending |
-| BRL-04 | — | Pending |
-| BRL-05 | — | Pending |
-| ACN-01 | — | Pending |
-| ACN-02 | — | Pending |
-| WFL-01 | — | Pending |
-| WFL-02 | — | Pending |
-| WFL-03 | — | Pending |
-| DOC-01 | — | Pending |
-| DOC-02 | — | Pending |
-| DOC-03 | — | Pending |
+| AKE-01 | Phase 14 | Pending |
+| AKE-02 | Phase 14 | Pending |
+| AKE-03 | Phase 14 | Pending |
+| RCR-01 | Phase 15 | Pending |
+| RCR-02 | Phase 15 | Pending |
+| RCR-03 | Phase 15 | Pending |
+| BRL-01 | Phase 15 | Pending |
+| BRL-02 | Phase 15 | Pending |
+| BRL-03 | Phase 15 | Pending |
+| BRL-04 | Phase 15 | Pending |
+| BRL-05 | Phase 15 | Pending |
+| ACN-01 | Phase 14 | Pending |
+| ACN-02 | Phase 14 | Pending |
+| WFL-01 | Phase 16 | Pending |
+| WFL-02 | Phase 17 | Pending |
+| WFL-03 | Phase 17 | Pending |
+| DOC-01 | Phase 16 | Pending |
+| DOC-02 | Phase 16 | Pending |
+| DOC-03 | Phase 16 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-29*
-*Last updated: 2026-03-29 after milestone v2.0 initialization*
+*Last updated: 2026-03-29 after v2.0 roadmap creation*
