@@ -390,7 +390,7 @@ Plans:
   2. OAuth2 provider configuration test verifies that `client_id` + `key_id` + `issuer` flow initializes the provider without errors (mock token endpoint)
   3. At least 3 resources have HCL-based acceptance tests using `resource.UnitTest` with a mock server that exercise plan, apply, refresh, import, and destroy
   4. Pagination tests exist for at least buckets and one policy type (in addition to existing filesystem pagination tests)
-**Plans**: 1 plan
+**Plans**: 2 plans
 
 Plans:
 - [ ] 22-01-PLAN.md — Unit tests for 5 uncovered data sources + OAuth2 provider config test
