@@ -822,3 +822,57 @@ func TestUnit_Bucket_VersioningValidator(t *testing.T) {
 		}
 	}
 }
+
+// TestUnit_Bucket_VersioningWarning verifies that ValidateConfig emits a warning
+// when versioning is not set to "enabled" (replication readiness).
+func TestUnit_Bucket_VersioningWarning(t *testing.T) {
+	r := &bucketResource{}
+
+	// Verify interface is satisfied.
+	var _ resource.ResourceWithValidateConfig = r
+
+	s := bucketResourceSchema(t).Schema
+
+	tests := []struct {
+		name        string
+		versioning  tftypes.Value
+		wantWarning bool
+	}{
+		{"none emits warning", tftypes.NewValue(tftypes.String, "none"), true},
+		{"suspended emits warning", tftypes.NewValue(tftypes.String, "suspended"), true},
+		{"enabled no warning", tftypes.NewValue(tftypes.String, "enabled"), false},
+		{"null no warning", tftypes.NewValue(tftypes.String, nil), false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := nullBucketConfig()
+			// ValidateConfig needs at least required fields set.
+			cfg["name"] = tftypes.NewValue(tftypes.String, "test-bucket")
+			cfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+			cfg["versioning"] = tc.versioning
+
+			req := resource.ValidateConfigRequest{
+				Config: tfsdk.Config{
+					Raw:    tftypes.NewValue(buildBucketType(), cfg),
+					Schema: s,
+				},
+			}
+			resp := &resource.ValidateConfigResponse{}
+			r.ValidateConfig(context.Background(), req, resp)
+
+			if resp.Diagnostics.HasError() {
+				t.Fatalf("unexpected error: %s", resp.Diagnostics)
+			}
+
+			hasWarning := resp.Diagnostics.WarningsCount() > 0
+
+			if tc.wantWarning && !hasWarning {
+				t.Error("expected versioning warning but got none")
+			}
+			if !tc.wantWarning && hasWarning {
+				t.Error("did not expect versioning warning")
+			}
+		})
+	}
+}

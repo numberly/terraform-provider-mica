@@ -26,6 +26,7 @@ var _ resource.Resource = &bucketResource{}
 var _ resource.ResourceWithConfigure = &bucketResource{}
 var _ resource.ResourceWithImportState = &bucketResource{}
 var _ resource.ResourceWithUpgradeState = &bucketResource{}
+var _ resource.ResourceWithValidateConfig = &bucketResource{}
 
 // bucketResource implements the flashblade_bucket resource.
 type bucketResource struct {
@@ -189,6 +190,24 @@ func (r *bucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 
 func (r *bucketResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
 	return map[int64]resource.StateUpgrader{}
+}
+
+// ValidateConfig emits plan-time warnings for replication readiness.
+func (r *bucketResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data bucketModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !data.Versioning.IsNull() && !data.Versioning.IsUnknown() {
+		if data.Versioning.ValueString() != "enabled" {
+			resp.Diagnostics.AddWarning(
+				"Bucket versioning not enabled",
+				"Versioning must be set to \"enabled\" for buckets participating in cross-array replication. "+
+					"If this bucket will be used with a bucket replica link, set versioning = \"enabled\".",
+			)
+		}
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.

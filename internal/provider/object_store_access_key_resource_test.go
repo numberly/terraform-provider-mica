@@ -404,6 +404,111 @@ func TestUnit_AccessKey_SecretSensitive(t *testing.T) {
 	}
 }
 
+// accessKeyPlanWithSecret returns a tfsdk.Plan with the given account name and explicit secret.
+func accessKeyPlanWithSecret(t *testing.T, accountName, secret string) tfsdk.Plan {
+	t.Helper()
+	s := accessKeyResourceSchema(t).Schema
+	cfg := nullAccessKeyConfig()
+	cfg["object_store_account"] = tftypes.NewValue(tftypes.String, accountName)
+	cfg["secret_access_key"] = tftypes.NewValue(tftypes.String, secret)
+	return tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildAccessKeyType(), cfg),
+		Schema: s,
+	}
+}
+
+// TestUnit_AccessKey_CreateWithSecret verifies that when an explicit secret is provided,
+// the mock/API echoes back the provided value instead of generating a random one.
+func TestUnit_AccessKey_CreateWithSecret(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
+	handlers.RegisterObjectStoreUserHandlers(ms.Mux, accountStore)
+	handlers.RegisterObjectStoreAccessKeyHandlers(ms.Mux, accountStore)
+
+	seedAccount(t, ms, "secret-explicit-account")
+
+	r := newTestAccessKeyResource(t, ms)
+	s := accessKeyResourceSchema(t).Schema
+
+	const expectedSecret = "my-cross-array-secret-key-value-12345678"
+	plan := accessKeyPlanWithSecret(t, "secret-explicit-account", expectedSecret)
+	req := resource.CreateRequest{Plan: plan}
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildAccessKeyType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", resp.Diagnostics)
+	}
+
+	var model objectStoreAccessKeyModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.SecretAccessKey.ValueString() != expectedSecret {
+		t.Errorf("expected secret_access_key=%q, got %q", expectedSecret, model.SecretAccessKey.ValueString())
+	}
+}
+
+// TestUnit_AccessKey_SecretOptionalComputed verifies schema properties of secret_access_key.
+func TestUnit_AccessKey_SecretOptionalComputed(t *testing.T) {
+	s := accessKeyResourceSchema(t).Schema
+
+	attr, ok := s.Attributes["secret_access_key"]
+	if !ok {
+		t.Fatal("secret_access_key attribute not found in schema")
+	}
+	strAttr, ok := attr.(resschema.StringAttribute)
+	if !ok {
+		t.Fatalf("secret_access_key is not a resschema.StringAttribute, got %T", attr)
+	}
+	if !strAttr.Optional {
+		t.Error("secret_access_key: expected Optional=true")
+	}
+	if !strAttr.Computed {
+		t.Error("secret_access_key: expected Computed=true")
+	}
+	if !strAttr.Sensitive {
+		t.Error("secret_access_key: expected Sensitive=true")
+	}
+}
+
+// TestUnit_AccessKey_SecretRequiresReplace verifies RequiresReplace modifier on secret_access_key.
+func TestUnit_AccessKey_SecretRequiresReplace(t *testing.T) {
+	s := accessKeyResourceSchema(t).Schema
+
+	attr, ok := s.Attributes["secret_access_key"]
+	if !ok {
+		t.Fatal("secret_access_key attribute not found in schema")
+	}
+	strAttr, ok := attr.(resschema.StringAttribute)
+	if !ok {
+		t.Fatalf("secret_access_key is not a resschema.StringAttribute, got %T", attr)
+	}
+
+	// Must have at least 2 plan modifiers: UseStateForUnknown + RequiresReplace.
+	if len(strAttr.PlanModifiers) < 2 {
+		t.Fatalf("expected at least 2 plan modifiers on secret_access_key, got %d", len(strAttr.PlanModifiers))
+	}
+
+	// Check that RequiresReplace is present by looking at Description().
+	found := false
+	for _, pm := range strAttr.PlanModifiers {
+		desc := pm.Description(context.Background())
+		if desc == "If the value of this attribute changes, Terraform will destroy and recreate the resource." {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("secret_access_key: RequiresReplace plan modifier not found")
+	}
+}
+
 // TestUnit_AccessKey_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the object_store_access_key resource schema.
 func TestUnit_AccessKey_PlanModifiers(t *testing.T) {
