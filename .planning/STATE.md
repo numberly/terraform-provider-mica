@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Cross-Array Bucket Replication
 status: executing
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-03-29T09:10:35.258Z"
-last_activity: 2026-03-29 — Completed 14-02 array connection data source
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-29T11:21:30Z"
+last_activity: 2026-03-29 — Completed 15-01 replication client models and CRUD
 progress:
   total_phases: 17
   completed_phases: 14
-  total_plans: 41
-  completed_plans: 41
-  percent: 98
+  total_plans: 44
+  completed_plans: 42
+  percent: 95
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v2.0 — Cross-Array Bucket Replication — Phase 14
+**Current focus:** Milestone v2.0 — Cross-Array Bucket Replication — Phase 15
 
 ## Current Position
 
-Phase: 14 of 17 (Access Key Enhancement & Array Connection)
-Plan: 2 of 2 in current phase
+Phase: 15 of 17 (Replication Resources)
+Plan: 1 of 3 in current phase
 Status: Executing
-Last activity: 2026-03-29 — Completed 14-02 array connection data source
+Last activity: 2026-03-29 — Completed 15-01 replication client models and CRUD
 
-Progress: [██████████] 98%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -57,6 +57,8 @@ Recent decisions affecting current work:
 - [Phase 14-02]: Array connection is data-source-only with Seed-based mock test setup
 - [Phase 14-01]: secret_access_key uses Optional+Computed+Sensitive with RequiresReplace for cross-array replication
 - [Phase 14-01]: Bucket versioning warning (not error) for replication readiness via ValidateConfig
+- [Phase 15-01]: BucketReplicaLink PATCH uses ID for stability (same pattern as PatchBucket)
+- [Phase 15-01]: RemoteCredentials POST takes remoteName as separate param for query string
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T09:09:02.464Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-03-29T11:21:30Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None
