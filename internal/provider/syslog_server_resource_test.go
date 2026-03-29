@@ -384,3 +384,47 @@ func TestUnit_SyslogServer_DataSource(t *testing.T) {
 		t.Errorf("expected services=[data-audit], got %v", services)
 	}
 }
+
+// TestUnit_SyslogServer_Idempotent verifies that Read after Create shows no attribute drift.
+func TestUnit_SyslogServer_Idempotent(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSyslogServerHandlers(ms.Mux)
+
+	r := newTestSyslogServerResource(t, ms)
+	s := syslogServerResourceSchema(t).Schema
+
+	plan := syslogServerPlan(t, "idempotent-syslog", "tcp://syslog.example.com:514", []string{"data-audit"}, nil)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSyslogServerType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Read the state back — should not change anything.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var beforeModel, afterModel syslogServerModel
+	if diags := createResp.State.Get(context.Background(), &beforeModel); diags.HasError() {
+		t.Fatalf("Get before state: %s", diags)
+	}
+	if diags := readResp.State.Get(context.Background(), &afterModel); diags.HasError() {
+		t.Fatalf("Get after state: %s", diags)
+	}
+
+	if beforeModel.ID.ValueString() != afterModel.ID.ValueString() {
+		t.Errorf("ID changed after Read: %s -> %s", beforeModel.ID.ValueString(), afterModel.ID.ValueString())
+	}
+	if beforeModel.Name.ValueString() != afterModel.Name.ValueString() {
+		t.Errorf("Name changed after Read: %s -> %s", beforeModel.Name.ValueString(), afterModel.Name.ValueString())
+	}
+	if beforeModel.URI.ValueString() != afterModel.URI.ValueString() {
+		t.Errorf("URI changed after Read: %s -> %s", beforeModel.URI.ValueString(), afterModel.URI.ValueString())
+	}
+}

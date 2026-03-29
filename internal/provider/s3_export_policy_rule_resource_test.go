@@ -367,3 +367,55 @@ func TestUnit_S3ExportPolicyRule_PlanModifiers(t *testing.T) {
 		t.Error("expected no plan modifiers on effect attribute (it should be patchable in-place)")
 	}
 }
+
+// TestUnit_S3ExportPolicyRule_Idempotent verifies that Read after Create shows no attribute drift.
+func TestUnit_S3ExportPolicyRule_Idempotent(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterS3ExportPolicyHandlers(ms.Mux)
+
+	r := newTestS3RuleResource(t, ms)
+	s := s3RuleResourceSchema(t).Schema
+
+	createTestS3Policy(t, r.client, "idempotent-rule-policy")
+
+	plan := s3RulePlan(t, "idempotent-rule-policy", "allow", []string{"s3:GetObject"}, []string{"*"})
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildS3RuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Read the state back — should not change anything.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var beforeModel, afterModel s3ExportPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &beforeModel); diags.HasError() {
+		t.Fatalf("Get before state: %s", diags)
+	}
+	if diags := readResp.State.Get(context.Background(), &afterModel); diags.HasError() {
+		t.Fatalf("Get after state: %s", diags)
+	}
+
+	if beforeModel.ID.ValueString() != afterModel.ID.ValueString() {
+		t.Errorf("ID changed after Read: %s -> %s", beforeModel.ID.ValueString(), afterModel.ID.ValueString())
+	}
+	if beforeModel.Name.ValueString() != afterModel.Name.ValueString() {
+		t.Errorf("Name changed after Read: %s -> %s", beforeModel.Name.ValueString(), afterModel.Name.ValueString())
+	}
+	if beforeModel.PolicyName.ValueString() != afterModel.PolicyName.ValueString() {
+		t.Errorf("PolicyName changed after Read: %s -> %s", beforeModel.PolicyName.ValueString(), afterModel.PolicyName.ValueString())
+	}
+	if beforeModel.Effect.ValueString() != afterModel.Effect.ValueString() {
+		t.Errorf("Effect changed after Read: %s -> %s", beforeModel.Effect.ValueString(), afterModel.Effect.ValueString())
+	}
+	if beforeModel.Index.ValueInt64() != afterModel.Index.ValueInt64() {
+		t.Errorf("Index changed after Read: %d -> %d", beforeModel.Index.ValueInt64(), afterModel.Index.ValueInt64())
+	}
+}

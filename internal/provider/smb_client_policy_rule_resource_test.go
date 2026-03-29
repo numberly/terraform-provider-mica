@@ -312,3 +312,55 @@ func TestUnit_SmbClientPolicyRule_PlanModifiers(t *testing.T) {
 		t.Error("expected UseStateForUnknown plan modifier on index attribute")
 	}
 }
+
+// TestUnit_SmbClientPolicyRule_Idempotent verifies that Read after Create shows no attribute drift.
+func TestUnit_SmbClientPolicyRule_Idempotent(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSmbClientPolicyHandlers(ms.Mux)
+
+	r := newTestSMBClientRuleResource(t, ms)
+	s := smbClientRuleResourceSchema(t).Schema
+
+	createSMBClientPolicyForRuleTest(t, ms, "idempotent-rule-policy")
+
+	plan := smbClientRulePlan(t, "idempotent-rule-policy", "*", "optional", "rw")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientRuleType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Read the state back — should not change anything.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var beforeModel, afterModel smbClientPolicyRuleModel
+	if diags := createResp.State.Get(context.Background(), &beforeModel); diags.HasError() {
+		t.Fatalf("Get before state: %s", diags)
+	}
+	if diags := readResp.State.Get(context.Background(), &afterModel); diags.HasError() {
+		t.Fatalf("Get after state: %s", diags)
+	}
+
+	if beforeModel.ID.ValueString() != afterModel.ID.ValueString() {
+		t.Errorf("ID changed after Read: %s -> %s", beforeModel.ID.ValueString(), afterModel.ID.ValueString())
+	}
+	if beforeModel.Name.ValueString() != afterModel.Name.ValueString() {
+		t.Errorf("Name changed after Read: %s -> %s", beforeModel.Name.ValueString(), afterModel.Name.ValueString())
+	}
+	if beforeModel.Client.ValueString() != afterModel.Client.ValueString() {
+		t.Errorf("Client changed after Read: %s -> %s", beforeModel.Client.ValueString(), afterModel.Client.ValueString())
+	}
+	if beforeModel.Encryption.ValueString() != afterModel.Encryption.ValueString() {
+		t.Errorf("Encryption changed after Read: %s -> %s", beforeModel.Encryption.ValueString(), afterModel.Encryption.ValueString())
+	}
+	if beforeModel.Permission.ValueString() != afterModel.Permission.ValueString() {
+		t.Errorf("Permission changed after Read: %s -> %s", beforeModel.Permission.ValueString(), afterModel.Permission.ValueString())
+	}
+}

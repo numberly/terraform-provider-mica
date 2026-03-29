@@ -405,3 +405,44 @@ func TestUnit_Server_PlanModifiers(t *testing.T) {
 		t.Error("expected UseStateForUnknown plan modifier on created attribute")
 	}
 }
+
+// TestUnit_Server_Idempotent verifies that Read after Create shows no attribute drift.
+func TestUnit_Server_Idempotent(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterServerHandlers(ms.Mux)
+
+	r := newTestServerResource(t, ms)
+	s := serverResourceSchema(t).Schema
+
+	plan := serverPlanWithName(t, "idempotent-server")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildServerType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Read the state back — should not change anything.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var beforeModel, afterModel serverResourceModel
+	if diags := createResp.State.Get(context.Background(), &beforeModel); diags.HasError() {
+		t.Fatalf("Get before state: %s", diags)
+	}
+	if diags := readResp.State.Get(context.Background(), &afterModel); diags.HasError() {
+		t.Fatalf("Get after state: %s", diags)
+	}
+
+	if beforeModel.ID.ValueString() != afterModel.ID.ValueString() {
+		t.Errorf("ID changed after Read: %s -> %s", beforeModel.ID.ValueString(), afterModel.ID.ValueString())
+	}
+	if beforeModel.Name.ValueString() != afterModel.Name.ValueString() {
+		t.Errorf("Name changed after Read: %s -> %s", beforeModel.Name.ValueString(), afterModel.Name.ValueString())
+	}
+}

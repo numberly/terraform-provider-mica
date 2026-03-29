@@ -390,3 +390,50 @@ func TestUnit_SmbClientPolicy_PlanModifiers(t *testing.T) {
 		t.Error("expected UseStateForUnknown plan modifier on version attribute")
 	}
 }
+
+// TestUnit_SmbClientPolicy_Idempotent verifies that Read after Create shows no attribute drift.
+func TestUnit_SmbClientPolicy_Idempotent(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSmbClientPolicyHandlers(ms.Mux)
+
+	r := newTestSMBClientPolicyResource(t, ms)
+	s := smbClientPolicyResourceSchema(t).Schema
+
+	plan := smbClientPolicyPlanWithNameAndEnabled(t, "idempotent-smb-policy", true)
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Read the state back — should not change anything.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var beforeModel, afterModel smbClientPolicyModel
+	if diags := createResp.State.Get(context.Background(), &beforeModel); diags.HasError() {
+		t.Fatalf("Get before state: %s", diags)
+	}
+	if diags := readResp.State.Get(context.Background(), &afterModel); diags.HasError() {
+		t.Fatalf("Get after state: %s", diags)
+	}
+
+	if beforeModel.ID.ValueString() != afterModel.ID.ValueString() {
+		t.Errorf("ID changed after Read: %s -> %s", beforeModel.ID.ValueString(), afterModel.ID.ValueString())
+	}
+	if beforeModel.Name.ValueString() != afterModel.Name.ValueString() {
+		t.Errorf("Name changed after Read: %s -> %s", beforeModel.Name.ValueString(), afterModel.Name.ValueString())
+	}
+	if beforeModel.Enabled.ValueBool() != afterModel.Enabled.ValueBool() {
+		t.Errorf("Enabled changed after Read: %v -> %v", beforeModel.Enabled.ValueBool(), afterModel.Enabled.ValueBool())
+	}
+	if beforeModel.Version.ValueString() != afterModel.Version.ValueString() {
+		t.Errorf("Version changed after Read: %s -> %s", beforeModel.Version.ValueString(), afterModel.Version.ValueString())
+	}
+}
