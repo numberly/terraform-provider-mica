@@ -7,6 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
+
+// Pre-compiled regex patterns used by validators.
+// Compiled once at package init time to avoid per-call overhead.
+var (
+	reAlphanumeric  = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
+	reHostnameNoDot = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+)
+
 // alphanumericStringValidator rejects any string not matching ^[a-zA-Z0-9]+$.
 type alphanumericStringValidator struct{}
 
@@ -30,7 +38,7 @@ func (v alphanumericStringValidator) ValidateString(ctx context.Context, req val
 	}
 
 	value := req.ConfigValue.ValueString()
-	if !regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString(value) {
+	if !reAlphanumeric.MatchString(value) {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"Invalid Value",
@@ -63,7 +71,7 @@ func (v hostnameNoDotStringValidator) ValidateString(ctx context.Context, req va
 	}
 
 	value := req.ConfigValue.ValueString()
-	if !regexp.MustCompile(`^[a-zA-Z0-9_-]+$`).MatchString(value) {
+	if !reHostnameNoDot.MatchString(value) {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"Invalid Value",

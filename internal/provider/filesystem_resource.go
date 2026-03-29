@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -441,7 +442,10 @@ func (r *filesystemResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Map API response to model.
-	mapFSToModel(fs, &data)
+	resp.Diagnostics.Append(mapFSToModel(fs, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -594,7 +598,10 @@ func (r *filesystemResource) ImportState(ctx context.Context, req resource.Impor
 		}),
 	}
 
-	mapFSToModel(fs, &data)
+	resp.Diagnostics.Append(mapFSToModel(fs, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -658,34 +665,28 @@ func fsSourceAttrTypes() map[string]attr.Type {
 	}
 }
 
-// mustObjectValue builds a types.Object and panics on coding errors (mismatched keys/types).
-func mustObjectValue(attrTypes map[string]attr.Type, values map[string]attr.Value) types.Object {
-	obj, diags := types.ObjectValue(attrTypes, values)
-	if diags.HasError() {
-		panic("mustObjectValue: " + diags[0].Detail())
-	}
-	return obj
-}
 
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetFileSystem and maps the result into the provided model.
 // This is the Read-at-end-of-write pattern ensuring state reflects true API state.
-func (r *filesystemResource) readIntoState(ctx context.Context, name string, data *filesystemModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-}) {
+func (r *filesystemResource) readIntoState(ctx context.Context, name string, data *filesystemModel, reporter DiagnosticReporter) {
 	fs, err := r.client.GetFileSystem(ctx, name)
 	if err != nil {
-		diags.AddError("Error reading file system after write", err.Error())
+		reporter.AddError("Error reading file system after write", err.Error())
 		return
 	}
-	mapFSToModel(fs, data)
+	for _, d := range mapFSToModel(fs, data) {
+		reporter.AddError(d.Summary(), d.Detail())
+	}
 }
 
 // mapFSToModel maps a client.FileSystem to a filesystemModel.
 // It preserves user-managed fields (DestroyEradicateOnDelete, Timeouts, policy fields).
-func mapFSToModel(fs *client.FileSystem, data *filesystemModel) {
+// Returns diagnostics instead of panicking on object construction errors.
+func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	data.ID = types.StringValue(fs.ID)
 	data.Name = types.StringValue(fs.Name)
 	data.Provisioned = types.Int64Value(fs.Provisioned)
@@ -701,56 +702,86 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) {
 	}
 
 	// Space (always set — Computed-only block).
-	data.Space = mustObjectValue(fsSpaceAttrTypes(), map[string]attr.Value{
-		"data_reduction":      types.Float64Value(fs.Space.DataReduction),
-		"snapshots":           types.Int64Value(fs.Space.Snapshots),
-		"total_physical":      types.Int64Value(fs.Space.TotalPhysical),
-		"unique":              types.Int64Value(fs.Space.Unique),
-		"virtual":             types.Int64Value(fs.Space.Virtual),
-		"snapshots_effective": types.Int64Value(fs.Space.SnapshotsEffective),
-	})
+	spaceObj, spaceDiags := mapSpaceToObject(fs.Space)
+	diags.Append(spaceDiags...)
+	if diags.HasError() {
+		return diags
+	}
+	data.Space = spaceObj
 
 	// NFS block — always set from API.
-	data.NFS = mustObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
+	nfsObj, nfsDiags := mustObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
 		"enabled":      types.BoolValue(fs.NFS.Enabled),
 		"v3_enabled":   types.BoolValue(fs.NFS.V3Enabled),
 		"v4_1_enabled": types.BoolValue(fs.NFS.V41Enabled),
 		"rules":        types.StringValue(fs.NFS.Rules),
 		"transport":    types.StringValue(fs.NFS.Transport),
 	})
+	diags.Append(nfsDiags...)
+	if diags.HasError() {
+		return diags
+	}
+	data.NFS = nfsObj
 
 	// SMB block — always set from API.
-	data.SMB = mustObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
+	smbObj, smbDiags := mustObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
 		"enabled":                          types.BoolValue(fs.SMB.Enabled),
 		"access_based_enumeration_enabled": types.BoolValue(fs.SMB.AccessBasedEnumerationEnabled),
 		"continuous_availability_enabled":  types.BoolValue(fs.SMB.ContinuousAvailabilityEnabled),
 		"smb_encryption_enabled":           types.BoolValue(fs.SMB.SMBEncryptionEnabled),
 	})
+	diags.Append(smbDiags...)
+	if diags.HasError() {
+		return diags
+	}
+	data.SMB = smbObj
 
 	// HTTP block — always set from API (Computed-only).
-	data.HTTP = mustObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
+	httpObj, httpDiags := mustObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
 		"enabled": types.BoolValue(fs.HTTP.Enabled),
 	})
+	diags.Append(httpDiags...)
+	if diags.HasError() {
+		return diags
+	}
+	data.HTTP = httpObj
 
 	// Source block — only if present in API response.
 	if fs.Source != nil {
-		data.Source = mustObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
+		sourceObj, sourceDiags := mustObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
 			"id":   types.StringValue(fs.Source.ID),
 			"name": types.StringValue(fs.Source.Name),
 		})
+		diags.Append(sourceDiags...)
+		if diags.HasError() {
+			return diags
+		}
+		data.Source = sourceObj
 	} else {
 		data.Source = types.ObjectNull(fsSourceAttrTypes())
 	}
 
 	// MultiProtocol — always set from API (Optional/Computed).
-	data.MultiProtocol = mustObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
+	mpObj, mpDiags := mustObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
 		"access_control_style": types.StringValue(fs.MultiProtocol.AccessControlStyle),
 		"safeguard_acls":       types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy),
 	})
+	diags.Append(mpDiags...)
+	if diags.HasError() {
+		return diags
+	}
+	data.MultiProtocol = mpObj
 
 	// DefaultQuotas — always set from API (Optional/Computed).
-	data.DefaultQuotas = mustObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
+	dqObj, dqDiags := mustObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
 		"group_quota": types.Int64Value(fs.DefaultQuotas.GroupQuota),
 		"user_quota":  types.Int64Value(fs.DefaultQuotas.UserQuota),
 	})
+	diags.Append(dqDiags...)
+	if diags.HasError() {
+		return diags
+	}
+	data.DefaultQuotas = dqObj
+
+	return diags
 }

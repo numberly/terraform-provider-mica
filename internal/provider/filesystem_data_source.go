@@ -275,58 +275,86 @@ func (d *filesystemDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	config.TimeRemaining = types.Int64Value(fs.TimeRemaining)
 
 	// Space (always set — Computed-only block).
-	config.Space = mustObjectValue(fsSpaceAttrTypes(), map[string]attr.Value{
-		"data_reduction":      types.Float64Value(fs.Space.DataReduction),
-		"snapshots":           types.Int64Value(fs.Space.Snapshots),
-		"total_physical":      types.Int64Value(fs.Space.TotalPhysical),
-		"unique":              types.Int64Value(fs.Space.Unique),
-		"virtual":             types.Int64Value(fs.Space.Virtual),
-		"snapshots_effective": types.Int64Value(fs.Space.SnapshotsEffective),
-	})
+	spaceObj, spaceDiags := mapSpaceToObject(fs.Space)
+	resp.Diagnostics.Append(spaceDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.Space = spaceObj
 
 	// NFS block — always set from API.
-	config.NFS = mustObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
+	nfsObj, nfsDiags := mustObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
 		"enabled":      types.BoolValue(fs.NFS.Enabled),
 		"v3_enabled":   types.BoolValue(fs.NFS.V3Enabled),
 		"v4_1_enabled": types.BoolValue(fs.NFS.V41Enabled),
 		"rules":        types.StringValue(fs.NFS.Rules),
 		"transport":    types.StringValue(fs.NFS.Transport),
 	})
+	resp.Diagnostics.Append(nfsDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.NFS = nfsObj
 
 	// SMB block — always set from API.
-	config.SMB = mustObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
+	smbObj, smbDiags := mustObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
 		"enabled":                          types.BoolValue(fs.SMB.Enabled),
 		"access_based_enumeration_enabled": types.BoolValue(fs.SMB.AccessBasedEnumerationEnabled),
 		"continuous_availability_enabled":  types.BoolValue(fs.SMB.ContinuousAvailabilityEnabled),
 		"smb_encryption_enabled":           types.BoolValue(fs.SMB.SMBEncryptionEnabled),
 	})
+	resp.Diagnostics.Append(smbDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.SMB = smbObj
 
 	// HTTP block — always set from API (Computed-only).
-	config.HTTP = mustObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
+	httpObj, httpDiags := mustObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
 		"enabled": types.BoolValue(fs.HTTP.Enabled),
 	})
+	resp.Diagnostics.Append(httpDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.HTTP = httpObj
 
 	// Source block — only if present in API response.
 	if fs.Source != nil {
-		config.Source = mustObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
+		sourceObj, sourceDiags := mustObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
 			"id":   types.StringValue(fs.Source.ID),
 			"name": types.StringValue(fs.Source.Name),
 		})
+		resp.Diagnostics.Append(sourceDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		config.Source = sourceObj
 	} else {
 		config.Source = types.ObjectNull(fsSourceAttrTypes())
 	}
 
 	// MultiProtocol — always set from API.
-	config.MultiProtocol = mustObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
+	mpObj, mpDiags := mustObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
 		"access_control_style": types.StringValue(fs.MultiProtocol.AccessControlStyle),
 		"safeguard_acls":       types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy),
 	})
+	resp.Diagnostics.Append(mpDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.MultiProtocol = mpObj
 
 	// DefaultQuotas — always set from API.
-	config.DefaultQuotas = mustObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
+	dqObj, dqDiags := mustObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
 		"group_quota": types.Int64Value(fs.DefaultQuotas.GroupQuota),
 		"user_quota":  types.Int64Value(fs.DefaultQuotas.UserQuota),
 	})
+	resp.Diagnostics.Append(dqDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	config.DefaultQuotas = dqObj
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }
