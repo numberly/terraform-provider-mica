@@ -28,7 +28,7 @@ Requirements for milestone v1.3 — Release Readiness.
 
 ### Sensitive Data
 
-- [ ] **SEC-01**: secret_access_key uses write-only argument pattern (Terraform 1.11+ compatible)
+- [x] **SEC-01**: secret_access_key uses write-only argument pattern (Terraform 1.11+ compatible)
 
 ## v1.4 Requirements
 
@@ -56,7 +56,7 @@ Deferred to future release.
 | HLP-01 | Phase 12 | Complete |
 | HLP-02 | Phase 12 | Complete |
 | TRN-01 | Phase 12 | Complete |
-| SEC-01 | Phase 13 | Pending |
+| SEC-01 | Phase 13 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 8 total

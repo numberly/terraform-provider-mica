@@ -214,7 +214,7 @@ Plans:
 **Milestone Goal:** Implement best practices from major providers (AWS, Cloudflare) to prepare for public release: state migration framework, import documentation, transport hardening, and write-only sensitive fields.
 
 - [x] **Phase 12: Infrastructure Hardening** - State migration framework, helper consolidation, and transport jitter across all resources (completed 2026-03-29)
-- [ ] **Phase 13: Documentation & Sensitive Data** - Import docs for all resources and write-only secret_access_key
+- [x] **Phase 13: Documentation & Sensitive Data** - Import docs for all resources and write-only secret_access_key (completed 2026-03-29)
 
 ## Phase Details
 
@@ -265,4 +265,4 @@ Phases execute in numeric order: 12 -> 13
 | 10. Architecture Cleanup | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 11. Test Hardening & Validators | v1.2 | 3/3 | Complete | 2026-03-29 |
 | 12. Infrastructure Hardening | v1.3 | 2/2 | Complete | 2026-03-29 |
-| 13. Documentation & Sensitive Data | 1/2 | In Progress|  | - |
+| 13. Documentation & Sensitive Data | 2/2 | Complete   | 2026-03-29 | - |

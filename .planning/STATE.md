@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Release Readiness
 status: executing
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-03-29T08:01:25.308Z"
+stopped_at: Completed 13-02-PLAN.md
+last_updated: "2026-03-29T08:05:04.245Z"
 last_activity: 2026-03-29 — Completed 12-01 (state migration framework)
 progress:
   total_phases: 13
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 39
-  completed_plans: 38
+  completed_plans: 39
   percent: 97
 ---
 
@@ -57,6 +57,8 @@ Recent decisions affecting current work:
 - [Phase 12]: Plan modifier helpers consolidated in helpers.go (canonical location)
 - [Phase 13-01]: object_store_access_key has no import.sh by design — secret_access_key is immutable and returned only at creation
 - [Phase 13-01]: flashblade_object_store_virtual_host uses hostname as import ID (server-assigned, e.g. s3.example.com)
+- [Phase 13-documentation-and-sensitive-data]: WriteOnly supersedes Sensitive on secret_access_key — both cannot coexist, WriteOnly is strictly stronger
+- [Phase 13-documentation-and-sensitive-data]: fwserver.NullifyWriteOnlyAttributes enforces the state-file guarantee for write-only attributes (not tfsdk.State.Set)
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T08:01:25.301Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-03-29T08:05:04.240Z
+Stopped at: Completed 13-02-PLAN.md
 Resume file: None
