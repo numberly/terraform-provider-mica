@@ -163,7 +163,7 @@ Plans:
 
 - [ ] **Phase 9: Bug Fixes** - Fix confirmed bugs in account export Delete, filesystem writable drift, IsNotFound, and omitempty
 - [x] **Phase 10: Architecture Cleanup** - Split models.go by domain, unified compositeID helper, extract stringOrNull (completed 2026-03-28)
-- [ ] **Phase 11: Test Hardening & Validators** - Idempotence tests, mock param validation, Update tests, Terraform validators
+- [x] **Phase 11: Test Hardening & Validators** - Idempotence tests, mock param validation, Update tests, Terraform validators (completed 2026-03-29)
 
 ## Phase Details
 
@@ -206,7 +206,7 @@ Plans:
   3. Resources that were missing Update lifecycle tests now have them, covering at least one mutable field per resource
   4. `terraform validate` rejects invalid resource names (e.g., dots in virtual host names, non-alphanumeric S3 rule names) with a clear error before any API call
   5. `terraform validate` rejects invalid enum values (e.g., invalid effect, permission, versioning) with the set of allowed values in the error message
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 11-01-PLAN.md — Custom name format validators and enum OneOf validators for 6 resource schemas
@@ -230,4 +230,4 @@ Phases execute in numeric order: 9 -> 10 -> 11
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 9. Bug Fixes | v1.2 | 0/2 | In progress | - |
 | 10. Architecture Cleanup | v1.2 | 2/2 | Complete | 2026-03-28 |
-| 11. Test Hardening & Validators | 2/3 | In Progress|  | - |
+| 11. Test Hardening & Validators | 3/3 | Complete   | 2026-03-29 | - |

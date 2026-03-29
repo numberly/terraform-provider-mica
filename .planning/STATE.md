@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Code Quality & Robustness
-status: executing
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-03-29T06:45:01.654Z"
-last_activity: 2026-03-29 — Completed 11-02 query param validation for mock handlers (TST-02)
+status: completed
+stopped_at: Completed 11-03-PLAN.md — All phases and plans complete
+last_updated: "2026-03-29T06:52:10.409Z"
+last_activity: 2026-03-29 — Completed 11-03 idempotence & Update tests for v1.1 resources (TST-01, TST-03)
 progress:
   total_phases: 11
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 35
-  completed_plans: 34
-  percent: 98
+  completed_plans: 35
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 11 of 11 (Test Hardening & Validators)
-Plan: 2 of 3 complete
-Status: Phase 11 in progress
-Last activity: 2026-03-29 — Completed 11-02 query param validation for mock handlers (TST-02)
+Plan: 3 of 3 complete
+Status: All phases complete - v1.2 milestone done
+Last activity: 2026-03-29 — Completed 11-03 idempotence & Update tests for v1.1 resources (TST-01, TST-03)
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Recent decisions affecting current work:
 - [Phase 11-01]: Custom validators implement validator.String interface directly (no external library wrapper needed)
 - [Phase 11-02]: ValidateQueryParams placed before mutex lock to avoid holding lock on error paths
 - [Phase 11-02]: Global framework params always allowed automatically in mock handlers
+- [Phase 11-03]: Idempotence tests compare scalar fields only to avoid false positives from list ordering
 
 ### Pending Todos
 
@@ -71,6 +72,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T06:45:01.646Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-03-29T06:52:10.404Z
+Stopped at: Completed 11-03-PLAN.md — All phases and plans complete
 Resume file: None
