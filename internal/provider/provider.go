@@ -294,6 +294,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewS3ExportPolicyResource,
 		NewS3ExportPolicyRuleResource,
 		NewSyslogServerResource,
+		NewRemoteCredentialsResource,
+		NewBucketReplicaLinkResource,
 	}
 }
 
@@ -322,5 +324,7 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewS3ExportPolicyDataSource,
 		NewSyslogServerDataSource,
 		NewArrayConnectionDataSource,
+		NewRemoteCredentialsDataSource,
+		NewBucketReplicaLinkDataSource,
 	}
 }
