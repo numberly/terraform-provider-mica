@@ -23,12 +23,9 @@ func LoginWithAPIToken(ctx context.Context, httpClient *http.Client, endpoint, a
 	}
 
 	loginURL := strings.TrimRight(endpoint, "/") + "/api/login"
-	req, err := http.NewRequest(http.MethodPost, loginURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, loginURL, nil)
 	if err != nil {
 		return "", fmt.Errorf("login: build request: %w", err)
-	}
-	if ctx != nil {
-		req = req.WithContext(ctx)
 	}
 	req.Header.Set("api-token", apiToken)
 
@@ -92,7 +89,9 @@ func (ts *FlashBladeTokenSource) Token() (*oauth2.Token, error) {
 		return ts.cachedToken, nil
 	}
 
-	tok, err := ts.fetchToken()
+	// TODO: oauth2.TokenSource.Token() has no context parameter —
+	// we use context.Background() here as a workaround.
+	tok, err := ts.fetchToken(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +99,15 @@ func (ts *FlashBladeTokenSource) Token() (*oauth2.Token, error) {
 	return tok, nil
 }
 
-func (ts *FlashBladeTokenSource) fetchToken() (*oauth2.Token, error) {
+// FetchTokenWithContext exposes context-aware token fetching for callers
+// that have a context available (e.g. tests, direct usage).
+func (ts *FlashBladeTokenSource) FetchTokenWithContext(ctx context.Context) (*oauth2.Token, error) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+	return ts.fetchToken(ctx)
+}
+
+func (ts *FlashBladeTokenSource) fetchToken(ctx context.Context) (*oauth2.Token, error) {
 	tokenURL := ts.endpoint + "/oauth2/1.0/token"
 
 	form := url.Values{
@@ -109,7 +116,7 @@ func (ts *FlashBladeTokenSource) fetchToken() (*oauth2.Token, error) {
 		"subject_token_type": {"urn:ietf:params:oauth:token-type:jwt"},
 	}
 
-	req, err := http.NewRequest(http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("token exchange: build request: %w", err)
 	}
@@ -127,7 +134,7 @@ func (ts *FlashBladeTokenSource) fetchToken() (*oauth2.Token, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("token exchange: HTTP %d: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("token exchange: unexpected HTTP %d from %s/oauth2/1.0/token", resp.StatusCode, ts.endpoint)
 	}
 
 	var tr oauthTokenResponse
