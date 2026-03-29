@@ -140,3 +140,14 @@ Read-Only:
 - `total_physical` (Number) Total physical space used in bytes.
 - `unique` (Number) Unique physical space used in bytes.
 - `virtual` (Number) Virtual (logical) space used in bytes.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# Import by name
+terraform import flashblade_file_system.example my-filesystem
+```
