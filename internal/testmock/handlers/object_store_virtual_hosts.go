@@ -26,6 +26,13 @@ func RegisterObjectStoreVirtualHostHandlers(mux *http.ServeMux) *objectStoreVirt
 	return store
 }
 
+// Seed adds a virtual host directly to the store for test setup.
+func (s *objectStoreVirtualHostStore) Seed(vh *client.ObjectStoreVirtualHost) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.hosts[vh.Name] = vh
+}
+
 // handleVirtualHost dispatches virtual host requests by HTTP method.
 func (s *objectStoreVirtualHostStore) handleVirtualHost(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

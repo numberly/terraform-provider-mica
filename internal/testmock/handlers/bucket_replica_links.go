@@ -28,6 +28,15 @@ func RegisterBucketReplicaLinkHandlers(mux *http.ServeMux) *bucketReplicaLinkSto
 	return store
 }
 
+// Seed adds a bucket replica link directly to the store for test setup.
+func (s *bucketReplicaLinkStore) Seed(link *client.BucketReplicaLink) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	key := compositeKey(link.LocalBucket.Name, link.RemoteBucket.Name)
+	s.links[key] = link
+	s.byID[link.ID] = link
+}
+
 // handle dispatches bucket replica link requests by HTTP method.
 func (s *bucketReplicaLinkStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

@@ -312,3 +312,54 @@ func TestUnit_Configure_VersionMismatch(t *testing.T) {
 		t.Error("expected error diagnostic for unsupported API version, got none")
 	}
 }
+
+// TestUnit_Configure_OAuth2 verifies that OAuth2 provider configuration (client_id + key_id)
+// initializes without errors when a mock API version endpoint is available.
+func TestUnit_Configure_OAuth2(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/api_version":
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"versions": []string{"2.10", "2.22"},
+			})
+		case "/oauth2/1.0/token":
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"access_token": "mock-oauth2-token",
+				"token_type":   "Bearer",
+				"expires_in":   3600,
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	t.Setenv("FLASHBLADE_HOST", "")
+	t.Setenv("FLASHBLADE_API_TOKEN", "")
+	t.Setenv("FLASHBLADE_OAUTH2_CLIENT_ID", "")
+	t.Setenv("FLASHBLADE_OAUTH2_KEY_ID", "")
+	t.Setenv("FLASHBLADE_OAUTH2_ISSUER", "")
+
+	val := baseProviderConfig(map[string]tftypes.Value{
+		"endpoint":             tftypes.NewValue(tftypes.String, srv.URL),
+		"insecure_skip_verify": tftypes.NewValue(tftypes.Bool, true),
+		"auth": tftypes.NewValue(authType, map[string]tftypes.Value{
+			"api_token": tftypes.NewValue(tftypes.String, nil),
+			"oauth2": tftypes.NewValue(oauth2Type, map[string]tftypes.Value{
+				"client_id": tftypes.NewValue(tftypes.String, "test-client-id"),
+				"key_id":    tftypes.NewValue(tftypes.String, "test-key-id"),
+				"issuer":    tftypes.NewValue(tftypes.String, "test-issuer"),
+			}),
+		}),
+	})
+	resp := configureWithValue(t, val)
+
+	if resp.Diagnostics.HasError() {
+		t.Errorf("expected no error with OAuth2 config, got: %s", resp.Diagnostics)
+	}
+	if resp.ResourceData == nil {
+		t.Error("expected ResourceData to be non-nil after OAuth2 configuration")
+	}
+}

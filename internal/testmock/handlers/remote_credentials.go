@@ -27,6 +27,13 @@ func RegisterRemoteCredentialsHandlers(mux *http.ServeMux) *remoteCredentialsSto
 	return store
 }
 
+// Seed adds remote credentials directly to the store for test setup.
+func (s *remoteCredentialsStore) Seed(cred *client.ObjectStoreRemoteCredentials) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.byName[cred.Name] = cred
+}
+
 // handle dispatches object store remote credentials requests by HTTP method.
 func (s *remoteCredentialsStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
