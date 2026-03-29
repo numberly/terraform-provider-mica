@@ -263,7 +263,7 @@ Plans:
   2. When `secret_access_key` is omitted, existing behavior is unchanged (API generates the secret); when provided, the POST body includes it and the API accepts it
   3. `flashblade_array_connection` data source reads an existing connection by remote array name and exposes id, status, management_address, and replication_addresses
   4. Bucket resource validates that `versioning` is set to `"enabled"` when the bucket participates in replication (plan-time error, not API-time)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 14-01-PLAN.md — Access key resource enhancement (optional secret_access_key input) + bucket versioning warning
@@ -334,7 +334,7 @@ Phases execute in numeric order: 14 -> 15 -> 16 -> 17
 | 11. Test Hardening & Validators | v1.2 | 3/3 | Complete | 2026-03-29 |
 | 12. Infrastructure Hardening | v1.3 | 2/2 | Complete | 2026-03-29 |
 | 13. Documentation & Sensitive Data | v1.3 | 2/2 | Complete | 2026-03-29 |
-| 14. Access Key Enhancement & Array Connection | v2.0 | 0/2 | Not started | - |
+| 14. Access Key Enhancement & Array Connection | 1/2 | In Progress|  | - |
 | 15. Replication Resources | v2.0 | 0/2 | Not started | - |
 | 16. Workflow & Documentation | v2.0 | 0/2 | Not started | - |
 | 17. Testing | v2.0 | 0/2 | Not started | - |

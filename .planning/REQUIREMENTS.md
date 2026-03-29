@@ -29,8 +29,8 @@ Requirements for milestone v2.0 — Cross-Array Bucket Replication.
 
 ### Array Connection
 
-- [ ] **ACN-01**: Data source reads an existing array connection by remote name
-- [ ] **ACN-02**: Data source exposes id, status, remote name, management_address, replication_addresses
+- [x] **ACN-01**: Data source reads an existing array connection by remote name
+- [x] **ACN-02**: Data source exposes id, status, remote name, management_address, replication_addresses
 
 ### Workflow
 
@@ -78,8 +78,8 @@ Deferred to future release.
 | BRL-03 | Phase 15 | Pending |
 | BRL-04 | Phase 15 | Pending |
 | BRL-05 | Phase 15 | Pending |
-| ACN-01 | Phase 14 | Pending |
-| ACN-02 | Phase 14 | Pending |
+| ACN-01 | Phase 14 | Complete |
+| ACN-02 | Phase 14 | Complete |
 | WFL-01 | Phase 16 | Pending |
 | WFL-02 | Phase 17 | Pending |
 | WFL-03 | Phase 17 | Pending |
