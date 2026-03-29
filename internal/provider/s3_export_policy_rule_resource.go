@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -81,6 +83,9 @@ func (r *s3ExportPolicyRuleResource) Schema(ctx context.Context, _ resource.Sche
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Validators: []validator.String{
+					AlphanumericValidator(),
+				},
 			},
 			"index": schema.Int64Attribute{
 				Computed:    true,
@@ -92,6 +97,9 @@ func (r *s3ExportPolicyRuleResource) Schema(ctx context.Context, _ resource.Sche
 			"effect": schema.StringAttribute{
 				Required:    true,
 				Description: "The effect of the rule: 'allow' or 'deny'. Can be updated in-place.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("allow", "deny"),
+				},
 			},
 			"actions": schema.ListAttribute{
 				Required:    true,

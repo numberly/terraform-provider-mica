@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -96,11 +98,17 @@ func (r *smbClientPolicyRuleResource) Schema(ctx context.Context, _ resource.Sch
 				Optional:    true,
 				Computed:    true,
 				Description: "Encryption requirement: 'optional', 'required', or 'disabled'.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("optional", "required", "disabled"),
+				},
 			},
 			"permission": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Permission level: 'rw' or 'ro'.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("rw", "ro"),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,

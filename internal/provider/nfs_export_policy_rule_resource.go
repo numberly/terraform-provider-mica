@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -102,6 +104,9 @@ func (r *nfsExportPolicyRuleResource) Schema(ctx context.Context, _ resource.Sch
 				Optional:    true,
 				Computed:    true,
 				Description: "The access control for NFS clients (e.g. 'root-squash', 'no-root-squash', 'all-squash').",
+				Validators: []validator.String{
+					stringvalidator.OneOf("root-squash", "no-root-squash", "all-squash"),
+				},
 			},
 			"client": schema.StringAttribute{
 				Optional:    true,
@@ -112,6 +117,9 @@ func (r *nfsExportPolicyRuleResource) Schema(ctx context.Context, _ resource.Sch
 				Optional:    true,
 				Computed:    true,
 				Description: "The read/write permission for matching clients (e.g. 'rw', 'ro').",
+				Validators: []validator.String{
+					stringvalidator.OneOf("rw", "ro"),
+				},
 			},
 			"anonuid": schema.Int64Attribute{
 				Optional:    true,
