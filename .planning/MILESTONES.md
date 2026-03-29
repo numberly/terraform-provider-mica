@@ -55,3 +55,18 @@
 
 **Phases:** 12–13 (4 plans)
 **Last phase number:** 13
+
+### v2.0 — Cross-Array Bucket Replication (completed 2026-03-29)
+
+**Goal:** Enable operators to set up bidirectional S3 bucket replication between two FlashBlade arrays through Terraform.
+
+**Delivered:**
+- Access key enhancement: optional secret_access_key input for cross-array credential sharing
+- Object store remote credentials resource (CRUD + import)
+- Bucket replica link resource (bidirectional replication, CRUD + import)
+- Array connection data source (read existing inter-array connection)
+- Complete dual-provider replication workflow example
+- Unit tests for all new resources + acceptance test HCL
+
+**Phases:** 14–17 (8 plans)
+**Last phase number:** 17

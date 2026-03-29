@@ -8,16 +8,18 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.0 — Cross-Array Bucket Replication
+## Current Milestone: v2.0.1 — Quality & Hardening
 
-**Goal:** Enable operators to set up bidirectional S3 bucket replication between two FlashBlade arrays through Terraform, with shared credentials for transparent failover.
+**Goal:** Harden the codebase post-v2.0 release with security fixes, code quality improvements, dead code removal, duplication reduction, and test coverage gap closure identified by comprehensive 5-agent audit.
 
 **Target features:**
-- Access key resource accepts optional secret_access_key input (import existing key to second array)
-- Object store remote credentials resource (each FB authenticates to the other)
-- Bucket replica link resource (bidirectional replication between two FB arrays)
-- Array connection data source (read existing inter-array connection)
-- Complete replication workflow example (dual-provider, same tenant on both arrays)
+- Fix OAuth2 error body leak and add context propagation to auth paths
+- Migrate error handling to errors.As() for wrapped error resilience
+- Extract shared helpers (spaceAttrTypes, nullTimeoutsValue, mustObjectValue, getOneByName[T])
+- Remove dead code (unused List* functions, SourceReference, empty UpgradeState)
+- Compile regex at package level in validators
+- Add tests for 5 uncovered data sources + OAuth2 provider config test
+- Add HCL-based acceptance tests using mock server
 
 ## Requirements
 
@@ -27,16 +29,19 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ 340 unit tests, state migration framework, validators — v1.2+v1.3
 - ✓ CI/CD with GoReleaser + Cosign, import docs, jitter backoff — v1.3
 - ✓ S3 tenant onboarding workflow (server → account → export → policies → bucket)
+- ✓ Cross-array bucket replication (remote credentials, replica links, array connection DS) — v2.0
+- ✓ 368 unit tests, dual-provider replication workflow example — v2.0
 
 ### Active
 
-- [ ] Access key accepts optional secret_access_key input for cross-array credential sharing
-- [ ] Object store remote credentials resource (CRUD)
-- [ ] Bucket replica link resource (bidirectional, CRUD)
-- [ ] Array connection data source (read existing connection)
-- [ ] Bucket versioning must be enforced/validated for replication
-- [ ] Complete dual-provider replication workflow example
-- [ ] TDD tests for all new resources + acceptance test on live FlashBlade pair
+- [ ] OAuth2 error body sanitization and context propagation
+- [ ] errors.As() migration for wrapped error resilience
+- [ ] Shared helper extraction (space schema, timeouts, mustObjectValue, getOneByName)
+- [ ] Dead code removal (unused List*, SourceReference, empty UpgradeState)
+- [ ] Regex pre-compilation in validators
+- [ ] Test coverage for 5 uncovered data sources
+- [ ] HCL-based acceptance tests with mock server
+- [ ] OAuth2 provider configuration test
 
 ### Out of Scope
 
@@ -77,4 +82,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-29 after milestone v2.0 initialization*
+*Last updated: 2026-03-29 after milestone v2.0.1 initialization*
