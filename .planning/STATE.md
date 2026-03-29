@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Release Readiness
 status: executing
-stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-03-29T07:46:21.706Z"
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-29T08:01:25.308Z"
 last_activity: 2026-03-29 — Completed 12-01 (state migration framework)
 progress:
   total_phases: 13
   completed_phases: 12
-  total_plans: 37
-  completed_plans: 37
+  total_plans: 39
+  completed_plans: 38
   percent: 97
 ---
 
@@ -55,6 +55,8 @@ Recent decisions affecting current work:
 - [Phase 12-01]: SchemaVersion 0 + empty UpgradeState on all 28 resources from day one for migration readiness
 - [Phase 12]: Refactored computeDelay to package-level function for testability
 - [Phase 12]: Plan modifier helpers consolidated in helpers.go (canonical location)
+- [Phase 13-01]: object_store_access_key has no import.sh by design — secret_access_key is immutable and returned only at creation
+- [Phase 13-01]: flashblade_object_store_virtual_host uses hostname as import ID (server-assigned, e.g. s3.example.com)
 
 ### Pending Todos
 
@@ -66,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T07:45:17.275Z
-Stopped at: Completed 12-02-PLAN.md
+Last session: 2026-03-29T08:01:25.301Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None

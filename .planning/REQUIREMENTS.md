@@ -14,8 +14,8 @@ Requirements for milestone v1.3 — Release Readiness.
 
 ### Import Documentation
 
-- [ ] **DOC-01**: import.md file for all 27 importable resources with correct syntax
-- [ ] **DOC-02**: tfplugindocs regenerated to include import sections in Registry docs
+- [x] **DOC-01**: import.md file for all 27 importable resources with correct syntax
+- [x] **DOC-02**: tfplugindocs regenerated to include import sections in Registry docs
 
 ### Helper Consolidation
 
@@ -51,8 +51,8 @@ Deferred to future release.
 |-------------|-------|--------|
 | MIG-01 | Phase 12 | Complete |
 | MIG-02 | Phase 12 | Complete |
-| DOC-01 | Phase 13 | Pending |
-| DOC-02 | Phase 13 | Pending |
+| DOC-01 | Phase 13 | Complete |
+| DOC-02 | Phase 13 | Complete |
 | HLP-01 | Phase 12 | Complete |
 | HLP-02 | Phase 12 | Complete |
 | TRN-01 | Phase 12 | Complete |
