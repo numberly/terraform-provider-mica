@@ -113,9 +113,12 @@ func (s *accessKeyStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Generate random access key ID and secret.
+	// Generate random access key ID. Use caller-provided secret if present.
 	accessKeyID := generateAccessKeyID()
-	secretAccessKey := generateSecretAccessKey()
+	secretAccessKey := body.SecretAccessKey
+	if secretAccessKey == "" {
+		secretAccessKey = generateSecretAccessKey()
+	}
 
 	// Access key name format: <account>/admin/<key-id>
 	keyName := fmt.Sprintf("%s/admin/%s", accountName, accessKeyID)

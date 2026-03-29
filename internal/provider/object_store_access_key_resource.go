@@ -55,7 +55,7 @@ func (r *objectStoreAccessKeyResource) Metadata(_ context.Context, _ resource.Me
 // Schema defines the resource schema.
 func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key is a write-only attribute: it is returned at creation time only and is never stored in Terraform state. Capture it via a Terraform output at apply time. Requires Terraform 1.11+.",
+		Description: "Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key can be optionally provided for cross-array replication (sharing the same credentials across arrays). When omitted, the API generates a random secret. The secret is stored in state (encrypted) and marked sensitive.",
 		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -80,11 +80,13 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 				},
 			},
 			"secret_access_key": schema.StringAttribute{
+				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The secret access key. Returned only at creation time and stored in state (encrypted). Never shown in plan output.",
+				Description: "The secret access key. When provided, the key is created with this exact secret (for cross-array replication). When omitted, the API generates it. Returned only at creation time and stored in state (encrypted).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"created": schema.Int64Attribute{
@@ -161,9 +163,14 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	key, err := r.client.PostObjectStoreAccessKey(ctx, client.ObjectStoreAccessKeyPost{
+	post := client.ObjectStoreAccessKeyPost{
 		User: client.NamedReference{Name: userName},
-	})
+	}
+	if !data.SecretAccessKey.IsNull() && !data.SecretAccessKey.IsUnknown() {
+		post.SecretAccessKey = data.SecretAccessKey.ValueString()
+	}
+
+	key, err := r.client.PostObjectStoreAccessKey(ctx, post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating object store access key", err.Error())
 		return

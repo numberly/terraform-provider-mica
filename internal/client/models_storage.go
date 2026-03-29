@@ -162,5 +162,6 @@ type ObjectStoreAccessKey struct {
 
 // ObjectStoreAccessKeyPost contains the fields for POST /object-store-access-keys.
 type ObjectStoreAccessKeyPost struct {
-	User NamedReference `json:"user"`
+	User            NamedReference `json:"user"`
+	SecretAccessKey string         `json:"secret_access_key,omitempty"`
 }
