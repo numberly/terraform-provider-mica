@@ -206,10 +206,12 @@ Plans:
   3. Resources that were missing Update lifecycle tests now have them, covering at least one mutable field per resource
   4. `terraform validate` rejects invalid resource names (e.g., dots in virtual host names, non-alphanumeric S3 rule names) with a clear error before any API call
   5. `terraform validate` rejects invalid enum values (e.g., invalid effect, permission, versioning) with the set of allowed values in the error message
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 11-01: TBD
+- [ ] 11-01-PLAN.md — Custom name format validators and enum OneOf validators for 6 resource schemas
+- [ ] 11-02-PLAN.md — Shared query param validation helper and mock handler hardening for 4 handlers
+- [ ] 11-03-PLAN.md — Idempotence tests for 9 v1.1 resources and standalone Update tests for 3 resources
 
 ## Progress
 
@@ -227,5 +229,5 @@ Phases execute in numeric order: 9 -> 10 -> 11
 | 7. S3 Export Policies & Virtual Hosts | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 8. SMB Client Policies, Syslog & Acceptance Tests | v1.1 | 3/3 | Complete | 2026-03-28 |
 | 9. Bug Fixes | v1.2 | 0/2 | In progress | - |
-| 10. Architecture Cleanup | 2/2 | Complete    | 2026-03-28 | - |
-| 11. Test Hardening & Validators | v1.2 | 0/? | Not started | - |
+| 10. Architecture Cleanup | v1.2 | 2/2 | Complete | 2026-03-28 |
+| 11. Test Hardening & Validators | v1.2 | 0/3 | Not started | - |
