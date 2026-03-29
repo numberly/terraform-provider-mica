@@ -360,7 +360,7 @@ Plans:
   3. `nullTimeoutsValue()` helper replaces all 29 inline timeout initialization blocks in ImportState methods -- verified by searching for the old pattern
   4. Generic `getOneByName[T]` client helper exists and is called by at least 10 Get*ByName methods (reducing ~15 identical implementations to thin wrappers)
   5. `mustObjectValue` returns diagnostics instead of calling `panic()` -- callers check the returned diagnostics and append to response diagnostics
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 20-01-PLAN.md — Regex pre-compilation, space schema helpers, nullTimeoutsValue, DiagnosticReporter interface
