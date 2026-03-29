@@ -9,8 +9,8 @@ Requirements for milestone v1.3 — Release Readiness.
 
 ### State Migration
 
-- [ ] **MIG-01**: All 28 resources declare SchemaVersion 0 explicitly
-- [ ] **MIG-02**: UpgradeState framework wired with empty upgrader list (ready for future schema changes)
+- [x] **MIG-01**: All 28 resources declare SchemaVersion 0 explicitly
+- [x] **MIG-02**: UpgradeState framework wired with empty upgrader list (ready for future schema changes)
 
 ### Import Documentation
 
@@ -49,8 +49,8 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MIG-01 | Phase 12 | Pending |
-| MIG-02 | Phase 12 | Pending |
+| MIG-01 | Phase 12 | Complete |
+| MIG-02 | Phase 12 | Complete |
 | DOC-01 | Phase 13 | Pending |
 | DOC-02 | Phase 13 | Pending |
 | HLP-01 | Phase 12 | Pending |
