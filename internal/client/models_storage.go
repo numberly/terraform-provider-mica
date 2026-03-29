@@ -165,3 +165,61 @@ type ObjectStoreAccessKeyPost struct {
 	User            NamedReference `json:"user"`
 	SecretAccessKey string         `json:"secret_access_key,omitempty"`
 }
+
+// ObjectStoreRemoteCredentials represents a FlashBlade remote credentials object from GET responses.
+type ObjectStoreRemoteCredentials struct {
+	ID              string           `json:"id"`
+	Name            string           `json:"name"`
+	AccessKeyID     string           `json:"access_key_id"`
+	SecretAccessKey string           `json:"secret_access_key,omitempty"`
+	Remote          NamedReference   `json:"remote"`
+	Realms          []NamedReference `json:"realms,omitempty"`
+}
+
+// ObjectStoreRemoteCredentialsPost contains the fields for POST /object-store-remote-credentials.
+// Name is passed via ?names= query param, remote via ?remote_names= query param.
+type ObjectStoreRemoteCredentialsPost struct {
+	AccessKeyID     string `json:"access_key_id"`
+	SecretAccessKey string `json:"secret_access_key"`
+}
+
+// ObjectStoreRemoteCredentialsPatch contains pointer fields for PATCH semantics on /object-store-remote-credentials.
+type ObjectStoreRemoteCredentialsPatch struct {
+	AccessKeyID     *string `json:"access_key_id,omitempty"`
+	SecretAccessKey *string `json:"secret_access_key,omitempty"`
+}
+
+// ObjectBacklog holds object backlog metrics for a bucket replica link.
+type ObjectBacklog struct {
+	Count     int64 `json:"count,omitempty"`
+	TotalSize int64 `json:"total_size,omitempty"`
+}
+
+// BucketReplicaLink represents a FlashBlade bucket replica link from GET responses.
+type BucketReplicaLink struct {
+	ID                string          `json:"id"`
+	LocalBucket       NamedReference  `json:"local_bucket"`
+	RemoteBucket      NamedReference  `json:"remote_bucket"`
+	Remote            NamedReference  `json:"remote"`
+	RemoteCredentials *NamedReference `json:"remote_credentials,omitempty"`
+	Paused            bool            `json:"paused"`
+	CascadingEnabled  bool            `json:"cascading_enabled"`
+	Direction         string          `json:"direction,omitempty"`
+	Status            string          `json:"status,omitempty"`
+	StatusDetails     string          `json:"status_details,omitempty"`
+	Lag               int64           `json:"lag,omitempty"`
+	RecoveryPoint     int64           `json:"recovery_point,omitempty"`
+	ObjectBacklog     *ObjectBacklog  `json:"object_backlog,omitempty"`
+}
+
+// BucketReplicaLinkPost contains the fields for POST /bucket-replica-links.
+// Local bucket, remote bucket, and remote credentials are all query params.
+type BucketReplicaLinkPost struct {
+	Paused           bool `json:"paused,omitempty"`
+	CascadingEnabled bool `json:"cascading_enabled,omitempty"`
+}
+
+// BucketReplicaLinkPatch contains pointer fields for PATCH semantics on /bucket-replica-links.
+type BucketReplicaLinkPatch struct {
+	Paused *bool `json:"paused,omitempty"`
+}
