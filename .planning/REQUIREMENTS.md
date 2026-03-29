@@ -19,12 +19,12 @@ Requirements for milestone v1.3 — Release Readiness.
 
 ### Helper Consolidation
 
-- [ ] **HLP-01**: int64UseStateForUnknown moved from filesystem_resource.go to helpers.go
-- [ ] **HLP-02**: float64UseStateForUnknown added to helpers.go for consistency
+- [x] **HLP-01**: int64UseStateForUnknown moved from filesystem_resource.go to helpers.go
+- [x] **HLP-02**: float64UseStateForUnknown added to helpers.go for consistency
 
 ### Transport Hardening
 
-- [ ] **TRN-01**: Exponential backoff includes ±20% random jitter to prevent thundering herds
+- [x] **TRN-01**: Exponential backoff includes ±20% random jitter to prevent thundering herds
 
 ### Sensitive Data
 
@@ -53,9 +53,9 @@ Deferred to future release.
 | MIG-02 | Phase 12 | Complete |
 | DOC-01 | Phase 13 | Pending |
 | DOC-02 | Phase 13 | Pending |
-| HLP-01 | Phase 12 | Pending |
-| HLP-02 | Phase 12 | Pending |
-| TRN-01 | Phase 12 | Pending |
+| HLP-01 | Phase 12 | Complete |
+| HLP-02 | Phase 12 | Complete |
+| TRN-01 | Phase 12 | Complete |
 | SEC-01 | Phase 13 | Pending |
 
 **Coverage:**
