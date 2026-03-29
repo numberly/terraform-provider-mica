@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	mathrand "math/rand"
 	"net/http"
 	"time"
 )
@@ -73,7 +74,7 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		_, _ = io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 
-		delay := t.computeDelay(attempt)
+		delay := computeDelay(t.baseDelay, attempt)
 		log.Printf("[DEBUG] retryTransport: attempt %d/%d returned %d — retrying in %v (X-Request-ID: %s)",
 			attempt+1, t.maxRetries, resp.StatusCode, delay, req.Header.Get("X-Request-ID"))
 
@@ -88,12 +89,19 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // computeDelay returns the exponential backoff delay for a given attempt,
-// capped at 30 seconds.
-func (t *retryTransport) computeDelay(attempt int) time.Duration {
-	delay := t.baseDelay * (1 << uint(attempt))
+// capped at 30 seconds, with +/-20% random jitter to prevent thundering herds.
+func computeDelay(baseDelay time.Duration, attempt int) time.Duration {
+	delay := baseDelay * (1 << uint(attempt))
 	const maxDelay = 30 * time.Second
 	if delay > maxDelay {
 		delay = maxDelay
+	}
+	// Apply +/-20% jitter to prevent thundering herds.
+	jitterRange := float64(delay) * 0.2
+	jitter := (mathrand.Float64()*2 - 1) * jitterRange // [-20%, +20%]
+	delay = time.Duration(float64(delay) + jitter)
+	if delay < 0 {
+		delay = 0
 	}
 	return delay
 }
