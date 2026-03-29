@@ -376,7 +376,7 @@ Plans:
   3. `SourceReference` type is removed and all references use `NamedReference` instead -- `go build ./...` compiles
   4. The 29 empty `UpgradeState` implementations are removed from resources (only resources with actual schema version bumps keep them)
   5. `math/rand` import is replaced with `math/rand/v2` in transport.go -- jitter behavior unchanged, `go vet ./...` shows no deprecation warnings
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 21-01-PLAN.md — Remove unused List* functions, IsUnprocessable, SourceReference, empty UpgradeState, update math/rand
@@ -390,7 +390,7 @@ Plans:
   2. OAuth2 provider configuration test verifies that `client_id` + `key_id` + `issuer` flow initializes the provider without errors (mock token endpoint)
   3. At least 3 resources have HCL-based acceptance tests using `resource.UnitTest` with a mock server that exercise plan, apply, refresh, import, and destroy
   4. Pagination tests exist for at least buckets and one policy type (in addition to existing filesystem pagination tests)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 22-01-PLAN.md — Unit tests for 5 uncovered data sources + OAuth2 provider config test
