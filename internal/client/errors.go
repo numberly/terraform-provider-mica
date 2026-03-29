@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -42,7 +43,13 @@ func ParseAPIError(resp *http.Response) error {
 		return nil
 	}
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    fmt.Sprintf("failed to read response body: %v", err),
+		}
+	}
 
 	var eb apiErrorBody
 	_ = json.Unmarshal(body, &eb)
@@ -64,8 +71,8 @@ func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	apiErr, ok := err.(*APIError)
-	if !ok {
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
 		return false
 	}
 	if apiErr.StatusCode == http.StatusNotFound {
@@ -85,8 +92,11 @@ func IsConflict(err error) bool {
 	if err == nil {
 		return false
 	}
-	apiErr, ok := err.(*APIError)
-	return ok && apiErr.StatusCode == http.StatusConflict
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		return false
+	}
+	return apiErr.StatusCode == http.StatusConflict
 }
 
 // IsUnprocessable returns true when err is an *APIError with HTTP 422.
@@ -94,8 +104,11 @@ func IsUnprocessable(err error) bool {
 	if err == nil {
 		return false
 	}
-	apiErr, ok := err.(*APIError)
-	return ok && apiErr.StatusCode == http.StatusUnprocessableEntity
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		return false
+	}
+	return apiErr.StatusCode == http.StatusUnprocessableEntity
 }
 
 // IsRetryable returns true for HTTP status codes that represent transient

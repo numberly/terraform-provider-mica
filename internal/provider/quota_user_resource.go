@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -153,8 +154,8 @@ func (r *quotaUserResource) Create(ctx context.Context, req resource.CreateReque
 	if err != nil {
 		// FlashBlade pre-creates implicit zero-quota entries for UIDs that access the FS.
 		// Fall back to PATCH if the quota already exists.
-		apiErr, ok := err.(*client.APIError)
-		if ok && apiErr.StatusCode == 400 {
+		var apiErr *client.APIError
+		if errors.As(err, &apiErr) && apiErr.StatusCode == 400 {
 			q := data.Quota.ValueInt64()
 			_, patchErr := r.client.PatchQuotaUser(ctx, fsName, uid, client.QuotaUserPatch{
 				Quota: &q,

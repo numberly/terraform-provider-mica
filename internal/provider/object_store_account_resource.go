@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -368,8 +369,8 @@ func (r *objectStoreAccountResource) Delete(ctx context.Context, req resource.De
 	if err := r.client.DeleteObjectStoreUser(ctx, name+"/admin"); err != nil {
 		if !client.IsNotFound(err) {
 			// Tolerate "user does not exist" (400) — may have been cleaned up already.
-			apiErr, ok := err.(*client.APIError)
-			if !ok || apiErr.StatusCode != 400 {
+			var apiErr *client.APIError
+			if !errors.As(err, &apiErr) || apiErr.StatusCode != 400 {
 				resp.Diagnostics.AddError("Error deleting object store user before account deletion", err.Error())
 				return
 			}

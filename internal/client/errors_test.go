@@ -2,7 +2,11 @@ package client
 
 import (
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
 	"testing"
+	"testing/iotest"
 )
 
 // TestUnit_IsConflict_True verifies IsConflict returns true for HTTP 409.
@@ -144,5 +148,84 @@ func TestUnit_IsNotFound(t *testing.T) {
 				t.Errorf("IsNotFound() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestUnit_IsNotFound_WrappedError verifies IsNotFound handles wrapped APIError.
+func TestUnit_IsNotFound_WrappedError(t *testing.T) {
+	apiErr := &APIError{StatusCode: 404}
+	wrapped := fmt.Errorf("op failed: %w", apiErr)
+	if !IsNotFound(wrapped) {
+		t.Error("expected IsNotFound to return true for wrapped 404 APIError")
+	}
+}
+
+// TestUnit_IsNotFound_DoubleWrapped verifies IsNotFound handles double-wrapped APIError.
+func TestUnit_IsNotFound_DoubleWrapped(t *testing.T) {
+	apiErr := &APIError{StatusCode: 404}
+	wrapped := fmt.Errorf("inner: %w", apiErr)
+	doubleWrapped := fmt.Errorf("outer: %w", wrapped)
+	if !IsNotFound(doubleWrapped) {
+		t.Error("expected IsNotFound to return true for double-wrapped 404 APIError")
+	}
+}
+
+// TestUnit_IsConflict_WrappedError verifies IsConflict handles wrapped APIError.
+func TestUnit_IsConflict_WrappedError(t *testing.T) {
+	apiErr := &APIError{StatusCode: 409}
+	wrapped := fmt.Errorf("wrapped: %w", apiErr)
+	if !IsConflict(wrapped) {
+		t.Error("expected IsConflict to return true for wrapped 409 APIError")
+	}
+}
+
+// TestUnit_IsUnprocessable_WrappedError verifies IsUnprocessable handles wrapped APIError.
+func TestUnit_IsUnprocessable_WrappedError(t *testing.T) {
+	apiErr := &APIError{StatusCode: 422}
+	wrapped := fmt.Errorf("wrapped: %w", apiErr)
+	if !IsUnprocessable(wrapped) {
+		t.Error("expected IsUnprocessable to return true for wrapped 422 APIError")
+	}
+}
+
+// TestUnit_ParseAPIError_ReadFailure verifies ParseAPIError handles io.ReadAll failures.
+func TestUnit_ParseAPIError_ReadFailure(t *testing.T) {
+	resp := &http.Response{
+		StatusCode: 500,
+		Body:       io.NopCloser(iotest.ErrReader(errors.New("disk failure"))),
+	}
+	err := ParseAPIError(resp)
+	if err == nil {
+		t.Fatal("expected non-nil error from ParseAPIError when body read fails")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatal("expected error to be *APIError")
+	}
+	if apiErr.StatusCode != 500 {
+		t.Errorf("expected StatusCode 500, got %d", apiErr.StatusCode)
+	}
+}
+
+// TestUnit_ParseAPIError_ReadFailure_Message verifies the error message is descriptive.
+func TestUnit_ParseAPIError_ReadFailure_Message(t *testing.T) {
+	resp := &http.Response{
+		StatusCode: 502,
+		Body:       io.NopCloser(iotest.ErrReader(errors.New("network error"))),
+	}
+	err := ParseAPIError(resp)
+	if err == nil {
+		t.Fatal("expected non-nil error")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatal("expected *APIError")
+	}
+	if apiErr.Message == "" {
+		t.Error("expected non-empty Message field on APIError")
+	}
+	// Message should mention body read failure.
+	if got := apiErr.Error(); got == "" {
+		t.Error("expected non-empty error string")
 	}
 }
