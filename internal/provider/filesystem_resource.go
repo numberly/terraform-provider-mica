@@ -24,6 +24,7 @@ import (
 var _ resource.Resource = &filesystemResource{}
 var _ resource.ResourceWithConfigure = &filesystemResource{}
 var _ resource.ResourceWithImportState = &filesystemResource{}
+var _ resource.ResourceWithUpgradeState = &filesystemResource{}
 
 // filesystemResource implements the flashblade_file_system resource.
 type filesystemResource struct {
@@ -88,6 +89,7 @@ func (r *filesystemResource) Metadata(_ context.Context, _ resource.MetadataRequ
 func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a FlashBlade file system.",
+		Version:     0,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -312,6 +314,10 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 			},
 		},
 	}
+}
+
+func (r *filesystemResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -747,32 +753,4 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) {
 		"group_quota": types.Int64Value(fs.DefaultQuotas.GroupQuota),
 		"user_quota":  types.Int64Value(fs.DefaultQuotas.UserQuota),
 	})
-}
-
-// ---------- plan modifier helpers -------------------------------------------
-
-// int64UseStateForUnknown returns an Int64 plan modifier that preserves state value
-// when the planned value is unknown (equivalent to stringplanmodifier.UseStateForUnknown).
-func int64UseStateForUnknown() planmodifier.Int64 {
-	return &int64UseStateForUnknownModifier{}
-}
-
-type int64UseStateForUnknownModifier struct{}
-
-func (m *int64UseStateForUnknownModifier) Description(_ context.Context) string {
-	return "Use state value for unknown planned values."
-}
-
-func (m *int64UseStateForUnknownModifier) MarkdownDescription(_ context.Context) string {
-	return "Use state value for unknown planned values."
-}
-
-func (m *int64UseStateForUnknownModifier) PlanModifyInt64(_ context.Context, req planmodifier.Int64Request, resp *planmodifier.Int64Response) {
-	if !req.PlanValue.IsUnknown() {
-		return
-	}
-	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-		return
-	}
-	resp.PlanValue = req.StateValue
 }

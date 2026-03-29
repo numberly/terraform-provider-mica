@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -51,4 +52,58 @@ func stringOrNull(s string) types.String {
 		return types.StringNull()
 	}
 	return types.StringValue(s)
+}
+
+// ---------- plan modifier helpers -------------------------------------------
+
+// int64UseStateForUnknown returns an Int64 plan modifier that preserves state value
+// when the planned value is unknown (equivalent to stringplanmodifier.UseStateForUnknown).
+func int64UseStateForUnknown() planmodifier.Int64 {
+	return &int64UseStateForUnknownModifier{}
+}
+
+type int64UseStateForUnknownModifier struct{}
+
+func (m *int64UseStateForUnknownModifier) Description(_ context.Context) string {
+	return "Use state value for unknown planned values."
+}
+
+func (m *int64UseStateForUnknownModifier) MarkdownDescription(_ context.Context) string {
+	return "Use state value for unknown planned values."
+}
+
+func (m *int64UseStateForUnknownModifier) PlanModifyInt64(_ context.Context, req planmodifier.Int64Request, resp *planmodifier.Int64Response) {
+	if !req.PlanValue.IsUnknown() {
+		return
+	}
+	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+	resp.PlanValue = req.StateValue
+}
+
+// float64UseStateForUnknown returns a Float64 plan modifier that preserves state value
+// when the planned value is unknown (equivalent to stringplanmodifier.UseStateForUnknown).
+func float64UseStateForUnknown() planmodifier.Float64 {
+	return &float64UseStateForUnknownModifier{}
+}
+
+type float64UseStateForUnknownModifier struct{}
+
+func (m *float64UseStateForUnknownModifier) Description(_ context.Context) string {
+	return "Use state value for unknown planned values."
+}
+
+func (m *float64UseStateForUnknownModifier) MarkdownDescription(_ context.Context) string {
+	return "Use state value for unknown planned values."
+}
+
+func (m *float64UseStateForUnknownModifier) PlanModifyFloat64(_ context.Context, req planmodifier.Float64Request, resp *planmodifier.Float64Response) {
+	if !req.PlanValue.IsUnknown() {
+		return
+	}
+	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+	resp.PlanValue = req.StateValue
 }
