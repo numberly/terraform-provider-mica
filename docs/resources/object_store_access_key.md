@@ -3,12 +3,12 @@
 page_title: "flashblade_object_store_access_key Resource - flashblade"
 subcategory: ""
 description: |-
-  Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key is returned only at creation and preserved in state; it cannot be imported.
+  Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key is a write-only attribute: it is returned at creation time only and is never stored in Terraform state. Capture it via a Terraform output at apply time. Requires Terraform 1.11+.
 ---
 
 # flashblade_object_store_access_key (Resource)
 
-Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key is returned only at creation and preserved in state; it cannot be imported.
+Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key is a write-only attribute: it is returned at creation time only and is never stored in Terraform state. Capture it via a Terraform output at apply time. Requires Terraform 1.11+.
 
 ## Example Usage
 
@@ -47,7 +47,7 @@ output "secret_access_key" {
 - `access_key_id` (String) The access key ID (public part of the credential pair).
 - `created` (Number) Unix timestamp (milliseconds) when the access key was created.
 - `name` (String) The access key name (format: <account>/admin/<key-id>). Assigned by the API.
-- `secret_access_key` (String, Sensitive) The secret access key. Returned only at creation and preserved in state. Never returned by subsequent API reads.
+- `secret_access_key` (String, Sensitive) The secret access key. Returned only at creation time and stored in state (encrypted). Never shown in plan output.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
