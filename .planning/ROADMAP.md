@@ -457,7 +457,12 @@ Plans:
   3. Operator can create a QoS policy with max_total_bytes_per_sec and max_total_ops_per_sec, update limits, and destroy the policy via Terraform -- `apply -> plan` shows 0 diff
   4. Operator can assign a QoS policy to buckets and file systems as members and import existing QoS policies into Terraform state
   5. QoS policy data source reads existing policies by name and exposes all attributes including current member assignments
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 26-01-PLAN.md — Client models, CRUD methods, and mock handlers for audit filters and QoS policies
+- [ ] 26-02-PLAN.md — Bucket audit filter resource, data source, unit tests, and provider registration
+- [ ] 26-03-PLAN.md — QoS policy resource, member resource, data source, unit tests, and provider registration
 
 ### Phase 27: Testing & Documentation
 **Goal**: All new v2.1 resources have unit tests with mock handlers, import documentation, and a workflow example showing the complete bucket advanced features stack
@@ -502,5 +507,5 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 23. Bucket Inline Attributes | 2/2 | Complete    | 2026-03-30 | - |
 | 24. Lifecycle Rules | 2/2 | Complete    | 2026-03-30 | - |
 | 25. Bucket Access Policies | 2/2 | Complete    | 2026-03-30 | - |
-| 26. Audit Filters & QoS Policies | v2.1 | 0/TBD | Not started | - |
+| 26. Audit Filters & QoS Policies | v2.1 | 0/3 | Not started | - |
 | 27. Testing & Documentation | v2.1 | 0/TBD | Not started | - |
