@@ -426,7 +426,11 @@ Plans:
   2. Operator can update lifecycle rule settings (enabled, retention periods, prefix) and destroy rules independently -- no orphaned rules remain on the API
   3. Operator can import an existing lifecycle rule into Terraform state and subsequent `plan` shows 0 diff
   4. Lifecycle rule data source reads existing rules by bucket name and exposes all rule attributes for reference in other resources
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 24-01-PLAN.md — Client models, CRUD methods, and mock handler for lifecycle rules
+- [ ] 24-02-PLAN.md — Lifecycle rule resource, data source, unit tests, and provider registration
 
 ### Phase 25: Bucket Access Policies
 **Goal**: Operators can manage IAM-style per-bucket authorization with policies and rules through Terraform
