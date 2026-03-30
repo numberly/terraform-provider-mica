@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-03-30T09:00:00.000Z"
-last_activity: 2026-03-30 — v2.1 roadmap created (phases 23-27)
+status: executing
+stopped_at: Completed 23-01-PLAN.md
+last_updated: "2026-03-30T10:02:31.815Z"
+last_activity: 2026-03-30 — Completed 23-01 bucket inline config attributes
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 27
+  completed_phases: 22
+  total_plans: 56
+  completed_plans: 54
+  percent: 95
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 23 of 27 (Bucket Inline Attributes)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-30 — v2.1 roadmap created
+Plan: 1 of TBD in current phase
+Status: Executing
+Last activity: 2026-03-30 — Completed 23-01 bucket inline config attributes
 
-Progress: [################..] 85% (22/27 phases complete)
+Progress: [██████████] 95% (54/56 plans complete)
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [################..] 85% (22/27 phases complete)
 - [v2.1]: Bucket inline attrs (eradication, object lock, public access) as schema extensions, not separate resources
 - [v2.1]: QoS + audit filters combined in Phase 26 (coarse granularity)
 - [v2.1]: Testing + docs consolidated into Phase 27 (cross-cutting)
+- [Phase 23]: public_access_config excluded from POST (API spec constraint, PATCH only)
 
 ### Pending Todos
 
@@ -64,6 +65,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30
-Stopped at: v2.1 roadmap created, ready to plan Phase 23
+Last session: 2026-03-30T10:02:31.808Z
+Stopped at: Completed 23-01-PLAN.md
 Resume file: None

@@ -9,10 +9,10 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 ### Bucket Inline Attributes
 
-- [ ] **BKT-01**: Bucket resource supports eradication_config (eradication_delay, eradication_mode, manual_eradication) on create and update
-- [ ] **BKT-02**: Bucket resource supports object_lock_config (freeze_locked_objects, default_retention, default_retention_mode, object_lock_enabled) on create and update
-- [ ] **BKT-03**: Bucket resource supports public_access_config (block_new_public_policies, block_public_access) on update
-- [ ] **BKT-04**: Bucket resource exposes public_status as computed read-only attribute
+- [x] **BKT-01**: Bucket resource supports eradication_config (eradication_delay, eradication_mode, manual_eradication) on create and update
+- [x] **BKT-02**: Bucket resource supports object_lock_config (freeze_locked_objects, default_retention, default_retention_mode, object_lock_enabled) on create and update
+- [x] **BKT-03**: Bucket resource supports public_access_config (block_new_public_policies, block_public_access) on update
+- [x] **BKT-04**: Bucket resource exposes public_status as computed read-only attribute
 
 ### Lifecycle Rules
 
@@ -78,10 +78,10 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BKT-01 | Phase 23 | Pending |
-| BKT-02 | Phase 23 | Pending |
-| BKT-03 | Phase 23 | Pending |
-| BKT-04 | Phase 23 | Pending |
+| BKT-01 | Phase 23 | Complete |
+| BKT-02 | Phase 23 | Complete |
+| BKT-03 | Phase 23 | Complete |
+| BKT-04 | Phase 23 | Complete |
 | LCR-01 | Phase 24 | Pending |
 | LCR-02 | Phase 24 | Pending |
 | LCR-03 | Phase 24 | Pending |
