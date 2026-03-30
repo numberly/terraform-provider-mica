@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: completed
-stopped_at: Completed 26-03-PLAN.md
-last_updated: "2026-03-30T11:24:16.160Z"
+stopped_at: Completed 27-01-PLAN.md
+last_updated: "2026-03-30T11:35:02.904Z"
 last_activity: 2026-03-30 — Completed 26-03 QoS policy resource, member resource, and data source
 progress:
   total_phases: 27
-  completed_phases: 25
-  total_plans: 63
-  completed_plans: 61
+  completed_phases: 26
+  total_plans: 64
+  completed_plans: 62
   percent: 97
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 26 — Audit Filters & QoS Policies (v2.1)
+**Current focus:** Phase 27 — Testing & Documentation (v2.1)
 
 ## Current Position
 
-Phase: 26 of 27 (Audit Filters & QoS Policies)
-Plan: 3 of 3 in current phase
-Status: Phase Complete
-Last activity: 2026-03-30 — Completed 26-03 QoS policy resource, member resource, and data source
+Phase: 27 of 27 (Testing & Documentation)
+Plan: 1 of 1 in current phase
+Status: Plan Complete
+Last activity: 2026-03-30 — Completed 27-01 testing, examples, and registry docs
 
-Progress: [██████████] 97% (61/63 plans complete)
+Progress: [██████████] 98% (62/64 plans complete)
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [██████████] 97% (61/63 plans complete)
 - [Phase 26]: Bucket name as single-string import ID for audit filters (one per bucket)
 - [Phase 26]: QoS policy name uses RequiresReplace (rename via PATCH not exposed to avoid drift)
 - [Phase 26]: QoS member CRD-only with 3-key timeouts, composite "policyName/memberName" import
+- [Phase 27-testing-documentation]: tftypes.Number used for Int64 schema attributes in tftypes object (tftypes.Int64 does not exist)
 
 ### Pending Todos
 
@@ -78,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:22:00Z
-Stopped at: Completed 26-03-PLAN.md
+Last session: 2026-03-30T11:35:02.897Z
+Stopped at: Completed 27-01-PLAN.md
 Resume file: None

@@ -398,7 +398,7 @@ Plans:
 - [x] **Phase 24: Lifecycle Rules** - New resource and data source for bucket lifecycle rule management (completed 2026-03-30)
 - [x] **Phase 25: Bucket Access Policies** - New resource for IAM-style bucket access policies and rules (completed 2026-03-30)
 - [x] **Phase 26: Audit Filters & QoS Policies** - New resources for audit filtering and bandwidth/IOPS limiting (completed 2026-03-30)
-- [ ] **Phase 27: Testing & Documentation** - Unit tests, mock handlers, import docs, and workflow example
+- [x] **Phase 27: Testing & Documentation** - Unit tests, mock handlers, import docs, and workflow example (completed 2026-03-30)
 
 ## Phase Details
 
@@ -511,4 +511,4 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 24. Lifecycle Rules | 2/2 | Complete    | 2026-03-30 | - |
 | 25. Bucket Access Policies | 2/2 | Complete    | 2026-03-30 | - |
 | 26. Audit Filters & QoS Policies | 3/3 | Complete    | 2026-03-30 | - |
-| 27. Testing & Documentation | v2.1 | 0/1 | Not started | - |
+| 27. Testing & Documentation | 1/1 | Complete   | 2026-03-30 | - |

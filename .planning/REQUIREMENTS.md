@@ -48,10 +48,10 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 ### Testing & Documentation
 
-- [ ] **TST-01**: Unit tests for all new resources and bucket attribute additions (Read + NotFound + Lifecycle)
-- [ ] **TST-02**: Mock handlers for all new API endpoints
-- [ ] **DOC-01**: Import documentation for all new importable resources
-- [ ] **DOC-02**: Workflow example showing bucket with lifecycle rules, access policy, audit filter, and QoS
+- [x] **TST-01**: Unit tests for all new resources and bucket attribute additions (Read + NotFound + Lifecycle)
+- [x] **TST-02**: Mock handlers for all new API endpoints
+- [x] **DOC-01**: Import documentation for all new importable resources
+- [x] **DOC-02**: Workflow example showing bucket with lifecycle rules, access policy, audit filter, and QoS
 
 ## Future Requirements
 
@@ -102,10 +102,10 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | QOS-04 | Phase 26 | Complete |
 | QOS-05 | Phase 26 | Complete |
 | QOS-06 | Phase 26 | Complete |
-| TST-01 | Phase 27 | Pending |
-| TST-02 | Phase 27 | Pending |
-| DOC-01 | Phase 27 | Pending |
-| DOC-02 | Phase 27 | Pending |
+| TST-01 | Phase 27 | Complete |
+| TST-02 | Phase 27 | Complete |
+| DOC-01 | Phase 27 | Complete |
+| DOC-02 | Phase 27 | Complete |
 
 **Coverage:**
 - v2.1 requirements: 28 total
