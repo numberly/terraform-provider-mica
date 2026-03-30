@@ -441,7 +441,11 @@ Plans:
   2. Operator can create and delete individual bucket access policy rules independently of the parent policy lifecycle
   3. Operator can import existing bucket access policies into Terraform state and subsequent `plan` shows 0 diff
   4. Bucket access policy data source reads existing policies by bucket name and exposes policy and rule attributes
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Client models, CRUD methods, and mock handler for bucket access policies and rules
+- [ ] 25-02-PLAN.md — Bucket access policy resource, rule resource, data source, unit tests, and provider registration
 
 ### Phase 26: Audit Filters & QoS Policies
 **Goal**: Operators can audit S3 operations per bucket and enforce bandwidth/IOPS limits on buckets and file systems through Terraform
