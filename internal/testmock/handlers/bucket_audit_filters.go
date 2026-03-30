@@ -52,7 +52,7 @@ func (s *bucketAuditFilterStore) handle(w http.ResponseWriter, r *http.Request) 
 
 // handleGet handles GET /api/2.22/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handleGet(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
+	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
 	}
 
@@ -60,11 +60,19 @@ func (s *bucketAuditFilterStore) handleGet(w http.ResponseWriter, r *http.Reques
 	defer s.mu.Unlock()
 
 	q := r.URL.Query()
+	namesFilter := q.Get("names")
 	bucketNamesFilter := q.Get("bucket_names")
 
 	var items []client.BucketAuditFilter
 
-	if bucketNamesFilter != "" {
+	if namesFilter != "" {
+		// Lookup by filter name.
+		for _, filter := range s.filters {
+			if filter.Name == namesFilter {
+				items = append(items, *filter)
+			}
+		}
+	} else if bucketNamesFilter != "" {
 		if filter, ok := s.filters[bucketNamesFilter]; ok {
 			items = append(items, *filter)
 		}
@@ -123,14 +131,12 @@ func (s *bucketAuditFilterStore) handlePost(w http.ResponseWriter, r *http.Reque
 
 // handlePatch handles PATCH /api/2.22/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handlePatch(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
+	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
 	}
 
-	bucketName, ok := RequireQueryParam(w, r, "bucket_names")
-	if !ok {
-		return
-	}
+	// Accept ?names= (filter name) for lookup.
+	filterName := r.URL.Query().Get("names")
 
 	var body client.BucketAuditFilterPatch
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -141,9 +147,15 @@ func (s *bucketAuditFilterStore) handlePatch(w http.ResponseWriter, r *http.Requ
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	filter, exists := s.filters[bucketName]
-	if !exists {
-		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("bucket audit filter for bucket %q not found", bucketName))
+	var filter *client.BucketAuditFilter
+	for _, f := range s.filters {
+		if f.Name == filterName {
+			filter = f
+			break
+		}
+	}
+	if filter == nil {
+		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("bucket audit filter %q not found", filterName))
 		return
 	}
 
@@ -159,24 +171,33 @@ func (s *bucketAuditFilterStore) handlePatch(w http.ResponseWriter, r *http.Requ
 
 // handleDelete handles DELETE /api/2.22/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handleDelete(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
+	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
 	}
 
-	bucketName, ok := RequireQueryParam(w, r, "bucket_names")
-	if !ok {
+	filterName := r.URL.Query().Get("names")
+	if filterName == "" {
+		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for DELETE")
 		return
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.filters[bucketName]; !exists {
-		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("bucket audit filter for bucket %q not found", bucketName))
+	// Find by filter name and delete.
+	var bucketKey string
+	for k, f := range s.filters {
+		if f.Name == filterName {
+			bucketKey = k
+			break
+		}
+	}
+	if bucketKey == "" {
+		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("bucket audit filter %q not found", filterName))
 		return
 	}
 
-	delete(s.filters, bucketName)
+	delete(s.filters, bucketKey)
 
 	w.WriteHeader(http.StatusOK)
 }

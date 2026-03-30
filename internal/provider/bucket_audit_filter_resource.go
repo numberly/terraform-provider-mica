@@ -177,7 +177,7 @@ func (r *bucketAuditFilterResource) Read(ctx context.Context, req resource.ReadR
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	filter, err := r.client.GetBucketAuditFilter(ctx, data.BucketName.ValueString())
+	filter, err := r.client.GetBucketAuditFilter(ctx, data.Name.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -232,7 +232,7 @@ func (r *bucketAuditFilterResource) Update(ctx context.Context, req resource.Upd
 	}
 
 	if needsPatch {
-		_, err := r.client.PatchBucketAuditFilter(ctx, state.BucketName.ValueString(), patch)
+		_, err := r.client.PatchBucketAuditFilter(ctx, state.Name.ValueString(), patch)
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating bucket audit filter", err.Error())
 			return
@@ -240,7 +240,7 @@ func (r *bucketAuditFilterResource) Update(ctx context.Context, req resource.Upd
 	}
 
 	// Re-read to refresh computed fields.
-	filter, err := r.client.GetBucketAuditFilter(ctx, plan.BucketName.ValueString())
+	filter, err := r.client.GetBucketAuditFilter(ctx, plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading bucket audit filter after update", err.Error())
 		return
@@ -266,7 +266,7 @@ func (r *bucketAuditFilterResource) Delete(ctx context.Context, req resource.Del
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	err := r.client.DeleteBucketAuditFilter(ctx, data.BucketName.ValueString())
+	err := r.client.DeleteBucketAuditFilter(ctx, data.Name.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			return
@@ -276,11 +276,11 @@ func (r *bucketAuditFilterResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-// ImportState imports an existing bucket audit filter by bucket name.
+// ImportState imports an existing bucket audit filter by filter name.
 func (r *bucketAuditFilterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	bucketName := req.ID
+	filterName := req.ID
 
-	filter, err := r.client.GetBucketAuditFilter(ctx, bucketName)
+	filter, err := r.client.GetBucketAuditFilter(ctx, filterName)
 	if err != nil {
 		resp.Diagnostics.AddError("Error importing bucket audit filter", err.Error())
 		return

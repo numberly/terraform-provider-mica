@@ -355,7 +355,7 @@ func TestBucketAuditFilterResource_Import(t *testing.T) {
 	importResp := &resource.ImportStateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
 	}
-	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "imp-bucket"}, importResp)
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "baf-imp-1"}, importResp)
 
 	if importResp.Diagnostics.HasError() {
 		t.Fatalf("ImportState returned error: %s", importResp.Diagnostics)

@@ -88,7 +88,7 @@ func (d *bucketAuditFilterDataSource) Read(ctx context.Context, req datasource.R
 		return
 	}
 
-	filter, err := d.client.GetBucketAuditFilter(ctx, config.BucketName.ValueString())
+	filter, err := d.client.GetBucketAuditFilterByBucket(ctx, config.BucketName.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.Diagnostics.AddError(
