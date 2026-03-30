@@ -4,14 +4,14 @@ milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: completed
 stopped_at: Completed 27-01-PLAN.md
-last_updated: "2026-03-30T11:35:02.904Z"
-last_activity: 2026-03-30 — Completed 26-03 QoS policy resource, member resource, and data source
+last_updated: "2026-03-30T11:36:17.723Z"
+last_activity: 2026-03-30 — Completed 27-01 testing, examples, and registry docs
 progress:
   total_phases: 27
   completed_phases: 26
   total_plans: 64
   completed_plans: 62
-  percent: 97
+  percent: 98
 ---
 
 # Project State
