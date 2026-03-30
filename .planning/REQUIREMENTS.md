@@ -27,8 +27,8 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 - [x] **BAP-01**: Operator can create a bucket access policy with rules (actions, effect, principals, resources) via Terraform
 - [x] **BAP-02**: Operator can delete a bucket access policy via Terraform destroy
 - [x] **BAP-03**: Operator can create/delete individual bucket access policy rules independently
-- [ ] **BAP-04**: Operator can import existing bucket access policies into Terraform state
-- [ ] **BAP-05**: Bucket access policy data source reads existing policy by bucket name
+- [x] **BAP-04**: Operator can import existing bucket access policies into Terraform state
+- [x] **BAP-05**: Bucket access policy data source reads existing policy by bucket name
 
 ### Bucket Audit Filters
 
@@ -90,8 +90,8 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | BAP-01 | Phase 25 | Complete |
 | BAP-02 | Phase 25 | Complete |
 | BAP-03 | Phase 25 | Complete |
-| BAP-04 | Phase 25 | Pending |
-| BAP-05 | Phase 25 | Pending |
+| BAP-04 | Phase 25 | Complete |
+| BAP-05 | Phase 25 | Complete |
 | BAF-01 | Phase 26 | Pending |
 | BAF-02 | Phase 26 | Pending |
 | BAF-03 | Phase 26 | Pending |

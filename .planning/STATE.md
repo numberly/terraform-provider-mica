@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: in-progress
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-03-30T10:39:53.484Z"
-last_activity: 2026-03-30 — Completed 25-01 bucket access policies client and mock
+status: executing
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-03-30T10:51:21.238Z"
+last_activity: 2026-03-30 — Completed 25-02 bucket access policies resources and tests
 progress:
   total_phases: 27
-  completed_phases: 23
+  completed_phases: 24
   total_plans: 60
-  completed_plans: 57
-  percent: 97
+  completed_plans: 58
+  percent: 95
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 25 of 27 (Bucket Access Policies)
-Plan: 1 of 2 in current phase
-Status: In Progress
-Last activity: 2026-03-30 — Completed 25-01 bucket access policies client and mock
+Phase: 25 of 27 (Bucket Access Policies) -- COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-03-30 — Completed 25-02 bucket access policies resources and tests
 
-Progress: [██████████] 95% (57/60 plans complete)
+Progress: [██████████] 97% (58/60 plans complete)
 
 ## Performance Metrics
 
@@ -61,6 +61,8 @@ Progress: [██████████] 95% (57/60 plans complete)
 - [Phase 24-lifecycle-rules]: PATCH sends only changed fields via pointer comparison
 - [Phase 25-bucket-access-policies]: Policy store keyed by bucket name (one policy per bucket)
 - [Phase 25-bucket-access-policies]: Rules stored inside policy object, separate endpoint handlers
+- [Phase 25]: No Update method for bucket access policies (no PATCH endpoint, RequiresReplace)
+- [Phase 25]: CRD-only resources use 3-key timeouts (no update key) to match schema
 
 ### Pending Todos
 
@@ -72,6 +74,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:39:20Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-03-30T10:51:21.232Z
+Stopped at: Completed 25-02-PLAN.md
 Resume file: None
