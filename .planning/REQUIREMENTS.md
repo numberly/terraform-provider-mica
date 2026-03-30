@@ -32,17 +32,17 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 ### Bucket Audit Filters
 
-- [ ] **BAF-01**: Operator can create a bucket audit filter with actions and S3 prefix filtering via Terraform
-- [ ] **BAF-02**: Operator can update audit filter settings (actions, s3_prefixes) via Terraform apply
-- [ ] **BAF-03**: Operator can delete a bucket audit filter via Terraform destroy
+- [x] **BAF-01**: Operator can create a bucket audit filter with actions and S3 prefix filtering via Terraform
+- [x] **BAF-02**: Operator can update audit filter settings (actions, s3_prefixes) via Terraform apply
+- [x] **BAF-03**: Operator can delete a bucket audit filter via Terraform destroy
 - [ ] **BAF-04**: Operator can import an existing audit filter into Terraform state
 
 ### QoS Policies
 
-- [ ] **QOS-01**: Operator can create a QoS policy with max_total_bytes_per_sec and max_total_ops_per_sec via Terraform
-- [ ] **QOS-02**: Operator can update QoS policy limits via Terraform apply
-- [ ] **QOS-03**: Operator can delete a QoS policy via Terraform destroy
-- [ ] **QOS-04**: Operator can assign a QoS policy to buckets and file systems as members
+- [x] **QOS-01**: Operator can create a QoS policy with max_total_bytes_per_sec and max_total_ops_per_sec via Terraform
+- [x] **QOS-02**: Operator can update QoS policy limits via Terraform apply
+- [x] **QOS-03**: Operator can delete a QoS policy via Terraform destroy
+- [x] **QOS-04**: Operator can assign a QoS policy to buckets and file systems as members
 - [ ] **QOS-05**: Operator can import existing QoS policies into Terraform state
 - [ ] **QOS-06**: QoS policy data source reads existing policy by name
 
@@ -92,14 +92,14 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | BAP-03 | Phase 25 | Complete |
 | BAP-04 | Phase 25 | Complete |
 | BAP-05 | Phase 25 | Complete |
-| BAF-01 | Phase 26 | Pending |
-| BAF-02 | Phase 26 | Pending |
-| BAF-03 | Phase 26 | Pending |
+| BAF-01 | Phase 26 | Complete |
+| BAF-02 | Phase 26 | Complete |
+| BAF-03 | Phase 26 | Complete |
 | BAF-04 | Phase 26 | Pending |
-| QOS-01 | Phase 26 | Pending |
-| QOS-02 | Phase 26 | Pending |
-| QOS-03 | Phase 26 | Pending |
-| QOS-04 | Phase 26 | Pending |
+| QOS-01 | Phase 26 | Complete |
+| QOS-02 | Phase 26 | Complete |
+| QOS-03 | Phase 26 | Complete |
+| QOS-04 | Phase 26 | Complete |
 | QOS-05 | Phase 26 | Pending |
 | QOS-06 | Phase 26 | Pending |
 | TST-01 | Phase 27 | Pending |

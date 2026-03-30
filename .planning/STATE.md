@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: completed
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-03-30T10:52:56.195Z"
-last_activity: 2026-03-30 — Completed 25-02 bucket access policies resources and tests
+status: executing
+stopped_at: Completed 26-01-PLAN.md
+last_updated: "2026-03-30T11:06:40.772Z"
+last_activity: 2026-03-30 — Completed 26-01 audit filters and QoS policies client layer
 progress:
   total_phases: 27
   completed_phases: 24
-  total_plans: 60
-  completed_plans: 58
-  percent: 97
+  total_plans: 63
+  completed_plans: 59
+  percent: 94
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 25 — Bucket Access Policies (v2.1)
+**Current focus:** Phase 26 — Audit Filters & QoS Policies (v2.1)
 
 ## Current Position
 
-Phase: 25 of 27 (Bucket Access Policies) -- COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase Complete
-Last activity: 2026-03-30 — Completed 25-02 bucket access policies resources and tests
+Phase: 26 of 27 (Audit Filters & QoS Policies)
+Plan: 1 of 3 in current phase
+Status: In Progress
+Last activity: 2026-03-30 — Completed 26-01 audit filters and QoS policies client layer
 
-Progress: [██████████] 97% (58/60 plans complete)
+Progress: [█████████░] 94% (59/63 plans complete)
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [██████████] 97% (58/60 plans complete)
 - [Phase 25-bucket-access-policies]: Rules stored inside policy object, separate endpoint handlers
 - [Phase 25]: No Update method for bucket access policies (no PATCH endpoint, RequiresReplace)
 - [Phase 25]: CRD-only resources use 3-key timeouts (no update key) to match schema
+- [Phase 26]: QosPolicyMember/QosPolicyMemberPost types instead of PolicyMember/PolicyMemberPost to avoid collision with existing PolicyMember in models_common.go
 
 ### Pending Todos
 
@@ -74,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:51:21.232Z
-Stopped at: Completed 25-02-PLAN.md
+Last session: 2026-03-30T11:06:39.420Z
+Stopped at: Completed 26-01-PLAN.md
 Resume file: None
