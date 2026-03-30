@@ -134,31 +134,19 @@ func (r *bucketReplicaLinkResource) Schema(ctx context.Context, _ resource.Schem
 			},
 			"lag": schema.Int64Attribute{
 				Computed:    true,
-				Description: "Replication lag in milliseconds.",
-				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
-				},
+				Description: "Replication lag in milliseconds. Volatile — changes on every read.",
 			},
 			"recovery_point": schema.Int64Attribute{
 				Computed:    true,
-				Description: "Recovery point timestamp in milliseconds.",
-				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
-				},
+				Description: "Recovery point timestamp in milliseconds. Volatile — changes on every read.",
 			},
 			"object_backlog_count": schema.Int64Attribute{
 				Computed:    true,
-				Description: "Number of objects in the replication backlog.",
-				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
-				},
+				Description: "Number of objects in the replication backlog. Volatile — changes on every read.",
 			},
 			"object_backlog_total_size": schema.Int64Attribute{
 				Computed:    true,
-				Description: "Total size of objects in the replication backlog in bytes.",
-				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
-				},
+				Description: "Total size of objects in the replication backlog in bytes. Volatile — changes on every read.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,

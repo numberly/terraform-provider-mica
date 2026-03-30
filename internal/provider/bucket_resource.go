@@ -370,19 +370,22 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	patch := client.BucketPatch{}
 
-	if !plan.Versioning.Equal(state.Versioning) {
+	// Only include fields that changed AND have a known planned value.
+	// Computed attributes may be unknown in the plan — skip those to avoid
+	// sending spurious values in the PATCH body.
+	if !plan.Versioning.IsUnknown() && !plan.Versioning.Equal(state.Versioning) {
 		v := plan.Versioning.ValueString()
 		patch.Versioning = &v
 	}
-	if !plan.QuotaLimit.Equal(state.QuotaLimit) {
+	if !plan.QuotaLimit.IsUnknown() && !plan.QuotaLimit.Equal(state.QuotaLimit) {
 		v := strconv.FormatInt(plan.QuotaLimit.ValueInt64(), 10)
 		patch.QuotaLimit = &v
 	}
-	if !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {
+	if !plan.HardLimitEnabled.IsUnknown() && !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {
 		v := plan.HardLimitEnabled.ValueBool()
 		patch.HardLimitEnabled = &v
 	}
-	if !plan.RetentionLock.Equal(state.RetentionLock) {
+	if !plan.RetentionLock.IsUnknown() && !plan.RetentionLock.Equal(state.RetentionLock) {
 		v := plan.RetentionLock.ValueString()
 		patch.RetentionLock = &v
 	}
