@@ -411,7 +411,11 @@ Plans:
   2. Operator can create a bucket with `object_lock_config` (freeze_locked_objects, default_retention, default_retention_mode, object_lock_enabled) and update retention settings -- subsequent `plan` shows 0 diff
   3. Operator can update `public_access_config` (block_new_public_policies, block_public_access) on an existing bucket -- subsequent `plan` shows 0 diff
   4. Bucket resource exposes `public_status` as a computed read-only attribute that reflects the current public access state after `terraform refresh`
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 23-01-PLAN.md — Client models + bucket resource schema, mapping, and CRUD for eradication, object lock, public access configs
+- [ ] 23-02-PLAN.md — Mock handler updates + test type maps + config block lifecycle tests
 
 ### Phase 24: Lifecycle Rules
 **Goal**: Operators can manage per-bucket lifecycle rules for version retention and multipart upload cleanup through Terraform
@@ -487,7 +491,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 20. Code Quality -- Validators & Dedup | v2.0.1 | 2/2 | Complete | 2026-03-29 |
 | 21. Dead Code Removal & Modernization | v2.0.1 | 1/1 | Complete | 2026-03-29 |
 | 22. Test Coverage | v2.0.1 | 2/2 | Complete | 2026-03-29 |
-| 23. Bucket Inline Attributes | v2.1 | 0/TBD | Not started | - |
+| 23. Bucket Inline Attributes | v2.1 | 0/2 | Not started | - |
 | 24. Lifecycle Rules | v2.1 | 0/TBD | Not started | - |
 | 25. Bucket Access Policies | v2.1 | 0/TBD | Not started | - |
 | 26. Audit Filters & QoS Policies | v2.1 | 0/TBD | Not started | - |
