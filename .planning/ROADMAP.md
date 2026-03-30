@@ -473,7 +473,10 @@ Plans:
   2. Mock handlers exist for all new API endpoints (lifecycle rules, bucket access policies, audit filters, QoS policies) with query param validation
   3. Import documentation (import.sh) exists for all new importable resources with correct syntax and realistic identifiers
   4. A workflow example demonstrates a bucket with lifecycle rules, access policy, audit filter, and QoS policy in a single coherent HCL configuration
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 27-01-PLAN.md — Missing data source test, example HCL + import docs for all v2.1 resources, workflow example, tfplugindocs regeneration
 
 ## Progress
 
@@ -508,4 +511,4 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 24. Lifecycle Rules | 2/2 | Complete    | 2026-03-30 | - |
 | 25. Bucket Access Policies | 2/2 | Complete    | 2026-03-30 | - |
 | 26. Audit Filters & QoS Policies | 3/3 | Complete    | 2026-03-30 | - |
-| 27. Testing & Documentation | v2.1 | 0/TBD | Not started | - |
+| 27. Testing & Documentation | v2.1 | 0/1 | Not started | - |
