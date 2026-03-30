@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: executing
-stopped_at: Completed 26-01-PLAN.md
-last_updated: "2026-03-30T11:06:40.772Z"
-last_activity: 2026-03-30 — Completed 26-01 audit filters and QoS policies client layer
+stopped_at: Completed 26-02-PLAN.md
+last_updated: "2026-03-30T11:13:57.969Z"
+last_activity: 2026-03-30 — Completed 26-02 bucket audit filter resource and data source
 progress:
   total_phases: 27
   completed_phases: 24
   total_plans: 63
-  completed_plans: 59
-  percent: 94
+  completed_plans: 60
+  percent: 95
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 26 of 27 (Audit Filters & QoS Policies)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In Progress
-Last activity: 2026-03-30 — Completed 26-01 audit filters and QoS policies client layer
+Last activity: 2026-03-30 — Completed 26-02 bucket audit filter resource and data source
 
-Progress: [█████████░] 94% (59/63 plans complete)
+Progress: [██████████] 95% (60/63 plans complete)
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [█████████░] 94% (59/63 plans complete)
 - [Phase 25]: No Update method for bucket access policies (no PATCH endpoint, RequiresReplace)
 - [Phase 25]: CRD-only resources use 3-key timeouts (no update key) to match schema
 - [Phase 26]: QosPolicyMember/QosPolicyMemberPost types instead of PolicyMember/PolicyMemberPost to avoid collision with existing PolicyMember in models_common.go
+- [Phase 26]: Bucket name as single-string import ID for audit filters (one per bucket)
 
 ### Pending Todos
 
@@ -75,6 +76,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:06:39.420Z
-Stopped at: Completed 26-01-PLAN.md
+Last session: 2026-03-30T11:13:57.962Z
+Stopped at: Completed 26-02-PLAN.md
 Resume file: None

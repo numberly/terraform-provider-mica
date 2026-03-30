@@ -35,7 +35,7 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 - [x] **BAF-01**: Operator can create a bucket audit filter with actions and S3 prefix filtering via Terraform
 - [x] **BAF-02**: Operator can update audit filter settings (actions, s3_prefixes) via Terraform apply
 - [x] **BAF-03**: Operator can delete a bucket audit filter via Terraform destroy
-- [ ] **BAF-04**: Operator can import an existing audit filter into Terraform state
+- [x] **BAF-04**: Operator can import an existing audit filter into Terraform state
 
 ### QoS Policies
 
@@ -95,7 +95,7 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | BAF-01 | Phase 26 | Complete |
 | BAF-02 | Phase 26 | Complete |
 | BAF-03 | Phase 26 | Complete |
-| BAF-04 | Phase 26 | Pending |
+| BAF-04 | Phase 26 | Complete |
 | QOS-01 | Phase 26 | Complete |
 | QOS-02 | Phase 26 | Complete |
 | QOS-03 | Phase 26 | Complete |
