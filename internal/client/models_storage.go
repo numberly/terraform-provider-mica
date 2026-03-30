@@ -284,3 +284,42 @@ type LifecycleRulePatch struct {
 	KeepCurrentVersionUntil              *int64  `json:"keep_current_version_until,omitempty"`
 	KeepPreviousVersionFor               *int64  `json:"keep_previous_version_for,omitempty"`
 }
+
+// BucketAccessPolicy represents a FlashBlade bucket access policy from GET responses.
+type BucketAccessPolicy struct {
+	ID         string                   `json:"id,omitempty"`
+	Name       string                   `json:"name,omitempty"`
+	Bucket     NamedReference           `json:"bucket"`
+	Enabled    bool                     `json:"enabled"`
+	IsLocal    bool                     `json:"is_local,omitempty"`
+	PolicyType string                   `json:"policy_type,omitempty"`
+	Rules      []BucketAccessPolicyRule `json:"rules,omitempty"`
+}
+
+// BucketAccessPolicyRule represents a single rule within a bucket access policy.
+type BucketAccessPolicyRule struct {
+	Name       string                       `json:"name,omitempty"`
+	Actions    []string                     `json:"actions"`
+	Effect     string                       `json:"effect"`
+	Principals BucketAccessPolicyPrincipals `json:"principals"`
+	Resources  []string                     `json:"resources"`
+	Policy     *NamedReference              `json:"policy,omitempty"`
+}
+
+// BucketAccessPolicyPrincipals represents the principals object within a bucket access policy rule.
+type BucketAccessPolicyPrincipals struct {
+	All []string `json:"all,omitempty"`
+}
+
+// BucketAccessPolicyPost contains the fields for POST /buckets/bucket-access-policies.
+type BucketAccessPolicyPost struct {
+	Rules []BucketAccessPolicyRulePost `json:"rules,omitempty"`
+}
+
+// BucketAccessPolicyRulePost contains the fields for POST /buckets/bucket-access-policies/rules.
+type BucketAccessPolicyRulePost struct {
+	Actions    []string                     `json:"actions"`
+	Effect     string                       `json:"effect"`
+	Principals BucketAccessPolicyPrincipals `json:"principals"`
+	Resources  []string                     `json:"resources"`
+}
