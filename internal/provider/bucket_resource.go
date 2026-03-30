@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -55,6 +56,10 @@ type bucketModel struct {
 	ObjectCount              types.Int64    `tfsdk:"object_count"`
 	BucketType               types.String   `tfsdk:"bucket_type"`
 	RetentionLock            types.String   `tfsdk:"retention_lock"`
+	EradicationConfig        types.Object   `tfsdk:"eradication_config"`
+	ObjectLockConfig         types.Object   `tfsdk:"object_lock_config"`
+	PublicAccessConfig       types.Object   `tfsdk:"public_access_config"`
+	PublicStatus             types.String   `tfsdk:"public_status"`
 	Space                    types.Object   `tfsdk:"space"`
 	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 }
@@ -147,6 +152,79 @@ func (r *bucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 				Computed:    true,
 				Description: "The retention lock mode for the bucket.",
+			},
+			"eradication_config": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Eradication configuration for the bucket.",
+				Attributes: map[string]schema.Attribute{
+					"eradication_delay": schema.Int64Attribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Eradication delay in milliseconds.",
+					},
+					"eradication_mode": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Eradication mode (e.g. 'retention-based', 'permission-based').",
+					},
+					"manual_eradication": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Manual eradication setting ('enabled' or 'disabled').",
+					},
+				},
+			},
+			"object_lock_config": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "S3 object lock configuration for the bucket.",
+				Attributes: map[string]schema.Attribute{
+					"freeze_locked_objects": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether to freeze locked objects.",
+					},
+					"default_retention": schema.Int64Attribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Default retention period in seconds.",
+					},
+					"default_retention_mode": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Default retention mode ('compliance' or 'governance').",
+					},
+					"object_lock_enabled": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether object lock is enabled.",
+					},
+				},
+			},
+			"public_access_config": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Public access configuration for the bucket.",
+				Attributes: map[string]schema.Attribute{
+					"block_new_public_policies": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether to block new public policies.",
+					},
+					"block_public_access": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether to block public access.",
+					},
+				},
+			},
+			"public_status": schema.StringAttribute{
+				Computed:    true,
+				Description: "Bucket's public access status.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
@@ -258,6 +336,13 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 	if !data.RetentionLock.IsNull() && !data.RetentionLock.IsUnknown() {
 		post.RetentionLock = data.RetentionLock.ValueString()
 	}
+	if cfg := extractEradicationConfig(ctx, data.EradicationConfig); cfg != nil {
+		post.EradicationConfig = cfg
+	}
+	if cfg := extractObjectLockConfig(ctx, data.ObjectLockConfig); cfg != nil {
+		post.ObjectLockConfig = cfg
+	}
+	// public_access_config is NOT valid on POST — skip
 
 	bucket, err := r.client.PostBucket(ctx, data.Name.ValueString(), post)
 	if err != nil {
@@ -388,6 +473,15 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if !plan.RetentionLock.IsUnknown() && !plan.RetentionLock.Equal(state.RetentionLock) {
 		v := plan.RetentionLock.ValueString()
 		patch.RetentionLock = &v
+	}
+	if !plan.EradicationConfig.IsUnknown() && !plan.EradicationConfig.Equal(state.EradicationConfig) {
+		patch.EradicationConfig = extractEradicationConfig(ctx, plan.EradicationConfig)
+	}
+	if !plan.ObjectLockConfig.IsUnknown() && !plan.ObjectLockConfig.Equal(state.ObjectLockConfig) {
+		patch.ObjectLockConfig = extractObjectLockConfig(ctx, plan.ObjectLockConfig)
+	}
+	if !plan.PublicAccessConfig.IsUnknown() && !plan.PublicAccessConfig.Equal(state.PublicAccessConfig) {
+		patch.PublicAccessConfig = extractPublicAccessConfig(ctx, plan.PublicAccessConfig)
 	}
 
 	_, err := r.client.PatchBucket(ctx, state.ID.ValueString(), patch)
@@ -532,5 +626,135 @@ func mapBucketToModel(bkt *client.Bucket, data *bucketModel) diag.Diagnostics {
 	}
 	data.Space = spaceObj
 
+	eradObj, eradDiags := mapEradicationConfigToObject(bkt.EradicationConfig)
+	diags.Append(eradDiags...)
+	data.EradicationConfig = eradObj
+
+	olObj, olDiags := mapObjectLockConfigToObject(bkt.ObjectLockConfig)
+	diags.Append(olDiags...)
+	data.ObjectLockConfig = olObj
+
+	paObj, paDiags := mapPublicAccessConfigToObject(bkt.PublicAccessConfig)
+	diags.Append(paDiags...)
+	data.PublicAccessConfig = paObj
+
+	data.PublicStatus = types.StringValue(bkt.PublicStatus)
+
 	return diags
+}
+
+// ---------- bucket config attr types and mapping helpers --------------------
+
+// eradicationConfigAttrTypes returns the attribute type map for the eradication_config nested object.
+func eradicationConfigAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"eradication_delay":  types.Int64Type,
+		"eradication_mode":   types.StringType,
+		"manual_eradication": types.StringType,
+	}
+}
+
+// objectLockConfigAttrTypes returns the attribute type map for the object_lock_config nested object.
+func objectLockConfigAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"freeze_locked_objects":  types.BoolType,
+		"default_retention":      types.Int64Type,
+		"default_retention_mode": types.StringType,
+		"object_lock_enabled":    types.BoolType,
+	}
+}
+
+// publicAccessConfigAttrTypes returns the attribute type map for the public_access_config nested object.
+func publicAccessConfigAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"block_new_public_policies": types.BoolType,
+		"block_public_access":       types.BoolType,
+	}
+}
+
+// mapEradicationConfigToObject builds a types.Object from a client.EradicationConfig.
+func mapEradicationConfigToObject(cfg client.EradicationConfig) (types.Object, diag.Diagnostics) {
+	return types.ObjectValue(eradicationConfigAttrTypes(), map[string]attr.Value{
+		"eradication_delay":  types.Int64Value(cfg.EradicationDelay),
+		"eradication_mode":   types.StringValue(cfg.EradicationMode),
+		"manual_eradication": types.StringValue(cfg.ManualEradication),
+	})
+}
+
+// mapObjectLockConfigToObject builds a types.Object from a client.ObjectLockConfig.
+func mapObjectLockConfigToObject(cfg client.ObjectLockConfig) (types.Object, diag.Diagnostics) {
+	return types.ObjectValue(objectLockConfigAttrTypes(), map[string]attr.Value{
+		"freeze_locked_objects":  types.BoolValue(cfg.FreezeLockgedObjects),
+		"default_retention":      types.Int64Value(cfg.DefaultRetention),
+		"default_retention_mode": types.StringValue(cfg.DefaultRetentionMode),
+		"object_lock_enabled":    types.BoolValue(cfg.ObjectLockEnabled),
+	})
+}
+
+// mapPublicAccessConfigToObject builds a types.Object from a client.PublicAccessConfig.
+func mapPublicAccessConfigToObject(cfg client.PublicAccessConfig) (types.Object, diag.Diagnostics) {
+	return types.ObjectValue(publicAccessConfigAttrTypes(), map[string]attr.Value{
+		"block_new_public_policies": types.BoolValue(cfg.BlockNewPublicPolicies),
+		"block_public_access":       types.BoolValue(cfg.BlockPublicAccess),
+	})
+}
+
+// extractEradicationConfig extracts a client.EradicationConfig from a plan types.Object.
+// Returns nil if the object is null or unknown.
+func extractEradicationConfig(ctx context.Context, obj types.Object) *client.EradicationConfig {
+	if obj.IsNull() || obj.IsUnknown() {
+		return nil
+	}
+	attrs := obj.Attributes()
+	cfg := &client.EradicationConfig{}
+	if v, ok := attrs["eradication_delay"].(types.Int64); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.EradicationDelay = v.ValueInt64()
+	}
+	if v, ok := attrs["eradication_mode"].(types.String); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.EradicationMode = v.ValueString()
+	}
+	if v, ok := attrs["manual_eradication"].(types.String); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.ManualEradication = v.ValueString()
+	}
+	return cfg
+}
+
+// extractObjectLockConfig extracts a client.ObjectLockConfig from a plan types.Object.
+// Returns nil if the object is null or unknown.
+func extractObjectLockConfig(ctx context.Context, obj types.Object) *client.ObjectLockConfig {
+	if obj.IsNull() || obj.IsUnknown() {
+		return nil
+	}
+	attrs := obj.Attributes()
+	cfg := &client.ObjectLockConfig{}
+	if v, ok := attrs["freeze_locked_objects"].(types.Bool); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.FreezeLockgedObjects = v.ValueBool()
+	}
+	if v, ok := attrs["default_retention"].(types.Int64); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.DefaultRetention = v.ValueInt64()
+	}
+	if v, ok := attrs["default_retention_mode"].(types.String); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.DefaultRetentionMode = v.ValueString()
+	}
+	if v, ok := attrs["object_lock_enabled"].(types.Bool); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.ObjectLockEnabled = v.ValueBool()
+	}
+	return cfg
+}
+
+// extractPublicAccessConfig extracts a client.PublicAccessConfig from a plan types.Object.
+// Returns nil if the object is null or unknown.
+func extractPublicAccessConfig(ctx context.Context, obj types.Object) *client.PublicAccessConfig {
+	if obj.IsNull() || obj.IsUnknown() {
+		return nil
+	}
+	attrs := obj.Attributes()
+	cfg := &client.PublicAccessConfig{}
+	if v, ok := attrs["block_new_public_policies"].(types.Bool); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.BlockNewPublicPolicies = v.ValueBool()
+	}
+	if v, ok := attrs["block_public_access"].(types.Bool); ok && !v.IsNull() && !v.IsUnknown() {
+		cfg.BlockPublicAccess = v.ValueBool()
+	}
+	return cfg
 }
