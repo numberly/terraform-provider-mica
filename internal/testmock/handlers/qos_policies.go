@@ -263,7 +263,7 @@ func (s *qosPolicyStore) handleMemberGet(w http.ResponseWriter, r *http.Request)
 
 // handleMemberPost handles POST /api/2.22/qos-policies/members.
 func (s *qosPolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_types"}) {
+	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_types", "member_names"}) {
 		return
 	}
 

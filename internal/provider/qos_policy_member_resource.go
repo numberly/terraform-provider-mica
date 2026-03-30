@@ -120,7 +120,7 @@ func (r *qosPolicyMemberResource) Create(ctx context.Context, req resource.Creat
 		Member: client.NamedReference{Name: data.MemberName.ValueString()},
 	}
 
-	member, err := r.client.PostQosPolicyMember(ctx, data.PolicyName.ValueString(), body)
+	member, err := r.client.PostQosPolicyMember(ctx, data.PolicyName.ValueString(), data.MemberName.ValueString(), body)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating QoS policy member", err.Error())
 		return
