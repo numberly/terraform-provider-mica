@@ -8,18 +8,18 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.0.1 — Quality & Hardening
+## Current Milestone: v2.1 — Bucket Advanced Features
 
-**Goal:** Harden the codebase post-v2.0 release with security fixes, code quality improvements, dead code removal, duplication reduction, and test coverage gap closure identified by comprehensive 5-agent audit.
+**Goal:** Complete bucket management with lifecycle rules, bucket access policies, audit filters, eradication config, object lock, public access config, and QoS policy support.
 
 **Target features:**
-- Fix OAuth2 error body leak and add context propagation to auth paths
-- Migrate error handling to errors.As() for wrapped error resilience
-- Extract shared helpers (spaceAttrTypes, nullTimeoutsValue, mustObjectValue, getOneByName[T])
-- Remove dead code (unused List* functions, SourceReference, empty UpgradeState)
-- Compile regex at package level in validators
-- Add tests for 5 uncovered data sources + OAuth2 provider config test
-- Add HCL-based acceptance tests using mock server
+- Bucket eradication config (eradication_delay, eradication_mode, manual_eradication)
+- Bucket object lock config (freeze_locked_objects, default_retention, default_retention_mode)
+- Bucket public access config (block_new_public_policies, block_public_access)
+- Lifecycle rules resource (CRUD — version retention, multipart upload cleanup, prefix-based)
+- Bucket access policies resource + rules (IAM-style per-bucket authorization)
+- Bucket audit filters resource (actions + S3 prefix filtering)
+- QoS policies resource + bucket/filesystem member assignment
 
 ## Requirements
 
@@ -31,17 +31,18 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ S3 tenant onboarding workflow (server → account → export → policies → bucket)
 - ✓ Cross-array bucket replication (remote credentials, replica links, array connection DS) — v2.0
 - ✓ 368 unit tests, dual-provider replication workflow example — v2.0
+- ✓ Security hardening, code quality, 8 shared helpers, dead code removal — v2.0.1
+- ✓ 394 unit tests, HCL acceptance tests, 68.4% coverage — v2.0.1
 
 ### Active
 
-- [ ] OAuth2 error body sanitization and context propagation
-- [ ] errors.As() migration for wrapped error resilience
-- [ ] Shared helper extraction (space schema, timeouts, mustObjectValue, getOneByName)
-- [ ] Dead code removal (unused List*, SourceReference, empty UpgradeState)
-- [ ] Regex pre-compilation in validators
-- [ ] Test coverage for 5 uncovered data sources
-- [ ] HCL-based acceptance tests with mock server
-- [ ] OAuth2 provider configuration test
+- [ ] Bucket eradication config (eradication_delay, eradication_mode, manual_eradication)
+- [ ] Bucket object lock config (freeze_locked_objects, default_retention)
+- [ ] Bucket public access config (block_new_public_policies, block_public_access)
+- [ ] Lifecycle rules resource (CRUD per bucket)
+- [ ] Bucket access policies resource + rules (CRUD per bucket)
+- [ ] Bucket audit filters resource (CRUD per bucket)
+- [ ] QoS policies resource + member assignment (buckets + filesystems)
 
 ### Out of Scope
 
@@ -82,4 +83,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-29 after milestone v2.0.1 initialization*
+*Last updated: 2026-03-30 after milestone v2.1 initialization*

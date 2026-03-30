@@ -70,3 +70,18 @@
 
 **Phases:** 14–17 (8 plans)
 **Last phase number:** 17
+
+### v2.0.1 — Quality & Hardening (completed 2026-03-30)
+
+**Goal:** Harden the codebase post-v2.0 with security fixes, code quality improvements, dead code removal, and test coverage.
+
+**Delivered:**
+- OAuth2 error sanitization, context propagation through all auth paths, 30s HTTP timeout
+- errors.As() migration, ParseAPIError hardening, fresh-GET bucket delete guard
+- 8 shared helpers (spaceAttrTypes, nullTimeoutsValue, getOneByName[T], pollUntilGone[T], etc.)
+- Dead code removal (~405 lines), math/rand/v2 modernization
+- 16 new tests (5 data source, OAuth2, pagination, 3 HCL acceptance), coverage 68.4%
+- Access key name param fix, replica link delete-by-ID fix, volatile attr cleanup
+
+**Phases:** 18–22 (7 plans)
+**Last phase number:** 22
