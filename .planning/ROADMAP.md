@@ -7,7 +7,8 @@
 - v1.2 Code Quality & Robustness (Phases 9-11) -- shipped 2026-03-29
 - v1.3 Release Readiness (Phases 12-13) -- shipped 2026-03-29
 - v2.0 Cross-Array Bucket Replication (Phases 14-17) -- shipped 2026-03-29
-- v2.0.1 Quality & Hardening (Phases 18-22) -- in progress
+- v2.0.1 Quality & Hardening (Phases 18-22) -- shipped 2026-03-30
+- v2.1 Bucket Advanced Features (Phases 23-27) -- in progress
 
 ## Phases
 
@@ -308,17 +309,8 @@ Plans:
 
 </details>
 
-### v2.0.1 Quality & Hardening (In Progress)
-
-**Milestone Goal:** Harden the codebase post-v2.0 release with security fixes, code quality improvements, dead code removal, duplication reduction, and test coverage gap closure identified by comprehensive 5-agent audit.
-
-- [x] **Phase 18: Security & Auth Hardening** - Sanitize OAuth2 errors, add context propagation, set HTTP safety-net timeout (completed 2026-03-29)
-- [x] **Phase 19: Error Handling & Consistency** - Migrate to errors.As(), fix ParseAPIError, harden bucket delete and test helpers (completed 2026-03-29)
-- [x] **Phase 20: Code Quality -- Validators & Deduplication** - Compile regex at init, extract 8 shared helpers, safer mustObjectValue (completed 2026-03-29)
-- [x] **Phase 21: Dead Code Removal & Modernization** - Remove unused List* functions, SourceReference, empty UpgradeState; update math/rand (completed 2026-03-29)
-- [x] **Phase 22: Test Coverage** - Unit tests for 5 uncovered data sources, OAuth2 config test, HCL acceptance tests, pagination tests (completed 2026-03-29)
-
-## Phase Details
+<details>
+<summary>v2.0.1 Quality & Hardening (Phases 18-22) - SHIPPED 2026-03-30</summary>
 
 ### Phase 18: Security & Auth Hardening
 **Goal**: Auth paths are hardened against information leaks and support proper context propagation for cancellation and tracing
@@ -330,10 +322,10 @@ Plans:
   3. `fetchToken()` and `NewClient()` accept a `context.Context` parameter -- no `context.Background()` calls remain in auth.go or client.go initialization paths
   4. HTTP client has a global safety-net timeout (e.g., 30s) so a hung FlashBlade API does not block `terraform apply` indefinitely
   5. `LoginWithAPIToken` constructs the HTTP request with `http.NewRequestWithContext` directly (no nil-check workaround)
-**Plans**: 1 plan
+**Plans**: 1/1 plans complete
 
 Plans:
-- [ ] 18-01-PLAN.md — OAuth2 error sanitization, TLS warning, context propagation, HTTP timeout, API token request cleanup
+- [x] 18-01-PLAN.md — OAuth2 error sanitization, TLS warning, context propagation, HTTP timeout, API token request cleanup
 
 ### Phase 19: Error Handling & Consistency
 **Goal**: Error classification is resilient to wrapped errors and edge cases across the entire codebase
@@ -345,10 +337,10 @@ Plans:
   3. `ParseAPIError` returns a meaningful error when `io.ReadAll` fails instead of silently returning an empty error
   4. Bucket delete performs a fresh GET before the object-count safety check instead of relying on potentially stale state data
   5. `countItems` in test mock helpers uses `reflect` or a typed parameter instead of JSON marshal/unmarshal round-trip
-**Plans**: 1 plan
+**Plans**: 1/1 plans complete
 
 Plans:
-- [ ] 19-01-PLAN.md — errors.As() migration, ParseAPIError hardening, bucket delete guard, countItems fix
+- [x] 19-01-PLAN.md — errors.As() migration, ParseAPIError hardening, bucket delete guard, countItems fix
 
 ### Phase 20: Code Quality -- Validators & Deduplication
 **Goal**: Shared helpers eliminate duplicated code across resources, and validators execute without per-call regex compilation overhead
@@ -360,11 +352,11 @@ Plans:
   3. `nullTimeoutsValue()` helper replaces all 29 inline timeout initialization blocks in ImportState methods -- verified by searching for the old pattern
   4. Generic `getOneByName[T]` client helper exists and is called by at least 10 Get*ByName methods (reducing ~15 identical implementations to thin wrappers)
   5. `mustObjectValue` returns diagnostics instead of calling `panic()` -- callers check the returned diagnostics and append to response diagnostics
-**Plans**: 2 plans
+**Plans**: 2/2 plans complete
 
 Plans:
-- [ ] 20-01-PLAN.md — Regex pre-compilation, space schema helpers, nullTimeoutsValue, DiagnosticReporter interface
-- [ ] 20-02-PLAN.md — Generic getOneByName[T], pollUntilGone[T], mapFSToModel sharing, mustObjectValue diagnostics
+- [x] 20-01-PLAN.md — Regex pre-compilation, space schema helpers, nullTimeoutsValue, DiagnosticReporter interface
+- [x] 20-02-PLAN.md — Generic getOneByName[T], pollUntilGone[T], mapFSToModel sharing, mustObjectValue diagnostics
 
 ### Phase 21: Dead Code Removal & Modernization
 **Goal**: Unused code is removed and deprecated stdlib usage is updated so the codebase is clean for future development
@@ -376,10 +368,10 @@ Plans:
   3. `SourceReference` type is removed and all references use `NamedReference` instead -- `go build ./...` compiles
   4. The 29 empty `UpgradeState` implementations are removed from resources (only resources with actual schema version bumps keep them)
   5. `math/rand` import is replaced with `math/rand/v2` in transport.go -- jitter behavior unchanged, `go vet ./...` shows no deprecation warnings
-**Plans**: 1 plan
+**Plans**: 1/1 plans complete
 
 Plans:
-- [ ] 21-01-PLAN.md — Remove unused List* functions, IsUnprocessable, SourceReference, empty UpgradeState, update math/rand
+- [x] 21-01-PLAN.md — Remove unused List* functions, IsUnprocessable, SourceReference, empty UpgradeState, update math/rand
 
 ### Phase 22: Test Coverage
 **Goal**: All data sources and auth paths have unit tests, and HCL-based acceptance tests validate the full Terraform lifecycle through the provider
@@ -390,16 +382,86 @@ Plans:
   2. OAuth2 provider configuration test verifies that `client_id` + `key_id` + `issuer` flow initializes the provider without errors (mock token endpoint)
   3. At least 3 resources have HCL-based acceptance tests using `resource.UnitTest` with a mock server that exercise plan, apply, refresh, import, and destroy
   4. Pagination tests exist for at least buckets and one policy type (in addition to existing filesystem pagination tests)
-**Plans**: 2 plans
+**Plans**: 2/2 plans complete
 
 Plans:
-- [ ] 22-01-PLAN.md — Unit tests for 5 uncovered data sources + OAuth2 provider config test
-- [ ] 22-02-PLAN.md — HCL-based acceptance tests with mock server + pagination tests for buckets and policies
+- [x] 22-01-PLAN.md — Unit tests for 5 uncovered data sources + OAuth2 provider config test
+- [x] 22-02-PLAN.md — HCL-based acceptance tests with mock server + pagination tests for buckets and policies
+
+</details>
+
+### v2.1 Bucket Advanced Features (In Progress)
+
+**Milestone Goal:** Complete bucket management with lifecycle rules, bucket access policies, audit filters, eradication config, object lock, public access config, and QoS policy support.
+
+- [ ] **Phase 23: Bucket Inline Attributes** - Extend bucket resource with eradication, object lock, and public access config
+- [ ] **Phase 24: Lifecycle Rules** - New resource and data source for bucket lifecycle rule management
+- [ ] **Phase 25: Bucket Access Policies** - New resource for IAM-style bucket access policies and rules
+- [ ] **Phase 26: Audit Filters & QoS Policies** - New resources for audit filtering and bandwidth/IOPS limiting
+- [ ] **Phase 27: Testing & Documentation** - Unit tests, mock handlers, import docs, and workflow example
+
+## Phase Details
+
+### Phase 23: Bucket Inline Attributes
+**Goal**: Operators can configure bucket eradication behavior, object lock settings, and public access restrictions directly on the bucket resource
+**Depends on**: Phase 22 (v2.0.1 complete)
+**Requirements**: BKT-01, BKT-02, BKT-03, BKT-04
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a bucket with `eradication_config` (eradication_delay, eradication_mode, manual_eradication) and update these settings via `terraform apply` -- subsequent `plan` shows 0 diff
+  2. Operator can create a bucket with `object_lock_config` (freeze_locked_objects, default_retention, default_retention_mode, object_lock_enabled) and update retention settings -- subsequent `plan` shows 0 diff
+  3. Operator can update `public_access_config` (block_new_public_policies, block_public_access) on an existing bucket -- subsequent `plan` shows 0 diff
+  4. Bucket resource exposes `public_status` as a computed read-only attribute that reflects the current public access state after `terraform refresh`
+**Plans**: TBD
+
+### Phase 24: Lifecycle Rules
+**Goal**: Operators can manage per-bucket lifecycle rules for version retention and multipart upload cleanup through Terraform
+**Depends on**: Phase 23 (bucket attributes must be stable before adding sub-resources that reference buckets)
+**Requirements**: LCR-01, LCR-02, LCR-03, LCR-04, LCR-05
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a lifecycle rule on a bucket with prefix, version retention days, and multipart upload cleanup days via `terraform apply` -- `apply -> plan` shows 0 diff
+  2. Operator can update lifecycle rule settings (enabled, retention periods, prefix) and destroy rules independently -- no orphaned rules remain on the API
+  3. Operator can import an existing lifecycle rule into Terraform state and subsequent `plan` shows 0 diff
+  4. Lifecycle rule data source reads existing rules by bucket name and exposes all rule attributes for reference in other resources
+**Plans**: TBD
+
+### Phase 25: Bucket Access Policies
+**Goal**: Operators can manage IAM-style per-bucket authorization with policies and rules through Terraform
+**Depends on**: Phase 23 (bucket attributes must be stable before adding sub-resources that reference buckets)
+**Requirements**: BAP-01, BAP-02, BAP-03, BAP-04, BAP-05
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a bucket access policy with rules defining actions, effect, principals, and resources via `terraform apply` -- `apply -> plan` shows 0 diff
+  2. Operator can create and delete individual bucket access policy rules independently of the parent policy lifecycle
+  3. Operator can import existing bucket access policies into Terraform state and subsequent `plan` shows 0 diff
+  4. Bucket access policy data source reads existing policies by bucket name and exposes policy and rule attributes
+**Plans**: TBD
+
+### Phase 26: Audit Filters & QoS Policies
+**Goal**: Operators can audit S3 operations per bucket and enforce bandwidth/IOPS limits on buckets and file systems through Terraform
+**Depends on**: Phase 23 (bucket attributes must be stable before adding sub-resources that reference buckets)
+**Requirements**: BAF-01, BAF-02, BAF-03, BAF-04, QOS-01, QOS-02, QOS-03, QOS-04, QOS-05, QOS-06
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a bucket audit filter with actions and S3 prefix filtering, update filter settings, and destroy filters via Terraform -- `apply -> plan` shows 0 diff
+  2. Operator can import an existing audit filter into Terraform state and subsequent `plan` shows 0 diff
+  3. Operator can create a QoS policy with max_total_bytes_per_sec and max_total_ops_per_sec, update limits, and destroy the policy via Terraform -- `apply -> plan` shows 0 diff
+  4. Operator can assign a QoS policy to buckets and file systems as members and import existing QoS policies into Terraform state
+  5. QoS policy data source reads existing policies by name and exposes all attributes including current member assignments
+**Plans**: TBD
+
+### Phase 27: Testing & Documentation
+**Goal**: All new v2.1 resources have unit tests with mock handlers, import documentation, and a workflow example showing the complete bucket advanced features stack
+**Depends on**: Phase 26 (all resources must exist before comprehensive testing and documentation)
+**Requirements**: TST-01, TST-02, DOC-01, DOC-02
+**Success Criteria** (what must be TRUE):
+  1. Unit tests exist for all new resources (lifecycle rules, bucket access policies, audit filters, QoS policies) and bucket attribute additions -- covering Create, Read, Update, Delete, NotFound paths
+  2. Mock handlers exist for all new API endpoints (lifecycle rules, bucket access policies, audit filters, QoS policies) with query param validation
+  3. Import documentation (import.sh) exists for all new importable resources with correct syntax and realistic identifiers
+  4. A workflow example demonstrates a bucket with lifecycle rules, access policy, audit filter, and QoS policy in a single coherent HCL configuration
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22
+Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -420,8 +482,13 @@ Phases execute in numeric order: 18 -> 19 -> 20 -> 21 -> 22
 | 15. Replication Resources | v2.0 | 3/3 | Complete | 2026-03-29 |
 | 16. Workflow & Documentation | v2.0 | 1/1 | Complete | 2026-03-29 |
 | 17. Testing | v2.0 | 2/2 | Complete | 2026-03-29 |
-| 18. Security & Auth Hardening | 1/1 | Complete    | 2026-03-29 | - |
-| 19. Error Handling & Consistency | 1/1 | Complete    | 2026-03-29 | - |
-| 20. Code Quality -- Validators & Dedup | 2/2 | Complete    | 2026-03-29 | - |
-| 21. Dead Code Removal & Modernization | 1/1 | Complete    | 2026-03-29 | - |
-| 22. Test Coverage | v2.0.1 | Complete    | 2026-03-29 | - |
+| 18. Security & Auth Hardening | v2.0.1 | 1/1 | Complete | 2026-03-29 |
+| 19. Error Handling & Consistency | v2.0.1 | 1/1 | Complete | 2026-03-29 |
+| 20. Code Quality -- Validators & Dedup | v2.0.1 | 2/2 | Complete | 2026-03-29 |
+| 21. Dead Code Removal & Modernization | v2.0.1 | 1/1 | Complete | 2026-03-29 |
+| 22. Test Coverage | v2.0.1 | 2/2 | Complete | 2026-03-29 |
+| 23. Bucket Inline Attributes | v2.1 | 0/TBD | Not started | - |
+| 24. Lifecycle Rules | v2.1 | 0/TBD | Not started | - |
+| 25. Bucket Access Policies | v2.1 | 0/TBD | Not started | - |
+| 26. Audit Filters & QoS Policies | v2.1 | 0/TBD | Not started | - |
+| 27. Testing & Documentation | v2.1 | 0/TBD | Not started | - |

@@ -78,40 +78,40 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BKT-01 | — | Pending |
-| BKT-02 | — | Pending |
-| BKT-03 | — | Pending |
-| BKT-04 | — | Pending |
-| LCR-01 | — | Pending |
-| LCR-02 | — | Pending |
-| LCR-03 | — | Pending |
-| LCR-04 | — | Pending |
-| LCR-05 | — | Pending |
-| BAP-01 | — | Pending |
-| BAP-02 | — | Pending |
-| BAP-03 | — | Pending |
-| BAP-04 | — | Pending |
-| BAP-05 | — | Pending |
-| BAF-01 | — | Pending |
-| BAF-02 | — | Pending |
-| BAF-03 | — | Pending |
-| BAF-04 | — | Pending |
-| QOS-01 | — | Pending |
-| QOS-02 | — | Pending |
-| QOS-03 | — | Pending |
-| QOS-04 | — | Pending |
-| QOS-05 | — | Pending |
-| QOS-06 | — | Pending |
-| TST-01 | — | Pending |
-| TST-02 | — | Pending |
-| DOC-01 | — | Pending |
-| DOC-02 | — | Pending |
+| BKT-01 | Phase 23 | Pending |
+| BKT-02 | Phase 23 | Pending |
+| BKT-03 | Phase 23 | Pending |
+| BKT-04 | Phase 23 | Pending |
+| LCR-01 | Phase 24 | Pending |
+| LCR-02 | Phase 24 | Pending |
+| LCR-03 | Phase 24 | Pending |
+| LCR-04 | Phase 24 | Pending |
+| LCR-05 | Phase 24 | Pending |
+| BAP-01 | Phase 25 | Pending |
+| BAP-02 | Phase 25 | Pending |
+| BAP-03 | Phase 25 | Pending |
+| BAP-04 | Phase 25 | Pending |
+| BAP-05 | Phase 25 | Pending |
+| BAF-01 | Phase 26 | Pending |
+| BAF-02 | Phase 26 | Pending |
+| BAF-03 | Phase 26 | Pending |
+| BAF-04 | Phase 26 | Pending |
+| QOS-01 | Phase 26 | Pending |
+| QOS-02 | Phase 26 | Pending |
+| QOS-03 | Phase 26 | Pending |
+| QOS-04 | Phase 26 | Pending |
+| QOS-05 | Phase 26 | Pending |
+| QOS-06 | Phase 26 | Pending |
+| TST-01 | Phase 27 | Pending |
+| TST-02 | Phase 27 | Pending |
+| DOC-01 | Phase 27 | Pending |
+| DOC-02 | Phase 27 | Pending |
 
 **Coverage:**
 - v2.1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28 ⚠️
+- Mapped to phases: 28
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after v2.1 requirement definition*
+*Last updated: 2026-03-30 after v2.1 roadmap creation*
