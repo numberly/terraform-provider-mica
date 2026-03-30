@@ -62,6 +62,21 @@ func buildBucketType() tftypes.Object {
 		"update": tftypes.String,
 		"delete": tftypes.String,
 	}}
+	eradicationConfigType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"eradication_delay":  tftypes.Number,
+		"eradication_mode":   tftypes.String,
+		"manual_eradication": tftypes.String,
+	}}
+	objectLockConfigType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"freeze_locked_objects":  tftypes.Bool,
+		"default_retention":      tftypes.Number,
+		"default_retention_mode": tftypes.String,
+		"object_lock_enabled":    tftypes.Bool,
+	}}
+	publicAccessConfigType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"block_new_public_policies": tftypes.Bool,
+		"block_public_access":       tftypes.Bool,
+	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":                           tftypes.String,
 		"name":                         tftypes.String,
@@ -76,6 +91,10 @@ func buildBucketType() tftypes.Object {
 		"object_count":                 tftypes.Number,
 		"bucket_type":                  tftypes.String,
 		"retention_lock":               tftypes.String,
+		"eradication_config":           eradicationConfigType,
+		"object_lock_config":           objectLockConfigType,
+		"public_access_config":         publicAccessConfigType,
+		"public_status":                tftypes.String,
 		"space":                        spaceType,
 		"timeouts":                     timeoutsType,
 	}}
@@ -97,6 +116,21 @@ func nullBucketConfig() map[string]tftypes.Value {
 		"update": tftypes.String,
 		"delete": tftypes.String,
 	}}
+	eradicationConfigType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"eradication_delay":  tftypes.Number,
+		"eradication_mode":   tftypes.String,
+		"manual_eradication": tftypes.String,
+	}}
+	objectLockConfigType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"freeze_locked_objects":  tftypes.Bool,
+		"default_retention":      tftypes.Number,
+		"default_retention_mode": tftypes.String,
+		"object_lock_enabled":    tftypes.Bool,
+	}}
+	publicAccessConfigType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"block_new_public_policies": tftypes.Bool,
+		"block_public_access":       tftypes.Bool,
+	}}
 	return map[string]tftypes.Value{
 		"id":                          tftypes.NewValue(tftypes.String, nil),
 		"name":                        tftypes.NewValue(tftypes.String, nil),
@@ -111,6 +145,10 @@ func nullBucketConfig() map[string]tftypes.Value {
 		"object_count":                tftypes.NewValue(tftypes.Number, nil),
 		"bucket_type":                 tftypes.NewValue(tftypes.String, nil),
 		"retention_lock":              tftypes.NewValue(tftypes.String, nil),
+		"eradication_config":          tftypes.NewValue(eradicationConfigType, nil),
+		"object_lock_config":          tftypes.NewValue(objectLockConfigType, nil),
+		"public_access_config":        tftypes.NewValue(publicAccessConfigType, nil),
+		"public_status":               tftypes.NewValue(tftypes.String, nil),
 		"space":                       tftypes.NewValue(spaceType, nil),
 		"timeouts":                    tftypes.NewValue(timeoutsType, nil),
 	}
@@ -872,5 +910,244 @@ func TestUnit_Bucket_VersioningWarning(t *testing.T) {
 				t.Error("did not expect versioning warning")
 			}
 		})
+	}
+}
+
+// ---- config block helpers ---------------------------------------------------
+
+// eradicationConfigTFValue builds a tftypes.Value for the eradication_config nested object.
+func eradicationConfigTFValue(delay int64, mode, manualErad string) tftypes.Value {
+	typ := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"eradication_delay":  tftypes.Number,
+		"eradication_mode":   tftypes.String,
+		"manual_eradication": tftypes.String,
+	}}
+	return tftypes.NewValue(typ, map[string]tftypes.Value{
+		"eradication_delay":  tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(delay)),
+		"eradication_mode":   tftypes.NewValue(tftypes.String, mode),
+		"manual_eradication": tftypes.NewValue(tftypes.String, manualErad),
+	})
+}
+
+// objectLockConfigTFValue builds a tftypes.Value for the object_lock_config nested object.
+func objectLockConfigTFValue(freezeLocked bool, defaultRetention int64, retentionMode string, lockEnabled bool) tftypes.Value {
+	typ := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"freeze_locked_objects":  tftypes.Bool,
+		"default_retention":      tftypes.Number,
+		"default_retention_mode": tftypes.String,
+		"object_lock_enabled":    tftypes.Bool,
+	}}
+	return tftypes.NewValue(typ, map[string]tftypes.Value{
+		"freeze_locked_objects":  tftypes.NewValue(tftypes.Bool, freezeLocked),
+		"default_retention":      tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(defaultRetention)),
+		"default_retention_mode": tftypes.NewValue(tftypes.String, retentionMode),
+		"object_lock_enabled":    tftypes.NewValue(tftypes.Bool, lockEnabled),
+	})
+}
+
+// publicAccessConfigTFValue builds a tftypes.Value for the public_access_config nested object.
+func publicAccessConfigTFValue(blockNewPolicies, blockAccess bool) tftypes.Value {
+	typ := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"block_new_public_policies": tftypes.Bool,
+		"block_public_access":       tftypes.Bool,
+	}}
+	return tftypes.NewValue(typ, map[string]tftypes.Value{
+		"block_new_public_policies": tftypes.NewValue(tftypes.Bool, blockNewPolicies),
+		"block_public_access":       tftypes.NewValue(tftypes.Bool, blockAccess),
+	})
+}
+
+// ---- config block tests -----------------------------------------------------
+
+// TestBucketResource_Create_WithEradicationConfig verifies that Create sends
+// eradication_config in the POST body and the response contains the configured values.
+func TestBucketResource_Create_WithEradicationConfig(t *testing.T) {
+	ms, _, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	cfg := nullBucketConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, "erad-config-bucket")
+	cfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+	cfg["eradication_config"] = eradicationConfigTFValue(172800000, "permission-based", "enabled")
+
+	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), cfg), Schema: s}
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", resp.Diagnostics)
+	}
+
+	var model bucketModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	// Verify eradication_config was applied.
+	attrs := model.EradicationConfig.Attributes()
+	if v, ok := attrs["eradication_delay"].(types.Int64); !ok || v.ValueInt64() != 172800000 {
+		t.Errorf("expected eradication_delay=172800000, got %v", attrs["eradication_delay"])
+	}
+	if v, ok := attrs["eradication_mode"].(types.String); !ok || v.ValueString() != "permission-based" {
+		t.Errorf("expected eradication_mode=permission-based, got %v", attrs["eradication_mode"])
+	}
+	if v, ok := attrs["manual_eradication"].(types.String); !ok || v.ValueString() != "enabled" {
+		t.Errorf("expected manual_eradication=enabled, got %v", attrs["manual_eradication"])
+	}
+}
+
+// TestBucketResource_Update_WithPublicAccessConfig verifies that Update sends
+// public_access_config in the PATCH body and the response reflects the update.
+func TestBucketResource_Update_WithPublicAccessConfig(t *testing.T) {
+	ms, _, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Step 1: Create a bucket with defaults.
+	createPlan := bucketPlanWithNameAndAccount(t, "pubaccess-bucket", "test-account")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Step 2: Update with public_access_config set.
+	updateCfg := nullBucketConfig()
+	updateCfg["name"] = tftypes.NewValue(tftypes.String, "pubaccess-bucket")
+	updateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	updateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+	updateCfg["public_access_config"] = publicAccessConfigTFValue(true, true)
+
+	updatePlan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), updateCfg), Schema: s}
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+
+	r.Update(context.Background(), resource.UpdateRequest{
+		Plan:  updatePlan,
+		State: createResp.State,
+	}, updateResp)
+
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update returned error: %s", updateResp.Diagnostics)
+	}
+
+	var model bucketModel
+	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	// Verify public_access_config was updated.
+	attrs := model.PublicAccessConfig.Attributes()
+	if v, ok := attrs["block_new_public_policies"].(types.Bool); !ok || !v.ValueBool() {
+		t.Errorf("expected block_new_public_policies=true, got %v", attrs["block_new_public_policies"])
+	}
+	if v, ok := attrs["block_public_access"].(types.Bool); !ok || !v.ValueBool() {
+		t.Errorf("expected block_public_access=true, got %v", attrs["block_public_access"])
+	}
+
+	// Verify public_status updated by mock.
+	if model.PublicStatus.ValueString() != "not-public" {
+		t.Errorf("expected public_status=not-public, got %s", model.PublicStatus.ValueString())
+	}
+}
+
+// TestBucketResource_Read_MapsConfigBlocks verifies that Read populates all
+// config blocks and public_status from the API response.
+func TestBucketResource_Read_MapsConfigBlocks(t *testing.T) {
+	ms, c, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	// Create a bucket with custom eradication config via POST.
+	_, err := c.PostBucket(context.Background(), "configread-bucket", client.BucketPost{
+		Account: client.NamedReference{Name: "test-account"},
+		EradicationConfig: &client.EradicationConfig{
+			EradicationDelay:  259200000,
+			EradicationMode:   "permission-based",
+			ManualEradication: "enabled",
+		},
+		ObjectLockConfig: &client.ObjectLockConfig{
+			FreezeLockgedObjects: true,
+			DefaultRetention:     86400,
+			DefaultRetentionMode: "compliance",
+			ObjectLockEnabled:    true,
+		},
+	})
+	if err != nil {
+		t.Fatalf("PostBucket: %v", err)
+	}
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	// Build minimal state for Read.
+	stateCfg := nullBucketConfig()
+	stateCfg["name"] = tftypes.NewValue(tftypes.String, "configread-bucket")
+	stateCfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	stateCfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+
+	state := tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), stateCfg), Schema: s}
+	readResp := &resource.ReadResponse{State: state}
+	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var model bucketModel
+	if diags := readResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	// Verify eradication_config.
+	eradAttrs := model.EradicationConfig.Attributes()
+	if v, ok := eradAttrs["eradication_delay"].(types.Int64); !ok || v.ValueInt64() != 259200000 {
+		t.Errorf("expected eradication_delay=259200000, got %v", eradAttrs["eradication_delay"])
+	}
+	if v, ok := eradAttrs["eradication_mode"].(types.String); !ok || v.ValueString() != "permission-based" {
+		t.Errorf("expected eradication_mode=permission-based, got %v", eradAttrs["eradication_mode"])
+	}
+	if v, ok := eradAttrs["manual_eradication"].(types.String); !ok || v.ValueString() != "enabled" {
+		t.Errorf("expected manual_eradication=enabled, got %v", eradAttrs["manual_eradication"])
+	}
+
+	// Verify object_lock_config.
+	olAttrs := model.ObjectLockConfig.Attributes()
+	if v, ok := olAttrs["freeze_locked_objects"].(types.Bool); !ok || !v.ValueBool() {
+		t.Errorf("expected freeze_locked_objects=true, got %v", olAttrs["freeze_locked_objects"])
+	}
+	if v, ok := olAttrs["default_retention"].(types.Int64); !ok || v.ValueInt64() != 86400 {
+		t.Errorf("expected default_retention=86400, got %v", olAttrs["default_retention"])
+	}
+	if v, ok := olAttrs["default_retention_mode"].(types.String); !ok || v.ValueString() != "compliance" {
+		t.Errorf("expected default_retention_mode=compliance, got %v", olAttrs["default_retention_mode"])
+	}
+	if v, ok := olAttrs["object_lock_enabled"].(types.Bool); !ok || !v.ValueBool() {
+		t.Errorf("expected object_lock_enabled=true, got %v", olAttrs["object_lock_enabled"])
+	}
+
+	// Verify public_access_config (defaults: false, false).
+	paAttrs := model.PublicAccessConfig.Attributes()
+	if v, ok := paAttrs["block_new_public_policies"].(types.Bool); !ok || v.ValueBool() {
+		t.Errorf("expected block_new_public_policies=false, got %v", paAttrs["block_new_public_policies"])
+	}
+	if v, ok := paAttrs["block_public_access"].(types.Bool); !ok || v.ValueBool() {
+		t.Errorf("expected block_public_access=false, got %v", paAttrs["block_public_access"])
+	}
+
+	// Verify public_status.
+	if model.PublicStatus.ValueString() != "not-public" {
+		t.Errorf("expected public_status=not-public, got %s", model.PublicStatus.ValueString())
 	}
 }
