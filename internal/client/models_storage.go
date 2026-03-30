@@ -323,3 +323,61 @@ type BucketAccessPolicyRulePost struct {
 	Principals BucketAccessPolicyPrincipals `json:"principals"`
 	Resources  []string                     `json:"resources"`
 }
+
+// BucketAuditFilter represents a FlashBlade bucket audit filter from GET responses.
+type BucketAuditFilter struct {
+	Actions    []string       `json:"actions"`
+	Bucket     NamedReference `json:"bucket"`
+	Name       string         `json:"name"`
+	S3Prefixes []string       `json:"s3_prefixes"`
+}
+
+// BucketAuditFilterPost contains the fields for POST /buckets/audit-filters.
+type BucketAuditFilterPost struct {
+	Actions    []string `json:"actions"`
+	S3Prefixes []string `json:"s3_prefixes"`
+}
+
+// BucketAuditFilterPatch contains pointer fields for PATCH /buckets/audit-filters.
+type BucketAuditFilterPatch struct {
+	Actions    *[]string `json:"actions,omitempty"`
+	S3Prefixes *[]string `json:"s3_prefixes,omitempty"`
+}
+
+// QosPolicy represents a FlashBlade QoS policy from GET responses.
+type QosPolicy struct {
+	ID                   string `json:"id"`
+	Name                 string `json:"name"`
+	Enabled              bool   `json:"enabled"`
+	IsLocal              bool   `json:"is_local"`
+	MaxTotalBytesPerSec  int64  `json:"max_total_bytes_per_sec"`
+	MaxTotalOpsPerSec    int64  `json:"max_total_ops_per_sec"`
+	PolicyType           string `json:"policy_type"`
+}
+
+// QosPolicyPost contains the fields for POST /qos-policies.
+type QosPolicyPost struct {
+	Name                string `json:"name"`
+	Enabled             *bool  `json:"enabled,omitempty"`
+	MaxTotalBytesPerSec int64  `json:"max_total_bytes_per_sec,omitempty"`
+	MaxTotalOpsPerSec   int64  `json:"max_total_ops_per_sec,omitempty"`
+}
+
+// QosPolicyPatch contains pointer fields for PATCH /qos-policies.
+type QosPolicyPatch struct {
+	Enabled             *bool   `json:"enabled,omitempty"`
+	MaxTotalBytesPerSec *int64  `json:"max_total_bytes_per_sec,omitempty"`
+	MaxTotalOpsPerSec   *int64  `json:"max_total_ops_per_sec,omitempty"`
+	Name                *string `json:"name,omitempty"`
+}
+
+// QosPolicyMember represents a QoS policy member assignment from GET responses.
+type QosPolicyMember struct {
+	Member NamedReference `json:"member"`
+	Policy NamedReference `json:"policy"`
+}
+
+// QosPolicyMemberPost contains the fields for POST /qos-policies/members.
+type QosPolicyMemberPost struct {
+	Member NamedReference `json:"member"`
+}
