@@ -302,6 +302,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewLifecycleRuleResource,
 		NewBucketAccessPolicyResource,
 		NewBucketAccessPolicyRuleResource,
+		NewBucketAuditFilterResource,
 	}
 }
 
@@ -334,5 +335,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewBucketReplicaLinkDataSource,
 		NewLifecycleRuleDataSource,
 		NewBucketAccessPolicyDataSource,
+		NewBucketAuditFilterDataSource,
 	}
 }
