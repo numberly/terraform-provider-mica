@@ -39,7 +39,10 @@ resource "flashblade_bucket" "example" {
 ### Optional
 
 - `destroy_eradicate_on_delete` (Boolean) When true, Terraform will eradicate the bucket on destroy. When false (default), only soft-deletes. Buckets hold production data — eradication is opt-in.
+- `eradication_config` (Attributes) Eradication configuration for the bucket. (see [below for nested schema](#nestedatt--eradication_config))
 - `hard_limit_enabled` (Boolean) If true, the bucket's size cannot exceed the quota limit.
+- `object_lock_config` (Attributes) S3 object lock configuration for the bucket. (see [below for nested schema](#nestedatt--object_lock_config))
+- `public_access_config` (Attributes) Public access configuration for the bucket. (see [below for nested schema](#nestedatt--public_access_config))
 - `quota_limit` (Number) The effective quota limit applied against the size of the bucket, in bytes.
 - `retention_lock` (String) The retention lock mode for the bucket.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -52,8 +55,39 @@ resource "flashblade_bucket" "example" {
 - `destroyed` (Boolean) Whether the bucket is soft-deleted.
 - `id` (String) The unique identifier of the bucket.
 - `object_count` (Number) The count of objects in the bucket.
+- `public_status` (String) Bucket's public access status.
 - `space` (Attributes) Storage space breakdown (read-only, API-managed). (see [below for nested schema](#nestedatt--space))
 - `time_remaining` (Number) Milliseconds remaining until auto-eradication of a soft-deleted bucket.
+
+<a id="nestedatt--eradication_config"></a>
+### Nested Schema for `eradication_config`
+
+Optional:
+
+- `eradication_delay` (Number) Eradication delay in milliseconds.
+- `eradication_mode` (String) Eradication mode (e.g. 'retention-based', 'permission-based').
+- `manual_eradication` (String) Manual eradication setting ('enabled' or 'disabled').
+
+
+<a id="nestedatt--object_lock_config"></a>
+### Nested Schema for `object_lock_config`
+
+Optional:
+
+- `default_retention` (Number) Default retention period in seconds.
+- `default_retention_mode` (String) Default retention mode ('compliance' or 'governance').
+- `freeze_locked_objects` (Boolean) Whether to freeze locked objects.
+- `object_lock_enabled` (Boolean) Whether object lock is enabled.
+
+
+<a id="nestedatt--public_access_config"></a>
+### Nested Schema for `public_access_config`
+
+Optional:
+
+- `block_new_public_policies` (Boolean) Whether to block new public policies.
+- `block_public_access` (Boolean) Whether to block public access.
+
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
