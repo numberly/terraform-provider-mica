@@ -156,7 +156,7 @@ func (r *qosPolicyResource) Create(ctx context.Context, req resource.CreateReque
 		body.MaxTotalOpsPerSec = data.MaxTotalOpsPerSec.ValueInt64()
 	}
 
-	policy, err := r.client.PostQosPolicy(ctx, body)
+	policy, err := r.client.PostQosPolicy(ctx, data.Name.ValueString(), body)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating QoS policy", err.Error())
 		return

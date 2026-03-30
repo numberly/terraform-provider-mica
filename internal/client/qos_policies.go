@@ -20,9 +20,9 @@ func (c *FlashBladeClient) GetQosPolicy(ctx context.Context, name string) (*QosP
 	return &resp.Items[0], nil
 }
 
-// PostQosPolicy creates a new QoS policy.
-func (c *FlashBladeClient) PostQosPolicy(ctx context.Context, body QosPolicyPost) (*QosPolicy, error) {
-	path := "/qos-policies"
+// PostQosPolicy creates a new QoS policy. The name is passed via ?names= query parameter.
+func (c *FlashBladeClient) PostQosPolicy(ctx context.Context, name string, body QosPolicyPost) (*QosPolicy, error) {
+	path := "/qos-policies?names=" + url.QueryEscape(name)
 	var resp ListResponse[QosPolicy]
 	if err := c.post(ctx, path, body, &resp); err != nil {
 		return nil, err

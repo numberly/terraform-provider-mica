@@ -222,12 +222,17 @@ func (s *bucketAccessPolicyStore) handleRuleGet(w http.ResponseWriter, r *http.R
 
 // handleRulePost handles POST /api/2.22/buckets/bucket-access-policies/rules.
 func (s *bucketAccessPolicyStore) handleRulePost(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
+	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
 	}
 
-	bucketName, ok := RequireQueryParam(w, r, "bucket_names")
-	if !ok {
+	// Accept either ?names= or ?bucket_names= on POST.
+	bucketName := r.URL.Query().Get("names")
+	if bucketName == "" {
+		bucketName = r.URL.Query().Get("bucket_names")
+	}
+	if bucketName == "" {
+		WriteJSONError(w, http.StatusBadRequest, "names or bucket_names query parameter is required")
 		return
 	}
 

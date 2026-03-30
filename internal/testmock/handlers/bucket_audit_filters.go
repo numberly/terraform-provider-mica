@@ -83,11 +83,20 @@ func (s *bucketAuditFilterStore) handleGet(w http.ResponseWriter, r *http.Reques
 
 // handlePost handles POST /api/2.22/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handlePost(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
+	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
 	}
 
-	bucketName, ok := RequireQueryParam(w, r, "bucket_names")
+	// Accept either ?names= or ?bucket_names= on POST.
+	bucketName := r.URL.Query().Get("names")
+	if bucketName == "" {
+		bucketName = r.URL.Query().Get("bucket_names")
+	}
+	ok := bucketName != ""
+	if !ok {
+		WriteJSONError(w, http.StatusBadRequest, "names or bucket_names query parameter is required")
+		return
+	}
 	if !ok {
 		return
 	}
