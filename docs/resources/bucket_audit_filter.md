@@ -29,17 +29,18 @@ resource "flashblade_bucket_audit_filter" "example" {
 
 ### Required
 
-- `actions` (List of String) List of S3 actions to audit (e.g. s3:GetObject, s3:PutObject).
+- `actions` (Set of String) Set of S3 actions to audit (e.g. s3:GetObject, s3:PutObject). Order-independent.
 - `bucket_name` (String) The name of the bucket this audit filter belongs to. Changing this forces a new resource.
+- `name` (String) The name of the audit filter (1-63 alphanumeric characters, must start/end with letter or number).
 
 ### Optional
 
-- `s3_prefixes` (List of String) List of S3 object key prefixes to filter audit events. Defaults to empty list (all prefixes).
+- `s3_prefixes` (Set of String) Set of S3 object key prefixes to filter audit events. Defaults to empty set (all prefixes).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `id` (String) The name of the audit filter (assigned by the array).
+- `id` (String) Unique identifier of the audit filter.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

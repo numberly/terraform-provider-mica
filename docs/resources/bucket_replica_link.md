@@ -42,10 +42,6 @@ resource "flashblade_bucket_replica_link" "example" {
 
 - `direction` (String) The replication direction (e.g. 'outbound').
 - `id` (String) The unique identifier of the bucket replica link.
-- `lag` (Number) Replication lag in milliseconds. Volatile — changes on every read.
-- `object_backlog_count` (Number) Number of objects in the replication backlog. Volatile — changes on every read.
-- `object_backlog_total_size` (Number) Total size of objects in the replication backlog in bytes. Volatile — changes on every read.
-- `recovery_point` (Number) Recovery point timestamp in milliseconds. Volatile — changes on every read.
 - `remote_name` (String) The name of the remote array connection.
 - `status` (String) The replication status (e.g. 'replicating').
 - `status_details` (String) Additional status details.

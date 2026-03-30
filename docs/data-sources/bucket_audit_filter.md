@@ -31,5 +31,5 @@ output "audit_filter_actions" {
 
 ### Read-Only
 
-- `actions` (List of String) List of S3 actions being audited.
-- `s3_prefixes` (List of String) List of S3 object key prefixes being filtered.
+- `actions` (Set of String) Set of S3 actions being audited.
+- `s3_prefixes` (Set of String) Set of S3 object key prefixes being filtered.
