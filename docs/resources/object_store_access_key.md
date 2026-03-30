@@ -13,11 +13,16 @@ Manages a FlashBlade object store access key. Access keys are immutable — any 
 ## Example Usage
 
 ```terraform
+# Auto-generated key (API generates name and secret)
 resource "flashblade_object_store_access_key" "example" {
   object_store_account = "my-account"
+}
 
-  # Optional: keys are enabled by default
-  enabled = true
+# Cross-array replication: create a key with the same name and secret as the source
+resource "flashblade_object_store_access_key" "replica" {
+  object_store_account = "my-account"
+  name                 = flashblade_object_store_access_key.example.name
+  secret_access_key    = flashblade_object_store_access_key.example.secret_access_key
 }
 
 output "access_key_id" {
@@ -40,6 +45,7 @@ output "secret_access_key" {
 ### Optional
 
 - `enabled` (Boolean) If true, the access key is enabled. Changing this forces a new resource.
+- `name` (String) The access key name (format: <account>/admin/<key-id>). When providing a secret_access_key for cross-array replication, this must be set to the same name as the source key. When omitted, the API assigns it automatically.
 - `secret_access_key` (String, Sensitive) The secret access key. When provided, the key is created with this exact secret (for cross-array replication). When omitted, the API generates it. Returned only at creation time and stored in state (encrypted).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
@@ -47,7 +53,6 @@ output "secret_access_key" {
 
 - `access_key_id` (String) The access key ID (public part of the credential pair).
 - `created` (Number) Unix timestamp (milliseconds) when the access key was created.
-- `name` (String) The access key name (format: <account>/admin/<key-id>). Assigned by the API.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
