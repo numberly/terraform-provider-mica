@@ -43,8 +43,8 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 - [x] **QOS-02**: Operator can update QoS policy limits via Terraform apply
 - [x] **QOS-03**: Operator can delete a QoS policy via Terraform destroy
 - [x] **QOS-04**: Operator can assign a QoS policy to buckets and file systems as members
-- [ ] **QOS-05**: Operator can import existing QoS policies into Terraform state
-- [ ] **QOS-06**: QoS policy data source reads existing policy by name
+- [x] **QOS-05**: Operator can import existing QoS policies into Terraform state
+- [x] **QOS-06**: QoS policy data source reads existing policy by name
 
 ### Testing & Documentation
 
@@ -100,8 +100,8 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | QOS-02 | Phase 26 | Complete |
 | QOS-03 | Phase 26 | Complete |
 | QOS-04 | Phase 26 | Complete |
-| QOS-05 | Phase 26 | Pending |
-| QOS-06 | Phase 26 | Pending |
+| QOS-05 | Phase 26 | Complete |
+| QOS-06 | Phase 26 | Complete |
 | TST-01 | Phase 27 | Pending |
 | TST-02 | Phase 27 | Pending |
 | DOC-01 | Phase 27 | Pending |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: executing
-stopped_at: Completed 26-02-PLAN.md
+stopped_at: Completed 26-03-PLAN.md
 last_updated: "2026-03-30T11:13:57.969Z"
-last_activity: 2026-03-30 — Completed 26-02 bucket audit filter resource and data source
+last_activity: 2026-03-30 — Completed 26-03 QoS policy resource, member, and data source
 progress:
   total_phases: 27
   completed_phases: 24
   total_plans: 63
-  completed_plans: 60
-  percent: 95
+  completed_plans: 61
+  percent: 97
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 26 of 27 (Audit Filters & QoS Policies)
-Plan: 2 of 3 in current phase
-Status: In Progress
-Last activity: 2026-03-30 — Completed 26-02 bucket audit filter resource and data source
+Plan: 3 of 3 in current phase
+Status: Phase Complete
+Last activity: 2026-03-30 — Completed 26-03 QoS policy resource, member resource, and data source
 
-Progress: [██████████] 95% (60/63 plans complete)
+Progress: [██████████] 97% (61/63 plans complete)
 
 ## Performance Metrics
 
@@ -65,6 +65,8 @@ Progress: [██████████] 95% (60/63 plans complete)
 - [Phase 25]: CRD-only resources use 3-key timeouts (no update key) to match schema
 - [Phase 26]: QosPolicyMember/QosPolicyMemberPost types instead of PolicyMember/PolicyMemberPost to avoid collision with existing PolicyMember in models_common.go
 - [Phase 26]: Bucket name as single-string import ID for audit filters (one per bucket)
+- [Phase 26]: QoS policy name uses RequiresReplace (rename via PATCH not exposed to avoid drift)
+- [Phase 26]: QoS member CRD-only with 3-key timeouts, composite "policyName/memberName" import
 
 ### Pending Todos
 
@@ -76,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:13:57.962Z
-Stopped at: Completed 26-02-PLAN.md
+Last session: 2026-03-30T11:22:00Z
+Stopped at: Completed 26-03-PLAN.md
 Resume file: None

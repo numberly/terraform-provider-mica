@@ -397,7 +397,7 @@ Plans:
 - [x] **Phase 23: Bucket Inline Attributes** - Extend bucket resource with eradication, object lock, and public access config (completed 2026-03-30)
 - [x] **Phase 24: Lifecycle Rules** - New resource and data source for bucket lifecycle rule management (completed 2026-03-30)
 - [x] **Phase 25: Bucket Access Policies** - New resource for IAM-style bucket access policies and rules (completed 2026-03-30)
-- [ ] **Phase 26: Audit Filters & QoS Policies** - New resources for audit filtering and bandwidth/IOPS limiting
+- [x] **Phase 26: Audit Filters & QoS Policies** - New resources for audit filtering and bandwidth/IOPS limiting (completed 2026-03-30)
 - [ ] **Phase 27: Testing & Documentation** - Unit tests, mock handlers, import docs, and workflow example
 
 ## Phase Details
@@ -507,5 +507,5 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 23. Bucket Inline Attributes | 2/2 | Complete    | 2026-03-30 | - |
 | 24. Lifecycle Rules | 2/2 | Complete    | 2026-03-30 | - |
 | 25. Bucket Access Policies | 2/2 | Complete    | 2026-03-30 | - |
-| 26. Audit Filters & QoS Policies | 2/3 | In Progress|  | - |
+| 26. Audit Filters & QoS Policies | 3/3 | Complete   | 2026-03-30 | - |
 | 27. Testing & Documentation | v2.1 | 0/TBD | Not started | - |
