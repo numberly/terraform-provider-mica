@@ -31,7 +31,7 @@ terraform {
   required_providers {
     flashblade = {
       source  = "numberly/flashblade"
-      version = "~> 1.0"
+      version = "~> 2.1"
     }
     vault = {
       source  = "hashicorp/vault"
