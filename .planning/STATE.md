@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: executing
+status: completed
 stopped_at: Completed 26-03-PLAN.md
-last_updated: "2026-03-30T11:13:57.969Z"
-last_activity: 2026-03-30 — Completed 26-03 QoS policy resource, member, and data source
+last_updated: "2026-03-30T11:24:16.160Z"
+last_activity: 2026-03-30 — Completed 26-03 QoS policy resource, member resource, and data source
 progress:
   total_phases: 27
-  completed_phases: 24
+  completed_phases: 25
   total_plans: 63
   completed_plans: 61
   percent: 97
