@@ -1,0 +1,1 @@
+terraform import flashblade_bucket_access_policy_rule.example my-bucket/allow-read
