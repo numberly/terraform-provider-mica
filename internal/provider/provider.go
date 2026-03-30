@@ -299,6 +299,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewSyslogServerResource,
 		NewRemoteCredentialsResource,
 		NewBucketReplicaLinkResource,
+		NewLifecycleRuleResource,
 	}
 }
 
@@ -329,5 +330,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewArrayConnectionDataSource,
 		NewRemoteCredentialsDataSource,
 		NewBucketReplicaLinkDataSource,
+		NewLifecycleRuleDataSource,
 	}
 }
