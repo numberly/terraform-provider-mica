@@ -66,7 +66,7 @@ func (c *FlashBladeClient) PostLifecycleRule(ctx context.Context, body Lifecycle
 // If confirmDate is true, the confirm_date query parameter is added.
 func (c *FlashBladeClient) PatchLifecycleRule(ctx context.Context, bucketName string, ruleID string, body LifecycleRulePatch, confirmDate bool) (*LifecycleRule, error) {
 	compositeName := bucketName + "/" + ruleID
-	path := "/lifecycle-rules?bucket_names=" + url.QueryEscape(bucketName) + "&names=" + url.QueryEscape(compositeName)
+	path := "/lifecycle-rules?names=" + url.QueryEscape(compositeName)
 	if confirmDate {
 		path += "&confirm_date=true"
 	}
@@ -84,6 +84,6 @@ func (c *FlashBladeClient) PatchLifecycleRule(ctx context.Context, bucketName st
 // The API identifies the rule by composite name "bucketName/ruleID".
 func (c *FlashBladeClient) DeleteLifecycleRule(ctx context.Context, bucketName string, ruleID string) error {
 	compositeName := bucketName + "/" + ruleID
-	path := "/lifecycle-rules?bucket_names=" + url.QueryEscape(bucketName) + "&names=" + url.QueryEscape(compositeName)
+	path := "/lifecycle-rules?names=" + url.QueryEscape(compositeName)
 	return c.delete(ctx, path)
 }
