@@ -76,8 +76,8 @@ func (c *FlashBladeClient) PatchBucketReplicaLink(ctx context.Context, id string
 	return &resp.Items[0], nil
 }
 
-// DeleteBucketReplicaLink permanently deletes a bucket replica link by local and remote bucket names.
-func (c *FlashBladeClient) DeleteBucketReplicaLink(ctx context.Context, localBucketName string, remoteBucketName string) error {
-	path := "/bucket-replica-links?local_bucket_names=" + url.QueryEscape(localBucketName) + "&remote_bucket_names=" + url.QueryEscape(remoteBucketName)
+// DeleteBucketReplicaLink permanently deletes a bucket replica link by its ID.
+func (c *FlashBladeClient) DeleteBucketReplicaLink(ctx context.Context, id string) error {
+	path := "/bucket-replica-links?ids=" + url.QueryEscape(id)
 	return c.delete(ctx, path)
 }

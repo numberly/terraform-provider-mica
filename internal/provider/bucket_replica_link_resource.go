@@ -317,7 +317,7 @@ func (r *bucketReplicaLinkResource) Delete(ctx context.Context, req resource.Del
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	err := r.client.DeleteBucketReplicaLink(ctx, data.LocalBucketName.ValueString(), data.RemoteBucketName.ValueString())
+	err := r.client.DeleteBucketReplicaLink(ctx, data.ID.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			return
