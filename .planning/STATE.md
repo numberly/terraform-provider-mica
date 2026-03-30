@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: executing
-stopped_at: Completed 24-01-PLAN.md
+stopped_at: Completed 24-02-PLAN.md
 last_updated: "2026-03-30T10:21:41.849Z"
-last_activity: 2026-03-30 — Completed 24-01 lifecycle rules client and mock
+last_activity: 2026-03-30 — Completed 24-02 lifecycle rule resource and data source
 progress:
   total_phases: 27
   completed_phases: 22
   total_plans: 58
-  completed_plans: 55
-  percent: 96
+  completed_plans: 56
+  percent: 97
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 24 of 27 (Lifecycle Rules)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-03-30 — Completed 24-01 lifecycle rules client and mock
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-03-30 — Completed 24-02 lifecycle rule resource and data source
 
-Progress: [██████████] 95% (55/58 plans complete)
+Progress: [██████████] 97% (56/58 plans complete)
 
 ## Performance Metrics
 
@@ -57,6 +57,8 @@ Progress: [██████████] 95% (55/58 plans complete)
 - [Phase 23]: Mock handler defaults: 24h eradication delay, retention-based mode (matches real API)
 - [Phase 24-lifecycle-rules]: GetLifecycleRule uses bucket_names filter + iteration (not getOneByName) — API uses bucket_names param
 - [Phase 24-lifecycle-rules]: Composite name format bucketName/ruleID for PATCH and DELETE identification
+- [Phase 24-lifecycle-rules]: Optional int64 fields mapped to null when API returns 0 (preserves Terraform null semantics)
+- [Phase 24-lifecycle-rules]: PATCH sends only changed fields via pointer comparison
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:21:41.839Z
-Stopped at: Completed 24-01-PLAN.md
+Last session: 2026-03-30T10:27:35Z
+Stopped at: Completed 24-02-PLAN.md
 Resume file: None

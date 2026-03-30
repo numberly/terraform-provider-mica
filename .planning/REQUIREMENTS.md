@@ -19,7 +19,7 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 - [x] **LCR-01**: Operator can create a lifecycle rule on a bucket with prefix, version retention, and multipart upload cleanup via Terraform
 - [x] **LCR-02**: Operator can update lifecycle rule settings (enabled, retention periods, prefix) via Terraform apply
 - [x] **LCR-03**: Operator can delete a lifecycle rule via Terraform destroy
-- [ ] **LCR-04**: Operator can import an existing lifecycle rule into Terraform state with no drift on subsequent plan
+- [x] **LCR-04**: Operator can import an existing lifecycle rule into Terraform state with no drift on subsequent plan
 - [x] **LCR-05**: Lifecycle rule data source reads existing rules by bucket name
 
 ### Bucket Access Policies
@@ -85,7 +85,7 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | LCR-01 | Phase 24 | Complete |
 | LCR-02 | Phase 24 | Complete |
 | LCR-03 | Phase 24 | Complete |
-| LCR-04 | Phase 24 | Pending |
+| LCR-04 | Phase 24 | Complete |
 | LCR-05 | Phase 24 | Complete |
 | BAP-01 | Phase 25 | Pending |
 | BAP-02 | Phase 25 | Pending |
