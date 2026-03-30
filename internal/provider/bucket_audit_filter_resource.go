@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,8 +39,8 @@ type bucketAuditFilterModel struct {
 	ID         types.String   `tfsdk:"id"`
 	Name       types.String   `tfsdk:"name"`
 	BucketName types.String   `tfsdk:"bucket_name"`
-	Actions    types.List     `tfsdk:"actions"`
-	S3Prefixes types.List     `tfsdk:"s3_prefixes"`
+	Actions    types.Set      `tfsdk:"actions"`
+	S3Prefixes types.Set      `tfsdk:"s3_prefixes"`
 	Timeouts   timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -78,17 +78,17 @@ func (r *bucketAuditFilterResource) Schema(ctx context.Context, _ resource.Schem
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"actions": schema.ListAttribute{
+			"actions": schema.SetAttribute{
 				Required:    true,
 				ElementType: types.StringType,
-				Description: "List of S3 actions to audit (e.g. s3:GetObject, s3:PutObject).",
+				Description: "Set of S3 actions to audit (e.g. s3:GetObject, s3:PutObject). Order-independent.",
 			},
-			"s3_prefixes": schema.ListAttribute{
+			"s3_prefixes": schema.SetAttribute{
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
-				Default:     listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})),
-				Description: "List of S3 object key prefixes to filter audit events. Defaults to empty list (all prefixes).",
+				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+				Description: "Set of S3 object key prefixes to filter audit events. Defaults to empty set (all prefixes).",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
@@ -301,15 +301,15 @@ func mapBucketAuditFilterToModel(filter *client.BucketAuditFilter, data *bucketA
 	data.Name = types.StringValue(filter.Name)
 	data.BucketName = types.StringValue(filter.Bucket.Name)
 
-	// Convert []string to types.List for actions.
-	data.Actions = types.ListValueMust(types.StringType, stringSliceToAttrValues(filter.Actions))
+	// Convert []string to types.Set for actions (order-independent).
+	data.Actions = types.SetValueMust(types.StringType, stringSliceToAttrValues(filter.Actions))
 
-	// Convert []string to types.List for s3_prefixes.
+	// Convert []string to types.Set for s3_prefixes.
 	prefixes := filter.S3Prefixes
 	if prefixes == nil {
 		prefixes = []string{}
 	}
-	data.S3Prefixes = types.ListValueMust(types.StringType, stringSliceToAttrValues(prefixes))
+	data.S3Prefixes = types.SetValueMust(types.StringType, stringSliceToAttrValues(prefixes))
 }
 
 // stringSliceToAttrValues converts a []string to []attr.Value for use with types.ListValueMust.

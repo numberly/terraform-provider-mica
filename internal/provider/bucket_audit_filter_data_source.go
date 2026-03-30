@@ -30,8 +30,8 @@ func NewBucketAuditFilterDataSource() datasource.DataSource {
 // bucketAuditFilterDataSourceModel is the model for the flashblade_bucket_audit_filter data source.
 type bucketAuditFilterDataSourceModel struct {
 	BucketName types.String `tfsdk:"bucket_name"`
-	Actions    types.List   `tfsdk:"actions"`
-	S3Prefixes types.List   `tfsdk:"s3_prefixes"`
+	Actions    types.Set    `tfsdk:"actions"`
+	S3Prefixes types.Set    `tfsdk:"s3_prefixes"`
 }
 
 // ---------- data source interface methods -----------------------------------
@@ -50,15 +50,15 @@ func (d *bucketAuditFilterDataSource) Schema(_ context.Context, _ datasource.Sch
 				Required:    true,
 				Description: "The name of the bucket.",
 			},
-			"actions": schema.ListAttribute{
+			"actions": schema.SetAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				Description: "List of S3 actions being audited.",
+				Description: "Set of S3 actions being audited.",
 			},
-			"s3_prefixes": schema.ListAttribute{
+			"s3_prefixes": schema.SetAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				Description: "List of S3 object key prefixes being filtered.",
+				Description: "Set of S3 object key prefixes being filtered.",
 			},
 		},
 	}
@@ -102,13 +102,13 @@ func (d *bucketAuditFilterDataSource) Read(ctx context.Context, req datasource.R
 	}
 
 	config.BucketName = types.StringValue(filter.Bucket.Name)
-	config.Actions = types.ListValueMust(types.StringType, stringSliceToAttrValues(filter.Actions))
+	config.Actions = types.SetValueMust(types.StringType, stringSliceToAttrValues(filter.Actions))
 
 	prefixes := filter.S3Prefixes
 	if prefixes == nil {
 		prefixes = []string{}
 	}
-	config.S3Prefixes = types.ListValueMust(types.StringType, stringSliceToAttrValues(prefixes))
+	config.S3Prefixes = types.SetValueMust(types.StringType, stringSliceToAttrValues(prefixes))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

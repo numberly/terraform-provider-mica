@@ -39,16 +39,16 @@ func bafDSSchema(t *testing.T) datasource.SchemaResponse {
 func buildBAFDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"bucket_name": tftypes.String,
-		"actions":     tftypes.List{ElementType: tftypes.String},
-		"s3_prefixes": tftypes.List{ElementType: tftypes.String},
+		"actions":     tftypes.Set{ElementType: tftypes.String},
+		"s3_prefixes": tftypes.Set{ElementType: tftypes.String},
 	}}
 }
 
 func nullBAFDSConfig() map[string]tftypes.Value {
 	return map[string]tftypes.Value{
 		"bucket_name": tftypes.NewValue(tftypes.String, nil),
-		"actions":     tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
-		"s3_prefixes": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
+		"actions":     tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, nil),
+		"s3_prefixes": tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, nil),
 	}
 }
 

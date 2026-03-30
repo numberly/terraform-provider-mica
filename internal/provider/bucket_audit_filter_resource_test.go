@@ -55,8 +55,8 @@ func buildBAFType() tftypes.Object {
 		"id":          tftypes.String,
 		"name":        tftypes.String,
 		"bucket_name": tftypes.String,
-		"actions":     tftypes.List{ElementType: tftypes.String},
-		"s3_prefixes": tftypes.List{ElementType: tftypes.String},
+		"actions":     tftypes.Set{ElementType: tftypes.String},
+		"s3_prefixes": tftypes.Set{ElementType: tftypes.String},
 		"timeouts":    timeoutsType,
 	}}
 }
@@ -73,8 +73,8 @@ func nullBAFConfig() map[string]tftypes.Value {
 		"id":          tftypes.NewValue(tftypes.String, nil),
 		"name":        tftypes.NewValue(tftypes.String, nil),
 		"bucket_name": tftypes.NewValue(tftypes.String, nil),
-		"actions":     tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
-		"s3_prefixes": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
+		"actions":     tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, nil),
+		"s3_prefixes": tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, nil),
 		"timeouts":    tftypes.NewValue(timeoutsType, nil),
 	}
 }
@@ -91,13 +91,13 @@ func bafPlanWith(t *testing.T, bucketName string, actions []string, s3Prefixes [
 	for i, a := range actions {
 		actVals[i] = tftypes.NewValue(tftypes.String, a)
 	}
-	cfg["actions"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, actVals)
+	cfg["actions"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, actVals)
 
 	pfxVals := make([]tftypes.Value, len(s3Prefixes))
 	for i, p := range s3Prefixes {
 		pfxVals[i] = tftypes.NewValue(tftypes.String, p)
 	}
-	cfg["s3_prefixes"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, pfxVals)
+	cfg["s3_prefixes"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, pfxVals)
 
 	return tfsdk.Plan{
 		Raw:    tftypes.NewValue(buildBAFType(), cfg),
@@ -214,10 +214,10 @@ func TestBucketAuditFilterResource_Read_NotFound(t *testing.T) {
 	cfg := nullBAFConfig()
 	cfg["id"] = tftypes.NewValue(tftypes.String, "baf-999")
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, "ghost-bucket")
-	cfg["actions"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
+	cfg["actions"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, []tftypes.Value{
 		tftypes.NewValue(tftypes.String, "s3:GetObject"),
 	})
-	cfg["s3_prefixes"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{})
+	cfg["s3_prefixes"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, []tftypes.Value{})
 
 	state := tfsdk.State{
 		Raw:    tftypes.NewValue(buildBAFType(), cfg),
@@ -415,8 +415,8 @@ func TestBucketAuditFilterResource_Schema(t *testing.T) {
 		t.Error("id: expected Computed=true")
 	}
 
-	// actions: Required, list of string.
-	actionsAttr, ok := s.Attributes["actions"].(resschema.ListAttribute)
+	// actions: Required, set of string.
+	actionsAttr, ok := s.Attributes["actions"].(resschema.SetAttribute)
 	if !ok {
 		t.Fatal("actions attribute not found or wrong type")
 	}
@@ -425,7 +425,7 @@ func TestBucketAuditFilterResource_Schema(t *testing.T) {
 	}
 
 	// s3_prefixes: Optional + Computed.
-	prefixesAttr, ok := s.Attributes["s3_prefixes"].(resschema.ListAttribute)
+	prefixesAttr, ok := s.Attributes["s3_prefixes"].(resschema.SetAttribute)
 	if !ok {
 		t.Fatal("s3_prefixes attribute not found or wrong type")
 	}
