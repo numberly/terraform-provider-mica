@@ -501,6 +501,6 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 22. Test Coverage | v2.0.1 | 2/2 | Complete | 2026-03-29 |
 | 23. Bucket Inline Attributes | 2/2 | Complete    | 2026-03-30 | - |
 | 24. Lifecycle Rules | 2/2 | Complete    | 2026-03-30 | - |
-| 25. Bucket Access Policies | 2/2 | Complete   | 2026-03-30 | - |
+| 25. Bucket Access Policies | 2/2 | Complete    | 2026-03-30 | - |
 | 26. Audit Filters & QoS Policies | v2.1 | 0/TBD | Not started | - |
 | 27. Testing & Documentation | v2.1 | 0/TBD | Not started | - |
