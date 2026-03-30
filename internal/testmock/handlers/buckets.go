@@ -180,6 +180,22 @@ func (s *BucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		HardLimitEnabled: body.HardLimitEnabled,
 		RetentionLock:    body.RetentionLock,
 		Space:            client.Space{},
+		EradicationConfig: client.EradicationConfig{
+			EradicationDelay:  86400000, // 24h default in ms
+			EradicationMode:   "retention-based",
+			ManualEradication: "disabled",
+		},
+		ObjectLockConfig:   client.ObjectLockConfig{},
+		PublicAccessConfig:  client.PublicAccessConfig{},
+		PublicStatus:        "not-public",
+	}
+
+	// Apply config overrides from POST body if provided.
+	if body.EradicationConfig != nil {
+		b.EradicationConfig = *body.EradicationConfig
+	}
+	if body.ObjectLockConfig != nil {
+		b.ObjectLockConfig = *body.ObjectLockConfig
 	}
 
 	s.byName[b.Name] = b
@@ -266,6 +282,36 @@ func (s *BucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		b.RetentionLock = retentionLock
+	}
+
+	if v, ok := rawPatch["eradication_config"]; ok {
+		var cfg client.EradicationConfig
+		if err := json.Unmarshal(v, &cfg); err != nil {
+			WriteJSONError(w, http.StatusBadRequest, "invalid eradication_config field")
+			return
+		}
+		b.EradicationConfig = cfg
+	}
+
+	if v, ok := rawPatch["object_lock_config"]; ok {
+		var cfg client.ObjectLockConfig
+		if err := json.Unmarshal(v, &cfg); err != nil {
+			WriteJSONError(w, http.StatusBadRequest, "invalid object_lock_config field")
+			return
+		}
+		b.ObjectLockConfig = cfg
+	}
+
+	if v, ok := rawPatch["public_access_config"]; ok {
+		var cfg client.PublicAccessConfig
+		if err := json.Unmarshal(v, &cfg); err != nil {
+			WriteJSONError(w, http.StatusBadRequest, "invalid public_access_config field")
+			return
+		}
+		b.PublicAccessConfig = cfg
+		if cfg.BlockPublicAccess {
+			b.PublicStatus = "not-public"
+		}
 	}
 
 	WriteJSONListResponse(w, http.StatusOK, []client.Bucket{*b})
