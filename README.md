@@ -11,13 +11,13 @@ Terraform provider for [Pure Storage FlashBlade](https://www.purestorage.com/pro
 
 ## Overview
 
-This provider enables GitOps-driven management of FlashBlade storage: file systems, object store accounts and buckets, access policies, quotas, and array-level configuration — all as Terraform resources.
+This provider enables GitOps-driven management of FlashBlade storage: file systems, object store accounts and buckets, access policies, quotas, lifecycle rules, audit filters, QoS policies, cross-array replication, and array-level configuration — all as Terraform resources.
 
 ## Requirements
 
 - Terraform >= 1.0
-- Go >= 1.22 (for development only)
-- FlashBlade array with REST API v2.22+
+- Go >= 1.25 (for development only)
+- FlashBlade array with REST API v2.22+ (Purity//FB 4.6.7+)
 
 ## Installation
 
@@ -26,7 +26,7 @@ terraform {
   required_providers {
     flashblade = {
       source  = "numberly/flashblade"
-      version = "~> 1.0"
+      version = "~> 2.1"
     }
   }
 }
@@ -45,13 +45,16 @@ provider "flashblade" {
 
   # Option B: OAuth2 token exchange
   # auth = {
-  #   oauth2_client_id     = var.client_id
-  #   oauth2_client_secret = var.client_secret
+  #   oauth2 = {
+  #     client_id = var.client_id
+  #     key_id    = var.key_id
+  #     issuer    = var.issuer
+  #   }
   # }
 }
 ```
 
-Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
+Environment variables: `FLASHBLADE_HOST`, `FLASHBLADE_API_TOKEN`.
 
 ## Resources & Data Sources
 
@@ -60,9 +63,20 @@ Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
 | Resource | Data Source | Description |
 |----------|:----------:|-------------|
 | `flashblade_file_system` | ✅ | NFS/SMB file system with soft-delete lifecycle |
-| `flashblade_bucket` | ✅ | S3 bucket (account-scoped, versioning, quota) |
+| `flashblade_bucket` | ✅ | S3 bucket (versioning, quota, eradication, object lock, public access) |
 | `flashblade_object_store_account` | ✅ | Object store account (S3 namespace) |
-| `flashblade_object_store_access_key` | ✅ | S3 access key pair (create-only, no import) |
+| `flashblade_object_store_access_key` | ✅ | S3 access key pair (cross-array secret sharing) |
+
+### Bucket Advanced Features
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_lifecycle_rule` | ✅ | Per-bucket lifecycle rule (version retention, multipart cleanup) |
+| `flashblade_bucket_access_policy` | ✅ | Per-bucket IAM-style access policy |
+| `flashblade_bucket_access_policy_rule` | — | Rule within a bucket access policy |
+| `flashblade_bucket_audit_filter` | ✅ | Per-bucket S3 audit filter (actions + prefix) |
+| `flashblade_qos_policy` | ✅ | QoS policy (bandwidth + IOPS limits) |
+| `flashblade_qos_policy_member` | — | Assign QoS policy to buckets or file systems |
 
 ### Servers & Exports
 
@@ -131,105 +145,23 @@ Environment variable: `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_bucket_replica_link` | ✅ | Bucket-to-bucket replica link (pause/resume) |
 | — | `flashblade_array_connection` | Array connection status (read-only) |
 
-**Total: 30 resources, 24 data sources**
+**Total: 36 resources, 28 data sources**
 
 ## Workflow Examples
 
 Production-ready configurations showing how resources compose together:
 
-| Workflow | Description | Resources Used |
-|----------|-------------|----------------|
-| [Object Store Setup](examples/workflows/object-store-setup/) | S3-compatible storage: account, bucket, access key | account, bucket, access_key |
-| [NFS File Share](examples/workflows/nfs-file-share/) | Team shared storage with export policy | file_system, nfs_export_policy, nfs_export_policy_rule |
-| [Multi-Protocol File System](examples/workflows/multi-protocol-file-system/) | Windows + Linux access on same FS | file_system, nfs_export_policy, smb_share_policy |
-| [Array Admin Baseline](examples/workflows/array-admin-baseline/) | Day-1 DNS, NTP, SMTP configuration | array_dns, array_ntp, array_smtp |
-| [Secured S3 Bucket](examples/workflows/secured-s3-bucket/) | Bucket with network + access policies | bucket, network_access_policy, object_store_access_policy |
-| [S3 Tenant Full-Stack](examples/workflows/s3-tenant-full-stack/) | Complete S3 onboarding: server → account → export → policies → key → bucket | server (DS), account, account_export, s3_export_policy, access_policy, access_key, bucket |
-| [Vault S3 Onboarding](examples/workflows/vault-s3-onboarding/) | Same as above + Vault for zero-secret credential management | server (DS), account, account_export, s3_export_policy, access_policy, access_key, bucket, **vault** |
-| [S3 Bucket Replication](examples/workflows/s3-bucket-replication/) | Bidirectional cross-array S3 replication with shared credentials | remote_credentials, bucket_replica_link, array_connection (DS), access_key, bucket |
-
-## Resource Coverage Roadmap
-
-### v1.0 — Current Release
-
-| Resource | Create | Read | Update | Delete | Import | Data Source | Notes |
-|----------|:------:|:----:|:------:|:------:|:------:|:-----------:|-------|
-| **Storage** |
-| `flashblade_file_system` | ✅ | ✅ | ✅ | ✅ soft-delete | ✅ | ✅ | Two-phase destroy, in-place rename |
-| `flashblade_bucket` | ✅ | ✅ | ✅ | ✅ soft-delete | ✅ | ✅ | Default recoverable, ForceNew on rename |
-| `flashblade_object_store_account` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Fails if buckets exist |
-| `flashblade_object_store_access_key` | ✅ | ✅ | — | ✅ | — | ✅ | Immutable, write-once secret |
-| **NFS Export Policy** |
-| `flashblade_nfs_export_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Guard: fails if attached to FS |
-| `flashblade_nfs_export_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Index-based ordering |
-| **SMB Share Policy** |
-| `flashblade_smb_share_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Guard: fails if attached to FS |
-| `flashblade_smb_share_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/rule_name` | — | Name-based identity |
-| **Snapshot Policy** |
-| `flashblade_snapshot_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ForceNew on rename (API read-only) |
-| `flashblade_snapshot_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Via parent PATCH add/remove_rules |
-| **Object Store Access Policy** |
-| `flashblade_object_store_access_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | IAM-style, guard if attached |
-| `flashblade_object_store_access_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/rule_name` | — | JSON conditions, effect RequiresReplace |
-| **Network Access Policy** |
-| `flashblade_network_access_policy` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ | ✅ | No POST/DELETE — GET+PATCH only |
-| `flashblade_network_access_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Index-based ordering |
-| **Quota** |
-| `flashblade_quota_user` | ✅ | ✅ | ✅ | ✅ | ✅ `fs/uid` | ✅ | Per-filesystem user quota |
-| `flashblade_quota_group` | ✅ | ✅ | ✅ | ✅ | ✅ `fs/gid` | ✅ | Per-filesystem group quota |
-| **Array Administration** |
-| `flashblade_array_dns` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ `default` | ✅ | Destroy clears config |
-| `flashblade_array_ntp` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ `default` | ✅ | Destroy clears NTP servers |
-| `flashblade_array_smtp` | ✅ singleton | ✅ | ✅ | ✅ reset | ✅ `default` | ✅ | Includes alert watchers |
-
-**Legend:** ✅ = supported | — = intentionally not supported | `soft-delete` = two-phase destroy + eradicate | `singleton` = adopt existing via GET+PATCH | `reset` = destroy resets to defaults
-
-### v1.1 — Servers & Exports
-
-| Resource | Create | Read | Update | Delete | Import | Data Source | Notes |
-|----------|:------:|:----:|:------:|:------:|:------:|:-----------:|-------|
-| **Servers & Exports** |
-| `flashblade_server` | ✅ | ✅ | ✅ DNS | ✅ cascade | ✅ | ✅ | POST uses `?create_ds=` param |
-| `flashblade_file_system_export` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Links FS to server via NFS policy |
-| `flashblade_object_store_account_export` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Links account to server via S3 policy |
-| `flashblade_s3_export_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Controls S3 transport-level access |
-| `flashblade_s3_export_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/index` | — | Only `pure:S3Access` action |
-| `flashblade_object_store_virtual_host` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | S3 virtual-hosted-style endpoint |
-| **SMB Client Policy** |
-| `flashblade_smb_client_policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Client auth + encryption control |
-| `flashblade_smb_client_policy_rule` | ✅ | ✅ | ✅ | ✅ | ✅ `name/rule_name` | — | client/encryption/permission fields |
-| **Syslog** |
-| `flashblade_syslog_server` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | URI format: PROTOCOL://HOST:PORT |
-
-### v1.x — Planned
-
-| Resource | Description | Priority |
-|----------|-------------|----------|
-| Object Lock / WORM config | `retention_lock`, `object_lock_config` on buckets | P2 |
-| QoS policy attachment | Bandwidth/IOPS control on file systems and buckets | P2 |
-| Eradication config | Custom eradication delay per resource | P2 |
-| Syslog CA certificate settings | `/syslog-servers/settings` endpoint | P3 |
-| Terraform Registry | Public publication on registry.terraform.io | P2 |
-
-### v2.0 — Cross-Array Bucket Replication
-
-| Resource | Create | Read | Update | Delete | Import | Data Source | Notes |
-|----------|:------:|:----:|:------:|:------:|:------:|:-----------:|-------|
-| **Replication** |
-| `flashblade_object_store_remote_credentials` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | S3 credentials for cross-array auth |
-| `flashblade_bucket_replica_link` | ✅ | ✅ | ✅ pause | ✅ | ✅ `local/remote` | ✅ | Bidirectional replication links |
-| `flashblade_array_connection` | — | ✅ | — | — | — | ✅ | Read-only data source |
-| **Enhanced** |
-| `flashblade_object_store_access_key` | ✅ | ✅ | — | ✅ | — | ✅ | Added `secret_access_key` input for cross-array key sharing |
-
-### v2+ — Future
-
-| Resource | Description | Complexity |
-|----------|-------------|------------|
-| File system replica links | Cross-array replication | High |
-| API client management | Service account provisioning | Medium |
-| Active Directory | Domain join via Terraform | High |
-| Pulumi bridge | Pulumi SDK from Terraform provider | Medium |
+| Workflow | Description |
+|----------|-------------|
+| [Object Store Setup](examples/workflows/object-store-setup/) | S3-compatible storage: account, bucket, access key |
+| [NFS File Share](examples/workflows/nfs-file-share/) | Team shared storage with export policy |
+| [Multi-Protocol File System](examples/workflows/multi-protocol-file-system/) | Windows + Linux access on same FS |
+| [Array Admin Baseline](examples/workflows/array-admin-baseline/) | Day-1 DNS, NTP, SMTP configuration |
+| [Secured S3 Bucket](examples/workflows/secured-s3-bucket/) | Bucket with network + access policies |
+| [S3 Tenant Full-Stack](examples/workflows/s3-tenant-full-stack/) | Complete S3 onboarding: server → account → export → policies → key → bucket |
+| [Vault S3 Onboarding](examples/workflows/vault-s3-onboarding/) | Same as above + Vault for zero-secret credential management |
+| [S3 Bucket Replication](examples/workflows/s3-bucket-replication/) | Bidirectional cross-array S3 replication with shared credentials |
+| [Bucket Advanced Features](examples/workflows/bucket-advanced-features/) | Lifecycle rules, access policies, audit filters, QoS |
 
 ## Development
 
