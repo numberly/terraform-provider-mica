@@ -190,7 +190,11 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 	// Map all response fields — secret_access_key is only available here.
 	data.Name = types.StringValue(key.Name)
 	data.AccessKeyID = types.StringValue(key.AccessKeyID)
-	data.SecretAccessKey = types.StringValue(key.SecretAccessKey)
+	// When the user provided a secret_access_key, the API may not echo it back.
+	// Preserve the planned value to avoid "inconsistent values for sensitive attribute".
+	if key.SecretAccessKey != "" {
+		data.SecretAccessKey = types.StringValue(key.SecretAccessKey)
+	}
 	data.Created = types.Int64Value(key.Created)
 	data.Enabled = types.BoolValue(key.Enabled)
 
