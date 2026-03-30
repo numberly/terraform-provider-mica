@@ -101,8 +101,6 @@ func bapRulePlanWith(t *testing.T, bucketName string, actions, principals, resou
 		resourceVals[i] = tftypes.NewValue(tftypes.String, r)
 	}
 	cfg["resources"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, resourceVals)
-	cfg["effect"] = tftypes.NewValue(tftypes.String, "allow")
-
 	return tfsdk.Plan{
 		Raw:    tftypes.NewValue(buildBAPRuleType(), cfg),
 		Schema: s,
@@ -174,13 +172,13 @@ func TestBucketAccessPolicyRuleResource_Schema(t *testing.T) {
 		t.Error("name: expected Computed=true")
 	}
 
-	// effect: Required.
+	// effect: Computed (read-only, set by API).
 	effectAttr, ok := s.Attributes["effect"].(resschema.StringAttribute)
 	if !ok {
 		t.Fatal("effect attribute not found or wrong type")
 	}
-	if !effectAttr.Required {
-		t.Error("effect: expected Required=true")
+	if !effectAttr.Computed {
+		t.Error("effect: expected Computed=true")
 	}
 }
 

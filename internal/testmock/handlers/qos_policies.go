@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"sync"
 
@@ -272,11 +273,14 @@ func (s *qosPolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var body client.QosPolicyMemberPost
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
+	memberName := r.URL.Query().Get("member_names")
+	if memberName == "" {
+		WriteJSONError(w, http.StatusBadRequest, "member_names query parameter is required")
 		return
 	}
+
+	// Drain body (may be empty or {}).
+	_, _ = io.ReadAll(r.Body)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -287,7 +291,7 @@ func (s *qosPolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request
 	}
 
 	member := client.QosPolicyMember{
-		Member: body.Member,
+		Member: client.NamedReference{Name: memberName},
 		Policy: client.NamedReference{Name: policyName},
 	}
 

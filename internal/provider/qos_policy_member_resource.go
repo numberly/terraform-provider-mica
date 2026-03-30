@@ -116,11 +116,7 @@ func (r *qosPolicyMemberResource) Create(ctx context.Context, req resource.Creat
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	body := client.QosPolicyMemberPost{
-		Member: client.NamedReference{Name: data.MemberName.ValueString()},
-	}
-
-	member, err := r.client.PostQosPolicyMember(ctx, data.PolicyName.ValueString(), data.MemberName.ValueString(), body)
+	member, err := r.client.PostQosPolicyMember(ctx, data.PolicyName.ValueString(), data.MemberName.ValueString(), data.MemberType.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating QoS policy member", err.Error())
 		return

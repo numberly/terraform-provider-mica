@@ -319,7 +319,6 @@ type BucketAccessPolicyPost struct {
 // BucketAccessPolicyRulePost contains the fields for POST /buckets/bucket-access-policies/rules.
 type BucketAccessPolicyRulePost struct {
 	Actions    []string                     `json:"actions"`
-	Effect     string                       `json:"effect"`
 	Principals BucketAccessPolicyPrincipals `json:"principals"`
 	Resources  []string                     `json:"resources"`
 }

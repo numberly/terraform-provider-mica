@@ -80,11 +80,8 @@ func (r *bucketAccessPolicyRuleResource) Schema(ctx context.Context, _ resource.
 				Description: "List of S3 actions this rule applies to (e.g. s3:GetObject).",
 			},
 			"effect": schema.StringAttribute{
-				Required:    true,
-				Description: "The effect of the rule (e.g. 'allow').",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+				Computed:    true,
+				Description: "The effect of the rule. Always 'allow' — set by the API.",
 			},
 			"principals": schema.ListAttribute{
 				Required:    true,
@@ -151,7 +148,6 @@ func (r *bucketAccessPolicyRuleResource) Create(ctx context.Context, req resourc
 
 	body := client.BucketAccessPolicyRulePost{
 		Actions: actions,
-		Effect:  data.Effect.ValueString(),
 		Principals: client.BucketAccessPolicyPrincipals{
 			All: principals,
 		},

@@ -76,10 +76,10 @@ func (c *FlashBladeClient) ListQosPolicyMembers(ctx context.Context, policyName 
 
 // PostQosPolicyMember adds a member to a QoS policy.
 // The API requires both ?policy_names= and ?member_names= on POST.
-func (c *FlashBladeClient) PostQosPolicyMember(ctx context.Context, policyName string, memberName string, body QosPolicyMemberPost) (*QosPolicyMember, error) {
-	path := "/qos-policies/members?policy_names=" + url.QueryEscape(policyName) + "&member_names=" + url.QueryEscape(memberName)
+func (c *FlashBladeClient) PostQosPolicyMember(ctx context.Context, policyName string, memberName string, memberType string) (*QosPolicyMember, error) {
+	path := "/qos-policies/members?policy_names=" + url.QueryEscape(policyName) + "&member_names=" + url.QueryEscape(memberName) + "&member_types=" + url.QueryEscape(memberType)
 	var resp ListResponse[QosPolicyMember]
-	if err := c.post(ctx, path, body, &resp); err != nil {
+	if err := c.post(ctx, path, struct{}{}, &resp); err != nil {
 		return nil, err
 	}
 	if len(resp.Items) == 0 {

@@ -35,7 +35,6 @@ resource "flashblade_bucket_access_policy_rule" "example" {
 
 - `actions` (List of String) List of S3 actions this rule applies to (e.g. s3:GetObject).
 - `bucket_name` (String) The name of the bucket this rule belongs to. Changing this forces a new resource.
-- `effect` (String) The effect of the rule (e.g. 'allow').
 - `principals` (List of String) List of principals this rule applies to (flattened from principals.all).
 - `resources` (List of String) List of S3 resource ARNs this rule applies to.
 
@@ -43,6 +42,10 @@ resource "flashblade_bucket_access_policy_rule" "example" {
 
 - `name` (String) The rule name. When provided, the rule is created with this name. When omitted, the API assigns one automatically.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+
+### Read-Only
+
+- `effect` (String) The effect of the rule. Always 'allow' — set by the API.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
