@@ -1,134 +1,117 @@
 # Requirements: Terraform Provider FlashBlade
 
-**Defined:** 2026-03-29
+**Defined:** 2026-03-30
 **Core Value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
 
-## v2.0.1 Requirements
+## v2.1 Requirements
 
-Requirements for quality & hardening release. Derived from comprehensive 5-agent audit (code review, security, linting, test coverage, dead code analysis).
+Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and inline config attributes from the FlashBlade REST API v2.22.
 
-### Security
+### Bucket Inline Attributes
 
-- [x] **SEC-01**: OAuth2 token exchange error sanitizes response body instead of dumping raw content (auth.go:130)
-- [x] **SEC-02**: Provider emits tflog.Warn when insecure_skip_verify is enabled for visibility
-- [x] **SEC-03**: fetchToken() accepts context parameter for cancellation support (auth.go:112)
-- [x] **SEC-04**: NewClient() accepts context parameter instead of using context.Background() (client.go:96,107)
-- [x] **SEC-05**: HTTP client has a global safety-net timeout configured (client.go:84)
+- [ ] **BKT-01**: Bucket resource supports eradication_config (eradication_delay, eradication_mode, manual_eradication) on create and update
+- [ ] **BKT-02**: Bucket resource supports object_lock_config (freeze_locked_objects, default_retention, default_retention_mode, object_lock_enabled) on create and update
+- [ ] **BKT-03**: Bucket resource supports public_access_config (block_new_public_policies, block_public_access) on update
+- [ ] **BKT-04**: Bucket resource exposes public_status as computed read-only attribute
 
-### Error Handling
+### Lifecycle Rules
 
-- [x] **ERR-01**: IsNotFound, IsConflict, IsUnprocessable use errors.As() instead of direct type assertion (errors.go:67,88,97)
-- [x] **ERR-02**: Resource-level error checks use errors.As() pattern (quota_group, quota_user, object_store_account)
-- [x] **ERR-03**: ParseAPIError handles io.ReadAll failure gracefully instead of silently ignoring (errors.go:46)
-- [x] **ERR-04**: LoginWithAPIToken uses http.NewRequestWithContext directly instead of nil-check workaround (auth.go:26-32)
+- [ ] **LCR-01**: Operator can create a lifecycle rule on a bucket with prefix, version retention, and multipart upload cleanup via Terraform
+- [ ] **LCR-02**: Operator can update lifecycle rule settings (enabled, retention periods, prefix) via Terraform apply
+- [ ] **LCR-03**: Operator can delete a lifecycle rule via Terraform destroy
+- [ ] **LCR-04**: Operator can import an existing lifecycle rule into Terraform state with no drift on subsequent plan
+- [ ] **LCR-05**: Lifecycle rule data source reads existing rules by bucket name
 
-### Code Quality — Validators
+### Bucket Access Policies
 
-- [x] **VAL-01**: Regex patterns compiled once at package level instead of per-invocation (validators.go:33,66)
+- [ ] **BAP-01**: Operator can create a bucket access policy with rules (actions, effect, principals, resources) via Terraform
+- [ ] **BAP-02**: Operator can delete a bucket access policy via Terraform destroy
+- [ ] **BAP-03**: Operator can create/delete individual bucket access policy rules independently
+- [ ] **BAP-04**: Operator can import existing bucket access policies into Terraform state
+- [ ] **BAP-05**: Bucket access policy data source reads existing policy by bucket name
 
-### Code Quality — Helpers & Deduplication
+### Bucket Audit Filters
 
-- [x] **DUP-01**: Shared spaceAttrTypes() helper replaces 4 duplicated space schema definitions
-- [x] **DUP-02**: Shared mapSpaceToObject() helper used by filesystem, bucket, and data sources
-- [x] **DUP-03**: nullTimeoutsValue() helper replaces 29 duplicated timeout initialization blocks in ImportState
-- [x] **DUP-04**: mustObjectValue() consolidated into single shared helper in helpers.go (used by filesystem, bucket, object_store_account)
-- [x] **DUP-05**: DiagnosticReporter named interface type replaces inline interface in readIntoState signatures
-- [x] **DUP-06**: Generic getOneByName[T] client helper replaces ~15 identical Get*ByName patterns
-- [x] **DUP-07**: Generic pollUntilGone[T] helper unifies PollUntilEradicated and PollBucketUntilEradicated
-- [x] **DUP-08**: mapFSToModel shared between filesystem resource and data source instead of duplicated
+- [ ] **BAF-01**: Operator can create a bucket audit filter with actions and S3 prefix filtering via Terraform
+- [ ] **BAF-02**: Operator can update audit filter settings (actions, s3_prefixes) via Terraform apply
+- [ ] **BAF-03**: Operator can delete a bucket audit filter via Terraform destroy
+- [ ] **BAF-04**: Operator can import an existing audit filter into Terraform state
 
-### Dead Code Removal
+### QoS Policies
 
-- [x] **DCR-01**: Remove 5 unused List* functions and their List*Opts types from client (nfs_export_policies, smb_share_policies, smb_client_policies, snapshot_policies, s3_export_policies)
-- [x] **DCR-02**: Remove unused IsUnprocessable helper from errors.go
-- [x] **DCR-03**: Replace SourceReference with NamedReference (identical types) in models_storage.go
-- [x] **DCR-04**: Remove 29 empty UpgradeState implementations (add back only when schema version bump needed)
+- [ ] **QOS-01**: Operator can create a QoS policy with max_total_bytes_per_sec and max_total_ops_per_sec via Terraform
+- [ ] **QOS-02**: Operator can update QoS policy limits via Terraform apply
+- [ ] **QOS-03**: Operator can delete a QoS policy via Terraform destroy
+- [ ] **QOS-04**: Operator can assign a QoS policy to buckets and file systems as members
+- [ ] **QOS-05**: Operator can import existing QoS policies into Terraform state
+- [ ] **QOS-06**: QoS policy data source reads existing policy by name
 
-### Modernization
+### Testing & Documentation
 
-- [x] **MOD-01**: Replace math/rand with math/rand/v2 for Go 1.25 idiomatic usage (transport.go:101)
-- [x] **MOD-02**: mustObjectValue returns diagnostics instead of panic() for safer error handling
-
-### Test Coverage
-
-- [ ] **TST-01**: Unit tests for object_store_virtual_host data source (Read + NotFound)
-- [ ] **TST-02**: Unit tests for remote_credentials data source (Read + NotFound)
-- [ ] **TST-03**: Unit tests for bucket_replica_link data source (Read + NotFound)
-- [ ] **TST-04**: Unit tests for file_system_export data source (Read + NotFound)
-- [ ] **TST-05**: Unit tests for object_store_account_export data source (Read + NotFound)
-- [ ] **TST-06**: OAuth2 provider configuration test (client_id + key_id + issuer flow)
-- [ ] **TST-07**: HCL-based acceptance tests using resource.UnitTest with mock server for full Terraform lifecycle (plan → apply → refresh → import → destroy)
-- [ ] **TST-08**: Pagination tests for client methods beyond filesystems (at least buckets + one policy type)
-
-### Code Consistency
-
-- [x] **CON-01**: Bucket delete guard does fresh GET before object count check instead of using stale state (bucket_resource.go:416-423)
-- [x] **CON-02**: countItems in test mock helpers uses reflect or param instead of JSON round-trip (testmock/handlers/helpers.go:36-46)
+- [ ] **TST-01**: Unit tests for all new resources and bucket attribute additions (Read + NotFound + Lifecycle)
+- [ ] **TST-02**: Mock handlers for all new API endpoints
+- [ ] **DOC-01**: Import documentation for all new importable resources
+- [ ] **DOC-02**: Workflow example showing bucket with lifecycle rules, access policy, audit filter, and QoS
 
 ## Future Requirements
 
-### v2.1
+### v2.2+
 
-- **FUT-01**: FlashBladeClient.Close()/Logout() method for session cleanup
-- **FUT-02**: Generic Configure helper to reduce 54 identical Configure method bodies
-- **FUT-03**: Acceptance tests on live FlashBlade pair for replication resources
-- **FUT-04**: Client package direct unit tests for all 21 untested client files
-- **FUT-05**: Concurrent operation testing for thread-safety validation
+- **FUT-01**: Audit object store policies resource (CRUD + member assignment)
+- **FUT-02**: Audit file systems policies resource (CRUD + member assignment + rules)
+- **FUT-03**: CORS policies for buckets (if API supports it in future versions)
+- **FUT-04**: Array connection resource (create/delete — currently data source only)
+- **FUT-05**: File system replica links
+- **FUT-06**: Cascading replication
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| New resources or data sources | This is a hardening-only milestone |
-| API version upgrade | No new API features needed |
-| CI/CD pipeline changes | Pipeline already functional from v1.3 |
-| Documentation regeneration | No schema changes that affect docs |
-| Policy resource CRUD abstraction | High complexity, low ROI given framework limitations — track as tech debt |
+| Audit policies (file system + object store) | Complex (log targets, rules, members) — defer to v2.2 |
+| Array connection resource | Data source sufficient for replication — defer to v2.2 |
+| File system replica links | Different API pattern than bucket links — defer to v2.2 |
+| CORS policies | Not visible in API v2.22 |
+| Pulumi bridge | Provider structure compatible but separate effort |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 18 | Complete |
-| SEC-02 | Phase 18 | Complete |
-| SEC-03 | Phase 18 | Complete |
-| SEC-04 | Phase 18 | Complete |
-| SEC-05 | Phase 18 | Complete |
-| ERR-01 | Phase 19 | Complete |
-| ERR-02 | Phase 19 | Complete |
-| ERR-03 | Phase 19 | Complete |
-| ERR-04 | Phase 18 | Complete |
-| VAL-01 | Phase 20 | Complete |
-| DUP-01 | Phase 20 | Complete |
-| DUP-02 | Phase 20 | Complete |
-| DUP-03 | Phase 20 | Complete |
-| DUP-04 | Phase 20 | Complete |
-| DUP-05 | Phase 20 | Complete |
-| DUP-06 | Phase 20 | Complete |
-| DUP-07 | Phase 20 | Complete |
-| DUP-08 | Phase 20 | Complete |
-| DCR-01 | Phase 21 | Complete |
-| DCR-02 | Phase 21 | Complete |
-| DCR-03 | Phase 21 | Complete |
-| DCR-04 | Phase 21 | Complete |
-| MOD-01 | Phase 21 | Complete |
-| MOD-02 | Phase 20 | Complete |
-| TST-01 | Phase 22 | Pending |
-| TST-02 | Phase 22 | Pending |
-| TST-03 | Phase 22 | Pending |
-| TST-04 | Phase 22 | Pending |
-| TST-05 | Phase 22 | Pending |
-| TST-06 | Phase 22 | Pending |
-| TST-07 | Phase 22 | Pending |
-| TST-08 | Phase 22 | Pending |
-| CON-01 | Phase 19 | Complete |
-| CON-02 | Phase 19 | Complete |
+| BKT-01 | — | Pending |
+| BKT-02 | — | Pending |
+| BKT-03 | — | Pending |
+| BKT-04 | — | Pending |
+| LCR-01 | — | Pending |
+| LCR-02 | — | Pending |
+| LCR-03 | — | Pending |
+| LCR-04 | — | Pending |
+| LCR-05 | — | Pending |
+| BAP-01 | — | Pending |
+| BAP-02 | — | Pending |
+| BAP-03 | — | Pending |
+| BAP-04 | — | Pending |
+| BAP-05 | — | Pending |
+| BAF-01 | — | Pending |
+| BAF-02 | — | Pending |
+| BAF-03 | — | Pending |
+| BAF-04 | — | Pending |
+| QOS-01 | — | Pending |
+| QOS-02 | — | Pending |
+| QOS-03 | — | Pending |
+| QOS-04 | — | Pending |
+| QOS-05 | — | Pending |
+| QOS-06 | — | Pending |
+| TST-01 | — | Pending |
+| TST-02 | — | Pending |
+| DOC-01 | — | Pending |
+| DOC-02 | — | Pending |
 
 **Coverage:**
-- v2.0.1 requirements: 34 total
-- Mapped to phases: 34/34
-- Unmapped: 0
+- v2.1 requirements: 28 total
+- Mapped to phases: 0
+- Unmapped: 28 ⚠️
 
 ---
-*Requirements defined: 2026-03-29*
-*Last updated: 2026-03-29 after roadmap creation (phases 18-22)*
+*Requirements defined: 2026-03-30*
+*Last updated: 2026-03-30 after v2.1 requirement definition*
