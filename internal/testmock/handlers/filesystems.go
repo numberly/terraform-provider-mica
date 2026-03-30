@@ -122,15 +122,18 @@ func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fs := &client.FileSystem{
-		ID:          uuid.New().String(),
-		Name:        name,
-		Provisioned: body.Provisioned,
-		Destroyed:   false,
-		Created:     time.Now().UnixMilli(),
-		Space:       client.Space{},
-		NFS:         derefNFS(body.NFS),
-		SMB:         derefSMB(body.SMB),
-		Writable:    body.Writable,
+		ID:            uuid.New().String(),
+		Name:          name,
+		Provisioned:   body.Provisioned,
+		Destroyed:     false,
+		Created:       time.Now().UnixMilli(),
+		Space:         client.Space{},
+		NFS:           derefNFS(body.NFS),
+		SMB:           derefSMB(body.SMB),
+		HTTP:          client.HTTPConfig{},
+		DefaultQuotas: client.DefaultQuotas{},
+		MultiProtocol: client.MultiProtocol{},
+		Writable:      body.Writable,
 	}
 
 	s.byName[fs.Name] = fs
