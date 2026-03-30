@@ -303,6 +303,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewBucketAccessPolicyResource,
 		NewBucketAccessPolicyRuleResource,
 		NewBucketAuditFilterResource,
+		NewQosPolicyResource,
+		NewQosPolicyMemberResource,
 	}
 }
 
@@ -336,5 +338,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewLifecycleRuleDataSource,
 		NewBucketAccessPolicyDataSource,
 		NewBucketAuditFilterDataSource,
+		NewQosPolicyDataSource,
 	}
 }
