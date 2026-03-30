@@ -53,6 +53,7 @@ func buildBAFType() tftypes.Object {
 	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":          tftypes.String,
+		"name":        tftypes.String,
 		"bucket_name": tftypes.String,
 		"actions":     tftypes.List{ElementType: tftypes.String},
 		"s3_prefixes": tftypes.List{ElementType: tftypes.String},
@@ -70,6 +71,7 @@ func nullBAFConfig() map[string]tftypes.Value {
 	}}
 	return map[string]tftypes.Value{
 		"id":          tftypes.NewValue(tftypes.String, nil),
+		"name":        tftypes.NewValue(tftypes.String, nil),
 		"bucket_name": tftypes.NewValue(tftypes.String, nil),
 		"actions":     tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 		"s3_prefixes": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
@@ -83,6 +85,7 @@ func bafPlanWith(t *testing.T, bucketName string, actions []string, s3Prefixes [
 	s := bafResourceSchema(t).Schema
 	cfg := nullBAFConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, bucketName)
+	cfg["name"] = tftypes.NewValue(tftypes.String, bucketName+"-audit")
 
 	actVals := make([]tftypes.Value, len(actions))
 	for i, a := range actions {

@@ -87,17 +87,11 @@ func (s *bucketAuditFilterStore) handlePost(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Accept either ?names= or ?bucket_names= on POST.
-	bucketName := r.URL.Query().Get("names")
-	if bucketName == "" {
-		bucketName = r.URL.Query().Get("bucket_names")
-	}
-	ok := bucketName != ""
-	if !ok {
-		WriteJSONError(w, http.StatusBadRequest, "names or bucket_names query parameter is required")
-		return
-	}
-	if !ok {
+	// POST requires both ?names=<filter_name> and ?bucket_names=<bucket_name>.
+	filterName := r.URL.Query().Get("names")
+	bucketName := r.URL.Query().Get("bucket_names")
+	if filterName == "" || bucketName == "" {
+		WriteJSONError(w, http.StatusBadRequest, "both names and bucket_names query parameters are required for POST")
 		return
 	}
 
@@ -115,13 +109,10 @@ func (s *bucketAuditFilterStore) handlePost(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	s.nextID++
-	name := fmt.Sprintf("baf-%d", s.nextID)
-
 	filter := &client.BucketAuditFilter{
 		Actions:    body.Actions,
 		Bucket:     client.NamedReference{Name: bucketName},
-		Name:       name,
+		Name:       filterName,
 		S3Prefixes: body.S3Prefixes,
 	}
 

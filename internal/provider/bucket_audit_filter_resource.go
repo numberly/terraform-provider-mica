@@ -37,6 +37,7 @@ func NewBucketAuditFilterResource() resource.Resource {
 // bucketAuditFilterModel is the Terraform state model for the flashblade_bucket_audit_filter resource.
 type bucketAuditFilterModel struct {
 	ID         types.String   `tfsdk:"id"`
+	Name       types.String   `tfsdk:"name"`
 	BucketName types.String   `tfsdk:"bucket_name"`
 	Actions    types.List     `tfsdk:"actions"`
 	S3Prefixes types.List     `tfsdk:"s3_prefixes"`
@@ -58,9 +59,16 @@ func (r *bucketAuditFilterResource) Schema(ctx context.Context, _ resource.Schem
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The name of the audit filter (assigned by the array).",
+				Description: "Unique identifier of the audit filter.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the audit filter (1-63 alphanumeric characters, must start/end with letter or number).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"bucket_name": schema.StringAttribute{
@@ -143,7 +151,7 @@ func (r *bucketAuditFilterResource) Create(ctx context.Context, req resource.Cre
 		S3Prefixes: s3Prefixes,
 	}
 
-	filter, err := r.client.PostBucketAuditFilter(ctx, data.BucketName.ValueString(), body)
+	filter, err := r.client.PostBucketAuditFilter(ctx, data.Name.ValueString(), data.BucketName.ValueString(), body)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating bucket audit filter", err.Error())
 		return
@@ -290,6 +298,7 @@ func (r *bucketAuditFilterResource) ImportState(ctx context.Context, req resourc
 // mapBucketAuditFilterToModel maps a client.BucketAuditFilter to the Terraform model.
 func mapBucketAuditFilterToModel(filter *client.BucketAuditFilter, data *bucketAuditFilterModel) {
 	data.ID = types.StringValue(filter.Name)
+	data.Name = types.StringValue(filter.Name)
 	data.BucketName = types.StringValue(filter.Bucket.Name)
 
 	// Convert []string to types.List for actions.

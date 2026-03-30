@@ -22,8 +22,8 @@ func (c *FlashBladeClient) GetBucketAuditFilter(ctx context.Context, bucketName 
 
 // PostBucketAuditFilter creates a bucket audit filter for the given bucket.
 // The API requires ?names= with the bucket name on POST.
-func (c *FlashBladeClient) PostBucketAuditFilter(ctx context.Context, bucketName string, body BucketAuditFilterPost) (*BucketAuditFilter, error) {
-	path := "/buckets/audit-filters?bucket_names=" + url.QueryEscape(bucketName)
+func (c *FlashBladeClient) PostBucketAuditFilter(ctx context.Context, filterName string, bucketName string, body BucketAuditFilterPost) (*BucketAuditFilter, error) {
+	path := "/buckets/audit-filters?names=" + url.QueryEscape(filterName) + "&bucket_names=" + url.QueryEscape(bucketName)
 	var resp ListResponse[BucketAuditFilter]
 	if err := c.post(ctx, path, body, &resp); err != nil {
 		return nil, err
