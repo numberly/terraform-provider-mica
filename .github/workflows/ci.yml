@@ -22,8 +22,46 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Run unit tests
-        run: go test ./internal/... -count=1 -timeout 5m
+      - name: Run unit tests with coverage
+        run: go test -coverpkg=github.com/numberly/opentofu-provider-flashblade/internal/... -coverprofile=coverage.out ./internal/... -count=1 -timeout 5m
+
+      - name: Generate coverage badge
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          PCT=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | tr -d '%')
+          # Color: red < 50, yellow < 70, green >= 70
+          if (( $(echo "$PCT < 50" | bc -l) )); then COLOR="e05d44"
+          elif (( $(echo "$PCT < 70" | bc -l) )); then COLOR="dfb317"
+          else COLOR="44cc11"; fi
+          mkdir -p .github/badges
+          cat > .github/badges/coverage.svg << BADGE
+          <svg xmlns="http://www.w3.org/2000/svg" width="106" height="20">
+            <linearGradient id="b" x2="0" y2="100%">
+              <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+              <stop offset="1" stop-opacity=".1"/>
+            </linearGradient>
+            <mask id="a"><rect width="106" height="20" rx="3" fill="#fff"/></mask>
+            <g mask="url(#a)">
+              <path fill="#555" d="M0 0h61v20H0z"/>
+              <path fill="#${COLOR}" d="M61 0h45v20H61z"/>
+              <path fill="url(#b)" d="M0 0h106v20H0z"/>
+            </g>
+            <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="11">
+              <text x="30.5" y="15" fill="#010101" fill-opacity=".3">coverage</text>
+              <text x="30.5" y="14">coverage</text>
+              <text x="83" y="15" fill="#010101" fill-opacity=".3">${PCT}%</text>
+              <text x="83" y="14">${PCT}%</text>
+            </g>
+          </svg>
+          BADGE
+
+      - name: Commit coverage badge
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/badges/coverage.svg
+          git diff --cached --quiet || git commit -m "ci: update coverage badge [skip ci]" && git push
 
   lint:
     name: Lint

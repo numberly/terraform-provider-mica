@@ -1,6 +1,7 @@
 # Terraform Provider FlashBlade
 
 [![CI](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml/badge.svg)](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml)
+![Coverage](https://raw.githubusercontent.com/numberly/opentofu-provider-flashblade/main/.github/badges/coverage.svg)
 
 Terraform provider for [Pure Storage FlashBlade](https://www.purestorage.com/products/file-and-object/flashblade.html), managing storage resources via the FlashBlade REST API v2.22.
 
