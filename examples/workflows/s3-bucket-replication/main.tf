@@ -228,8 +228,9 @@ resource "flashblade_object_store_access_key" "secondary" {
   provider             = flashblade.secondary
   object_store_account = flashblade_object_store_account.secondary.name
 
-  # Cross-array replication: set the same secret as the primary key
-  # so both sides can authenticate against each other.
+  # Cross-array replication: share the same name and secret as the primary key.
+  # The API requires both name and secret_access_key when providing an explicit secret.
+  name              = flashblade_object_store_access_key.primary.name
   secret_access_key = flashblade_object_store_access_key.primary.secret_access_key
 }
 
@@ -239,9 +240,10 @@ resource "flashblade_object_store_access_key" "secondary" {
 # Primary stores secondary's access key to authenticate replication writes.
 # Secondary stores primary's access key for the reverse direction.
 
+# Name must be formatted as <remote-name>/<credentials-name>
 resource "flashblade_object_store_remote_credentials" "primary_to_secondary" {
   provider          = flashblade.primary
-  name              = "secondary-creds"
+  name              = "secondary/secondary-creds"
   access_key_id     = flashblade_object_store_access_key.secondary.access_key_id
   secret_access_key = flashblade_object_store_access_key.secondary.secret_access_key
   remote_name       = "secondary"
@@ -249,7 +251,7 @@ resource "flashblade_object_store_remote_credentials" "primary_to_secondary" {
 
 resource "flashblade_object_store_remote_credentials" "secondary_to_primary" {
   provider          = flashblade.secondary
-  name              = "primary-creds"
+  name              = "primary/primary-creds"
   access_key_id     = flashblade_object_store_access_key.primary.access_key_id
   secret_access_key = flashblade_object_store_access_key.primary.secret_access_key
   remote_name       = "primary"
