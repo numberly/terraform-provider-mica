@@ -13,18 +13,17 @@ Manages an individual rule within a FlashBlade bucket access policy.
 ## Example Usage
 
 ```terraform
+# Note: effect is read-only (always "allow", set by the API).
+# The principals format depends on your FlashBlade firmware version.
 resource "flashblade_bucket_access_policy_rule" "example" {
   bucket_name = "my-bucket"
   name        = "allow-read"
 
-  # Grant read-only access to the bucket and its objects
-  actions = ["s3:GetObject", "s3:ListBucket"]
-  effect  = "allow"
+  actions    = ["s3:GetObject", "s3:ListBucket"]
+  principals = ["my-account/admin"]
+  resources  = ["*"]
 
-  resources = [
-    "arn:aws:s3:::my-bucket",
-    "arn:aws:s3:::my-bucket/*",
-  ]
+  depends_on = [flashblade_bucket_access_policy.example]
 }
 ```
 
@@ -35,7 +34,7 @@ resource "flashblade_bucket_access_policy_rule" "example" {
 
 - `actions` (List of String) List of S3 actions this rule applies to (e.g. s3:GetObject).
 - `bucket_name` (String) The name of the bucket this rule belongs to. Changing this forces a new resource.
-- `principals` (List of String) List of principals this rule applies to (flattened from principals.all).
+- `principals` (List of String) List of principals this rule applies to (mapped to principals.all in the API). Note: the accepted format depends on the FlashBlade firmware version — consult your array documentation for valid principal values.
 - `resources` (List of String) List of S3 resource ARNs this rule applies to.
 
 ### Optional

@@ -52,7 +52,7 @@ func (r *qosPolicyMemberResource) Metadata(_ context.Context, _ resource.Metadat
 func (r *qosPolicyMemberResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Version:     0,
-		Description: "Assigns a bucket or file system as a member of a FlashBlade QoS policy.",
+		Description: "Assigns a file system or realm as a member of a FlashBlade QoS policy. Note: bucket assignment is not supported on FlashBlade API v2.22 — only file-systems and realms are valid member types.",
 		Attributes: map[string]schema.Attribute{
 			"policy_name": schema.StringAttribute{
 				Required:    true,
@@ -63,15 +63,17 @@ func (r *qosPolicyMemberResource) Schema(ctx context.Context, _ resource.SchemaR
 			},
 			"member_name": schema.StringAttribute{
 				Required:    true,
-				Description: "The name of the bucket or file system to assign. Changing this forces a new resource.",
+				Description: "The name of the file system or realm to assign. Changing this forces a new resource.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"member_type": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The type of the member (e.g. buckets, file-systems). Inferred from the API response.",
+				Required:    true,
+				Description: "The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,

@@ -1,13 +1,12 @@
+# Note: effect is read-only (always "allow", set by the API).
+# The principals format depends on your FlashBlade firmware version.
 resource "flashblade_bucket_access_policy_rule" "example" {
   bucket_name = "my-bucket"
   name        = "allow-read"
 
-  # Grant read-only access to the bucket and its objects
-  actions = ["s3:GetObject", "s3:ListBucket"]
-  effect  = "allow"
+  actions    = ["s3:GetObject", "s3:ListBucket"]
+  principals = ["my-account/admin"]
+  resources  = ["*"]
 
-  resources = [
-    "arn:aws:s3:::my-bucket",
-    "arn:aws:s3:::my-bucket/*",
-  ]
+  depends_on = [flashblade_bucket_access_policy.example]
 }

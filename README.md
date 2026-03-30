@@ -73,10 +73,10 @@ Environment variables: `FLASHBLADE_HOST`, `FLASHBLADE_API_TOKEN`.
 |----------|:----------:|-------------|
 | `flashblade_lifecycle_rule` | ✅ | Per-bucket lifecycle rule (version retention, multipart cleanup) |
 | `flashblade_bucket_access_policy` | ✅ | Per-bucket IAM-style access policy |
-| `flashblade_bucket_access_policy_rule` | — | Rule within a bucket access policy |
+| `flashblade_bucket_access_policy_rule` | — | Rule within a bucket access policy (principals format varies by firmware) |
 | `flashblade_bucket_audit_filter` | ✅ | Per-bucket S3 audit filter (actions + prefix) |
 | `flashblade_qos_policy` | ✅ | QoS policy (bandwidth + IOPS limits) |
-| `flashblade_qos_policy_member` | — | Assign QoS policy to buckets or file systems |
+| `flashblade_qos_policy_member` | — | Assign QoS policy to file systems or realms (buckets not supported on API v2.22) |
 
 ### Servers & Exports
 

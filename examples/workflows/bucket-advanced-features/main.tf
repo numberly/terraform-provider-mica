@@ -118,12 +118,13 @@ resource "flashblade_bucket_access_policy" "this" {
   bucket_name = flashblade_bucket.this.name
 }
 
+# Note: effect is read-only (always "allow", set by the API).
+# The principals format depends on your FlashBlade firmware version.
 resource "flashblade_bucket_access_policy_rule" "read_only" {
   bucket_name = flashblade_bucket.this.name
   name        = "allowread"
   actions     = ["s3:GetObject", "s3:ListBucket"]
-  effect      = "allow"
-  principals  = ["*"]
+  principals  = ["${var.account_name}/admin"]
   resources   = ["*"]
 
   depends_on = [flashblade_bucket_access_policy.this]
@@ -150,8 +151,10 @@ resource "flashblade_qos_policy" "standard" {
   max_total_ops_per_sec   = 10000       # 10k IOPS
 }
 
-resource "flashblade_qos_policy_member" "bucket" {
-  policy_name = flashblade_qos_policy.standard.name
-  member_name = flashblade_bucket.this.name
-  member_type = "buckets"
-}
+# Note: QoS member_type only supports "file-systems" and "realms" on API v2.22.
+# Bucket QoS assignment is managed via the bucket's qos_policy attribute instead.
+# resource "flashblade_qos_policy_member" "bucket" {
+#   policy_name = flashblade_qos_policy.standard.name
+#   member_name = "my-filesystem"
+#   member_type = "file-systems"
+# }

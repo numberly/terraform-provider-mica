@@ -3,20 +3,23 @@
 page_title: "flashblade_qos_policy_member Resource - flashblade"
 subcategory: ""
 description: |-
-  Assigns a bucket or file system as a member of a FlashBlade QoS policy.
+  Assigns a file system or realm as a member of a FlashBlade QoS policy. Note: bucket assignment is not supported on FlashBlade API v2.22 — only file-systems and realms are valid member types.
 ---
 
 # flashblade_qos_policy_member (Resource)
 
-Assigns a bucket or file system as a member of a FlashBlade QoS policy.
+Assigns a file system or realm as a member of a FlashBlade QoS policy. Note: bucket assignment is not supported on FlashBlade API v2.22 — only file-systems and realms are valid member types.
 
 ## Example Usage
 
 ```terraform
+# Assign a file system to a QoS policy.
+# Valid member_type values: "file-systems", "realms"
+# Note: "buckets" is NOT supported on FlashBlade API v2.22.
 resource "flashblade_qos_policy_member" "example" {
   policy_name = "my-qos-policy"
-  member_name = "my-bucket"
-  member_type = "buckets"
+  member_name = "my-filesystem"
+  member_type = "file-systems"
 }
 ```
 
@@ -25,12 +28,12 @@ resource "flashblade_qos_policy_member" "example" {
 
 ### Required
 
-- `member_name` (String) The name of the bucket or file system to assign. Changing this forces a new resource.
+- `member_name` (String) The name of the file system or realm to assign. Changing this forces a new resource.
+- `member_type` (String) The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
 - `policy_name` (String) The name of the QoS policy. Changing this forces a new resource.
 
 ### Optional
 
-- `member_type` (String) The type of the member (e.g. buckets, file-systems). Inferred from the API response.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 <a id="nestedatt--timeouts"></a>

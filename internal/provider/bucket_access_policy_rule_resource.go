@@ -86,7 +86,7 @@ func (r *bucketAccessPolicyRuleResource) Schema(ctx context.Context, _ resource.
 			"principals": schema.ListAttribute{
 				Required:    true,
 				ElementType: types.StringType,
-				Description: "List of principals this rule applies to (flattened from principals.all).",
+				Description: "List of principals this rule applies to (mapped to principals.all in the API). Note: the accepted format depends on the FlashBlade firmware version — consult your array documentation for valid principal values.",
 			},
 			"resources": schema.ListAttribute{
 				Required:    true,
