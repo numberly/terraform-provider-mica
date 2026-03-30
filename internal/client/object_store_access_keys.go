@@ -56,9 +56,18 @@ func (c *FlashBladeClient) ListObjectStoreAccessKeys(ctx context.Context, opts L
 // PostObjectStoreAccessKey creates a new object store access key.
 // The response includes secret_access_key — callers MUST capture it immediately as it is
 // never returned again by any subsequent API call.
-func (c *FlashBladeClient) PostObjectStoreAccessKey(ctx context.Context, body ObjectStoreAccessKeyPost) (*ObjectStoreAccessKey, error) {
+//
+// When body.SecretAccessKey is non-empty, the API requires a ?names= query parameter
+// with the full key name (format: <account>/<user>/<key_id>). In this case, names must
+// be provided by the caller. When SecretAccessKey is empty, the API auto-generates both
+// the key name and the secret.
+func (c *FlashBladeClient) PostObjectStoreAccessKey(ctx context.Context, names string, body ObjectStoreAccessKeyPost) (*ObjectStoreAccessKey, error) {
+	path := "/object-store-access-keys"
+	if names != "" {
+		path += "?names=" + url.QueryEscape(names)
+	}
 	var resp ListResponse[ObjectStoreAccessKey]
-	if err := c.post(ctx, "/object-store-access-keys", body, &resp); err != nil {
+	if err := c.post(ctx, path, body, &resp); err != nil {
 		return nil, err
 	}
 	if len(resp.Items) == 0 {

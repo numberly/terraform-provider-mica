@@ -59,10 +59,12 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 		Description: "Manages a FlashBlade object store access key. Access keys are immutable — any attribute change forces replacement. The secret_access_key can be optionally provided for cross-array replication (sharing the same credentials across arrays). When omitted, the API generates a random secret. The secret is stored in state (encrypted) and marked sensitive.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
+				Optional:    true,
 				Computed:    true,
-				Description: "The access key name (format: <account>/admin/<key-id>). Assigned by the API.",
+				Description: "The access key name (format: <account>/admin/<key-id>). When providing a secret_access_key for cross-array replication, this must be set to the same name as the source key. When omitted, the API assigns it automatically.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"object_store_account": schema.StringAttribute{
@@ -172,7 +174,14 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 		post.SecretAccessKey = data.SecretAccessKey.ValueString()
 	}
 
-	key, err := r.client.PostObjectStoreAccessKey(ctx, post)
+	// When secret_access_key is provided, the API requires ?names= as well.
+	// The user must set name to the full key name (e.g. "account/admin/PSFBxxxxxxxx").
+	var names string
+	if !data.Name.IsNull() && !data.Name.IsUnknown() {
+		names = data.Name.ValueString()
+	}
+
+	key, err := r.client.PostObjectStoreAccessKey(ctx, names, post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating object store access key", err.Error())
 		return
