@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -202,7 +203,13 @@ func (r *bucketAccessPolicyResource) ImportState(ctx context.Context, req resour
 	}
 
 	var data bucketAccessPolicyModel
-	data.Timeouts = nullTimeoutsValue()
+	data.Timeouts = timeouts.Value{
+		Object: types.ObjectNull(map[string]attr.Type{
+			"create": types.StringType,
+			"read":   types.StringType,
+			"delete": types.StringType,
+		}),
+	}
 
 	mapBucketAccessPolicyToModel(policy, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

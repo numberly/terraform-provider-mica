@@ -300,6 +300,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewRemoteCredentialsResource,
 		NewBucketReplicaLinkResource,
 		NewLifecycleRuleResource,
+		NewBucketAccessPolicyResource,
+		NewBucketAccessPolicyRuleResource,
 	}
 }
 
@@ -331,5 +333,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewRemoteCredentialsDataSource,
 		NewBucketReplicaLinkDataSource,
 		NewLifecycleRuleDataSource,
+		NewBucketAccessPolicyDataSource,
 	}
 }
