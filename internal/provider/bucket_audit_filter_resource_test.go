@@ -329,7 +329,7 @@ func TestBucketAuditFilterResource_Delete(t *testing.T) {
 	}
 
 	// Verify it's gone.
-	_, err := r.client.GetBucketAuditFilter(context.Background(), "del-bucket")
+	_, err := r.client.GetBucketAuditFilter(context.Background(), "delbucket-audit", "del-bucket")
 	if err == nil || !client.IsNotFound(err) {
 		t.Errorf("expected filter to be deleted, got: %v", err)
 	}
@@ -355,7 +355,7 @@ func TestBucketAuditFilterResource_Import(t *testing.T) {
 	importResp := &resource.ImportStateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
 	}
-	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "baf-imp-1"}, importResp)
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "baf-imp-1/imp-bucket"}, importResp)
 
 	if importResp.Diagnostics.HasError() {
 		t.Fatalf("ImportState returned error: %s", importResp.Diagnostics)

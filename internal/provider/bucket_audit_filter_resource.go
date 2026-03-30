@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -177,7 +178,7 @@ func (r *bucketAuditFilterResource) Read(ctx context.Context, req resource.ReadR
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	filter, err := r.client.GetBucketAuditFilter(ctx, data.Name.ValueString())
+	filter, err := r.client.GetBucketAuditFilter(ctx, data.Name.ValueString(), data.BucketName.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -232,7 +233,7 @@ func (r *bucketAuditFilterResource) Update(ctx context.Context, req resource.Upd
 	}
 
 	if needsPatch {
-		_, err := r.client.PatchBucketAuditFilter(ctx, state.Name.ValueString(), patch)
+		_, err := r.client.PatchBucketAuditFilter(ctx, state.Name.ValueString(), state.BucketName.ValueString(), patch)
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating bucket audit filter", err.Error())
 			return
@@ -240,7 +241,7 @@ func (r *bucketAuditFilterResource) Update(ctx context.Context, req resource.Upd
 	}
 
 	// Re-read to refresh computed fields.
-	filter, err := r.client.GetBucketAuditFilter(ctx, plan.Name.ValueString())
+	filter, err := r.client.GetBucketAuditFilter(ctx, plan.Name.ValueString(), plan.BucketName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading bucket audit filter after update", err.Error())
 		return
@@ -266,7 +267,7 @@ func (r *bucketAuditFilterResource) Delete(ctx context.Context, req resource.Del
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	err := r.client.DeleteBucketAuditFilter(ctx, data.Name.ValueString())
+	err := r.client.DeleteBucketAuditFilter(ctx, data.Name.ValueString(), data.BucketName.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			return
@@ -276,11 +277,16 @@ func (r *bucketAuditFilterResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-// ImportState imports an existing bucket audit filter by filter name.
+// ImportState imports an existing bucket audit filter by composite ID "filterName/bucketName".
 func (r *bucketAuditFilterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	filterName := req.ID
+	parts := strings.SplitN(req.ID, "/", 2)
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError("Invalid import ID", "Expected format: <filter_name>/<bucket_name>")
+		return
+	}
+	filterName, bucketName := parts[0], parts[1]
 
-	filter, err := r.client.GetBucketAuditFilter(ctx, filterName)
+	filter, err := r.client.GetBucketAuditFilter(ctx, filterName, bucketName)
 	if err != nil {
 		resp.Diagnostics.AddError("Error importing bucket audit filter", err.Error())
 		return
