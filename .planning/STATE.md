@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: completed
-stopped_at: Completed 24-02-PLAN.md
-last_updated: "2026-03-30T10:30:09.748Z"
-last_activity: 2026-03-30 — Completed 24-02 lifecycle rule resource and data source
+status: in-progress
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-03-30T10:39:53.484Z"
+last_activity: 2026-03-30 — Completed 25-01 bucket access policies client and mock
 progress:
   total_phases: 27
   completed_phases: 23
-  total_plans: 58
-  completed_plans: 56
+  total_plans: 60
+  completed_plans: 57
   percent: 97
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 24 — Lifecycle Rules (v2.1)
+**Current focus:** Phase 25 — Bucket Access Policies (v2.1)
 
 ## Current Position
 
-Phase: 24 of 27 (Lifecycle Rules)
-Plan: 2 of 2 in current phase
-Status: Phase Complete
-Last activity: 2026-03-30 — Completed 24-02 lifecycle rule resource and data source
+Phase: 25 of 27 (Bucket Access Policies)
+Plan: 1 of 2 in current phase
+Status: In Progress
+Last activity: 2026-03-30 — Completed 25-01 bucket access policies client and mock
 
-Progress: [██████████] 97% (56/58 plans complete)
+Progress: [██████████] 95% (57/60 plans complete)
 
 ## Performance Metrics
 
@@ -59,6 +59,8 @@ Progress: [██████████] 97% (56/58 plans complete)
 - [Phase 24-lifecycle-rules]: Composite name format bucketName/ruleID for PATCH and DELETE identification
 - [Phase 24-lifecycle-rules]: Optional int64 fields mapped to null when API returns 0 (preserves Terraform null semantics)
 - [Phase 24-lifecycle-rules]: PATCH sends only changed fields via pointer comparison
+- [Phase 25-bucket-access-policies]: Policy store keyed by bucket name (one policy per bucket)
+- [Phase 25-bucket-access-policies]: Rules stored inside policy object, separate endpoint handlers
 
 ### Pending Todos
 
@@ -70,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:27:35Z
-Stopped at: Completed 24-02-PLAN.md
+Last session: 2026-03-30T10:39:20Z
+Stopped at: Completed 25-01-PLAN.md
 Resume file: None
