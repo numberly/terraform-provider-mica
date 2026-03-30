@@ -190,11 +190,16 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 	// Map all response fields — secret_access_key is only available here.
 	data.Name = types.StringValue(key.Name)
 	data.AccessKeyID = types.StringValue(key.AccessKeyID)
-	// When the user provided a secret_access_key, the API may not echo it back.
-	// Preserve the planned value to avoid "inconsistent values for sensitive attribute".
-	if key.SecretAccessKey != "" {
+	// secret_access_key handling:
+	// - When user provided it (cross-array): keep the planned value exactly as-is.
+	//   The API may not echo it back, and Terraform requires the state value to
+	//   match the planned value for sensitive attributes.
+	// - When user did NOT provide it (API-generated): use the API response.
+	if key.SecretAccessKey != "" && (data.SecretAccessKey.IsNull() || data.SecretAccessKey.IsUnknown()) {
 		data.SecretAccessKey = types.StringValue(key.SecretAccessKey)
 	}
+	// If user provided secret_access_key, data.SecretAccessKey already holds the
+	// planned value — do not overwrite it.
 	data.Created = types.Int64Value(key.Created)
 	data.Enabled = types.BoolValue(key.Enabled)
 
