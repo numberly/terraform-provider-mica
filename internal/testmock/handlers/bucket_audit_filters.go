@@ -13,7 +13,6 @@ import (
 type bucketAuditFilterStore struct {
 	mu      sync.Mutex
 	filters map[string]*client.BucketAuditFilter // keyed by bucket name
-	nextID  int
 }
 
 // RegisterBucketAuditFilterHandlers registers CRUD handlers for

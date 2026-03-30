@@ -929,22 +929,6 @@ func eradicationConfigTFValue(delay int64, mode, manualErad string) tftypes.Valu
 	})
 }
 
-// objectLockConfigTFValue builds a tftypes.Value for the object_lock_config nested object.
-func objectLockConfigTFValue(freezeLocked bool, defaultRetention int64, retentionMode string, lockEnabled bool) tftypes.Value {
-	typ := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"freeze_locked_objects":  tftypes.Bool,
-		"default_retention":      tftypes.Number,
-		"default_retention_mode": tftypes.String,
-		"object_lock_enabled":    tftypes.Bool,
-	}}
-	return tftypes.NewValue(typ, map[string]tftypes.Value{
-		"freeze_locked_objects":  tftypes.NewValue(tftypes.Bool, freezeLocked),
-		"default_retention":      tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(defaultRetention)),
-		"default_retention_mode": tftypes.NewValue(tftypes.String, retentionMode),
-		"object_lock_enabled":    tftypes.NewValue(tftypes.Bool, lockEnabled),
-	})
-}
-
 // publicAccessConfigTFValue builds a tftypes.Value for the public_access_config nested object.
 func publicAccessConfigTFValue(blockNewPolicies, blockAccess bool) tftypes.Value {
 	typ := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
