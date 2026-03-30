@@ -108,40 +108,71 @@ type ObjectStoreAccountPatch struct {
 	HardLimitEnabled *bool   `json:"hard_limit_enabled,omitempty"`
 }
 
+// EradicationConfig represents the eradication configuration for a bucket.
+type EradicationConfig struct {
+	EradicationDelay int64  `json:"eradication_delay,omitempty"`
+	EradicationMode  string `json:"eradication_mode,omitempty"`
+	ManualEradication string `json:"manual_eradication,omitempty"`
+}
+
+// ObjectLockConfig represents the S3 object lock configuration for a bucket.
+type ObjectLockConfig struct {
+	FreezeLockgedObjects bool   `json:"freeze_locked_objects,omitempty"`
+	DefaultRetention     int64  `json:"default_retention,omitempty"`
+	DefaultRetentionMode string `json:"default_retention_mode,omitempty"`
+	ObjectLockEnabled    bool   `json:"object_lock_enabled,omitempty"`
+}
+
+// PublicAccessConfig represents the public access configuration for a bucket.
+type PublicAccessConfig struct {
+	BlockNewPublicPolicies bool `json:"block_new_public_policies,omitempty"`
+	BlockPublicAccess      bool `json:"block_public_access,omitempty"`
+}
+
 // Bucket represents a FlashBlade object store bucket from GET responses.
 type Bucket struct {
-	ID               string         `json:"id"`
-	Name             string         `json:"name"`
-	Account          NamedReference `json:"account"`
-	Created          int64          `json:"created,omitempty"`
-	Destroyed        bool           `json:"destroyed"`
-	TimeRemaining    int64          `json:"time_remaining,omitempty"`
-	Versioning       string         `json:"versioning,omitempty"`
-	QuotaLimit       int64          `json:"quota_limit,omitempty"`
-	HardLimitEnabled bool           `json:"hard_limit_enabled"`
-	ObjectCount      int64          `json:"object_count,omitempty"`
-	BucketType       string         `json:"bucket_type,omitempty"`
-	RetentionLock    string         `json:"retention_lock,omitempty"`
-	Space            Space          `json:"space"`
+	ID               string             `json:"id"`
+	Name             string             `json:"name"`
+	Account          NamedReference     `json:"account"`
+	Created          int64              `json:"created,omitempty"`
+	Destroyed        bool               `json:"destroyed"`
+	TimeRemaining    int64              `json:"time_remaining,omitempty"`
+	Versioning       string             `json:"versioning,omitempty"`
+	QuotaLimit       int64              `json:"quota_limit,omitempty"`
+	HardLimitEnabled bool               `json:"hard_limit_enabled"`
+	ObjectCount      int64              `json:"object_count,omitempty"`
+	BucketType       string             `json:"bucket_type,omitempty"`
+	RetentionLock    string             `json:"retention_lock,omitempty"`
+	EradicationConfig  EradicationConfig  `json:"eradication_config"`
+	ObjectLockConfig   ObjectLockConfig   `json:"object_lock_config"`
+	PublicAccessConfig PublicAccessConfig  `json:"public_access_config"`
+	PublicStatus       string             `json:"public_status,omitempty"`
+	Space            Space              `json:"space"`
 }
 
 // BucketPost contains the fields accepted on POST /buckets.
 // NOTE: quota_limit must be serialized as a string per FlashBlade API.
 // NOTE: versioning is NOT a valid POST parameter — use PATCH after creation.
+// NOTE: public_access_config is NOT valid on POST — PATCH only.
 type BucketPost struct {
-	Account          NamedReference `json:"account"`
-	QuotaLimit       string         `json:"quota_limit,omitempty"`
-	HardLimitEnabled bool           `json:"hard_limit_enabled,omitempty"`
-	RetentionLock    string         `json:"retention_lock,omitempty"`
+	Account           NamedReference     `json:"account"`
+	QuotaLimit        string             `json:"quota_limit,omitempty"`
+	HardLimitEnabled  bool               `json:"hard_limit_enabled,omitempty"`
+	RetentionLock     string             `json:"retention_lock,omitempty"`
+	EradicationConfig *EradicationConfig `json:"eradication_config,omitempty"`
+	ObjectLockConfig  *ObjectLockConfig  `json:"object_lock_config,omitempty"`
 }
 
 // BucketPatch contains pointer fields for PATCH semantics on /buckets.
 type BucketPatch struct {
-	Destroyed        *bool   `json:"destroyed,omitempty"`
-	Versioning       *string `json:"versioning,omitempty"`
-	QuotaLimit       *string `json:"quota_limit,omitempty"`
-	HardLimitEnabled *bool   `json:"hard_limit_enabled,omitempty"`
-	RetentionLock    *string `json:"retention_lock,omitempty"`
+	Destroyed          *bool              `json:"destroyed,omitempty"`
+	Versioning         *string            `json:"versioning,omitempty"`
+	QuotaLimit         *string            `json:"quota_limit,omitempty"`
+	HardLimitEnabled   *bool              `json:"hard_limit_enabled,omitempty"`
+	RetentionLock      *string            `json:"retention_lock,omitempty"`
+	EradicationConfig  *EradicationConfig `json:"eradication_config,omitempty"`
+	ObjectLockConfig   *ObjectLockConfig  `json:"object_lock_config,omitempty"`
+	PublicAccessConfig *PublicAccessConfig `json:"public_access_config,omitempty"`
 }
 
 // ObjectStoreAccessKey represents a FlashBlade object store access key.
