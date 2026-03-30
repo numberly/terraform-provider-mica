@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml/badge.svg)](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml)
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/SoulKyu/59bd98f69a5ecbb7e643402fde956fed/raw/coverage.json)
+![Go Version](https://img.shields.io/badge/go-1.25-00ADD8?logo=go&logoColor=white)
+![Terraform](https://img.shields.io/badge/terraform-%E2%89%A5_1.0-844FBA?logo=terraform&logoColor=white)
+[![Go Report Card](https://goreportcard.com/badge/github.com/numberly/opentofu-provider-flashblade)](https://goreportcard.com/report/github.com/numberly/opentofu-provider-flashblade)
+![Latest Release](https://img.shields.io/github/v/release/numberly/opentofu-provider-flashblade?sort=semver&label=release&color=blue)
 
 Terraform provider for [Pure Storage FlashBlade](https://www.purestorage.com/products/file-and-object/flashblade.html), managing storage resources via the FlashBlade REST API v2.22.
 
