@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: executing
-stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-03-30T10:02:31.815Z"
-last_activity: 2026-03-30 — Completed 23-01 bucket inline config attributes
+stopped_at: Completed 23-02-PLAN.md
+last_updated: "2026-03-30T10:07:19Z"
+last_activity: 2026-03-30 — Completed 23-02 bucket config block tests
 progress:
   total_phases: 27
   completed_phases: 22
   total_plans: 56
-  completed_plans: 54
-  percent: 95
+  completed_plans: 55
+  percent: 96
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 23 of 27 (Bucket Inline Attributes)
-Plan: 1 of TBD in current phase
+Plan: 2 of TBD in current phase
 Status: Executing
-Last activity: 2026-03-30 — Completed 23-01 bucket inline config attributes
+Last activity: 2026-03-30 — Completed 23-02 bucket config block tests
 
-Progress: [██████████] 95% (54/56 plans complete)
+Progress: [██████████] 96% (55/56 plans complete)
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Progress: [██████████] 95% (54/56 plans complete)
 - [v2.1]: QoS + audit filters combined in Phase 26 (coarse granularity)
 - [v2.1]: Testing + docs consolidated into Phase 27 (cross-cutting)
 - [Phase 23]: public_access_config excluded from POST (API spec constraint, PATCH only)
+- [Phase 23]: Mock handler defaults: 24h eradication delay, retention-based mode (matches real API)
 
 ### Pending Todos
 
@@ -65,6 +66,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:02:31.808Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-03-30T10:07:19Z
+Stopped at: Completed 23-02-PLAN.md
 Resume file: None

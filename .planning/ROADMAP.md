@@ -394,7 +394,7 @@ Plans:
 
 **Milestone Goal:** Complete bucket management with lifecycle rules, bucket access policies, audit filters, eradication config, object lock, public access config, and QoS policy support.
 
-- [ ] **Phase 23: Bucket Inline Attributes** - Extend bucket resource with eradication, object lock, and public access config
+- [x] **Phase 23: Bucket Inline Attributes** - Extend bucket resource with eradication, object lock, and public access config (completed 2026-03-30)
 - [ ] **Phase 24: Lifecycle Rules** - New resource and data source for bucket lifecycle rule management
 - [ ] **Phase 25: Bucket Access Policies** - New resource for IAM-style bucket access policies and rules
 - [ ] **Phase 26: Audit Filters & QoS Policies** - New resources for audit filtering and bandwidth/IOPS limiting
@@ -491,7 +491,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 20. Code Quality -- Validators & Dedup | v2.0.1 | 2/2 | Complete | 2026-03-29 |
 | 21. Dead Code Removal & Modernization | v2.0.1 | 1/1 | Complete | 2026-03-29 |
 | 22. Test Coverage | v2.0.1 | 2/2 | Complete | 2026-03-29 |
-| 23. Bucket Inline Attributes | 1/2 | In Progress|  | - |
+| 23. Bucket Inline Attributes | 2/2 | Complete   | 2026-03-30 | - |
 | 24. Lifecycle Rules | v2.1 | 0/TBD | Not started | - |
 | 25. Bucket Access Policies | v2.1 | 0/TBD | Not started | - |
 | 26. Audit Filters & QoS Policies | v2.1 | 0/TBD | Not started | - |
