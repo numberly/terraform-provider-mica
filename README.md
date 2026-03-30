@@ -1,8 +1,7 @@
 # Terraform Provider FlashBlade
 
 [![CI](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml/badge.svg)](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml)
-<!-- Replace COVERAGE_GIST_ID with your actual gist ID after setup -->
-![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/soulkyu/COVERAGE_GIST_ID/raw/coverage.json)
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/SoulKyu/59bd98f69a5ecbb7e643402fde956fed/raw/coverage.json)
 
 Terraform provider for [Pure Storage FlashBlade](https://www.purestorage.com/products/file-and-object/flashblade.html), managing storage resources via the FlashBlade REST API v2.22.
 
