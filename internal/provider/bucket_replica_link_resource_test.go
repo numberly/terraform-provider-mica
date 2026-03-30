@@ -60,10 +60,6 @@ func buildBucketReplicaLinkType() tftypes.Object {
 		"direction":                 tftypes.String,
 		"status":                    tftypes.String,
 		"status_details":            tftypes.String,
-		"lag":                       tftypes.Number,
-		"recovery_point":            tftypes.Number,
-		"object_backlog_count":      tftypes.Number,
-		"object_backlog_total_size": tftypes.Number,
 		"timeouts":                  timeoutsType,
 	}}
 }
@@ -87,10 +83,6 @@ func nullBucketReplicaLinkConfig() map[string]tftypes.Value {
 		"direction":                 tftypes.NewValue(tftypes.String, nil),
 		"status":                    tftypes.NewValue(tftypes.String, nil),
 		"status_details":            tftypes.NewValue(tftypes.String, nil),
-		"lag":                       tftypes.NewValue(tftypes.Number, nil),
-		"recovery_point":            tftypes.NewValue(tftypes.Number, nil),
-		"object_backlog_count":      tftypes.NewValue(tftypes.Number, nil),
-		"object_backlog_total_size": tftypes.NewValue(tftypes.Number, nil),
 		"timeouts":                  tftypes.NewValue(timeoutsType, nil),
 	}
 }
@@ -210,13 +202,7 @@ func TestUnit_BucketReplicaLink_Read(t *testing.T) {
 	if model.RemoteBucketName.ValueString() != "read-remote" {
 		t.Errorf("expected remote_bucket_name=read-remote, got %s", model.RemoteBucketName.ValueString())
 	}
-	// Lag, recovery_point, object_backlog_* should be populated (default 0 from mock).
-	if model.Lag.IsNull() || model.Lag.IsUnknown() {
-		t.Error("expected lag to be populated after Read")
-	}
-	if model.RecoveryPoint.IsNull() || model.RecoveryPoint.IsUnknown() {
-		t.Error("expected recovery_point to be populated after Read")
-	}
+	// Volatile metrics (lag, recovery_point, backlog) are only on the data source.
 }
 
 // TestUnit_BucketReplicaLink_Update_Pause verifies PATCH with paused=true pauses the link.
@@ -622,12 +608,5 @@ func TestUnit_BucketReplicaLink_Schema(t *testing.T) {
 		t.Error("status: expected Computed=true")
 	}
 
-	// lag: Computed.
-	lagAttr, ok := s.Attributes["lag"].(resschema.Int64Attribute)
-	if !ok {
-		t.Fatal("lag attribute not found or wrong type")
-	}
-	if !lagAttr.Computed {
-		t.Error("lag: expected Computed=true")
-	}
+	// Volatile metrics (lag, recovery_point, backlog) removed from resource — data source only.
 }

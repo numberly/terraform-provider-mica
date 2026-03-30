@@ -47,10 +47,6 @@ type bucketReplicaLinkModel struct {
 	Direction             types.String   `tfsdk:"direction"`
 	Status                types.String   `tfsdk:"status"`
 	StatusDetails         types.String   `tfsdk:"status_details"`
-	Lag                   types.Int64    `tfsdk:"lag"`
-	RecoveryPoint         types.Int64    `tfsdk:"recovery_point"`
-	ObjectBacklogCount    types.Int64    `tfsdk:"object_backlog_count"`
-	ObjectBacklogTotalSize types.Int64   `tfsdk:"object_backlog_total_size"`
 	Timeouts              timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -132,23 +128,10 @@ func (r *bucketReplicaLinkResource) Schema(ctx context.Context, _ resource.Schem
 				Computed:    true,
 				Description: "Additional status details.",
 			},
-			"lag": schema.Int64Attribute{
-				Computed:    true,
-				Description: "Replication lag in milliseconds. Volatile — changes on every read.",
-			},
-			"recovery_point": schema.Int64Attribute{
-				Computed:    true,
-				Description: "Recovery point timestamp in milliseconds. Volatile — changes on every read.",
-			},
-			"object_backlog_count": schema.Int64Attribute{
-				Computed:    true,
-				Description: "Number of objects in the replication backlog. Volatile — changes on every read.",
-			},
-			"object_backlog_total_size": schema.Int64Attribute{
-				Computed:    true,
-				Description: "Total size of objects in the replication backlog in bytes. Volatile — changes on every read.",
-			},
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+			// Volatile metrics (lag, recovery_point, object_backlog_count, object_backlog_total_size)
+			// are intentionally excluded from the resource. They change every second and cause
+			// perpetual drift. Use the data source to read them.
+"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
 				Update: true,
@@ -349,19 +332,9 @@ func mapBucketReplicaLinkToModel(link *client.BucketReplicaLink, data *bucketRep
 	data.Direction = stringOrNull(link.Direction)
 	data.Status = stringOrNull(link.Status)
 	data.StatusDetails = stringOrNull(link.StatusDetails)
-	data.Lag = types.Int64Value(link.Lag)
-	data.RecoveryPoint = types.Int64Value(link.RecoveryPoint)
-
 	if link.RemoteCredentials != nil {
 		data.RemoteCredentialsName = types.StringValue(link.RemoteCredentials.Name)
 	}
 	// If RemoteCredentials is nil, preserve the existing state value for this Optional field.
-
-	if link.ObjectBacklog != nil {
-		data.ObjectBacklogCount = types.Int64Value(link.ObjectBacklog.Count)
-		data.ObjectBacklogTotalSize = types.Int64Value(link.ObjectBacklog.TotalSize)
-	} else {
-		data.ObjectBacklogCount = types.Int64Value(0)
-		data.ObjectBacklogTotalSize = types.Int64Value(0)
-	}
+	// Volatile metrics (lag, recovery_point, object_backlog) are only on the data source.
 }
