@@ -59,10 +59,12 @@ func (r *bucketAccessPolicyRuleResource) Schema(ctx context.Context, _ resource.
 		Description: "Manages an individual rule within a FlashBlade bucket access policy.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
+				Optional:    true,
 				Computed:    true,
-				Description: "The auto-generated rule name assigned by the API.",
+				Description: "The rule name. When provided, the rule is created with this name. When omitted, the API assigns one automatically.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"bucket_name": schema.StringAttribute{
@@ -78,8 +80,11 @@ func (r *bucketAccessPolicyRuleResource) Schema(ctx context.Context, _ resource.
 				Description: "List of S3 actions this rule applies to (e.g. s3:GetObject).",
 			},
 			"effect": schema.StringAttribute{
-				Computed:    true,
-				Description: "The effect of the rule. Always 'allow' — read-only, set by the API.",
+				Required:    true,
+				Description: "The effect of the rule (e.g. 'allow').",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"principals": schema.ListAttribute{
 				Required:    true,
@@ -146,7 +151,7 @@ func (r *bucketAccessPolicyRuleResource) Create(ctx context.Context, req resourc
 
 	body := client.BucketAccessPolicyRulePost{
 		Actions: actions,
-		Effect:  "allow",
+		Effect:  data.Effect.ValueString(),
 		Principals: client.BucketAccessPolicyPrincipals{
 			All: principals,
 		},
