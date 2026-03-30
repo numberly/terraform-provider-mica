@@ -248,3 +248,39 @@ type BucketReplicaLinkPost struct {
 type BucketReplicaLinkPatch struct {
 	Paused *bool `json:"paused,omitempty"`
 }
+
+// LifecycleRule represents a FlashBlade lifecycle rule from GET responses.
+type LifecycleRule struct {
+	ID                                   string         `json:"id"`
+	Name                                 string         `json:"name"`
+	Bucket                               NamedReference `json:"bucket"`
+	RuleID                               string         `json:"rule_id"`
+	Prefix                               string         `json:"prefix"`
+	Enabled                              bool           `json:"enabled"`
+	AbortIncompleteMultipartUploadsAfter int64          `json:"abort_incomplete_multipart_uploads_after,omitempty"`
+	KeepCurrentVersionFor                int64          `json:"keep_current_version_for,omitempty"`
+	KeepCurrentVersionUntil              int64          `json:"keep_current_version_until,omitempty"`
+	KeepPreviousVersionFor               int64          `json:"keep_previous_version_for,omitempty"`
+	CleanupExpiredObjectDeleteMarker     bool           `json:"cleanup_expired_object_delete_marker,omitempty"`
+}
+
+// LifecycleRulePost contains the fields for POST /lifecycle-rules.
+type LifecycleRulePost struct {
+	Bucket                               NamedReference `json:"bucket"`
+	RuleID                               string         `json:"rule_id"`
+	Prefix                               string         `json:"prefix,omitempty"`
+	AbortIncompleteMultipartUploadsAfter int64          `json:"abort_incomplete_multipart_uploads_after,omitempty"`
+	KeepCurrentVersionFor                int64          `json:"keep_current_version_for,omitempty"`
+	KeepCurrentVersionUntil              int64          `json:"keep_current_version_until,omitempty"`
+	KeepPreviousVersionFor               int64          `json:"keep_previous_version_for,omitempty"`
+}
+
+// LifecycleRulePatch contains pointer fields for PATCH semantics on /lifecycle-rules.
+type LifecycleRulePatch struct {
+	Enabled                              *bool   `json:"enabled,omitempty"`
+	Prefix                               *string `json:"prefix,omitempty"`
+	AbortIncompleteMultipartUploadsAfter *int64  `json:"abort_incomplete_multipart_uploads_after,omitempty"`
+	KeepCurrentVersionFor                *int64  `json:"keep_current_version_for,omitempty"`
+	KeepCurrentVersionUntil              *int64  `json:"keep_current_version_until,omitempty"`
+	KeepPreviousVersionFor               *int64  `json:"keep_previous_version_for,omitempty"`
+}
