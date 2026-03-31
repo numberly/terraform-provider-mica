@@ -117,7 +117,7 @@ type EradicationConfig struct {
 
 // ObjectLockConfig represents the S3 object lock configuration for a bucket.
 type ObjectLockConfig struct {
-	FreezeLockgedObjects bool   `json:"freeze_locked_objects,omitempty"`
+	FreezeLockedObjects bool   `json:"freeze_locked_objects,omitempty"`
 	DefaultRetention     int64  `json:"default_retention,omitempty"`
 	DefaultRetentionMode string `json:"default_retention_mode,omitempty"`
 	ObjectLockEnabled    bool   `json:"object_lock_enabled,omitempty"`

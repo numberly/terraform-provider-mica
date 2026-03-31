@@ -1062,7 +1062,7 @@ func TestBucketResource_Read_MapsConfigBlocks(t *testing.T) {
 			ManualEradication: "enabled",
 		},
 		ObjectLockConfig: &client.ObjectLockConfig{
-			FreezeLockgedObjects: true,
+			FreezeLockedObjects: true,
 			DefaultRetention:     86400,
 			DefaultRetentionMode: "compliance",
 			ObjectLockEnabled:    true,

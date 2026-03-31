@@ -336,10 +336,10 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 	if !data.RetentionLock.IsNull() && !data.RetentionLock.IsUnknown() {
 		post.RetentionLock = data.RetentionLock.ValueString()
 	}
-	if cfg := extractEradicationConfig(ctx, data.EradicationConfig); cfg != nil {
+	if cfg := extractEradicationConfig(data.EradicationConfig); cfg != nil {
 		post.EradicationConfig = cfg
 	}
-	if cfg := extractObjectLockConfig(ctx, data.ObjectLockConfig); cfg != nil {
+	if cfg := extractObjectLockConfig(data.ObjectLockConfig); cfg != nil {
 		post.ObjectLockConfig = cfg
 	}
 	// public_access_config is NOT valid on POST — skip
@@ -475,13 +475,13 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		patch.RetentionLock = &v
 	}
 	if !plan.EradicationConfig.IsUnknown() && !plan.EradicationConfig.Equal(state.EradicationConfig) {
-		patch.EradicationConfig = extractEradicationConfig(ctx, plan.EradicationConfig)
+		patch.EradicationConfig = extractEradicationConfig(plan.EradicationConfig)
 	}
 	if !plan.ObjectLockConfig.IsUnknown() && !plan.ObjectLockConfig.Equal(state.ObjectLockConfig) {
-		patch.ObjectLockConfig = extractObjectLockConfig(ctx, plan.ObjectLockConfig)
+		patch.ObjectLockConfig = extractObjectLockConfig(plan.ObjectLockConfig)
 	}
 	if !plan.PublicAccessConfig.IsUnknown() && !plan.PublicAccessConfig.Equal(state.PublicAccessConfig) {
-		patch.PublicAccessConfig = extractPublicAccessConfig(ctx, plan.PublicAccessConfig)
+		patch.PublicAccessConfig = extractPublicAccessConfig(plan.PublicAccessConfig)
 	}
 
 	_, err := r.client.PatchBucket(ctx, state.ID.ValueString(), patch)
@@ -684,7 +684,7 @@ func mapEradicationConfigToObject(cfg client.EradicationConfig) (types.Object, d
 // mapObjectLockConfigToObject builds a types.Object from a client.ObjectLockConfig.
 func mapObjectLockConfigToObject(cfg client.ObjectLockConfig) (types.Object, diag.Diagnostics) {
 	return types.ObjectValue(objectLockConfigAttrTypes(), map[string]attr.Value{
-		"freeze_locked_objects":  types.BoolValue(cfg.FreezeLockgedObjects),
+		"freeze_locked_objects":  types.BoolValue(cfg.FreezeLockedObjects),
 		"default_retention":      types.Int64Value(cfg.DefaultRetention),
 		"default_retention_mode": types.StringValue(cfg.DefaultRetentionMode),
 		"object_lock_enabled":    types.BoolValue(cfg.ObjectLockEnabled),
@@ -701,7 +701,7 @@ func mapPublicAccessConfigToObject(cfg client.PublicAccessConfig) (types.Object,
 
 // extractEradicationConfig extracts a client.EradicationConfig from a plan types.Object.
 // Returns nil if the object is null or unknown.
-func extractEradicationConfig(ctx context.Context, obj types.Object) *client.EradicationConfig {
+func extractEradicationConfig(obj types.Object) *client.EradicationConfig {
 	if obj.IsNull() || obj.IsUnknown() {
 		return nil
 	}
@@ -721,14 +721,14 @@ func extractEradicationConfig(ctx context.Context, obj types.Object) *client.Era
 
 // extractObjectLockConfig extracts a client.ObjectLockConfig from a plan types.Object.
 // Returns nil if the object is null or unknown.
-func extractObjectLockConfig(ctx context.Context, obj types.Object) *client.ObjectLockConfig {
+func extractObjectLockConfig(obj types.Object) *client.ObjectLockConfig {
 	if obj.IsNull() || obj.IsUnknown() {
 		return nil
 	}
 	attrs := obj.Attributes()
 	cfg := &client.ObjectLockConfig{}
 	if v, ok := attrs["freeze_locked_objects"].(types.Bool); ok && !v.IsNull() && !v.IsUnknown() {
-		cfg.FreezeLockgedObjects = v.ValueBool()
+		cfg.FreezeLockedObjects = v.ValueBool()
 	}
 	if v, ok := attrs["default_retention"].(types.Int64); ok && !v.IsNull() && !v.IsUnknown() {
 		cfg.DefaultRetention = v.ValueInt64()
@@ -744,7 +744,7 @@ func extractObjectLockConfig(ctx context.Context, obj types.Object) *client.Obje
 
 // extractPublicAccessConfig extracts a client.PublicAccessConfig from a plan types.Object.
 // Returns nil if the object is null or unknown.
-func extractPublicAccessConfig(ctx context.Context, obj types.Object) *client.PublicAccessConfig {
+func extractPublicAccessConfig(obj types.Object) *client.PublicAccessConfig {
 	if obj.IsNull() || obj.IsUnknown() {
 		return nil
 	}
