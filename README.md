@@ -153,7 +153,7 @@ Environment variables: `FLASHBLADE_HOST`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_bucket_replica_link` | ✅ | Bucket-to-bucket replica link (pause/resume) |
 | — | `flashblade_array_connection` | Array connection status (read-only) |
 
-**Total: 38 resources, 31 data sources**
+**Total: 38 resources, 31 data sources** | [Full API Coverage Roadmap](ROADMAP.md)
 
 ## Workflow Examples
 
@@ -191,6 +191,10 @@ make docs
 make install
 ```
 
+## API Coverage
+
+This provider covers ~60% of IaC-relevant FlashBlade API v2.22 endpoints. See [ROADMAP.md](ROADMAP.md) for the full coverage matrix, including what's implemented, what's planned, and what's not applicable for Terraform.
+
 ## Documentation
 
 Generated docs are in the `docs/` directory and published to the [Terraform Registry](https://registry.terraform.io/providers/numberly/flashblade/latest).
@@ -201,6 +205,7 @@ Generated docs are in the `docs/` directory and published to the [Terraform Regi
 2. Create a feature branch
 3. Run `make test` and `make lint` before opening a PR
 4. Ensure `make docs` produces no diff
+5. Update [ROADMAP.md](ROADMAP.md) when adding new resources or data sources
 
 ## License
 
