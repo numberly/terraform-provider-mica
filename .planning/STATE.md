@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: completed
-stopped_at: Completed 32-01-PLAN.md
-last_updated: "2026-03-31T16:23:08.577Z"
+stopped_at: Completed 33-01-PLAN.md
+last_updated: "2026-03-31T16:33:25.110Z"
 last_activity: 2026-03-31 — Phase 32-01 complete (5 code correctness fixes)
 progress:
   total_phases: 34
   completed_phases: 31
-  total_plans: 71
-  completed_plans: 69
+  total_plans: 73
+  completed_plans: 70
 ---
 
 # Project State
@@ -43,6 +43,7 @@ v2.1.3 Progress: [███                 ] 1/3 phases
 | Plans complete | 0 |
 | Requirements mapped | 10/10 |
 | Phase 32-code-correctness-fixes P01 | 15 | 3 tasks | 6 files |
+| Phase 33-client-hardening P01 | 10 | 2 tasks | 61 files |
 
 ## Accumulated Context
 
@@ -54,6 +55,8 @@ v2.1.3 Progress: [███                 ] 1/3 phases
 - [Phase 32-01]: JSON tag freeze_locked_objects unchanged — only Go field name renamed to FreezeLockedObjects
 - [Phase 32-01]: DiagnosticReporter.AddWarning added — backward compatible since *diag.Diagnostics already satisfies the extended interface
 - [Phase 32-01]: nfs_export_policy and smb_share_policy removed from filesystem schema — had no API backing in filesystem CRUD
+- [Phase 33-01]: FlashBladeTokenSource stores caller ctx at construction — oauth2.TokenSource.Token() has no context param so ctx captured at NewFlashBladeTokenSource call site
+- [Phase 33-01]: RetryBaseDelay removed from Config entirely — 1000ms hardcoded as const; retry_base_delay removed from provider Terraform schema (breaking change for v2.1.3)
 
 ### v2.1.3 Phase Groupings
 
@@ -77,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T16:19:25.569Z
-Stopped at: Completed 32-01-PLAN.md
+Last session: 2026-03-31T16:33:25.100Z
+Stopped at: Completed 33-01-PLAN.md
 Resume file: None

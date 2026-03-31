@@ -20,8 +20,8 @@ Requirements for code review fixes. Addresses all issues (critical, important, m
 
 ### Client Hardening
 
-- [ ] **CH-01**: OAuth2 token refresh uses caller context where possible instead of context.Background()
-- [ ] **CH-02**: RetryBaseDelay duration heuristic removed — callers must use explicit time.Duration values
+- [x] **CH-01**: OAuth2 token refresh uses caller context where possible instead of context.Background()
+- [x] **CH-02**: RetryBaseDelay duration heuristic removed — callers must use explicit time.Duration values
 - [x] **CH-03**: Unused ctx parameters removed from bucket extract functions (extractEradicationConfig, extractObjectLockConfig, extractPublicAccessConfig)
 
 ### Code Cleanup
@@ -154,8 +154,8 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | CC-03 | Phase 32 | Complete |
 | CH-03 | Phase 32 | Complete |
 | CL-01 | Phase 32 | Complete |
-| CH-01 | Phase 33 | Pending |
-| CH-02 | Phase 33 | Pending |
+| CH-01 | Phase 33 | Complete |
+| CH-02 | Phase 33 | Complete |
 | CL-02 | Phase 33 | Pending |
 | TQ-01 | Phase 34 | Pending |
 | TQ-02 | Phase 34 | Pending |
