@@ -306,6 +306,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewQosPolicyResource,
 		NewQosPolicyMemberResource,
 		NewSubnetResource,
+		NewNetworkInterfaceResource,
 	}
 }
 
@@ -342,5 +343,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewQosPolicyDataSource,
 		NewSubnetDataSource,
 		NewLinkAggregationGroupDataSource,
+		NewNetworkInterfaceDataSource,
 	}
 }
