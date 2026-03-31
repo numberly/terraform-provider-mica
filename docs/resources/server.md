@@ -16,9 +16,8 @@ Manages a FlashBlade server.
 resource "flashblade_server" "example" {
   name = "terraform-server"
 
-  dns {
-    nameservers = ["8.8.8.8", "8.8.4.4"]
-  }
+  # Reference existing DNS configurations by name
+  dns = ["management"]
 }
 ```
 
@@ -32,24 +31,15 @@ resource "flashblade_server" "example" {
 ### Optional
 
 - `cascade_delete` (List of String) List of export names to cascade-delete when destroying this server. Used only on delete, not stored in API state.
-- `dns` (Attributes List) DNS configuration for the server. (see [below for nested schema](#nestedatt--dns))
+- `dns` (List of String) List of DNS configuration names associated with this server.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `created` (Number) Unix timestamp (milliseconds) when the server was created.
+- `directory_services` (List of String) List of directory service names associated with this server.
 - `id` (String) The unique identifier of the server.
 - `network_interfaces` (List of String) Names of network interfaces (VIPs) attached to this server. Discovered automatically from the array.
-
-<a id="nestedatt--dns"></a>
-### Nested Schema for `dns`
-
-Optional:
-
-- `domain` (String) DNS domain suffix.
-- `nameservers` (List of String) List of DNS nameserver IP addresses.
-- `services` (List of String) List of DNS service types.
-
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

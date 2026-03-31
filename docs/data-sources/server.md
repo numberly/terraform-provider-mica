@@ -17,8 +17,19 @@ data "flashblade_server" "example" {
   name = "existing-server"
 }
 
-output "server_created" {
-  value = data.flashblade_server.example.created
+# DNS configurations assigned to this server
+output "server_dns" {
+  value = data.flashblade_server.example.dns
+}
+
+# Directory services associated with this server (read-only)
+output "server_directory_services" {
+  value = data.flashblade_server.example.directory_services
+}
+
+# VIPs attached to this server (discovered automatically)
+output "server_vips" {
+  value = data.flashblade_server.example.network_interfaces
 }
 ```
 
@@ -32,15 +43,7 @@ output "server_created" {
 ### Read-Only
 
 - `created` (Number) Unix timestamp (milliseconds) when the server was created.
-- `dns` (Attributes List) DNS configuration for the server. (see [below for nested schema](#nestedatt--dns))
+- `directory_services` (List of String) List of directory service names associated with this server.
+- `dns` (List of String) List of DNS configuration names associated with this server.
 - `id` (String) The unique identifier of the server.
 - `network_interfaces` (List of String) Names of network interfaces (VIPs) attached to this server. Discovered automatically from the array.
-
-<a id="nestedatt--dns"></a>
-### Nested Schema for `dns`
-
-Read-Only:
-
-- `domain` (String) DNS domain suffix.
-- `nameservers` (List of String) List of DNS nameserver IP addresses.
-- `services` (List of String) List of DNS service types.
