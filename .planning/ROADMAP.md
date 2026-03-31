@@ -8,7 +8,8 @@
 - v1.3 Release Readiness (Phases 12-13) -- shipped 2026-03-29
 - v2.0 Cross-Array Bucket Replication (Phases 14-17) -- shipped 2026-03-29
 - v2.0.1 Quality & Hardening (Phases 18-22) -- shipped 2026-03-30
-- v2.1 Bucket Advanced Features (Phases 23-27) -- in progress
+- v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
+- v2.1.1 Network Interfaces (VIPs) (Phases 28-30) -- in progress
 
 ## Phases
 
@@ -390,7 +391,7 @@ Plans:
 
 </details>
 
-### v2.1 Bucket Advanced Features (In Progress)
+### v2.1 Bucket Advanced Features (Shipped 2026-03-30)
 
 **Milestone Goal:** Complete bucket management with lifecycle rules, bucket access policies, audit filters, eradication config, object lock, public access config, and QoS policy support.
 
@@ -399,6 +400,14 @@ Plans:
 - [x] **Phase 25: Bucket Access Policies** - New resource for IAM-style bucket access policies and rules (completed 2026-03-30)
 - [x] **Phase 26: Audit Filters & QoS Policies** - New resources for audit filtering and bandwidth/IOPS limiting (completed 2026-03-30)
 - [x] **Phase 27: Testing & Documentation** - Unit tests, mock handlers, import docs, and workflow example (completed 2026-03-30)
+
+### v2.1.1 Network Interfaces (VIPs) (In Progress)
+
+**Milestone Goal:** Add network interface (Virtual IP) management as a resource and data source, and expose VIPs on the server data source/resource for consumer endpoint discovery.
+
+- [ ] **Phase 28: LAG Data Source & Subnet Resource** - LAG read-only data source and full subnet CRUD resource with LAG reference
+- [ ] **Phase 29: Network Interface Resource & Data Source** - Full VIP CRUD resource with service/server semantics and read-only data source
+- [ ] **Phase 30: Server Enrichment & Provider Registration** - Computed VIP list on server resource/data source, schema migration, provider registration
 
 ## Phase Details
 
@@ -478,10 +487,70 @@ Plans:
 Plans:
 - [ ] 27-01-PLAN.md — Missing data source test, example HCL + import docs for all v2.1 resources, workflow example, tfplugindocs regeneration
 
+
+### Phase 28: LAG Data Source & Subnet Resource
+**Goal**: Operators can read existing LAG configurations and manage subnets referencing LAGs through Terraform with full CRUD, import, and drift detection
+**Depends on**: Phase 27 (v2.1 complete)
+**Requirements**: LAG-01, SUB-01, SUB-02, SUB-03, SUB-04, SUB-05, SUB-06
+**Success Criteria** (what must be TRUE):
+  1. Operator can read an existing LAG by name via `flashblade_lag` data source and access its ports, speed, mac address, and status attributes
+  2. Operator can create a subnet with name, prefix, gateway, mtu, vlan, and link_aggregation_group via `terraform apply` -- `apply -> plan` shows 0 diff
+  3. Operator can update mutable subnet settings (gateway, prefix, mtu, vlan, link_aggregation_group) and destroy a subnet via Terraform
+  4. Operator can import an existing subnet into Terraform state with no drift on subsequent `plan`
+  5. Drift detection logs changes when a subnet is modified outside Terraform
+**Plans**: TBD
+
+Plans:
+- [ ] 28-01-PLAN.md — Client models (LAG + Subnet), client CRUD methods, mock handlers
+- [ ] 28-02-PLAN.md — LAG data source, Subnet resource, Subnet data source, unit tests, provider registration
+
+### Phase 29: Network Interface Resource & Data Source
+**Goal**: Operators can create and manage Virtual IP (VIP) network interfaces through Terraform with full CRUD, import, drift detection, and correct service/server semantics
+**Depends on**: Phase 28 (subnet client in place -- network interface references subnet)
+**Requirements**: NI-01, NI-02, NI-03, NI-04, NI-05, NI-06, NI-07, NI-08, NI-09, NI-10
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a network interface with address, subnet, type, services, and attached_servers via `terraform apply` -- `apply -> plan` shows 0 diff
+  2. Operator can update address, services, and attached_servers on an existing network interface; subnet and type changes force replacement (`RequiresReplace`)
+  3. `terraform validate` rejects invalid service values and rejects attached_servers when service is egress-only or replication (plan-time, not API-time)
+  4. Operator can import an existing network interface by its auto-assigned name (e.g., `vip0`) and subsequent `plan` shows 0 diff
+  5. All computed read-only fields (enabled, gateway, mtu, netmask, vlan, realms) are populated after `terraform apply` and `terraform refresh`
+**Plans**: TBD
+
+Plans:
+- [ ] 29-01-PLAN.md — Client models (NetworkInterfacePost/Patch/Get), client CRUD methods, mock handler
+- [ ] 29-02-PLAN.md — Network interface resource (CRUD, validators, RequiresReplace, drift detection), data source, unit tests, provider registration
+
+### Phase 30: Server Enrichment & Provider Registration
+**Goal**: Operators can discover which VIPs are attached to a server directly from the server resource or data source, with correct schema migration on upgrade
+**Depends on**: Phase 29 (network interface client in place for ListNetworkInterfaces call)
+**Requirements**: SRV-01, SRV-02
+**Success Criteria** (what must be TRUE):
+  1. `flashblade_server` resource and data source expose a computed `network_interfaces` list populated from VIPs whose `attached_servers` includes that server
+  2. Existing users upgrading the provider do not see a state deserialization error -- schema version bump 0→1 with StateUpgrader migrates old state by setting `network_interfaces` to an empty list
+  3. `flashblade_network_interface` resource and `flashblade_subnet` resource are registered in `provider.go` and appear in `terraform providers` output
+**Plans**: TBD
+
+Plans:
+- [ ] 30-01-PLAN.md — Server resource/data source enrichment (network_interfaces computed list, schema v0→v1 StateUpgrader, client-side join), provider registration, end-to-end acceptance test
+
+### Phase 31: Documentation & Workflow Examples
+**Goal**: All new v2.1.1 resources have complete documentation, import guides, workflow examples, and the README reflects the expanded networking capabilities
+**Depends on**: Phase 30 (all resources must exist and be registered before documentation)
+**Requirements**: DOC-01, DOC-02, DOC-03, DOC-04
+**Success Criteria** (what must be TRUE):
+  1. Import documentation (import.sh) exists for all new importable resources (subnet, network interface) with correct syntax and realistic identifiers
+  2. A workflow example in `examples/networking/` demonstrates the full stack: LAG data source → subnet creation → VIP creation (data + sts with server, egress-only without) → server data source reading VIPs
+  3. `tfplugindocs generate` produces documentation for all new resources and data sources without errors
+  4. README coverage table includes the networking resources category with correct resource and data source counts
+**Plans**: TBD
+
+Plans:
+- [ ] 31-01-PLAN.md — Import docs, networking workflow example, tfplugindocs regeneration, README update
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
+Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -512,3 +581,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27
 | 25. Bucket Access Policies | 2/2 | Complete    | 2026-03-30 | - |
 | 26. Audit Filters & QoS Policies | 3/3 | Complete    | 2026-03-30 | - |
 | 27. Testing & Documentation | 1/1 | Complete    | 2026-03-30 | - |
+| 28. LAG Data Source & Subnet Resource | v2.1.1 | 0/2 | Not started | - |
+| 29. Network Interface Resource & Data Source | v2.1.1 | 0/2 | Not started | - |
+| 30. Server Enrichment & Provider Registration | v2.1.1 | 0/1 | Not started | - |
+| 31. Documentation & Workflow Examples | v2.1.1 | 0/1 | Not started | - |

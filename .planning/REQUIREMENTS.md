@@ -33,6 +33,13 @@ Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP)
 
 - [ ] **LAG-01**: Operator can read an existing LAG by name via data source (name, status, ports, port_speed, lag_speed, mac_address)
 
+### Documentation & Workflow
+
+- [ ] **DOC-01**: Import documentation (import.sh) exists for all new importable resources with correct syntax
+- [ ] **DOC-02**: Workflow example in examples/networking/ demonstrates full LAG → subnet → VIP → server stack
+- [ ] **DOC-03**: tfplugindocs generates documentation for all new resources and data sources without errors
+- [ ] **DOC-04**: README coverage table includes networking resources category with correct counts
+
 ### Server Enrichment
 
 - [ ] **SRV-01**: Server resource and data source expose associated VIPs as computed network_interfaces list
@@ -93,30 +100,34 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SUB-01 | — | Pending |
-| SUB-02 | — | Pending |
-| SUB-03 | — | Pending |
-| SUB-04 | — | Pending |
-| SUB-05 | — | Pending |
-| SUB-06 | — | Pending |
-| NI-01 | — | Pending |
-| NI-02 | — | Pending |
-| NI-03 | — | Pending |
-| NI-04 | — | Pending |
-| NI-05 | — | Pending |
-| NI-06 | — | Pending |
-| NI-07 | — | Pending |
-| NI-08 | — | Pending |
-| NI-09 | — | Pending |
-| NI-10 | — | Pending |
-| LAG-01 | — | Pending |
-| SRV-01 | — | Pending |
-| SRV-02 | — | Pending |
+| SUB-01 | Phase 28 | Pending |
+| SUB-02 | Phase 28 | Pending |
+| SUB-03 | Phase 28 | Pending |
+| SUB-04 | Phase 28 | Pending |
+| SUB-05 | Phase 28 | Pending |
+| SUB-06 | Phase 28 | Pending |
+| NI-01 | Phase 29 | Pending |
+| NI-02 | Phase 29 | Pending |
+| NI-03 | Phase 29 | Pending |
+| NI-04 | Phase 29 | Pending |
+| NI-05 | Phase 29 | Pending |
+| NI-06 | Phase 29 | Pending |
+| NI-07 | Phase 29 | Pending |
+| NI-08 | Phase 29 | Pending |
+| NI-09 | Phase 29 | Pending |
+| NI-10 | Phase 29 | Pending |
+| LAG-01 | Phase 28 | Pending |
+| SRV-01 | Phase 30 | Pending |
+| SRV-02 | Phase 30 | Pending |
+| DOC-01 | Phase 31 | Pending |
+| DOC-02 | Phase 31 | Pending |
+| DOC-03 | Phase 31 | Pending |
+| DOC-04 | Phase 31 | Pending |
 
 **Coverage:**
-- v2.1.1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19
+- v2.1.1 requirements: 23 total
+- Mapped to phases: 23
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-31*
