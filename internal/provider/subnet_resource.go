@@ -1,0 +1,427 @@
+package provider
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+)
+
+// Ensure subnetResource satisfies the resource interfaces.
+var _ resource.Resource = &subnetResource{}
+var _ resource.ResourceWithConfigure = &subnetResource{}
+var _ resource.ResourceWithImportState = &subnetResource{}
+
+// subnetResource implements the flashblade_subnet resource.
+type subnetResource struct {
+	client *client.FlashBladeClient
+}
+
+// NewSubnetResource is the factory function registered in the provider.
+func NewSubnetResource() resource.Resource {
+	return &subnetResource{}
+}
+
+// ---------- model structs ----------------------------------------------------
+
+// subnetResourceModel is the top-level model for the flashblade_subnet resource.
+type subnetResourceModel struct {
+	ID         types.String   `tfsdk:"id"`
+	Name       types.String   `tfsdk:"name"`
+	Prefix     types.String   `tfsdk:"prefix"`
+	Gateway    types.String   `tfsdk:"gateway"`
+	MTU        types.Int64    `tfsdk:"mtu"`
+	VLAN       types.Int64    `tfsdk:"vlan"`
+	LagName    types.String   `tfsdk:"lag_name"`
+	Enabled    types.Bool     `tfsdk:"enabled"`
+	Services   types.List     `tfsdk:"services"`
+	Interfaces types.List     `tfsdk:"interfaces"`
+	Timeouts   timeouts.Value `tfsdk:"timeouts"`
+}
+
+// ---------- resource interface methods --------------------------------------
+
+// Metadata sets the Terraform type name.
+func (r *subnetResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = "flashblade_subnet"
+}
+
+// Schema defines the resource schema.
+func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Version:     0,
+		Description: "Manages a FlashBlade subnet.",
+		MarkdownDescription: `Manages a FlashBlade subnet.
+
+## Example Usage
+
+` + "```hcl" + `
+resource "flashblade_subnet" "data" {
+  name     = "data-subnet"
+  prefix   = "10.21.200.0/24"
+  gateway  = "10.21.200.1"
+  mtu      = 9000
+  vlan     = 2100
+  lag_name = "lag0"
+}
+` + "```",
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The unique identifier of the subnet.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the subnet. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"prefix": schema.StringAttribute{
+				Required:    true,
+				Description: "IPv4 or IPv6 subnet address in CIDR notation (e.g. 10.21.200.0/24).",
+			},
+			"gateway": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "IPv4 or IPv6 gateway address for the subnet.",
+			},
+			"mtu": schema.Int64Attribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Maximum transmission unit (MTU) in bytes. Defaults to 1500.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"vlan": schema.Int64Attribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "VLAN ID. 0 means untagged. Defaults to 0.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"lag_name": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Name of the link aggregation group (LAG) this subnet is attached to.",
+			},
+			"enabled": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Whether the subnet is enabled.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"services": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "List of services associated with this subnet (e.g. data, replication).",
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"interfaces": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "List of network interface names attached to this subnet.",
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+			}),
+		},
+	}
+}
+
+// Configure injects the FlashBladeClient into the resource.
+func (r *subnetResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	c, ok := req.ProviderData.(*client.FlashBladeClient)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Provider Data Type",
+			fmt.Sprintf("Expected *client.FlashBladeClient, got: %T. This is a bug in the provider.", req.ProviderData),
+		)
+		return
+	}
+	r.client = c
+}
+
+// ---------- CRUD methods ----------------------------------------------------
+
+// Create creates a new subnet.
+func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data subnetResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createTimeout, diags := data.Timeouts.Create(ctx, 20*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
+
+	body := client.SubnetPost{
+		Prefix:               data.Prefix.ValueString(),
+		Gateway:              data.Gateway.ValueString(),
+		LinkAggregationGroup: lagNameToRef(data.LagName),
+	}
+	if !data.MTU.IsNull() && !data.MTU.IsUnknown() {
+		body.MTU = data.MTU.ValueInt64()
+	}
+	if !data.VLAN.IsNull() && !data.VLAN.IsUnknown() {
+		body.VLAN = data.VLAN.ValueInt64()
+	}
+
+	subnet, err := r.client.PostSubnet(ctx, data.Name.ValueString(), body)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating subnet", err.Error())
+		return
+	}
+
+	mapSubnetToModel(ctx, subnet, &data, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// Read refreshes Terraform state from the API.
+func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data subnetResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	readTimeout, diags := data.Timeouts.Read(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
+
+	name := data.Name.ValueString()
+	subnet, err := r.client.GetSubnet(ctx, name)
+	if err != nil {
+		if client.IsNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		resp.Diagnostics.AddError("Error reading subnet", err.Error())
+		return
+	}
+
+	// Log drift if key values differ from state.
+	if data.Prefix.ValueString() != subnet.Prefix {
+		tflog.Info(ctx, "subnet drift detected: prefix changed",
+			map[string]any{"name": name, "state": data.Prefix.ValueString(), "api": subnet.Prefix})
+	}
+	if data.Gateway.ValueString() != subnet.Gateway {
+		tflog.Info(ctx, "subnet drift detected: gateway changed",
+			map[string]any{"name": name, "state": data.Gateway.ValueString(), "api": subnet.Gateway})
+	}
+	if data.MTU.ValueInt64() != subnet.MTU {
+		tflog.Info(ctx, "subnet drift detected: mtu changed",
+			map[string]any{"name": name, "state": data.MTU.ValueInt64(), "api": subnet.MTU})
+	}
+
+	mapSubnetToModel(ctx, subnet, &data, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// Update applies changes to an existing subnet.
+func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, state subnetResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateTimeout, diags := plan.Timeouts.Update(ctx, 20*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	defer cancel()
+
+	patch := client.SubnetPatch{}
+
+	if !plan.Prefix.Equal(state.Prefix) {
+		v := plan.Prefix.ValueString()
+		patch.Prefix = &v
+	}
+	if !plan.Gateway.Equal(state.Gateway) {
+		v := plan.Gateway.ValueString()
+		patch.Gateway = &v
+	}
+	if !plan.MTU.Equal(state.MTU) {
+		v := plan.MTU.ValueInt64()
+		patch.MTU = &v
+	}
+	if !plan.VLAN.Equal(state.VLAN) {
+		v := plan.VLAN.ValueInt64()
+		patch.VLAN = &v
+	}
+	if !plan.LagName.Equal(state.LagName) {
+		patch.LinkAggregationGroup = lagNameToRef(plan.LagName)
+	}
+
+	subnet, err := r.client.PatchSubnet(ctx, plan.Name.ValueString(), patch)
+	if err != nil {
+		resp.Diagnostics.AddError("Error updating subnet", err.Error())
+		return
+	}
+
+	mapSubnetToModel(ctx, subnet, &plan, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+// Delete removes a subnet.
+func (r *subnetResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data subnetResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, 10*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	defer cancel()
+
+	if err := r.client.DeleteSubnet(ctx, data.Name.ValueString()); err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
+		resp.Diagnostics.AddError("Error deleting subnet", err.Error())
+		return
+	}
+}
+
+// ImportState imports an existing subnet by name.
+func (r *subnetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	name := req.ID
+
+	var data subnetResourceModel
+	data.Timeouts = nullTimeoutsValue()
+	data.Name = types.StringValue(name)
+
+	subnet, err := r.client.GetSubnet(ctx, name)
+	if err != nil {
+		resp.Diagnostics.AddError("Error importing subnet", err.Error())
+		return
+	}
+
+	mapSubnetToModel(ctx, subnet, &data, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// ---------- helpers ---------------------------------------------------------
+
+// lagNameToRef converts a flat types.String lag name to a *client.NamedReference.
+// Returns nil if the value is null, unknown, or empty.
+func lagNameToRef(lagName types.String) *client.NamedReference {
+	if lagName.IsNull() || lagName.IsUnknown() || lagName.ValueString() == "" {
+		return nil
+	}
+	return &client.NamedReference{Name: lagName.ValueString()}
+}
+
+// refToLagName converts a *client.NamedReference to a flat types.String.
+// Returns types.StringNull() if the reference is nil or has an empty name.
+func refToLagName(ref *client.NamedReference) types.String {
+	if ref == nil || ref.Name == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(ref.Name)
+}
+
+// mapSubnetToModel maps a client.Subnet response to a subnetResourceModel.
+// It preserves user-managed fields (Timeouts).
+func mapSubnetToModel(ctx context.Context, subnet *client.Subnet, data *subnetResourceModel, diags *diag.Diagnostics) {
+	data.ID = types.StringValue(subnet.ID)
+	data.Name = types.StringValue(subnet.Name)
+	data.Prefix = types.StringValue(subnet.Prefix)
+	data.Gateway = stringOrNull(subnet.Gateway)
+	data.MTU = types.Int64Value(subnet.MTU)
+	data.VLAN = types.Int64Value(subnet.VLAN)
+	data.Enabled = types.BoolValue(subnet.Enabled)
+	data.LagName = refToLagName(subnet.LinkAggregationGroup)
+
+	// Map services list.
+	if len(subnet.Services) > 0 {
+		svcList, svcDiags := types.ListValueFrom(ctx, types.StringType, subnet.Services)
+		diags.Append(svcDiags...)
+		if diags.HasError() {
+			return
+		}
+		data.Services = svcList
+	} else {
+		data.Services = types.ListNull(types.StringType)
+	}
+
+	// Map interfaces list (extract .Name from each NamedReference).
+	if len(subnet.Interfaces) > 0 {
+		ifaceNames := make([]string, 0, len(subnet.Interfaces))
+		for _, iface := range subnet.Interfaces {
+			ifaceNames = append(ifaceNames, iface.Name)
+		}
+		ifaceList, ifaceDiags := types.ListValueFrom(ctx, types.StringType, ifaceNames)
+		diags.Append(ifaceDiags...)
+		if diags.HasError() {
+			return
+		}
+		data.Interfaces = ifaceList
+	} else {
+		data.Interfaces = types.ListNull(types.StringType)
+	}
+}
