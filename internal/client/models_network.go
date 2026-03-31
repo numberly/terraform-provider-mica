@@ -49,3 +49,40 @@ type LinkAggregationGroup struct {
 	Ports      []string `json:"ports,omitempty"`
 	Status     string   `json:"status,omitempty"`
 }
+
+// NetworkInterface represents a FlashBlade network interface from GET /api/2.22/network-interfaces.
+// All fields except Name use omitempty; Name is always present in GET responses.
+type NetworkInterface struct {
+	ID              string           `json:"id,omitempty"`
+	Name            string           `json:"name"`
+	Address         string           `json:"address,omitempty"`
+	Enabled         bool             `json:"enabled,omitempty"`
+	Gateway         string           `json:"gateway,omitempty"`
+	MTU             int64            `json:"mtu,omitempty"`
+	Netmask         string           `json:"netmask,omitempty"`
+	Services        []string         `json:"services,omitempty"`
+	Subnet          *NamedReference  `json:"subnet,omitempty"`
+	Type            string           `json:"type,omitempty"`
+	VLAN            int64            `json:"vlan,omitempty"`
+	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
+	Realms          []string         `json:"realms,omitempty"`
+}
+
+// NetworkInterfacePost contains writable fields for POST /api/2.22/network-interfaces?names=<name>.
+// Name is NOT included — it is passed as the ?names= query parameter.
+type NetworkInterfacePost struct {
+	Address         string           `json:"address,omitempty"`
+	Services        []string         `json:"services,omitempty"`
+	Subnet          *NamedReference  `json:"subnet,omitempty"`
+	Type            string           `json:"type,omitempty"`
+	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
+}
+
+// NetworkInterfacePatch contains mutable fields for PATCH /api/2.22/network-interfaces?names=<name>.
+// Address uses *string + omitempty for true PATCH semantics (only sent when changed).
+// Services and AttachedServers do NOT use omitempty — clearing them requires sending [] in JSON.
+type NetworkInterfacePatch struct {
+	Address         *string          `json:"address,omitempty"`
+	Services        []string         `json:"services"`
+	AttachedServers []NamedReference `json:"attached_servers"`
+}
