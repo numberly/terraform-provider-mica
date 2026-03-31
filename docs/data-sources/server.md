@@ -34,6 +34,7 @@ output "server_created" {
 - `created` (Number) Unix timestamp (milliseconds) when the server was created.
 - `dns` (Attributes List) DNS configuration for the server. (see [below for nested schema](#nestedatt--dns))
 - `id` (String) The unique identifier of the server.
+- `network_interfaces` (List of String) Names of network interfaces (VIPs) attached to this server. Discovered automatically from the array.
 
 <a id="nestedatt--dns"></a>
 ### Nested Schema for `dns`

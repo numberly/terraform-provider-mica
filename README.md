@@ -87,6 +87,14 @@ Environment variables: `FLASHBLADE_HOST`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_object_store_account_export` | ✅ | Object store account export to a server (S3) |
 | `flashblade_object_store_virtual_host` | ✅ | S3 virtual-hosted-style endpoint |
 
+### Networking
+
+| Resource | Data Source | Description |
+|----------|:----------:|-------------|
+| `flashblade_subnet` | ✅ | Layer-3 subnet on a LAG (prefix, gateway, MTU, VLAN) |
+| `flashblade_network_interface` | ✅ | Virtual IP (data, sts, egress-only, replication services) |
+| — | `flashblade_link_aggregation_group` | Link aggregation group status (read-only, hardware-managed) |
+
 ### NFS Policies
 
 | Resource | Data Source | Description |
@@ -145,7 +153,7 @@ Environment variables: `FLASHBLADE_HOST`, `FLASHBLADE_API_TOKEN`.
 | `flashblade_bucket_replica_link` | ✅ | Bucket-to-bucket replica link (pause/resume) |
 | — | `flashblade_array_connection` | Array connection status (read-only) |
 
-**Total: 36 resources, 28 data sources**
+**Total: 38 resources, 31 data sources**
 
 ## Workflow Examples
 
@@ -162,6 +170,7 @@ Production-ready configurations showing how resources compose together:
 | [Vault S3 Onboarding](examples/workflows/vault-s3-onboarding/) | Same as above + Vault for zero-secret credential management |
 | [S3 Bucket Replication](examples/workflows/s3-bucket-replication/) | Bidirectional cross-array S3 replication with shared credentials |
 | [Bucket Advanced Features](examples/workflows/bucket-advanced-features/) | Lifecycle rules, access policies, audit filters, QoS |
+| [Networking Stack](examples/workflows/networking/) | LAG, subnet, and VIP management with server attachment |
 
 ## Development
 
