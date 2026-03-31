@@ -43,9 +43,7 @@ resource "flashblade_file_system" "example" {
 - `destroy_eradicate_on_delete` (Boolean) When true (default), Terraform will eradicate the file system on destroy. When false, only soft-deletes.
 - `multi_protocol` (Attributes) Multi-protocol access configuration. (see [below for nested schema](#nestedatt--multi_protocol))
 - `nfs` (Attributes) NFS protocol configuration. (see [below for nested schema](#nestedatt--nfs))
-- `nfs_export_policy` (String) Name of the NFS export policy to apply to this file system.
 - `smb` (Attributes) SMB protocol configuration. (see [below for nested schema](#nestedatt--smb))
-- `smb_share_policy` (String) Name of the SMB share policy to apply to this file system.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

@@ -31,7 +31,6 @@ provider "flashblade" {
 - `endpoint` (String) FlashBlade management endpoint URL (e.g. https://flashblade.example.com). Falls back to FLASHBLADE_HOST environment variable.
 - `insecure_skip_verify` (Boolean) Disable TLS certificate verification. For testing and development only.
 - `max_retries` (Number) Maximum number of retry attempts for transient errors (429, 5xx). Default: 3.
-- `retry_base_delay` (String) Initial retry delay as a Go duration string (e.g. '1s', '500ms'). Default: '1s'.
 
 <a id="nestedatt--auth"></a>
 ### Nested Schema for `auth`
