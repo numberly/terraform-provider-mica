@@ -35,6 +35,7 @@ type serverDataSourceModel struct {
 	Name              types.String `tfsdk:"name"`
 	Created           types.Int64  `tfsdk:"created"`
 	DNS               types.List   `tfsdk:"dns"`
+	DirectoryServices types.List   `tfsdk:"directory_services"`
 	NetworkInterfaces types.List   `tfsdk:"network_interfaces"`
 }
 
@@ -62,27 +63,15 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed:    true,
 				Description: "Unix timestamp (milliseconds) when the server was created.",
 			},
-			"dns": schema.ListNestedAttribute{
+			"dns": schema.ListAttribute{
 				Computed:    true,
-				Description: "DNS configuration for the server.",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"domain": schema.StringAttribute{
-							Computed:    true,
-							Description: "DNS domain suffix.",
-						},
-						"nameservers": schema.ListAttribute{
-							Computed:    true,
-							ElementType: types.StringType,
-							Description: "List of DNS nameserver IP addresses.",
-						},
-						"services": schema.ListAttribute{
-							Computed:    true,
-							ElementType: types.StringType,
-							Description: "List of DNS service types.",
-						},
-					},
-				},
+				ElementType: types.StringType,
+				Description: "List of DNS configuration names associated with this server.",
+			},
+			"directory_services": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "List of directory service names associated with this server.",
 			},
 			"network_interfaces": schema.ListAttribute{
 				Computed:    true,
@@ -135,9 +124,36 @@ func (d *serverDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config.Name = types.StringValue(srv.Name)
 	config.Created = types.Int64Value(srv.Created)
 
-	mapServerDNSToDataSourceModel(ctx, srv, &config, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
+	// Map DNS names (flat list of strings).
+	if len(srv.DNS) > 0 {
+		names := make([]string, len(srv.DNS))
+		for i, d := range srv.DNS {
+			names[i] = d.Name
+		}
+		dnsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
+		resp.Diagnostics.Append(listDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		config.DNS = dnsList
+	} else {
+		config.DNS = types.ListNull(types.StringType)
+	}
+
+	// Map directory_services names (computed, read-only).
+	if len(srv.DirectoryServices) > 0 {
+		names := make([]string, len(srv.DirectoryServices))
+		for i, ds := range srv.DirectoryServices {
+			names[i] = ds.Name
+		}
+		dsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
+		resp.Diagnostics.Append(listDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		config.DirectoryServices = dsList
+	} else {
+		config.DirectoryServices = types.ListNull(types.StringType)
 	}
 
 	enrichDataSourceNetworkInterfaces(ctx, d.client, &config, &resp.Diagnostics)
@@ -146,58 +162,7 @@ func (d *serverDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
-}
 
-// mapServerDNSToDataSourceModel maps DNS from client.Server to the data source model.
-func mapServerDNSToDataSourceModel(ctx context.Context, srv *client.Server, data *serverDataSourceModel, diags *diag.Diagnostics) {
-	if len(srv.DNS) > 0 {
-		dnsObjs := make([]attr.Value, 0, len(srv.DNS))
-		for _, d := range srv.DNS {
-			var nameservers types.List
-			if len(d.Nameservers) > 0 {
-				ns, nsDiags := types.ListValueFrom(ctx, types.StringType, d.Nameservers)
-				diags.Append(nsDiags...)
-				if diags.HasError() {
-					return
-				}
-				nameservers = ns
-			} else {
-				nameservers = types.ListNull(types.StringType)
-			}
-
-			var services types.List
-			if len(d.Services) > 0 {
-				svc, svcDiags := types.ListValueFrom(ctx, types.StringType, d.Services)
-				diags.Append(svcDiags...)
-				if diags.HasError() {
-					return
-				}
-				services = svc
-			} else {
-				services = types.ListNull(types.StringType)
-			}
-
-			obj, objDiags := types.ObjectValue(serverDNSAttrTypes(), map[string]attr.Value{
-				"domain":      types.StringValue(d.Domain),
-				"nameservers": nameservers,
-				"services":    services,
-			})
-			diags.Append(objDiags...)
-			if diags.HasError() {
-				return
-			}
-			dnsObjs = append(dnsObjs, obj)
-		}
-
-		dnsList, listDiags := types.ListValue(serverDNSObjectType(), dnsObjs)
-		diags.Append(listDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.DNS = dnsList
-	} else {
-		data.DNS = types.ListNull(serverDNSObjectType())
-	}
 }
 
 // enrichDataSourceNetworkInterfaces calls ListNetworkInterfaces and filters by server name.

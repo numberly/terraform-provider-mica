@@ -42,32 +42,24 @@ func serverDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 
 // buildServerDSType returns the tftypes.Object for the server data source schema.
 func buildServerDSType() tftypes.Object {
-	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"domain":      tftypes.String,
-		"nameservers": tftypes.List{ElementType: tftypes.String},
-		"services":    tftypes.List{ElementType: tftypes.String},
-	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":                 tftypes.String,
 		"name":               tftypes.String,
 		"created":            tftypes.Number,
-		"dns":                tftypes.List{ElementType: dnsType},
+		"dns":                tftypes.List{ElementType: tftypes.String},
+		"directory_services": tftypes.List{ElementType: tftypes.String},
 		"network_interfaces": tftypes.List{ElementType: tftypes.String},
 	}}
 }
 
 // nullServerDSConfig returns a base config map with all data source attributes null.
 func nullServerDSConfig() map[string]tftypes.Value {
-	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"domain":      tftypes.String,
-		"nameservers": tftypes.List{ElementType: tftypes.String},
-		"services":    tftypes.List{ElementType: tftypes.String},
-	}}
 	return map[string]tftypes.Value{
 		"id":                 tftypes.NewValue(tftypes.String, nil),
 		"name":               tftypes.NewValue(tftypes.String, nil),
 		"created":            tftypes.NewValue(tftypes.Number, nil),
-		"dns":                tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
+		"dns":                tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
+		"directory_services": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 		"network_interfaces": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 	}
 }
@@ -115,6 +107,25 @@ func TestUnit_ServerDataSource(t *testing.T) {
 	}
 	if model.DNS.IsNull() {
 		t.Error("expected dns to be populated")
+	}
+	// Verify DNS contains expected name from mock seed.
+	var dnsNames []string
+	if diags := model.DNS.ElementsAs(context.Background(), &dnsNames, false); diags.HasError() {
+		t.Fatalf("DNS ElementsAs: %s", diags)
+	}
+	if len(dnsNames) != 1 || dnsNames[0] != "management" {
+		t.Errorf("expected dns=[management], got %v", dnsNames)
+	}
+	// directory_services should be populated from seed data.
+	if model.DirectoryServices.IsNull() {
+		t.Error("expected directory_services to be populated from seed data")
+	}
+	var dsNames []string
+	if diags := model.DirectoryServices.ElementsAs(context.Background(), &dsNames, false); diags.HasError() {
+		t.Fatalf("DirectoryServices ElementsAs: %s", diags)
+	}
+	if len(dsNames) != 1 || dsNames[0] != "srv-backup_nfs" {
+		t.Errorf("expected directory_services=[srv-backup_nfs], got %v", dsNames)
 	}
 	// network_interfaces should be empty list (not null) when no VIPs attached.
 	if model.NetworkInterfaces.IsNull() {

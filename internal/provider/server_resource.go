@@ -36,15 +36,31 @@ func NewServerResource() resource.Resource {
 
 // ---------- model structs ----------------------------------------------------
 
-// serverDNSModel maps a single DNS configuration block.
-type serverDNSModel struct {
-	Domain      types.String `tfsdk:"domain"`
-	Nameservers types.List   `tfsdk:"nameservers"`
-	Services    types.List   `tfsdk:"services"`
+// serverResourceModel is the top-level model for the flashblade_server resource (schema v2).
+type serverResourceModel struct {
+	ID                types.String   `tfsdk:"id"`
+	Name              types.String   `tfsdk:"name"`
+	Created           types.Int64    `tfsdk:"created"`
+	DNS               types.List     `tfsdk:"dns"`
+	DirectoryServices types.List     `tfsdk:"directory_services"`
+	CascadeDelete     types.List     `tfsdk:"cascade_delete"`
+	NetworkInterfaces types.List     `tfsdk:"network_interfaces"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
-// serverResourceModel is the top-level model for the flashblade_server resource.
-type serverResourceModel struct {
+// serverV0StateModel is used exclusively for the v0 -> v1 state upgrade.
+type serverV0StateModel struct {
+	ID            types.String   `tfsdk:"id"`
+	Name          types.String   `tfsdk:"name"`
+	Created       types.Int64    `tfsdk:"created"`
+	DNS           types.List     `tfsdk:"dns"`
+	CascadeDelete types.List     `tfsdk:"cascade_delete"`
+	Timeouts      timeouts.Value `tfsdk:"timeouts"`
+}
+
+// serverV1StateModel mirrors the v1 schema shape (nested DNS + network_interfaces, no directory_services).
+// Used as the OUTPUT of v0->v1 and INPUT of v1->v2 upgraders.
+type serverV1StateModel struct {
 	ID                types.String   `tfsdk:"id"`
 	Name              types.String   `tfsdk:"name"`
 	Created           types.Int64    `tfsdk:"created"`
@@ -54,22 +70,6 @@ type serverResourceModel struct {
 	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
-// ---------- attribute type helpers -------------------------------------------
-
-// serverDNSAttrTypes returns the attribute types for a single DNS nested object.
-func serverDNSAttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"domain":      types.StringType,
-		"nameservers": types.ListType{ElemType: types.StringType},
-		"services":    types.ListType{ElemType: types.StringType},
-	}
-}
-
-// serverDNSObjectType returns the types.ObjectType for a DNS nested object.
-func serverDNSObjectType() types.ObjectType {
-	return types.ObjectType{AttrTypes: serverDNSAttrTypes()}
-}
-
 // ---------- resource interface methods --------------------------------------
 
 // Metadata sets the Terraform type name.
@@ -77,10 +77,10 @@ func (r *serverResource) Metadata(_ context.Context, _ resource.MetadataRequest,
 	resp.TypeName = "flashblade_server"
 }
 
-// Schema defines the resource schema.
+// Schema defines the resource schema (version 2).
 func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     1,
+		Version:     2,
 		Description: "Manages a FlashBlade server.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -104,30 +104,21 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 					int64UseStateForUnknown(),
 				},
 			},
-			"dns": schema.ListNestedAttribute{
+			"dns": schema.ListAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "DNS configuration for the server.",
+				ElementType: types.StringType,
+				Description: "List of DNS configuration names associated with this server.",
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.UseStateForUnknown(),
 				},
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"domain": schema.StringAttribute{
-							Optional:    true,
-							Description: "DNS domain suffix.",
-						},
-						"nameservers": schema.ListAttribute{
-							Optional:    true,
-							ElementType: types.StringType,
-							Description: "List of DNS nameserver IP addresses.",
-						},
-						"services": schema.ListAttribute{
-							Optional:    true,
-							ElementType: types.StringType,
-							Description: "List of DNS service types.",
-						},
-					},
+			},
+			"directory_services": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "List of directory service names associated with this server.",
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"cascade_delete": schema.ListAttribute{
@@ -153,18 +144,29 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 	}
 }
 
-// serverV0StateModel is used exclusively for the v0 -> v1 state upgrade.
-type serverV0StateModel struct {
-	ID            types.String   `tfsdk:"id"`
-	Name          types.String   `tfsdk:"name"`
-	Created       types.Int64    `tfsdk:"created"`
-	DNS           types.List     `tfsdk:"dns"`
-	CascadeDelete types.List     `tfsdk:"cascade_delete"`
-	Timeouts      timeouts.Value `tfsdk:"timeouts"`
-}
-
 // UpgradeState returns state upgraders for schema migrations.
 func (r *serverResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	// v1 nested DNS attribute types (shared between v0 PriorSchema and v1 PriorSchema).
+	v1NestedDNS := schema.ListNestedAttribute{
+		Optional: true,
+		Computed: true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"domain": schema.StringAttribute{
+					Optional: true,
+				},
+				"nameservers": schema.ListAttribute{
+					Optional:    true,
+					ElementType: types.StringType,
+				},
+				"services": schema.ListAttribute{
+					Optional:    true,
+					ElementType: types.StringType,
+				},
+			},
+		},
+	}
+
 	return map[int64]resource.StateUpgrader{
 		// v0 -> v1: add network_interfaces as empty list.
 		0: {
@@ -181,29 +183,8 @@ func (r *serverResource) UpgradeState(ctx context.Context) map[int64]resource.St
 					"created": schema.Int64Attribute{
 						Computed: true,
 					},
-					"dns": schema.ListNestedAttribute{
-						Optional: true,
-						Computed: true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"domain": schema.StringAttribute{
-									Optional: true,
-								},
-								"nameservers": schema.ListAttribute{
-									Optional:    true,
-									ElementType: types.StringType,
-								},
-								"services": schema.ListAttribute{
-									Optional:    true,
-									ElementType: types.StringType,
-								},
-							},
-						},
-					},
-					"cascade_delete": schema.ListAttribute{
-						Optional:    true,
-						ElementType: types.StringType,
-					},
+					"dns":            v1NestedDNS,
+					"cascade_delete": schema.ListAttribute{Optional: true, ElementType: types.StringType},
 					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 						Create: true,
 						Read:   true,
@@ -219,7 +200,8 @@ func (r *serverResource) UpgradeState(ctx context.Context) map[int64]resource.St
 					return
 				}
 
-				newState := serverResourceModel{
+				// Output v1 format: preserve nested DNS + add empty network_interfaces.
+				newState := serverV1StateModel{
 					ID:                oldState.ID,
 					Name:              oldState.Name,
 					Created:           oldState.Created,
@@ -227,6 +209,59 @@ func (r *serverResource) UpgradeState(ctx context.Context) map[int64]resource.St
 					CascadeDelete:     oldState.CascadeDelete,
 					Timeouts:          oldState.Timeouts,
 					NetworkInterfaces: types.ListValueMust(types.StringType, []attr.Value{}),
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+
+		// v1 -> v2: convert nested DNS to flat string list, add directory_services.
+		1: {
+			PriorSchema: &schema.Schema{
+				Version:     1,
+				Description: "Manages a FlashBlade server.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Required: true,
+					},
+					"created": schema.Int64Attribute{
+						Computed: true,
+					},
+					"dns":            v1NestedDNS,
+					"cascade_delete": schema.ListAttribute{Optional: true, ElementType: types.StringType},
+					"network_interfaces": schema.ListAttribute{
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState serverV1StateModel
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				// v1 DNS was nested objects without a "name" field — reset to null.
+				// On next Read the provider will fetch real NamedReference data from the API.
+				newState := serverResourceModel{
+					ID:                oldState.ID,
+					Name:              oldState.Name,
+					Created:           oldState.Created,
+					DNS:               types.ListNull(types.StringType),
+					DirectoryServices: types.ListNull(types.StringType),
+					CascadeDelete:     oldState.CascadeDelete,
+					NetworkInterfaces: oldState.NetworkInterfaces,
+					Timeouts:          oldState.Timeouts,
 				}
 
 				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
@@ -270,7 +305,7 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 	defer cancel()
 
 	post := client.ServerPost{
-		DNS: mapModelDNSToClient(ctx, &data, &resp.Diagnostics),
+		DNS: dnsNamesToRefs(ctx, &data, &resp.Diagnostics),
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -342,7 +377,7 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 	defer cancel()
 
 	patch := client.ServerPatch{
-		DNS: mapModelDNSToClient(ctx, &plan, &resp.Diagnostics),
+		DNS: dnsNamesToRefs(ctx, &plan, &resp.Diagnostics),
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -407,6 +442,8 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 	data.CascadeDelete = types.ListNull(types.StringType)
 	// Initialize network_interfaces as empty list (will be populated by mapServerToModel).
 	data.NetworkInterfaces = types.ListValueMust(types.StringType, []attr.Value{})
+	// Initialize directory_services as null (will be populated by mapServerToModel).
+	data.DirectoryServices = types.ListNull(types.StringType)
 
 	data.Name = types.StringValue(name)
 
@@ -434,56 +471,36 @@ func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *clie
 	data.Name = types.StringValue(srv.Name)
 	data.Created = types.Int64Value(srv.Created)
 
-	// Map DNS list.
+	// Map DNS names (flat list of strings).
 	if len(srv.DNS) > 0 {
-		dnsObjs := make([]attr.Value, 0, len(srv.DNS))
-		for _, d := range srv.DNS {
-			// Build nameservers list.
-			var nameservers types.List
-			if len(d.Nameservers) > 0 {
-				ns, nsDiags := types.ListValueFrom(ctx, types.StringType, d.Nameservers)
-				diags.Append(nsDiags...)
-				if diags.HasError() {
-					return
-				}
-				nameservers = ns
-			} else {
-				nameservers = types.ListNull(types.StringType)
-			}
-
-			// Build services list.
-			var services types.List
-			if len(d.Services) > 0 {
-				svc, svcDiags := types.ListValueFrom(ctx, types.StringType, d.Services)
-				diags.Append(svcDiags...)
-				if diags.HasError() {
-					return
-				}
-				services = svc
-			} else {
-				services = types.ListNull(types.StringType)
-			}
-
-			obj, objDiags := types.ObjectValue(serverDNSAttrTypes(), map[string]attr.Value{
-				"domain":      types.StringValue(d.Domain),
-				"nameservers": nameservers,
-				"services":    services,
-			})
-			diags.Append(objDiags...)
-			if diags.HasError() {
-				return
-			}
-			dnsObjs = append(dnsObjs, obj)
+		names := make([]string, len(srv.DNS))
+		for i, d := range srv.DNS {
+			names[i] = d.Name
 		}
-
-		dnsList, listDiags := types.ListValue(serverDNSObjectType(), dnsObjs)
+		dnsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
 		diags.Append(listDiags...)
 		if diags.HasError() {
 			return
 		}
 		data.DNS = dnsList
 	} else {
-		data.DNS = types.ListNull(serverDNSObjectType())
+		data.DNS = types.ListNull(types.StringType)
+	}
+
+	// Map directory_services names (computed, read-only).
+	if len(srv.DirectoryServices) > 0 {
+		names := make([]string, len(srv.DirectoryServices))
+		for i, ds := range srv.DirectoryServices {
+			names[i] = ds.Name
+		}
+		dsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
+		diags.Append(listDiags...)
+		if diags.HasError() {
+			return
+		}
+		data.DirectoryServices = dsList
+	} else {
+		data.DirectoryServices = types.ListNull(types.StringType)
 	}
 
 	// Enrich network_interfaces by discovering attached VIPs.
@@ -528,42 +545,19 @@ func enrichServerNetworkInterfaces(ctx context.Context, c *client.FlashBladeClie
 	data.NetworkInterfaces = niList
 }
 
-// mapModelDNSToClient extracts DNS from the Terraform model and converts to client types.
-func mapModelDNSToClient(ctx context.Context, data *serverResourceModel, diags *diag.Diagnostics) []client.ServerDNS {
+// dnsNamesToRefs converts the flat string list of DNS names in the model to []client.NamedReference.
+func dnsNamesToRefs(ctx context.Context, data *serverResourceModel, diags *diag.Diagnostics) []client.NamedReference {
 	if data.DNS.IsNull() || data.DNS.IsUnknown() || len(data.DNS.Elements()) == 0 {
 		return nil
 	}
-
-	var dnsModels []serverDNSModel
-	d := data.DNS.ElementsAs(ctx, &dnsModels, false)
-	diags.Append(d...)
+	var names []string
+	diags.Append(data.DNS.ElementsAs(ctx, &names, false)...)
 	if diags.HasError() {
 		return nil
 	}
-
-	result := make([]client.ServerDNS, 0, len(dnsModels))
-	for _, dm := range dnsModels {
-		entry := client.ServerDNS{
-			Domain: dm.Domain.ValueString(),
-		}
-
-		if !dm.Nameservers.IsNull() && !dm.Nameservers.IsUnknown() {
-			diags.Append(dm.Nameservers.ElementsAs(ctx, &entry.Nameservers, false)...)
-			if diags.HasError() {
-				return nil
-			}
-		}
-
-		if !dm.Services.IsNull() && !dm.Services.IsUnknown() {
-			diags.Append(dm.Services.ElementsAs(ctx, &entry.Services, false)...)
-			if diags.HasError() {
-				return nil
-			}
-		}
-
-		result = append(result, entry)
+	refs := make([]client.NamedReference, len(names))
+	for i, n := range names {
+		refs[i] = client.NamedReference{Name: n}
 	}
-
-	return result
+	return refs
 }
-

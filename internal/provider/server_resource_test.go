@@ -41,13 +41,8 @@ func serverResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildServerType returns the tftypes.Object for the server resource schema.
+// buildServerType returns the tftypes.Object for the server resource schema (v2).
 func buildServerType() tftypes.Object {
-	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"domain":      tftypes.String,
-		"nameservers": tftypes.List{ElementType: tftypes.String},
-		"services":    tftypes.List{ElementType: tftypes.String},
-	}}
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -58,20 +53,16 @@ func buildServerType() tftypes.Object {
 		"id":                 tftypes.String,
 		"name":               tftypes.String,
 		"created":            tftypes.Number,
-		"dns":                tftypes.List{ElementType: dnsType},
+		"dns":                tftypes.List{ElementType: tftypes.String},
+		"directory_services": tftypes.List{ElementType: tftypes.String},
 		"cascade_delete":     tftypes.List{ElementType: tftypes.String},
 		"timeouts":           timeoutsType,
 		"network_interfaces": tftypes.List{ElementType: tftypes.String},
 	}}
 }
 
-// nullServerConfig returns a base config map with all resource attributes null.
+// nullServerConfig returns a base config map with all resource attributes null (v2 schema).
 func nullServerConfig() map[string]tftypes.Value {
-	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"domain":      tftypes.String,
-		"nameservers": tftypes.List{ElementType: tftypes.String},
-		"services":    tftypes.List{ElementType: tftypes.String},
-	}}
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -82,14 +73,15 @@ func nullServerConfig() map[string]tftypes.Value {
 		"id":                 tftypes.NewValue(tftypes.String, nil),
 		"name":               tftypes.NewValue(tftypes.String, nil),
 		"created":            tftypes.NewValue(tftypes.Number, nil),
-		"dns":                tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
+		"dns":                tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
+		"directory_services": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 		"cascade_delete":     tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 		"timeouts":           tftypes.NewValue(timeoutsType, nil),
 		"network_interfaces": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 	}
 }
 
-// serverPlanWithName returns a tfsdk.Plan with the given server name and DNS config.
+// serverPlanWithName returns a tfsdk.Plan with the given server name and no DNS config.
 func serverPlanWithName(t *testing.T, name string) tfsdk.Plan {
 	t.Helper()
 	s := serverResourceSchema(t).Schema
@@ -101,33 +93,19 @@ func serverPlanWithName(t *testing.T, name string) tfsdk.Plan {
 	}
 }
 
-// serverPlanWithDNS returns a tfsdk.Plan with name and a DNS configuration.
-func serverPlanWithDNS(t *testing.T, name, domain string, nameservers []string) tfsdk.Plan {
+// serverPlanWithDNS returns a tfsdk.Plan with name and a flat list of DNS config names.
+func serverPlanWithDNS(t *testing.T, name string, dnsNames []string) tfsdk.Plan {
 	t.Helper()
 	s := serverResourceSchema(t).Schema
-
-	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"domain":      tftypes.String,
-		"nameservers": tftypes.List{ElementType: tftypes.String},
-		"services":    tftypes.List{ElementType: tftypes.String},
-	}}
-
-	// Build nameservers tftypes list.
-	nsValues := make([]tftypes.Value, len(nameservers))
-	for i, ns := range nameservers {
-		nsValues[i] = tftypes.NewValue(tftypes.String, ns)
-	}
-
-	dnsObj := tftypes.NewValue(dnsType, map[string]tftypes.Value{
-		"domain":      tftypes.NewValue(tftypes.String, domain),
-		"nameservers": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nsValues),
-		"services":    tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
-	})
-
 	cfg := nullServerConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
-	cfg["dns"] = tftypes.NewValue(tftypes.List{ElementType: dnsType}, []tftypes.Value{dnsObj})
-
+	if dnsNames != nil {
+		vals := make([]tftypes.Value, len(dnsNames))
+		for i, n := range dnsNames {
+			vals[i] = tftypes.NewValue(tftypes.String, n)
+		}
+		cfg["dns"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, vals)
+	}
 	return tfsdk.Plan{
 		Raw:    tftypes.NewValue(buildServerType(), cfg),
 		Schema: s,
@@ -146,7 +124,7 @@ func TestUnit_Server_Create(t *testing.T) {
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
 
-	plan := serverPlanWithDNS(t, "test-server", "example.com", []string{"10.0.0.1", "10.0.0.2"})
+	plan := serverPlanWithDNS(t, "test-server", []string{"management"})
 	req := resource.CreateRequest{Plan: plan}
 	resp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildServerType(), nil), Schema: s},
@@ -238,7 +216,7 @@ func TestUnit_Server_Update(t *testing.T) {
 	s := serverResourceSchema(t).Schema
 
 	// Create first.
-	createPlan := serverPlanWithDNS(t, "update-server", "old.example.com", []string{"10.0.0.1"})
+	createPlan := serverPlanWithDNS(t, "update-server", []string{"management"})
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildServerType(), nil), Schema: s},
 	}
@@ -248,7 +226,7 @@ func TestUnit_Server_Update(t *testing.T) {
 	}
 
 	// Update DNS.
-	updatePlan := serverPlanWithDNS(t, "update-server", "new.example.com", []string{"10.0.0.2"})
+	updatePlan := serverPlanWithDNS(t, "update-server", []string{"updated-dns"})
 	updateResp := &resource.UpdateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildServerType(), nil), Schema: s},
 	}
@@ -270,15 +248,15 @@ func TestUnit_Server_Update(t *testing.T) {
 	if model.DNS.IsNull() {
 		t.Fatal("expected dns to be populated after Update")
 	}
-	var dnsModels []serverDNSModel
-	if diags := model.DNS.ElementsAs(context.Background(), &dnsModels, false); diags.HasError() {
+	var dnsNames []string
+	if diags := model.DNS.ElementsAs(context.Background(), &dnsNames, false); diags.HasError() {
 		t.Fatalf("ElementsAs: %s", diags)
 	}
-	if len(dnsModels) != 1 {
-		t.Fatalf("expected 1 dns entry, got %d", len(dnsModels))
+	if len(dnsNames) != 1 {
+		t.Fatalf("expected 1 dns entry, got %d", len(dnsNames))
 	}
-	if dnsModels[0].Domain.ValueString() != "new.example.com" {
-		t.Errorf("expected domain=new.example.com, got %s", dnsModels[0].Domain.ValueString())
+	if dnsNames[0] != "updated-dns" {
+		t.Errorf("expected dns name=updated-dns, got %s", dnsNames[0])
 	}
 }
 
@@ -326,7 +304,7 @@ func TestUnit_Server_Import(t *testing.T) {
 	s := serverResourceSchema(t).Schema
 
 	// Create first.
-	plan := serverPlanWithDNS(t, "import-server", "import.local", []string{"10.0.0.1"})
+	plan := serverPlanWithDNS(t, "import-server", []string{"management"})
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildServerType(), nil), Schema: s},
 	}
@@ -432,6 +410,24 @@ func TestUnit_Server_PlanModifiers(t *testing.T) {
 	if len(niAttr.PlanModifiers) == 0 {
 		t.Error("expected UseStateForUnknown plan modifier on network_interfaces attribute")
 	}
+
+	// dns — UseStateForUnknown
+	dnsAttr, ok := s.Attributes["dns"].(resschema.ListAttribute)
+	if !ok {
+		t.Fatal("dns attribute not found or wrong type")
+	}
+	if len(dnsAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on dns attribute")
+	}
+
+	// directory_services — UseStateForUnknown
+	dsAttr, ok := s.Attributes["directory_services"].(resschema.ListAttribute)
+	if !ok {
+		t.Fatal("directory_services attribute not found or wrong type")
+	}
+	if len(dsAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on directory_services attribute")
+	}
 }
 
 // TestUnit_Server_Idempotent verifies that Read after Create shows no attribute drift.
@@ -478,6 +474,7 @@ func TestUnit_Server_Idempotent(t *testing.T) {
 
 // TestUnit_Server_StateUpgradeV0ToV1 verifies the StateUpgrader migrates old state (without
 // network_interfaces) to schema version 1 with an empty network_interfaces list.
+// The v0->v1 upgrader outputs serverV1StateModel (nested DNS preserved, network_interfaces added).
 func TestUnit_Server_StateUpgradeV0ToV1(t *testing.T) {
 	r := &serverResource{}
 	upgraders := r.UpgradeState(context.Background())
@@ -487,7 +484,7 @@ func TestUnit_Server_StateUpgradeV0ToV1(t *testing.T) {
 		t.Fatal("expected StateUpgrader for version 0")
 	}
 
-	// Build v0 state (no network_interfaces field).
+	// Build v0 state (no network_interfaces field, nested DNS).
 	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"domain":      tftypes.String,
 		"nameservers": tftypes.List{ElementType: tftypes.String},
@@ -523,15 +520,26 @@ func TestUnit_Server_StateUpgradeV0ToV1(t *testing.T) {
 		Schema: *upgrader.PriorSchema,
 	}
 
-	// Build v1 state target schema.
-	v1Schema := serverResourceSchema(t).Schema
+	// v1 target schema (nested DNS + network_interfaces).
+	v1Schema := *upgraders[1].PriorSchema
 
 	upgradeReq := resource.UpgradeStateRequest{
 		State: &priorState,
 	}
+
+	// Build the v1 tftypes target.
+	v1Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                 tftypes.String,
+		"name":               tftypes.String,
+		"created":            tftypes.Number,
+		"dns":                tftypes.List{ElementType: dnsType},
+		"cascade_delete":     tftypes.List{ElementType: tftypes.String},
+		"network_interfaces": tftypes.List{ElementType: tftypes.String},
+		"timeouts":           timeoutsType,
+	}}
 	upgradeResp := &resource.UpgradeStateResponse{
 		State: tfsdk.State{
-			Raw:    tftypes.NewValue(buildServerType(), nil),
+			Raw:    tftypes.NewValue(v1Type, nil),
 			Schema: v1Schema,
 		},
 	}
@@ -539,10 +547,10 @@ func TestUnit_Server_StateUpgradeV0ToV1(t *testing.T) {
 	upgrader.StateUpgrader(context.Background(), upgradeReq, upgradeResp)
 
 	if upgradeResp.Diagnostics.HasError() {
-		t.Fatalf("StateUpgrader returned error: %s", upgradeResp.Diagnostics)
+		t.Fatalf("StateUpgrader v0->v1 returned error: %s", upgradeResp.Diagnostics)
 	}
 
-	var model serverResourceModel
+	var model serverV1StateModel
 	if diags := upgradeResp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get upgraded state: %s", diags)
 	}
@@ -564,6 +572,126 @@ func TestUnit_Server_StateUpgradeV0ToV1(t *testing.T) {
 	}
 	if len(model.NetworkInterfaces.Elements()) != 0 {
 		t.Errorf("expected network_interfaces to have 0 elements, got %d", len(model.NetworkInterfaces.Elements()))
+	}
+}
+
+// TestUnit_Server_StateUpgradeV1ToV2 verifies the v1->v2 upgrader converts nested DNS to null
+// and adds directory_services as null.
+func TestUnit_Server_StateUpgradeV1ToV2(t *testing.T) {
+	r := &serverResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[1]
+	if !ok {
+		t.Fatal("expected StateUpgrader for version 1")
+	}
+
+	// Build v1 raw state (nested DNS, network_interfaces, no directory_services).
+	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"domain":      tftypes.String,
+		"nameservers": tftypes.List{ElementType: tftypes.String},
+		"services":    tftypes.List{ElementType: tftypes.String},
+	}}
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+
+	v1Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                 tftypes.String,
+		"name":               tftypes.String,
+		"created":            tftypes.Number,
+		"dns":                tftypes.List{ElementType: dnsType},
+		"cascade_delete":     tftypes.List{ElementType: tftypes.String},
+		"network_interfaces": tftypes.List{ElementType: tftypes.String},
+		"timeouts":           timeoutsType,
+	}}
+
+	v1Raw := tftypes.NewValue(v1Type, map[string]tftypes.Value{
+		"id":      tftypes.NewValue(tftypes.String, "srv-v1-id"),
+		"name":    tftypes.NewValue(tftypes.String, "v1-server"),
+		"created": tftypes.NewValue(tftypes.Number, 1700000000000),
+		"dns":     tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
+		"cascade_delete": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
+			tftypes.NewValue(tftypes.String, "export1"),
+		}),
+		"network_interfaces": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
+			tftypes.NewValue(tftypes.String, "vip1.eth0"),
+		}),
+		"timeouts": tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v1Raw,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	// v2 target schema.
+	v2Schema := serverResourceSchema(t).Schema
+
+	upgradeReq := resource.UpgradeStateRequest{
+		State: &priorState,
+	}
+	upgradeResp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildServerType(), nil),
+			Schema: v2Schema,
+		},
+	}
+
+	upgrader.StateUpgrader(context.Background(), upgradeReq, upgradeResp)
+
+	if upgradeResp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader v1->v2 returned error: %s", upgradeResp.Diagnostics)
+	}
+
+	var model serverResourceModel
+	if diags := upgradeResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	// Verify preserved fields.
+	if model.ID.ValueString() != "srv-v1-id" {
+		t.Errorf("expected id=srv-v1-id, got %s", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "v1-server" {
+		t.Errorf("expected name=v1-server, got %s", model.Name.ValueString())
+	}
+
+	// DNS must be null (will be refreshed on next plan/apply).
+	if !model.DNS.IsNull() {
+		t.Error("expected dns to be null after v1->v2 upgrade")
+	}
+
+	// directory_services must be null.
+	if !model.DirectoryServices.IsNull() {
+		t.Error("expected directory_services to be null after v1->v2 upgrade")
+	}
+
+	// NetworkInterfaces must be preserved.
+	if model.NetworkInterfaces.IsNull() {
+		t.Fatal("expected network_interfaces to be preserved after v1->v2 upgrade")
+	}
+	var niNames []string
+	if diags := model.NetworkInterfaces.ElementsAs(context.Background(), &niNames, false); diags.HasError() {
+		t.Fatalf("ElementsAs: %s", diags)
+	}
+	if len(niNames) != 1 || niNames[0] != "vip1.eth0" {
+		t.Errorf("expected network_interfaces=[vip1.eth0], got %v", niNames)
+	}
+
+	// CascadeDelete must be preserved.
+	if model.CascadeDelete.IsNull() {
+		t.Fatal("expected cascade_delete to be preserved after v1->v2 upgrade")
+	}
+	var cascadeNames []string
+	if diags := model.CascadeDelete.ElementsAs(context.Background(), &cascadeNames, false); diags.HasError() {
+		t.Fatalf("ElementsAs: %s", diags)
+	}
+	if len(cascadeNames) != 1 || cascadeNames[0] != "export1" {
+		t.Errorf("expected cascade_delete=[export1], got %v", cascadeNames)
 	}
 }
 
@@ -699,13 +827,10 @@ func TestUnit_Server_NoVIPs(t *testing.T) {
 	}
 }
 
-
-
-// TestUnit_Server_SchemaVersion verifies that schema version is 1.
+// TestUnit_Server_SchemaVersion verifies that schema version is 2.
 func TestUnit_Server_SchemaVersion(t *testing.T) {
 	s := serverResourceSchema(t).Schema
-	if s.Version != 1 {
-		t.Errorf("expected schema version 1, got %d", s.Version)
+	if s.Version != 2 {
+		t.Errorf("expected schema version 2, got %d", s.Version)
 	}
 }
-
