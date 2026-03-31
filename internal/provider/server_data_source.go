@@ -31,10 +31,11 @@ func NewServerDataSource() datasource.DataSource {
 
 // serverDataSourceModel is the top-level model for the flashblade_server data source.
 type serverDataSourceModel struct {
-	ID      types.String `tfsdk:"id"`
-	Name    types.String `tfsdk:"name"`
-	Created types.Int64  `tfsdk:"created"`
-	DNS     types.List   `tfsdk:"dns"`
+	ID                types.String `tfsdk:"id"`
+	Name              types.String `tfsdk:"name"`
+	Created           types.Int64  `tfsdk:"created"`
+	DNS               types.List   `tfsdk:"dns"`
+	NetworkInterfaces types.List   `tfsdk:"network_interfaces"`
 }
 
 // ---------- data source interface methods -----------------------------------
@@ -83,6 +84,11 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 					},
 				},
 			},
+			"network_interfaces": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "Names of network interfaces (VIPs) attached to this server. Discovered automatically from the array.",
+			},
 		},
 	}
 }
@@ -130,6 +136,11 @@ func (d *serverDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config.Created = types.Int64Value(srv.Created)
 
 	mapServerDNSToDataSourceModel(ctx, srv, &config, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	enrichDataSourceNetworkInterfaces(ctx, d.client, &config, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -187,4 +198,41 @@ func mapServerDNSToDataSourceModel(ctx context.Context, srv *client.Server, data
 	} else {
 		data.DNS = types.ListNull(serverDNSObjectType())
 	}
+}
+
+// enrichDataSourceNetworkInterfaces calls ListNetworkInterfaces and filters by server name.
+// Sets data.NetworkInterfaces to an empty list (not null) if no VIPs are attached.
+// Appends a warning diagnostic (not error) if the API call fails.
+func enrichDataSourceNetworkInterfaces(ctx context.Context, c *client.FlashBladeClient, data *serverDataSourceModel, diags *diag.Diagnostics) {
+	nis, err := c.ListNetworkInterfaces(ctx)
+	if err != nil {
+		diags.AddWarning(
+			"Could not list network interfaces",
+			fmt.Sprintf("VIP enrichment for server %q failed: %s. network_interfaces will be empty.", data.Name.ValueString(), err.Error()),
+		)
+		data.NetworkInterfaces = types.ListValueMust(types.StringType, []attr.Value{})
+		return
+	}
+
+	serverName := data.Name.ValueString()
+	var matchingNames []string
+	for _, ni := range nis {
+		for _, as := range ni.AttachedServers {
+			if as.Name == serverName {
+				matchingNames = append(matchingNames, ni.Name)
+				break
+			}
+		}
+	}
+
+	if matchingNames == nil {
+		matchingNames = []string{}
+	}
+
+	niList, listDiags := types.ListValueFrom(ctx, types.StringType, matchingNames)
+	diags.Append(listDiags...)
+	if diags.HasError() {
+		return
+	}
+	data.NetworkInterfaces = niList
 }

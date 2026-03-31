@@ -55,12 +55,13 @@ func buildServerType() tftypes.Object {
 		"delete": tftypes.String,
 	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"id":             tftypes.String,
-		"name":           tftypes.String,
-		"created":        tftypes.Number,
-		"dns":            tftypes.List{ElementType: dnsType},
-		"cascade_delete": tftypes.List{ElementType: tftypes.String},
-		"timeouts":       timeoutsType,
+		"id":                 tftypes.String,
+		"name":               tftypes.String,
+		"created":            tftypes.Number,
+		"dns":                tftypes.List{ElementType: dnsType},
+		"cascade_delete":     tftypes.List{ElementType: tftypes.String},
+		"timeouts":           timeoutsType,
+		"network_interfaces": tftypes.List{ElementType: tftypes.String},
 	}}
 }
 
@@ -78,12 +79,13 @@ func nullServerConfig() map[string]tftypes.Value {
 		"delete": tftypes.String,
 	}}
 	return map[string]tftypes.Value{
-		"id":             tftypes.NewValue(tftypes.String, nil),
-		"name":           tftypes.NewValue(tftypes.String, nil),
-		"created":        tftypes.NewValue(tftypes.Number, nil),
-		"dns":            tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
-		"cascade_delete": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
-		"timeouts":       tftypes.NewValue(timeoutsType, nil),
+		"id":                 tftypes.NewValue(tftypes.String, nil),
+		"name":               tftypes.NewValue(tftypes.String, nil),
+		"created":            tftypes.NewValue(tftypes.Number, nil),
+		"dns":                tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
+		"cascade_delete":     tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
+		"timeouts":           tftypes.NewValue(timeoutsType, nil),
+		"network_interfaces": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 	}
 }
 
@@ -139,6 +141,7 @@ func TestUnit_Server_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterServerHandlers(ms.Mux)
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
@@ -172,6 +175,10 @@ func TestUnit_Server_Create(t *testing.T) {
 	if model.DNS.IsNull() {
 		t.Error("expected dns to be populated after Create")
 	}
+	// network_interfaces should be an empty list (not null) when no VIPs are attached.
+	if model.NetworkInterfaces.IsNull() {
+		t.Error("expected network_interfaces to be empty list (not null) after Create with no VIPs")
+	}
 }
 
 // TestUnit_Server_Read verifies Read populates all attributes from a seeded server.
@@ -180,6 +187,7 @@ func TestUnit_Server_Read(t *testing.T) {
 	defer ms.Close()
 	store := handlers.RegisterServerHandlers(ms.Mux)
 	store.AddServer("read-server")
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
@@ -213,6 +221,10 @@ func TestUnit_Server_Read(t *testing.T) {
 	if model.DNS.IsNull() {
 		t.Error("expected dns to be populated from seed data")
 	}
+	// network_interfaces should be an empty list (not null).
+	if model.NetworkInterfaces.IsNull() {
+		t.Error("expected network_interfaces to be empty list (not null) when no VIPs are attached")
+	}
 }
 
 // TestUnit_Server_Update verifies PATCH updates dns configuration.
@@ -220,6 +232,7 @@ func TestUnit_Server_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterServerHandlers(ms.Mux)
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
@@ -274,6 +287,7 @@ func TestUnit_Server_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterServerHandlers(ms.Mux)
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
@@ -306,6 +320,7 @@ func TestUnit_Server_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterServerHandlers(ms.Mux)
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
@@ -347,6 +362,9 @@ func TestUnit_Server_Import(t *testing.T) {
 	if model.DNS.IsNull() {
 		t.Error("expected dns to be populated after import")
 	}
+	if model.NetworkInterfaces.IsNull() {
+		t.Error("expected network_interfaces to be empty list (not null) after import")
+	}
 }
 
 // TestUnit_Server_NotFound verifies that 404 removes resource from state.
@@ -354,6 +372,7 @@ func TestUnit_Server_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterServerHandlers(ms.Mux)
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
@@ -404,6 +423,15 @@ func TestUnit_Server_PlanModifiers(t *testing.T) {
 	if len(createdAttr.PlanModifiers) == 0 {
 		t.Error("expected UseStateForUnknown plan modifier on created attribute")
 	}
+
+	// network_interfaces — UseStateForUnknown
+	niAttr, ok := s.Attributes["network_interfaces"].(resschema.ListAttribute)
+	if !ok {
+		t.Fatal("network_interfaces attribute not found or wrong type")
+	}
+	if len(niAttr.PlanModifiers) == 0 {
+		t.Error("expected UseStateForUnknown plan modifier on network_interfaces attribute")
+	}
 }
 
 // TestUnit_Server_Idempotent verifies that Read after Create shows no attribute drift.
@@ -411,6 +439,7 @@ func TestUnit_Server_Idempotent(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterServerHandlers(ms.Mux)
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	r := newTestServerResource(t, ms)
 	s := serverResourceSchema(t).Schema
@@ -446,3 +475,258 @@ func TestUnit_Server_Idempotent(t *testing.T) {
 		t.Errorf("Name changed after Read: %s -> %s", beforeModel.Name.ValueString(), afterModel.Name.ValueString())
 	}
 }
+
+// TestUnit_Server_StateUpgradeV0ToV1 verifies the StateUpgrader migrates old state (without
+// network_interfaces) to schema version 1 with an empty network_interfaces list.
+func TestUnit_Server_StateUpgradeV0ToV1(t *testing.T) {
+	r := &serverResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected StateUpgrader for version 0")
+	}
+
+	// Build v0 state (no network_interfaces field).
+	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"domain":      tftypes.String,
+		"nameservers": tftypes.List{ElementType: tftypes.String},
+		"services":    tftypes.List{ElementType: tftypes.String},
+	}}
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":             tftypes.String,
+		"name":           tftypes.String,
+		"created":        tftypes.Number,
+		"dns":            tftypes.List{ElementType: dnsType},
+		"cascade_delete": tftypes.List{ElementType: tftypes.String},
+		"timeouts":       timeoutsType,
+	}}
+
+	v0Raw := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":             tftypes.NewValue(tftypes.String, "srv-old-id"),
+		"name":           tftypes.NewValue(tftypes.String, "my-server"),
+		"created":        tftypes.NewValue(tftypes.Number, 1700000000000),
+		"dns":            tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
+		"cascade_delete": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
+		"timeouts":       tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Raw,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	// Build v1 state target schema.
+	v1Schema := serverResourceSchema(t).Schema
+
+	upgradeReq := resource.UpgradeStateRequest{
+		State: &priorState,
+	}
+	upgradeResp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildServerType(), nil),
+			Schema: v1Schema,
+		},
+	}
+
+	upgrader.StateUpgrader(context.Background(), upgradeReq, upgradeResp)
+
+	if upgradeResp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", upgradeResp.Diagnostics)
+	}
+
+	var model serverResourceModel
+	if diags := upgradeResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	// Verify existing fields preserved.
+	if model.ID.ValueString() != "srv-old-id" {
+		t.Errorf("expected id=srv-old-id, got %s", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "my-server" {
+		t.Errorf("expected name=my-server, got %s", model.Name.ValueString())
+	}
+
+	// Verify network_interfaces is empty list (not null).
+	if model.NetworkInterfaces.IsNull() {
+		t.Error("expected network_interfaces to be empty list (not null) after upgrade from v0")
+	}
+	if model.NetworkInterfaces.IsUnknown() {
+		t.Error("expected network_interfaces to be known after upgrade from v0")
+	}
+	if len(model.NetworkInterfaces.Elements()) != 0 {
+		t.Errorf("expected network_interfaces to have 0 elements, got %d", len(model.NetworkInterfaces.Elements()))
+	}
+}
+
+// TestUnit_Server_VIPEnrichment verifies that Create/Read populates network_interfaces
+// when VIPs are attached to the server.
+func TestUnit_Server_VIPEnrichment(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterServerHandlers(ms.Mux)
+	niStore := handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
+
+	// Seed two VIPs, one attached to "vip-server", one to another server.
+	ni1 := niStore.AddNetworkInterface("vip1.eth0", "10.0.1.1", "subnet-a", "vip", "data")
+	ni1.AttachedServers = []client.NamedReference{{Name: "vip-server"}}
+
+	ni2 := niStore.AddNetworkInterface("vip2.eth0", "10.0.1.2", "subnet-a", "vip", "data")
+	ni2.AttachedServers = []client.NamedReference{{Name: "other-server"}}
+
+	r := newTestServerResource(t, ms)
+	s := serverResourceSchema(t).Schema
+
+	// Create the server.
+	plan := serverPlanWithName(t, "vip-server")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildServerType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	var model serverResourceModel
+	if diags := createResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	// network_interfaces should contain only vip1.eth0 (attached to vip-server).
+	if model.NetworkInterfaces.IsNull() {
+		t.Fatal("expected network_interfaces to be populated after Create with attached VIPs")
+	}
+
+	var niNames []string
+	if diags := model.NetworkInterfaces.ElementsAs(context.Background(), &niNames, false); diags.HasError() {
+		t.Fatalf("ElementsAs: %s", diags)
+	}
+	if len(niNames) != 1 {
+		t.Fatalf("expected 1 network interface, got %d: %v", len(niNames), niNames)
+	}
+	if niNames[0] != "vip1.eth0" {
+		t.Errorf("expected vip1.eth0, got %s", niNames[0])
+	}
+}
+
+// TestUnit_Server_VIPEnrichment_Read verifies Read also populates network_interfaces.
+func TestUnit_Server_VIPEnrichment_Read(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	srvStore := handlers.RegisterServerHandlers(ms.Mux)
+	srvStore.AddServer("enrich-read-server")
+	niStore := handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
+
+	ni := niStore.AddNetworkInterface("eth0.enrich", "10.0.2.1", "subnet-b", "vip", "data")
+	ni.AttachedServers = []client.NamedReference{{Name: "enrich-read-server"}}
+
+	r := newTestServerResource(t, ms)
+	s := serverResourceSchema(t).Schema
+
+	cfg := nullServerConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, "enrich-read-server")
+	cfg["id"] = tftypes.NewValue(tftypes.String, "placeholder")
+	state := tfsdk.State{Raw: tftypes.NewValue(buildServerType(), cfg), Schema: s}
+
+	readResp := &resource.ReadResponse{State: state}
+	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var model serverResourceModel
+	if diags := readResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.NetworkInterfaces.IsNull() {
+		t.Fatal("expected network_interfaces to be populated after Read with attached VIPs")
+	}
+
+	var niNames []string
+	if diags := model.NetworkInterfaces.ElementsAs(context.Background(), &niNames, false); diags.HasError() {
+		t.Fatalf("ElementsAs: %s", diags)
+	}
+	if len(niNames) != 1 {
+		t.Fatalf("expected 1 network interface, got %d: %v", len(niNames), niNames)
+	}
+	if niNames[0] != "eth0.enrich" {
+		t.Errorf("expected eth0.enrich, got %s", niNames[0])
+	}
+}
+
+// TestUnit_Server_NoVIPs verifies that a server with no attached VIPs gets empty (not null) list.
+func TestUnit_Server_NoVIPs(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterServerHandlers(ms.Mux)
+	niStore := handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
+	// VIP attached to a different server.
+	ni := niStore.AddNetworkInterface("vip.other", "10.0.3.1", "subnet-c", "vip", "data")
+	ni.AttachedServers = []client.NamedReference{{Name: "other-server"}}
+
+	r := newTestServerResource(t, ms)
+	s := serverResourceSchema(t).Schema
+
+	plan := serverPlanWithName(t, "no-vip-server")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildServerType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	var model serverResourceModel
+	if diags := createResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.NetworkInterfaces.IsNull() {
+		t.Error("expected network_interfaces to be empty list (not null) when no VIPs are attached")
+	}
+	if len(model.NetworkInterfaces.Elements()) != 0 {
+		t.Errorf("expected 0 network interfaces, got %d", len(model.NetworkInterfaces.Elements()))
+	}
+}
+
+// buildV0StateType returns the v0 tftypes.Object (without network_interfaces).
+func buildV0StateType() tftypes.Object {
+	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"domain":      tftypes.String,
+		"nameservers": tftypes.List{ElementType: tftypes.String},
+		"services":    tftypes.List{ElementType: tftypes.String},
+	}}
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":             tftypes.String,
+		"name":           tftypes.String,
+		"created":        tftypes.Number,
+		"dns":            tftypes.List{ElementType: dnsType},
+		"cascade_delete": tftypes.List{ElementType: tftypes.String},
+		"timeouts":       timeoutsType,
+	}}
+}
+
+// TestUnit_Server_SchemaVersion verifies that schema version is 1.
+func TestUnit_Server_SchemaVersion(t *testing.T) {
+	s := serverResourceSchema(t).Schema
+	if s.Version != 1 {
+		t.Errorf("expected schema version 1, got %d", s.Version)
+	}
+}
+

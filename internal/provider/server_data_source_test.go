@@ -48,10 +48,11 @@ func buildServerDSType() tftypes.Object {
 		"services":    tftypes.List{ElementType: tftypes.String},
 	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"id":      tftypes.String,
-		"name":    tftypes.String,
-		"created": tftypes.Number,
-		"dns":     tftypes.List{ElementType: dnsType},
+		"id":                 tftypes.String,
+		"name":               tftypes.String,
+		"created":            tftypes.Number,
+		"dns":                tftypes.List{ElementType: dnsType},
+		"network_interfaces": tftypes.List{ElementType: tftypes.String},
 	}}
 }
 
@@ -63,10 +64,11 @@ func nullServerDSConfig() map[string]tftypes.Value {
 		"services":    tftypes.List{ElementType: tftypes.String},
 	}}
 	return map[string]tftypes.Value{
-		"id":      tftypes.NewValue(tftypes.String, nil),
-		"name":    tftypes.NewValue(tftypes.String, nil),
-		"created": tftypes.NewValue(tftypes.Number, nil),
-		"dns":     tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
+		"id":                 tftypes.NewValue(tftypes.String, nil),
+		"name":               tftypes.NewValue(tftypes.String, nil),
+		"created":            tftypes.NewValue(tftypes.Number, nil),
+		"dns":                tftypes.NewValue(tftypes.List{ElementType: dnsType}, nil),
+		"network_interfaces": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 	}
 }
 
@@ -78,6 +80,7 @@ func TestUnit_ServerDataSource(t *testing.T) {
 	defer ms.Close()
 	store := handlers.RegisterServerHandlers(ms.Mux)
 	store.AddServer("srv-numberly-backup-pr")
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	d := newTestServerDataSource(t, ms)
 	s := serverDataSourceSchema(t).Schema
@@ -113,6 +116,10 @@ func TestUnit_ServerDataSource(t *testing.T) {
 	if model.DNS.IsNull() {
 		t.Error("expected dns to be populated")
 	}
+	// network_interfaces should be empty list (not null) when no VIPs attached.
+	if model.NetworkInterfaces.IsNull() {
+		t.Error("expected network_interfaces to be empty list (not null) when no VIPs attached")
+	}
 }
 
 // TestUnit_ServerDataSource_NotFound verifies that a missing server returns an error diagnostic.
@@ -120,6 +127,7 @@ func TestUnit_ServerDataSource_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterServerHandlers(ms.Mux)
+	handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
 
 	d := newTestServerDataSource(t, ms)
 	s := serverDataSourceSchema(t).Schema
@@ -147,5 +155,69 @@ func TestUnit_ServerDataSource_NotFound(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("expected 'Server not found' diagnostic, got: %s", readResp.Diagnostics)
+	}
+}
+
+// TestUnit_ServerDataSource_VIPEnrichment verifies that the data source populates
+// network_interfaces when VIPs are attached to the requested server.
+func TestUnit_ServerDataSource_VIPEnrichment(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	srvStore := handlers.RegisterServerHandlers(ms.Mux)
+	srvStore.AddServer("ds-enrich-server")
+	niStore := handlers.RegisterNetworkInterfaceHandlers(ms.Mux)
+
+	ni1 := niStore.AddNetworkInterface("ds-vip1.eth0", "10.0.4.1", "subnet-d", "vip", "data")
+	ni1.AttachedServers = []client.NamedReference{{Name: "ds-enrich-server"}}
+
+	ni2 := niStore.AddNetworkInterface("ds-vip2.eth0", "10.0.4.2", "subnet-d", "vip", "data")
+	ni2.AttachedServers = []client.NamedReference{{Name: "ds-enrich-server"}}
+
+	// VIP not attached to our server.
+	niStore.AddNetworkInterface("ds-vip3.eth0", "10.0.4.3", "subnet-d", "vip", "data")
+
+	d := newTestServerDataSource(t, ms)
+	s := serverDataSourceSchema(t).Schema
+
+	cfg := nullServerDSConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-enrich-server")
+
+	readResp := &datasource.ReadResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildServerDSType(), nil), Schema: s},
+	}
+	d.Read(context.Background(), datasource.ReadRequest{
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildServerDSType(), cfg), Schema: s},
+	}, readResp)
+
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("DataSource Read returned error: %s", readResp.Diagnostics)
+	}
+
+	var model serverDataSourceModel
+	if diags := readResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.NetworkInterfaces.IsNull() {
+		t.Fatal("expected network_interfaces to be populated after data source Read with attached VIPs")
+	}
+
+	var niNames []string
+	if diags := model.NetworkInterfaces.ElementsAs(context.Background(), &niNames, false); diags.HasError() {
+		t.Fatalf("ElementsAs: %s", diags)
+	}
+	if len(niNames) != 2 {
+		t.Fatalf("expected 2 network interfaces, got %d: %v", len(niNames), niNames)
+	}
+	// Order not guaranteed — check both names are present.
+	nameSet := map[string]bool{}
+	for _, n := range niNames {
+		nameSet[n] = true
+	}
+	if !nameSet["ds-vip1.eth0"] {
+		t.Error("expected ds-vip1.eth0 in network_interfaces")
+	}
+	if !nameSet["ds-vip2.eth0"] {
+		t.Error("expected ds-vip2.eth0 in network_interfaces")
 	}
 }

@@ -45,12 +45,13 @@ type serverDNSModel struct {
 
 // serverResourceModel is the top-level model for the flashblade_server resource.
 type serverResourceModel struct {
-	ID            types.String   `tfsdk:"id"`
-	Name          types.String   `tfsdk:"name"`
-	Created       types.Int64    `tfsdk:"created"`
-	DNS           types.List     `tfsdk:"dns"`
-	CascadeDelete types.List     `tfsdk:"cascade_delete"`
-	Timeouts      timeouts.Value `tfsdk:"timeouts"`
+	ID                types.String   `tfsdk:"id"`
+	Name              types.String   `tfsdk:"name"`
+	Created           types.Int64    `tfsdk:"created"`
+	DNS               types.List     `tfsdk:"dns"`
+	CascadeDelete     types.List     `tfsdk:"cascade_delete"`
+	NetworkInterfaces types.List     `tfsdk:"network_interfaces"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
 // ---------- attribute type helpers -------------------------------------------
@@ -79,7 +80,7 @@ func (r *serverResource) Metadata(_ context.Context, _ resource.MetadataRequest,
 // Schema defines the resource schema.
 func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade server.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -134,6 +135,14 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				ElementType: types.StringType,
 				Description: "List of export names to cascade-delete when destroying this server. Used only on delete, not stored in API state.",
 			},
+			"network_interfaces": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "Names of network interfaces (VIPs) attached to this server. Discovered automatically from the array.",
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -144,10 +153,86 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 	}
 }
 
+// serverV0StateModel is used exclusively for the v0 -> v1 state upgrade.
+type serverV0StateModel struct {
+	ID            types.String   `tfsdk:"id"`
+	Name          types.String   `tfsdk:"name"`
+	Created       types.Int64    `tfsdk:"created"`
+	DNS           types.List     `tfsdk:"dns"`
+	CascadeDelete types.List     `tfsdk:"cascade_delete"`
+	Timeouts      timeouts.Value `tfsdk:"timeouts"`
+}
 
 // UpgradeState returns state upgraders for schema migrations.
-func (r *serverResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *serverResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		// v0 -> v1: add network_interfaces as empty list.
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade server.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Required: true,
+					},
+					"created": schema.Int64Attribute{
+						Computed: true,
+					},
+					"dns": schema.ListNestedAttribute{
+						Optional: true,
+						Computed: true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"domain": schema.StringAttribute{
+									Optional: true,
+								},
+								"nameservers": schema.ListAttribute{
+									Optional:    true,
+									ElementType: types.StringType,
+								},
+								"services": schema.ListAttribute{
+									Optional:    true,
+									ElementType: types.StringType,
+								},
+							},
+						},
+					},
+					"cascade_delete": schema.ListAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState serverV0StateModel
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				newState := serverResourceModel{
+					ID:                oldState.ID,
+					Name:              oldState.Name,
+					Created:           oldState.Created,
+					DNS:               oldState.DNS,
+					CascadeDelete:     oldState.CascadeDelete,
+					Timeouts:          oldState.Timeouts,
+					NetworkInterfaces: types.ListValueMust(types.StringType, []attr.Value{}),
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -197,7 +282,7 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	mapServerToModel(ctx, srv, &data, &resp.Diagnostics)
+	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -232,7 +317,7 @@ func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	mapServerToModel(ctx, srv, &data, &resp.Diagnostics)
+	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -269,7 +354,7 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	mapServerToModel(ctx, srv, &plan, &resp.Diagnostics)
+	mapServerToModel(ctx, r.client, srv, &plan, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -320,6 +405,8 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 	data.Timeouts = nullTimeoutsValue()
 	// Initialize cascade_delete as null (write-only, never comes from API).
 	data.CascadeDelete = types.ListNull(types.StringType)
+	// Initialize network_interfaces as empty list (will be populated by mapServerToModel).
+	data.NetworkInterfaces = types.ListValueMust(types.StringType, []attr.Value{})
 
 	data.Name = types.StringValue(name)
 
@@ -329,7 +416,7 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 		return
 	}
 
-	mapServerToModel(ctx, srv, &data, &resp.Diagnostics)
+	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -340,8 +427,9 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 // ---------- helpers ---------------------------------------------------------
 
 // mapServerToModel maps a client.Server to a serverResourceModel.
+// It calls ListNetworkInterfaces to enrich the model with attached VIP names.
 // It preserves user-managed fields (Timeouts, CascadeDelete).
-func mapServerToModel(ctx context.Context, srv *client.Server, data *serverResourceModel, diags *diag.Diagnostics) {
+func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *client.Server, data *serverResourceModel, diags *diag.Diagnostics) {
 	data.ID = types.StringValue(srv.ID)
 	data.Name = types.StringValue(srv.Name)
 	data.Created = types.Int64Value(srv.Created)
@@ -397,6 +485,47 @@ func mapServerToModel(ctx context.Context, srv *client.Server, data *serverResou
 	} else {
 		data.DNS = types.ListNull(serverDNSObjectType())
 	}
+
+	// Enrich network_interfaces by discovering attached VIPs.
+	// VIP enrichment is optional — errors are warnings only to avoid blocking CRUD.
+	enrichServerNetworkInterfaces(ctx, c, data, diags)
+}
+
+// enrichServerNetworkInterfaces calls ListNetworkInterfaces and filters by server name.
+// Sets data.NetworkInterfaces to an empty list (not null) if no VIPs are attached.
+// Appends a warning diagnostic (not error) if the API call fails.
+func enrichServerNetworkInterfaces(ctx context.Context, c *client.FlashBladeClient, data *serverResourceModel, diags *diag.Diagnostics) {
+	nis, err := c.ListNetworkInterfaces(ctx)
+	if err != nil {
+		diags.AddWarning(
+			"Could not list network interfaces",
+			fmt.Sprintf("VIP enrichment for server %q failed: %s. network_interfaces will be empty.", data.Name.ValueString(), err.Error()),
+		)
+		data.NetworkInterfaces = types.ListValueMust(types.StringType, []attr.Value{})
+		return
+	}
+
+	serverName := data.Name.ValueString()
+	var matchingNames []string
+	for _, ni := range nis {
+		for _, as := range ni.AttachedServers {
+			if as.Name == serverName {
+				matchingNames = append(matchingNames, ni.Name)
+				break
+			}
+		}
+	}
+
+	if matchingNames == nil {
+		matchingNames = []string{}
+	}
+
+	niList, listDiags := types.ListValueFrom(ctx, types.StringType, matchingNames)
+	diags.Append(listDiags...)
+	if diags.HasError() {
+		return
+	}
+	data.NetworkInterfaces = niList
 }
 
 // mapModelDNSToClient extracts DNS from the Terraform model and converts to client types.
@@ -437,3 +566,4 @@ func mapModelDNSToClient(ctx context.Context, data *serverResourceModel, diags *
 
 	return result
 }
+
