@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 28-lag-ds-subnet-resource-01-PLAN.md
-last_updated: "2026-03-31T08:25:42.032Z"
+stopped_at: Completed 28-lag-ds-subnet-resource-02-PLAN.md
+last_updated: "2026-03-31T08:34:20.603Z"
 last_activity: 2026-03-31 — Roadmap created for v2.1.1 (4 phases, 23 requirements)
 progress:
   total_phases: 31
-  completed_phases: 26
+  completed_phases: 27
   total_plans: 66
-  completed_plans: 63
+  completed_plans: 64
   percent: 0
 ---
 
@@ -56,6 +56,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 28-lag-ds-subnet-resource]: SubnetPost does not include Name field — passed via ?names= query param only
 - [Phase 28-lag-ds-subnet-resource]: LAG client is GET-only — no POST/PATCH/DELETE (hardware-managed)
 - [Phase 28-lag-ds-subnet-resource]: SubnetPatch uses *int64 for MTU and VLAN for zero-value safety (VLAN=0 = untagged)
+- [Phase 28-lag-ds-subnet-resource]: lag_name exposed as flat types.String — consistent with all other reference attributes in the codebase
+- [Phase 28-lag-ds-subnet-resource]: Services/Interfaces computed lists use types.ListNull for empty (not emptyStringList) to signal absent data vs empty
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T08:25:42.022Z
-Stopped at: Completed 28-lag-ds-subnet-resource-01-PLAN.md
+Last session: 2026-03-31T08:34:20.596Z
+Stopped at: Completed 28-lag-ds-subnet-resource-02-PLAN.md
 Resume file: None
