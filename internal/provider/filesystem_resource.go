@@ -651,7 +651,11 @@ func (r *filesystemResource) readIntoState(ctx context.Context, name string, dat
 		return
 	}
 	for _, d := range mapFSToModel(fs, data) {
-		reporter.AddError(d.Summary(), d.Detail())
+		if d.Severity() == diag.SeverityWarning {
+			reporter.AddWarning(d.Summary(), d.Detail())
+		} else {
+			reporter.AddError(d.Summary(), d.Detail())
+		}
 	}
 }
 

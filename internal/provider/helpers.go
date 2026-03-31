@@ -64,6 +64,7 @@ func stringOrNull(s string) types.String {
 // used by readIntoState methods across resource files.
 type DiagnosticReporter interface {
 	AddError(string, string)
+	AddWarning(string, string)
 	HasError() bool
 }
 
