@@ -3,7 +3,33 @@
 **Defined:** 2026-03-31
 **Core Value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
 
-## v2.1.1 Requirements
+## v2.1.3 Requirements
+
+Requirements for code review fixes. Addresses all issues (critical, important, minor) identified during the full codebase production readiness review.
+
+### Code Correctness
+
+- [ ] **CC-01**: FreezeLockgedObjects typo renamed to FreezeLockedObjects across all Go files
+- [ ] **CC-02**: Dead schema attributes nfs_export_policy and smb_share_policy removed from filesystem resource
+- [ ] **CC-03**: Diagnostic severity preserved when converting mapFSToModel results — warnings remain warnings, errors remain errors
+
+### Test Quality
+
+- [ ] **TQ-01**: Acceptance tests no longer use ExpectNonEmptyPlan: true — plan convergence is verified
+- [ ] **TQ-02**: Acceptance test coverage expanded to at least 3 additional high-risk resources (server, bucket replica link, network interface, or a policy family)
+
+### Client Hardening
+
+- [ ] **CH-01**: OAuth2 token refresh uses caller context where possible instead of context.Background()
+- [ ] **CH-02**: RetryBaseDelay duration heuristic removed — callers must use explicit time.Duration values
+- [ ] **CH-03**: Unused ctx parameters removed from bucket extract functions (extractEradicationConfig, extractObjectLockConfig, extractPublicAccessConfig)
+
+### Code Cleanup
+
+- [ ] **CL-01**: mustObjectValue passthrough helper removed — callers use types.ObjectValue directly
+- [ ] **CL-02**: golangci-lint configuration expanded with gosec, bodyclose, noctx, and exhaustive linters
+
+## v2.1.1 Requirements (completed)
 
 Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP), and LAG resources/data sources to enable operators to manage FlashBlade networking infrastructure as code.
 
@@ -124,11 +150,16 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | DOC-03 | Phase 31 | Complete |
 | DOC-04 | Phase 31 | Complete |
 
-**Coverage:**
+**v2.1.3 Coverage:**
+- v2.1.3 requirements: 10 total
+- Mapped to phases: 0
+- Unmapped: 10 ⚠️
+
+**v2.1.1 Coverage:**
 - v2.1.1 requirements: 23 total
 - Mapped to phases: 23
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-31*
-*Last updated: 2026-03-31 after milestone v2.1.1 definition*
+*Last updated: 2026-03-31 after milestone v2.1.3 definition*
