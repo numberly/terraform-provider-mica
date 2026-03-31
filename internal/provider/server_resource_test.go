@@ -699,28 +699,7 @@ func TestUnit_Server_NoVIPs(t *testing.T) {
 	}
 }
 
-// buildV0StateType returns the v0 tftypes.Object (without network_interfaces).
-func buildV0StateType() tftypes.Object {
-	dnsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"domain":      tftypes.String,
-		"nameservers": tftypes.List{ElementType: tftypes.String},
-		"services":    tftypes.List{ElementType: tftypes.String},
-	}}
-	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"create": tftypes.String,
-		"read":   tftypes.String,
-		"update": tftypes.String,
-		"delete": tftypes.String,
-	}}
-	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"id":             tftypes.String,
-		"name":           tftypes.String,
-		"created":        tftypes.Number,
-		"dns":            tftypes.List{ElementType: dnsType},
-		"cascade_delete": tftypes.List{ElementType: tftypes.String},
-		"timeouts":       timeoutsType,
-	}}
-}
+
 
 // TestUnit_Server_SchemaVersion verifies that schema version is 1.
 func TestUnit_Server_SchemaVersion(t *testing.T) {
