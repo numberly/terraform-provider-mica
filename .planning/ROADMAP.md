@@ -420,7 +420,7 @@ Plans:
   2. Operator can create a bucket with `object_lock_config` (freeze_locked_objects, default_retention, default_retention_mode, object_lock_enabled) and update retention settings -- subsequent `plan` shows 0 diff
   3. Operator can update `public_access_config` (block_new_public_policies, block_public_access) on an existing bucket -- subsequent `plan` shows 0 diff
   4. Bucket resource exposes `public_status` as a computed read-only attribute that reflects the current public access state after `terraform refresh`
-**Plans**: 2 plans
+**Plans**: 1 plan
 
 Plans:
 - [ ] 23-01-PLAN.md — Client models + bucket resource schema, mapping, and CRUD for eradication, object lock, public access configs
@@ -435,7 +435,7 @@ Plans:
   2. Operator can update lifecycle rule settings (enabled, retention periods, prefix) and destroy rules independently -- no orphaned rules remain on the API
   3. Operator can import an existing lifecycle rule into Terraform state and subsequent `plan` shows 0 diff
   4. Lifecycle rule data source reads existing rules by bucket name and exposes all rule attributes for reference in other resources
-**Plans**: 2 plans
+**Plans**: 1 plan
 
 Plans:
 - [ ] 24-01-PLAN.md — Client models, CRUD methods, and mock handler for lifecycle rules
@@ -450,7 +450,7 @@ Plans:
   2. Operator can create and delete individual bucket access policy rules independently of the parent policy lifecycle
   3. Operator can import existing bucket access policies into Terraform state and subsequent `plan` shows 0 diff
   4. Bucket access policy data source reads existing policies by bucket name and exposes policy and rule attributes
-**Plans**: 2 plans
+**Plans**: 1 plan
 
 Plans:
 - [ ] 25-01-PLAN.md — Client models, CRUD methods, and mock handler for bucket access policies and rules
@@ -498,7 +498,7 @@ Plans:
   3. Operator can update mutable subnet settings (gateway, prefix, mtu, vlan, link_aggregation_group) and destroy a subnet via Terraform
   4. Operator can import an existing subnet into Terraform state with no drift on subsequent `plan`
   5. Drift detection logs changes when a subnet is modified outside Terraform
-**Plans**: 2 plans
+**Plans**: 1 plan
 
 Plans:
 - [ ] 28-01-PLAN.md — Client models (LAG + Subnet), client CRUD methods, mock handlers
@@ -514,7 +514,7 @@ Plans:
   3. `terraform validate` rejects invalid service values and rejects attached_servers when service is egress-only or replication (plan-time, not API-time)
   4. Operator can import an existing network interface by its auto-assigned name (e.g., `vip0`) and subsequent `plan` shows 0 diff
   5. All computed read-only fields (enabled, gateway, mtu, netmask, vlan, realms) are populated after `terraform apply` and `terraform refresh`
-**Plans**: 2 plans
+**Plans**: 1 plan
 
 Plans:
 - [ ] 29-01-PLAN.md — Client models (NetworkInterfacePost/Patch/Get), client CRUD methods, mock handler
@@ -528,10 +528,10 @@ Plans:
   1. `flashblade_server` resource and data source expose a computed `network_interfaces` list populated from VIPs whose `attached_servers` includes that server
   2. Existing users upgrading the provider do not see a state deserialization error -- schema version bump 0→1 with StateUpgrader migrates old state by setting `network_interfaces` to an empty list
   3. `flashblade_network_interface` resource and `flashblade_subnet` resource are registered in `provider.go` and appear in `terraform providers` output
-**Plans**: 2 plans
+**Plans**: 1 plan
 
 Plans:
-- [ ] 30-01-PLAN.md — Server resource/data source enrichment (network_interfaces computed list, schema v0→v1 StateUpgrader, client-side join), provider registration, end-to-end acceptance test
+- [ ] 30-01-PLAN.md — Server resource/data source enrichment (network_interfaces computed list, schema v0→v1 StateUpgrader, VIP client-side join, tests)
 
 ### Phase 31: Documentation & Workflow Examples
 **Goal**: All new v2.1.1 resources have complete documentation, import guides, workflow examples, and the README reflects the expanded networking capabilities
@@ -542,7 +542,7 @@ Plans:
   2. A workflow example in `examples/networking/` demonstrates the full stack: LAG data source → subnet creation → VIP creation (data + sts with server, egress-only without) → server data source reading VIPs
   3. `tfplugindocs generate` produces documentation for all new resources and data sources without errors
   4. README coverage table includes the networking resources category with correct resource and data source counts
-**Plans**: 2 plans
+**Plans**: 1 plan
 
 Plans:
 - [ ] 31-01-PLAN.md — Import docs, networking workflow example, tfplugindocs regeneration, README update
