@@ -230,15 +230,13 @@ func (r *networkInterfaceResource) Create(ctx context.Context, req resource.Crea
 		Services: []string{data.Services.ValueString()},
 		Type:     data.Type.ValueString(),
 	}
-	if !data.SubnetName.IsNull() && !data.SubnetName.IsUnknown() && data.SubnetName.ValueString() != "" {
-		body.Subnet = &client.NamedReference{Name: data.SubnetName.ValueString()}
-	}
 	body.AttachedServers = niServersToNamedRefs(ctx, data.AttachedServers, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ni, err := r.client.PostNetworkInterface(ctx, data.Name.ValueString(), body)
+	subnetName := data.SubnetName.ValueString()
+	ni, err := r.client.PostNetworkInterface(ctx, data.Name.ValueString(), subnetName, body)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating network interface", err.Error())
 		return

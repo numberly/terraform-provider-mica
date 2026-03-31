@@ -104,14 +104,15 @@ func (s *networkInterfaceStore) handleGet(w http.ResponseWriter, r *http.Request
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/network-interfaces?names={name}.
-// The network interface name comes from the ?names= query parameter, not the request body.
+// handlePost handles POST /api/2.22/network-interfaces?names={name}&subnet_names={subnet}.
+// The network interface name comes from ?names= and subnet from ?subnet_names= query parameters.
 func (s *networkInterfaceStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for POST")
 		return
 	}
+	subnetName := r.URL.Query().Get("subnet_names")
 
 	var body client.NetworkInterfacePost
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -127,6 +128,11 @@ func (s *networkInterfaceStore) handlePost(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	var subnet *client.NamedReference
+	if subnetName != "" {
+		subnet = &client.NamedReference{Name: subnetName}
+	}
+
 	ni := &client.NetworkInterface{
 		ID:              uuid.New().String(),
 		Name:            name,
@@ -138,7 +144,7 @@ func (s *networkInterfaceStore) handlePost(w http.ResponseWriter, r *http.Reques
 		VLAN:            0,
 		Type:            body.Type,
 		Services:        body.Services,
-		Subnet:          body.Subnet,
+		Subnet:          subnet,
 		AttachedServers: body.AttachedServers,
 	}
 

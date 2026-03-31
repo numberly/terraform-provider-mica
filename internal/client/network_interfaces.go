@@ -22,9 +22,9 @@ func (c *FlashBladeClient) ListNetworkInterfaces(ctx context.Context) ([]Network
 }
 
 // PostNetworkInterface creates a new network interface. The name is passed via the ?names= query
-// parameter (not in the request body) because name is a read-only field in the API model.
-func (c *FlashBladeClient) PostNetworkInterface(ctx context.Context, name string, body NetworkInterfacePost) (*NetworkInterface, error) {
-	path := "/network-interfaces?names=" + url.QueryEscape(name)
+// parameter and the subnet via ?subnet_names= (neither is in the request body).
+func (c *FlashBladeClient) PostNetworkInterface(ctx context.Context, name string, subnetName string, body NetworkInterfacePost) (*NetworkInterface, error) {
+	path := "/network-interfaces?names=" + url.QueryEscape(name) + "&subnet_names=" + url.QueryEscape(subnetName)
 	var resp ListResponse[NetworkInterface]
 	if err := c.post(ctx, path, body, &resp); err != nil {
 		return nil, err

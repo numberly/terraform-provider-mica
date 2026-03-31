@@ -70,10 +70,10 @@ type NetworkInterface struct {
 
 // NetworkInterfacePost contains writable fields for POST /api/2.22/network-interfaces?names=<name>.
 // Name is NOT included — it is passed as the ?names= query parameter.
+// Subnet is passed via the ?subnet_names= query parameter, not in the body.
 type NetworkInterfacePost struct {
 	Address         string           `json:"address,omitempty"`
 	Services        []string         `json:"services,omitempty"`
-	Subnet          *NamedReference  `json:"subnet,omitempty"`
 	Type            string           `json:"type,omitempty"`
 	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
 }

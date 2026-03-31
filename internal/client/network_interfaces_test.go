@@ -27,13 +27,14 @@ func TestUnit_NetworkInterface_Create(t *testing.T) {
 				http.Error(w, "bad body", http.StatusBadRequest)
 				return
 			}
+			subnetName := r.URL.Query().Get("subnet_names")
 			ni := client.NetworkInterface{
 				ID:              "ni-id-001",
 				Name:            name,
 				Address:         body.Address,
 				Type:            body.Type,
 				Services:        body.Services,
-				Subnet:          body.Subnet,
+				Subnet:          &client.NamedReference{Name: subnetName},
 				AttachedServers: body.AttachedServers,
 				Enabled:         true,
 				Gateway:         "10.99.99.1",
@@ -49,11 +50,10 @@ func TestUnit_NetworkInterface_Create(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	ni, err := c.PostNetworkInterface(context.Background(), "test-data-vip", client.NetworkInterfacePost{
+	ni, err := c.PostNetworkInterface(context.Background(), "test-data-vip", "test-subnet", client.NetworkInterfacePost{
 		Address:         "10.99.99.10",
 		Type:            "vip",
 		Services:        []string{"data"},
-		Subnet:          &client.NamedReference{Name: "test-subnet"},
 		AttachedServers: []client.NamedReference{{Name: "srv-test"}},
 	})
 	if err != nil {
