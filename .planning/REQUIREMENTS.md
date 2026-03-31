@@ -27,7 +27,7 @@ Requirements for code review fixes. Addresses all issues (critical, important, m
 ### Code Cleanup
 
 - [x] **CL-01**: mustObjectValue passthrough helper removed — callers use types.ObjectValue directly
-- [ ] **CL-02**: golangci-lint configuration expanded with gosec, bodyclose, noctx, and exhaustive linters
+- [x] **CL-02**: golangci-lint configuration expanded with gosec, bodyclose, noctx, and exhaustive linters
 
 ## v2.1.1 Requirements (completed)
 
@@ -156,7 +156,7 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | CL-01 | Phase 32 | Complete |
 | CH-01 | Phase 33 | Complete |
 | CH-02 | Phase 33 | Complete |
-| CL-02 | Phase 33 | Pending |
+| CL-02 | Phase 33 | Complete |
 | TQ-01 | Phase 34 | Pending |
 | TQ-02 | Phase 34 | Pending |
 
