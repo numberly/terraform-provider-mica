@@ -67,8 +67,6 @@ type filesystemModel struct {
 	Created                  types.Int64    `tfsdk:"created"`
 	PromotionStatus          types.String   `tfsdk:"promotion_status"`
 	Writable                 types.Bool     `tfsdk:"writable"`
-	NFSExportPolicy          types.String   `tfsdk:"nfs_export_policy"`
-	SMBSharePolicy           types.String   `tfsdk:"smb_share_policy"`
 	Space                    types.Object   `tfsdk:"space"`
 	NFS                      types.Object   `tfsdk:"nfs"`
 	SMB                      types.Object   `tfsdk:"smb"`
@@ -144,14 +142,6 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
-			},
-			"nfs_export_policy": schema.StringAttribute{
-				Optional:    true,
-				Description: "Name of the NFS export policy to apply to this file system.",
-			},
-			"smb_share_policy": schema.StringAttribute{
-				Optional:    true,
-				Description: "Name of the SMB share policy to apply to this file system.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
@@ -694,7 +684,7 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics
 	data.Space = spaceObj
 
 	// NFS block — always set from API.
-	nfsObj, nfsDiags := mustObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
+	nfsObj, nfsDiags := types.ObjectValue(fsNFSAttrTypes(), map[string]attr.Value{
 		"enabled":      types.BoolValue(fs.NFS.Enabled),
 		"v3_enabled":   types.BoolValue(fs.NFS.V3Enabled),
 		"v4_1_enabled": types.BoolValue(fs.NFS.V41Enabled),
@@ -708,7 +698,7 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics
 	data.NFS = nfsObj
 
 	// SMB block — always set from API.
-	smbObj, smbDiags := mustObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
+	smbObj, smbDiags := types.ObjectValue(fsSMBAttrTypes(), map[string]attr.Value{
 		"enabled":                          types.BoolValue(fs.SMB.Enabled),
 		"access_based_enumeration_enabled": types.BoolValue(fs.SMB.AccessBasedEnumerationEnabled),
 		"continuous_availability_enabled":  types.BoolValue(fs.SMB.ContinuousAvailabilityEnabled),
@@ -721,7 +711,7 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics
 	data.SMB = smbObj
 
 	// HTTP block — always set from API (Computed-only).
-	httpObj, httpDiags := mustObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
+	httpObj, httpDiags := types.ObjectValue(fsHTTPAttrTypes(), map[string]attr.Value{
 		"enabled": types.BoolValue(fs.HTTP.Enabled),
 	})
 	diags.Append(httpDiags...)
@@ -732,7 +722,7 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics
 
 	// Source block — only if present in API response.
 	if fs.Source != nil {
-		sourceObj, sourceDiags := mustObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
+		sourceObj, sourceDiags := types.ObjectValue(fsSourceAttrTypes(), map[string]attr.Value{
 			"id":   types.StringValue(fs.Source.ID),
 			"name": types.StringValue(fs.Source.Name),
 		})
@@ -746,7 +736,7 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics
 	}
 
 	// MultiProtocol — always set from API (Optional/Computed).
-	mpObj, mpDiags := mustObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
+	mpObj, mpDiags := types.ObjectValue(fsMultiProtocolAttrTypes(), map[string]attr.Value{
 		"access_control_style": types.StringValue(fs.MultiProtocol.AccessControlStyle),
 		"safeguard_acls":       types.BoolValue(fs.MultiProtocol.SafeguardACLsOnDestroy),
 	})
@@ -757,7 +747,7 @@ func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics
 	data.MultiProtocol = mpObj
 
 	// DefaultQuotas — always set from API (Optional/Computed).
-	dqObj, dqDiags := mustObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
+	dqObj, dqDiags := types.ObjectValue(fsDefaultQuotasAttrTypes(), map[string]attr.Value{
 		"group_quota": types.Int64Value(fs.DefaultQuotas.GroupQuota),
 		"user_quota":  types.Int64Value(fs.DefaultQuotas.UserQuota),
 	})

@@ -107,13 +107,6 @@ func nullTimeoutsValue() timeouts.Value {
 	}
 }
 
-// mustObjectValue builds a types.Object from the given attr types and values.
-// Returns the object and any diagnostics. Callers must check diags and append
-// to the response diagnostics instead of panicking.
-func mustObjectValue(attrTypes map[string]attr.Type, values map[string]attr.Value) (types.Object, diag.Diagnostics) {
-	return types.ObjectValue(attrTypes, values)
-}
-
 // ---------- plan modifier helpers -------------------------------------------
 
 // int64UseStateForUnknown returns an Int64 plan modifier that preserves state value
