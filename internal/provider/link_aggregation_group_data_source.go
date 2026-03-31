@@ -129,7 +129,11 @@ func (d *linkAggregationGroupDataSource) Read(ctx context.Context, req datasourc
 	config.LagSpeed = types.Int64Value(lag.LagSpeed)
 
 	if len(lag.Ports) > 0 {
-		portsList, diags := types.ListValueFrom(ctx, types.StringType, lag.Ports)
+		portNames := make([]string, len(lag.Ports))
+		for i, p := range lag.Ports {
+			portNames[i] = p.Name
+		}
+		portsList, diags := types.ListValueFrom(ctx, types.StringType, portNames)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return

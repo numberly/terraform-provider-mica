@@ -46,7 +46,7 @@ type LinkAggregationGroup struct {
 	LagSpeed   int64    `json:"lag_speed,omitempty"`
 	MacAddress string   `json:"mac_address,omitempty"`
 	PortSpeed  int64    `json:"port_speed,omitempty"`
-	Ports      []string `json:"ports,omitempty"`
+	Ports      []NamedReference `json:"ports,omitempty"`
 	Status     string   `json:"status,omitempty"`
 }
 

@@ -80,7 +80,7 @@ func TestUnit_LagDataSource_Read(t *testing.T) {
 		MacAddress: "00:11:22:33:44:55",
 		PortSpeed:  25000000000,
 		LagSpeed:   50000000000,
-		Ports:      []string{"eth0", "eth1"},
+		Ports:      []client.NamedReference{{Name: "eth0"}, {Name: "eth1"}},
 	})
 
 	d := newTestLagDataSource(t, ms)

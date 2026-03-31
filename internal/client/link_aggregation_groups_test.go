@@ -14,7 +14,7 @@ func TestUnit_LAG_Read(t *testing.T) {
 		ID:        "lag-id-001",
 		Name:      "uplink",
 		Status:    "healthy",
-		Ports:     []string{"CH1.ETH1.1", "CH1.ETH1.2"},
+		Ports:     []client.NamedReference{{Name: "CH1.ETH1.1"}, {Name: "CH1.ETH1.2"}},
 		PortSpeed: 25000000000,
 		LagSpeed:  50000000000,
 		MacAddress:   "24:a9:37:f5:da:64",
