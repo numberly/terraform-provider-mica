@@ -1,10 +1,127 @@
 # Stack Research
 
 **Domain:** Terraform Provider (Go) — REST API wrapping, storage infrastructure
-**Researched:** 2026-03-26
+**Researched:** 2026-03-26 (base stack) / 2026-03-30 (milestone v2.1.1 — network interfaces)
 **Confidence:** HIGH — all versions verified against official scaffolding go.mod (March 2026) and pkg.go.dev
 
-## Recommended Stack
+---
+
+## Milestone v2.1.1 Addendum: Network Interface (VIP) Stack
+
+> This section covers **only what is new or different** for the network interface milestone.
+> The base stack (framework, oauth2, testing, tooling) is unchanged — see section below.
+
+### No New Library Dependencies
+
+The VIP resource requires zero new `go.mod` entries. All necessary primitives already exist:
+
+| Capability Needed | Already Available Via |
+|-------------------|----------------------|
+| HTTP CRUD to `/api/2.22/network-interfaces` | `FlashBladeClient.post/patch/delete/getOneByName` — same HTTP client used by all 29+ resources |
+| `?names=` query parameter pattern | Identical to `GetServer`, `PatchServer`, `DeleteServer` in `internal/client/servers.go` |
+| `attached_servers []NamedReference` field | `NamedReference` struct in `models_common.go`, already used in `ObjectStoreVirtualHost` |
+| `services []string` field | Same pattern as `SyslogServer.Services`, `ArrayDns.Services` |
+| Nested `subnet` object (read-only) | `types.ObjectType` with `attr.Type` map — same pattern as `serverDNSObjectType()` in `server_resource.go` |
+| Read-only fields (`Computed: true` only) | `stringplanmodifier.UseStateForUnknown()` — already used on `id`, `name` fields across all resources |
+| `types.List` for `realms` (read-only array) | `types.ListValueFrom(ctx, types.StringType, ...)` — used in `mapServerToModel` for DNS |
+| Drift detection logging | `tflog.Info(ctx, "drift detected ...", map[string]any{...})` — pattern from `object_store_virtual_host_resource.go` |
+| Import state by name | `resource.ResourceWithImportState` — all existing resources implement this |
+| Three-tier testing | Unit + `httptest.NewServer` mock + acceptance — established pattern, no new tooling |
+
+### New Models to Create
+
+Add to `internal/client/models_network.go` (new file, mirrors `models_admin.go` / `models_exports.go` naming convention):
+
+```go
+// NetworkInterfaceSubnet is the read-only subnet reference embedded in NetworkInterface.
+// The API returns it as an object; only the name is useful for consumers.
+type NetworkInterfaceSubnet struct {
+    Name string `json:"name,omitempty"`
+    ID   string `json:"id,omitempty"`
+}
+
+// NetworkInterface represents a FlashBlade network interface from GET /network-interfaces.
+// Fields marked ro are returned by the API but cannot be set on POST/PATCH.
+type NetworkInterface struct {
+    ID              string                  `json:"id,omitempty"`
+    Name            string                  `json:"name,omitempty"`       // ro — assigned by API
+    Type            string                  `json:"type,omitempty"`       // "vip"
+    Address         string                  `json:"address,omitempty"`
+    Subnet          *NetworkInterfaceSubnet `json:"subnet,omitempty"`
+    Services        []string                `json:"services,omitempty"`
+    AttachedServers []NamedReference        `json:"attached_servers,omitempty"`
+    Enabled         bool                    `json:"enabled,omitempty"`    // ro
+    Gateway         string                  `json:"gateway,omitempty"`    // ro
+    MTU             int64                   `json:"mtu,omitempty"`        // ro
+    Netmask         string                  `json:"netmask,omitempty"`    // ro
+    VLAN            int64                   `json:"vlan,omitempty"`       // ro
+    Realms          []NamedReference        `json:"realms,omitempty"`     // ro
+}
+
+// NetworkInterfacePost contains fields accepted on POST /network-interfaces.
+// Name is passed via ?names= query parameter, not in the body.
+// type="vip" is always set; subnet is required on creation.
+type NetworkInterfacePost struct {
+    Type            string                  `json:"type"`
+    Address         string                  `json:"address,omitempty"`
+    Subnet          *NetworkInterfaceSubnet `json:"subnet,omitempty"`
+    Services        []string                `json:"services,omitempty"`
+    AttachedServers []NamedReference        `json:"attached_servers,omitempty"`
+}
+
+// NetworkInterfacePatch contains only the mutable fields for PATCH /network-interfaces.
+// The API accepts: address, attached_servers, services (verified from FLASHBLADE_API.md).
+// All other fields in the response are read-only.
+type NetworkInterfacePatch struct {
+    Address         *string          `json:"address,omitempty"`
+    Services        *[]string        `json:"services,omitempty"`
+    AttachedServers []NamedReference `json:"attached_servers,omitempty"`
+}
+```
+
+### New Client Functions to Create
+
+Add to `internal/client/network_interfaces.go` (new file, mirrors `servers.go`):
+
+```go
+func (c *FlashBladeClient) GetNetworkInterface(ctx context.Context, name string) (*NetworkInterface, error)
+func (c *FlashBladeClient) PostNetworkInterface(ctx context.Context, name string, body NetworkInterfacePost) (*NetworkInterface, error)
+func (c *FlashBladeClient) PatchNetworkInterface(ctx context.Context, name string, body NetworkInterfacePatch) (*NetworkInterface, error)
+func (c *FlashBladeClient) DeleteNetworkInterface(ctx context.Context, name string) error
+```
+
+All four follow the exact same `?names=` / `ListResponse[T]` pattern as `servers.go`.
+
+### Schema Design Decisions for VIP Fields
+
+| Field | Schema Type | Rationale |
+|-------|------------|-----------|
+| `address` | `StringAttribute{Required: true}` | User-supplied IP address, mutable via PATCH |
+| `subnet` | `StringAttribute{Required: true}` | User supplies subnet name on create; read back as computed object — expose only the name as a string, not a nested object (simpler DX, consistent with `server` field patterns on exports) |
+| `services` | `ListAttribute{ElementType: StringType, Optional: true, Computed: true}` | Mutable via PATCH, API may set defaults |
+| `attached_servers` | `ListAttribute{ElementType: StringType, Optional: true, Computed: true}` | Full-replace semantics on PATCH — same as `ObjectStoreVirtualHost.AttachedServers` |
+| `type` | `StringAttribute{Computed: true}` with hardcoded `"vip"` on POST | Always "vip"; Computed avoids user confusion, UseStateForUnknown for stability |
+| `enabled` | `BoolAttribute{Computed: true}` | Read-only from API, UseStateForUnknown |
+| `gateway` | `StringAttribute{Computed: true}` | Read-only, derived from subnet |
+| `mtu` | `Int64Attribute{Computed: true}` | Read-only, derived from subnet |
+| `netmask` | `StringAttribute{Computed: true}` | Read-only, derived from subnet |
+| `vlan` | `Int64Attribute{Computed: true}` | Read-only, derived from subnet |
+| `realms` | `ListAttribute{ElementType: StringType, Computed: true}` | Read-only array of realm names |
+
+**Key decision on `subnet`:** The API accepts `subnet: {name: "...", id: "..."}` on POST but returns the full object on GET. Expose as `subnet_name` (string) on the Terraform resource — same pattern used for `server` references on exports (`ObjectStoreAccountExport.Server` → Terraform `server_name` string). This avoids a nested object block that users cannot modify.
+
+### Server Resource/Data Source Enrichment
+
+For v2.1.1, the server data source needs a `network_interfaces` computed list showing VIPs associated to a server. The FlashBlade API does not provide a direct `/servers/{id}/network-interfaces` endpoint. The only approach is:
+
+1. `GET /network-interfaces?filter=name='...'` (if API supports filter on attached_servers) — verify during implementation
+2. List all network interfaces and filter client-side by `attached_servers[].name == server_name`
+
+**Flag:** This filtering approach must be validated against API capabilities before implementation. If `GET /network-interfaces` does not support filtering by `attached_servers`, client-side filtering on a full list scan is acceptable for small environments but could be slow on large arrays. Mark as a phase-specific research item.
+
+---
+
+## Base Stack (Unchanged from v1.0)
 
 ### Core Technologies
 
@@ -43,36 +160,18 @@
 ## Installation
 
 ```bash
-# Initialize module (greenfield)
-go mod init github.com/soulkyu/terraform-provider-flashblade
+# No new dependencies for v2.1.1 milestone — all packages already in go.mod.
 
-# Core framework + testing
-go get github.com/hashicorp/terraform-plugin-framework@v1.19.0
-go get github.com/hashicorp/terraform-plugin-testing@v1.15.0
-go get github.com/hashicorp/terraform-plugin-log@v0.10.0
-go get github.com/hashicorp/terraform-plugin-go@v0.31.0
+# Verify current versions are pinned:
+go list -m github.com/hashicorp/terraform-plugin-framework   # expect v1.19.0
+go list -m github.com/hashicorp/terraform-plugin-testing     # expect v1.15.0
+go list -m golang.org/x/oauth2                               # expect v0.34.0+
 
-# Auth
-go get golang.org/x/oauth2@latest
-
-# Dev tools (tools.go pattern — keeps versions pinned in go.mod)
-cat >> tools/tools.go << 'EOF'
-//go:build tools
-
-package tools
-
-import (
-    _ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs"
-)
-EOF
-go get github.com/hashicorp/terraform-plugin-docs@latest
-
-# Install dev binaries
-go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
-go install github.com/bflad/tfproviderlint/cmd/tfproviderlintx@latest
-
-# golangci-lint v2
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.x
+# New files to create (no go get needed):
+# internal/client/models_network.go
+# internal/client/network_interfaces.go
+# internal/provider/network_interface_resource.go
+# internal/provider/network_interface_data_source.go
 ```
 
 ## Alternatives Considered
@@ -84,6 +183,7 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/insta
 | httptest.NewServer (stdlib) | WireMock, httpmock jarcoal | WireMock is Java-native, adds container overhead. jarcoal/httpmock is reasonable but httptest.NewServer is zero-dep and idiomatic Go for this use case. |
 | golang.org/x/oauth2 | Hand-rolled token refresh | Never hand-roll. x/oauth2 handles refresh, concurrency, and expiry correctly. Its `clientcredentials` sub-package covers the FlashBlade token exchange exactly. |
 | goreleaser | Manual Makefile multi-platform build | Only for internal-only providers that never publish to Registry. If Registry publication is planned (it is here), use goreleaser from day one. |
+| `subnet_name` string attribute | Nested `subnet` object block | The subnet object is read-only after creation; nesting adds schema complexity with zero benefit. A string attribute `subnet_name` is consistent with how all other resource references are handled in this provider. |
 
 ## What NOT to Use
 
@@ -94,6 +194,8 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/insta
 | Third-party HTTP clients (resty, fiber, etc.) | Adds deps, hides transport layer — breaks custom CA/auth RoundTripper chain. stdlib net/http is sufficient and transparent. | stdlib net/http with RoundTripper chain |
 | `log` stdlib inside provider | Terraform has its own structured log capture. stdlib `log` writes bypass Terraform's log routing and appear as raw stderr noise. | `github.com/hashicorp/terraform-plugin-log/tflog` |
 | Hardcoded API version paths | FlashBlade exposes `/api/2.22/...` — hardcoding across 538 endpoints creates drift risk when upgrading. | Const for API version, assembled in HTTP client constructor |
+| Nested `subnet` object block in schema | The subnet ref is write-once on POST and read-only thereafter. A `schema.SingleNestedAttribute` block would require the user to specify `subnet { name = "..." }` but never be able to modify it. | `subnet_name` as a `StringAttribute` with `RequiresReplace()` plan modifier |
+| Filtering network interfaces via `attached_servers` at read time | The API may not support filtering network interfaces by attached server names. Doing a full list scan in `Read` on every refresh adds latency and is fragile. | Only look up by name in the resource Read; expose VIPs on the server data source via a dedicated computed attribute populated from a scoped list call |
 
 ## Stack Patterns by Variant
 
@@ -127,6 +229,16 @@ Layer this transport under the auth RoundTripper via composition.
 - Use `resource.Test(t, resource.TestCase{...})` from `terraform-plugin-testing`
 - Gate in CI: run only on manual trigger or dedicated FlashBlade environment
 
+**For VIP `subnet_name` with RequiresReplace:**
+- Mark `subnet_name` with `stringplanmodifier.RequiresReplace()` — changing the subnet on a VIP requires destroy+create
+- Mark `type` with `stringplanmodifier.UseStateForUnknown()` and hard-code `"vip"` in `NetworkInterfacePost.Type` — the provider only manages VIP type interfaces
+- All read-only fields (gateway, mtu, netmask, vlan, enabled, realms) get `UseStateForUnknown()` to avoid perpetual plan diffs on the first apply
+
+**For `attached_servers` full-replace semantics:**
+- On PATCH, always send the complete desired list — same behavior as `ObjectStoreVirtualHost`
+- Empty slice `[]NamedReference{}` means detach all servers
+- `nil` in the PATCH body means "don't change" — use pointer-to-slice if omit-vs-empty matters; for this field the list-replace approach is simpler
+
 ## Version Compatibility
 
 | Package | Compatible With | Notes |
@@ -148,7 +260,11 @@ Layer this transport under the auth RoundTripper via composition.
 - [bflad/tfproviderlint GitHub](https://github.com/bflad/tfproviderlint) — provider-specific linter MEDIUM confidence (last verified active)
 - [golangci-lint v2 announcement](https://ldez.github.io/blog/2025/03/23/golangci-lint-v2/) — v2 config format change MEDIUM confidence
 - [hashicorp/ghaction-terraform-provider-release](https://github.com/hashicorp/ghaction-terraform-provider-release) — official release workflow HIGH confidence
+- FLASHBLADE_API.md lines 372-377 — network-interfaces CRUD endpoints, mutable vs read-only fields confirmed HIGH confidence (authoritative API reference)
+- `internal/client/models_exports.go` — NamedReference, AttachedServers pattern confirmed HIGH confidence (codebase)
+- `internal/provider/object_store_virtual_host_resource.go` — attached_servers full-replace pattern confirmed HIGH confidence (codebase)
+- `internal/provider/server_resource.go` — nested object (serverDNSObjectType) pattern confirmed HIGH confidence (codebase)
 
 ---
 *Stack research for: Terraform Provider for Pure Storage FlashBlade*
-*Researched: 2026-03-26*
+*Researched: 2026-03-26 (base) / 2026-03-30 (v2.1.1 network interfaces addendum)*

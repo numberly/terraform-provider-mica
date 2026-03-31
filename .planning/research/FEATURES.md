@@ -1,16 +1,176 @@
 # Feature Research
 
 **Domain:** Terraform provider for enterprise storage (Pure Storage FlashBlade REST API v2.22)
-**Researched:** 2026-03-26
-**Confidence:** HIGH (HashiCorp official docs + API reference + ecosystem analysis)
+**Researched:** 2026-03-30 (VIP milestone update; original 2026-03-26)
+**Confidence:** HIGH (API reference verified in FLASHBLADE_API.md + existing provider patterns)
 
 ---
 
-## Feature Landscape
+## Milestone v2.1.1 — Network Interface (VIP) Feature Scope
+
+This section focuses exclusively on the new network interface (VIP) features.
+The sections below it cover the full provider feature landscape from the original research.
+
+### API Capability Summary (v2.22)
+
+```
+POST   /api/2.22/network-interfaces
+  Writable:  address (string), type (string — only valid value: "vip"),
+             subnet (object — reference by name), services (array),
+             attached_servers (array — list of server name references)
+  Read-only at create: enabled, gateway, mtu, netmask, vlan, realms, name, id
+
+PATCH  /api/2.22/network-interfaces  ?names=[name]
+  Writable:  address (string), attached_servers (array), services (array)
+  NOT patchable: subnet, type, name
+
+GET    /api/2.22/network-interfaces  ?names=[name]
+  Returns all fields (writable + read-only)
+
+DELETE /api/2.22/network-interfaces  ?names=[name]
+```
+
+Key API constraints:
+- `name` is read-only (assigned by the API, not user-defined at POST time — needs investigation)
+- `subnet` is set at create, cannot be changed (RequiresReplace on update)
+- `type` is always `"vip"` — no other valid value at v2.22
+- `gateway`, `mtu`, `netmask`, `vlan` are derived from the subnet (read-only on VIP)
+- `services` controls what protocols the VIP serves (e.g., `data-s3`, `data-nfs`, `management`)
+- `attached_servers` follows the same pattern as `object_store_virtual_host.attached_servers`
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist. Missing these = product feels incomplete or unusable.
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| `flashblade_network_interface` resource (CRUD) | Core deliverable of this milestone — VIPs cannot be managed without it | MEDIUM | POST + PATCH + GET + DELETE. Pattern mirrors `server_resource.go` + `object_store_virtual_host_resource.go`. |
+| `flashblade_network_interface` data source | Consumers need to reference existing VIPs (not Terraform-managed) by name for cross-stack composition | LOW | Read-only, single lookup by name. Mirrors `server_data_source.go` pattern exactly. |
+| Import support (`terraform import flashblade_network_interface.x <name>`) | Team has existing VIPs; can't adopt into state without import | LOW | ImportState by name — identical to every other resource in this provider. |
+| Drift detection on all writable fields | Ops compliance requirement — already present on all 29+ resources; VIP must be consistent | MEDIUM | Read after Create/Update; log diffs via tflog for `address`, `services`, `attached_servers`. |
+| Read-only computed fields exposed in state | Consumers need `gateway`, `mtu`, `netmask`, `vlan`, `enabled` to discover network properties | LOW | All read-only fields from GET response must be in schema as `Computed: true`. Essential for data source consumers. |
+| `attached_servers` on server resource/data source | Server consumers (e.g., bucket workflows) need to discover which VIPs are reachable via a given server | MEDIUM | Enrichment of existing `flashblade_server` resource and data source. Add `network_interfaces` computed list attribute. |
+| `subnet` as a named reference (string) | Subnet is required at creation and is a reference object in the API; must be addressable by name | LOW | Expose as `subnet_name` string (Required, RequiresReplace). Do not attempt to manage the subnet itself. |
+| `services` as a list of strings | Consumers need to declare which protocols a VIP serves | LOW | `["data-s3"]`, `["data-nfs"]`, `["management"]` are the expected valid values. Validate against known enum. |
+| Timeouts on all operations | Provider-wide convention — all resources have configurable timeouts | LOW | Use `timeouts.Attributes(ctx, timeouts.Opts{Create, Read, Update, Delete})` — copy from server_resource.go. |
+
+### Differentiators (Competitive Advantage)
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Server data source enrichment with VIP list | Consumers can discover all VIPs attached to a server in one data source lookup — enables endpoint discovery patterns in workflows | MEDIUM | Add `network_interfaces` computed list of objects (`name`, `address`, `services`, `enabled`) to `flashblade_server` data source. Requires additional GET `/api/2.22/network-interfaces?names=...` call filtered by server. |
+| `services` enum validator | Catches invalid service names at plan time (before apply) | LOW | Validate `services` list elements against `["data-s3", "data-nfs", "management", "replication"]`. Consistent with existing provider validator pattern (`HostnameNoDotValidator`, etc.). |
+| Explicit `RequiresReplace` on `subnet` | Makes immutability of subnet visible in plan output — prevents surprise destroys | LOW | `stringplanmodifier.RequiresReplace()` on `subnet_name`. Documents the API constraint clearly. |
+| Expose VIP name as computed (API-assigned) | If VIP `name` is truly read-only (API-assigned), exposing it as `Computed` with `UseStateForUnknown` prevents spurious plan diffs | LOW | Needs verification: does POST accept a `name` parameter or is it always derived? FLASHBLADE_API.md shows `name(ro string)` — treat as computed. |
+
+### Anti-Features (Commonly Requested, Often Problematic)
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Subnet management as part of VIP resource | "One resource to create both subnet and VIP together" | Subnets are lower-level network infrastructure, typically managed by network team separately; mixing creates blast-radius issues | Manage subnets via the FlashBlade admin UI or a separate `flashblade_subnet` resource (future, out of scope for v2.1.1). Reference by name with `subnet_name`. |
+| Network interface connectors management | "I see `/api/2.22/network-interfaces/connectors` in the API" | Physical connector settings (lane speed, port count, transceiver type) are hardware configuration, not declarative IaC. Values depend on physical hardware and should not be Terraform-managed. | Out of scope. Read-only data source if needed, but connector settings are changed by hardware upgrades, not code. |
+| Auto-detect `services` from subnet | "Let the provider figure out what services are enabled" | Services are user intent, not derived state. Auto-detection hides configuration from the plan and creates hidden dependencies. | User explicitly declares `services`. Provider validates against known enum at plan time. |
+| Ping/trace diagnostic resources | "Expose `GET /network-interfaces/ping` and `/trace` as data sources" | Diagnostics are operational actions, not infrastructure state. Results change every run, causing permanent drift in data source results. | Use the FlashBlade admin UI or direct API calls for network diagnostics. |
+| Managing `enabled` state of a VIP | "I want to disable a VIP via Terraform" | `enabled` is read-only in the API — it reflects physical link state, not a configurable flag. Setting it would require modifying the subnet, not the VIP. | If VIP needs to be disabled, delete it and recreate, or manage the subnet's enabled state separately. |
+
+---
+
+## Feature Dependencies
+
+```
+flashblade_network_interface
+    └──references──> subnet (by name, pre-existing — not managed by provider in v2.1.1)
+    └──references──> flashblade_server (via attached_servers — optional, by name)
+
+flashblade_server (data source enrichment)
+    └──reads──> flashblade_network_interface (to populate network_interfaces computed list)
+
+flashblade_object_store_virtual_host
+    └──same attached_servers pattern (already implemented — reference, not dependency)
+```
+
+### Dependency Notes
+
+- **`flashblade_network_interface` requires a pre-existing subnet:** The `subnet_name` field references a subnet that must exist on the FlashBlade. The provider does not manage subnets. If the subnet is absent, the POST will fail with an API error (not a plan error). No Terraform-level dependency can be declared without a subnet resource.
+- **`attached_servers` is optional:** VIPs can exist without any server attached. Servers can be attached after creation via PATCH. This means `attached_servers` should be Optional+Computed, not Required — mirrors `object_store_virtual_host.attached_servers`.
+- **Server data source enrichment is independent of VIP resource:** The `flashblade_server` data source can expose VIP info as a secondary lookup (GET network-interfaces filtered by server name) without any change to the VIP resource itself. These are parallel changes to separate files.
+- **`type` is a constant:** The API documents `type: "vip"` as the only valid value. It should be Required+Computed or set as a constant in the schema description. Simplest approach: Required with a validator that only accepts `"vip"`, or Computed with hardcoded value set during Read.
+
+---
+
+## MVP Definition (v2.1.1)
+
+### Launch With
+
+- [ ] `flashblade_network_interface` resource — full CRUD + import + drift detection
+  - Schema: `name` (Computed), `address` (Required), `type` (Computed, always "vip"), `subnet_name` (Required, RequiresReplace), `services` (Optional+Computed list), `attached_servers` (Optional+Computed list), computed: `enabled`, `gateway`, `mtu`, `netmask`, `vlan`, `id`
+  - Client methods: PostNetworkInterface, GetNetworkInterface, PatchNetworkInterface, DeleteNetworkInterface
+- [ ] `flashblade_network_interface` data source — read by name
+  - All fields Computed; `name` Required as lookup key
+- [ ] `flashblade_server` data source enrichment — add `network_interfaces` computed list
+- [ ] `flashblade_server` resource enrichment — add `network_interfaces` computed list (read-only, no write)
+- [ ] Unit tests for schema, validators, plan modifiers (new resource + data source)
+
+### Defer (Not in v2.1.1)
+
+- [ ] `flashblade_subnet` resource — full subnet management is a separate, larger feature
+- [ ] Network interface connector management — hardware config, not IaC
+- [ ] Ping/trace diagnostic data sources — operational tools, not infrastructure state
+- [ ] TLS policy attachment to network interfaces (`/network-interfaces/tls-policies`) — security hardening, defer to v2.2
+
+---
+
+## Feature Prioritization Matrix (v2.1.1 scope)
+
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| `flashblade_network_interface` resource (CRUD) | HIGH | MEDIUM | P1 |
+| `flashblade_network_interface` data source | HIGH | LOW | P1 |
+| Import support | HIGH | LOW | P1 |
+| Drift detection + tflog | HIGH | LOW | P1 |
+| Computed fields (gateway, mtu, netmask, vlan) | MEDIUM | LOW | P1 |
+| `flashblade_server` data source enrichment | MEDIUM | MEDIUM | P2 |
+| `flashblade_server` resource enrichment | LOW | LOW | P2 |
+| `services` enum validator | MEDIUM | LOW | P2 |
+| Unit tests | HIGH | LOW | P1 |
+
+**Priority key:**
+- P1: Must have for milestone completion
+- P2: Should have — adds significant value with low cost
+- P3: Nice to have, future consideration
+
+---
+
+## Implementation Notes (VIP-specific)
+
+### Name Assignment
+
+The API schema shows `name(ro string)` on NetworkInterface, which means the provider likely cannot specify the name at POST time (unlike `flashblade_server` where name is Required+RequiresReplace). This needs verification:
+
+- If POST accepts `?names=[name]` query param (like PATCH/DELETE do): `name` is Required+RequiresReplace (same as server)
+- If POST does not accept name: `name` is Computed+UseStateForUnknown; the API assigns it, and import must use the API-assigned name
+
+Recommendation: Verify with actual API call. The FLASHBLADE_API.md POST line does not list `name` in the body, but GET/PATCH/DELETE use `?names=` query param — strongly suggests name IS user-supplied at POST via query param, not body. **Check POST endpoint behavior before writing the client method.**
+
+### `subnet` Field Modeling
+
+The API `subnet` field is an object reference (not a flat string). The provider should expose it as `subnet_name` (string) to avoid nested object complexity — consistent with how `attached_servers` is a flat list of name strings rather than objects.
+
+During Read, extract `subnet.name` and map to `subnet_name` in state.
+
+### `attached_servers` Pattern
+
+Follows the exact same pattern as `object_store_virtual_host.attached_servers`:
+- Optional+Computed list of strings (server names)
+- On Create: pass as named references to POST body
+- On Read: map API response array of objects to flat list of name strings
+- On Update: include in PATCH body only when changed
+
+Reuse `modelServersToNamedRefs()` helper if applicable — or create equivalent `modelServersToNetworkInterfaceRefs()`.
+
+---
+
+## Original Provider Feature Landscape (v1.0 research — preserved)
+
+### Table Stakes (Users Expect These)
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
@@ -32,36 +192,31 @@ Features users assume exist. Missing these = product feels incomplete or unusabl
 
 ### Differentiators (Competitive Advantage)
 
-Features that set the product apart from a naive provider implementation.
-
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Drift detection with structured audit log output | Ops compliance requirement: when Read detects a diff, log exactly which attributes changed from what to what at INFO level via tflog | MEDIUM | Log field-by-field diffs in Read when prior state differs from API response. Use `tflog.Info(ctx, "drift detected", "resource", name, "attribute", field, "was", old, "now", new)`. |
-| Mocked API integration tests for CI (no FlashBlade required) | Enables fast feedback in CI pipelines where real FlashBlade access is unavailable or expensive | HIGH | HTTP mock server (e.g., `net/http/httptest`) implementing FlashBlade API responses. Acceptance tests pass `TF_ACC=1` gate; mocked tests run always. |
-| Full policy family coverage in v1 | Competitors (community FlashArray provider) ship partial policy support, forcing click-ops fallback | HIGH | All 6 policy types: NFS export, SMB share, snapshot, object store access, network access, quota. Each has policy + rules as separate sub-resources. |
-| Composite import IDs for policy rules | Policy rules have no standalone ID — they belong to a parent policy; naive import breaks | MEDIUM | Convention: `policy_name:rule_index` or `policy_name:rule_name`. Document in resource description. |
-| Quota policy resource with hard/soft limits | Storage quota enforcement is a top ops requirement; few providers model this correctly | MEDIUM | Separate `flashblade_quota_policy` and `flashblade_quota_policy_rule` with `quota_limit`, `hard_limit_enabled` attributes |
-| Object Lock configuration on buckets | Compliance/WORM requirements are increasingly common; model `object_lock_config` and `retention_lock` | HIGH | Map `retention_lock` enum (`ratcheted`, `unlocked`), `object_lock_config.default_retention_mode`, `object_lock_config.default_retention_period` |
-| QoS policy attachment on filesystems and buckets | Storage cost control; ops teams need to assign `qos_policy` to control IOPS/bandwidth | MEDIUM | `qos_policy` as a reference attribute (object with `name`) on both `flashblade_file_system` and `flashblade_bucket` |
-| Eradication config management | Controls how quickly destroyed resources are permanently deleted; critical for compliance | MEDIUM | `eradication_config.eradication_delay` on filesystem/bucket resources. Distinguish `destroyed=true` (soft delete) from actual DELETE. |
-| Destroyed state lifecycle (soft delete) | FlashBlade buckets/filesystems support `destroyed=true` before permanent deletion; naive delete = data loss | HIGH | Implement two-phase delete: PATCH `destroyed=true`, then DELETE. On Read, if `destroyed=true` in API response, surface in state or remove from state based on user intent. |
-| Array admin data sources (DNS, NTP, SMTP) | Ops teams need to read array configuration for cross-provider dependencies without managing it | LOW | Read-only data sources for `flashblade_array_dns`, `flashblade_array_ntp` — complementing the resource versions |
+| Drift detection with structured audit log output | Ops compliance requirement: when Read detects a diff, log exactly which attributes changed from what to what at INFO level via tflog | MEDIUM | Log field-by-field diffs in Read when prior state differs from API response. |
+| Mocked API integration tests for CI (no FlashBlade required) | Enables fast feedback in CI pipelines where real FlashBlade access is unavailable or expensive | HIGH | HTTP mock server (e.g., `net/http/httptest`) implementing FlashBlade API responses. |
+| Full policy family coverage in v1 | Competitors ship partial policy support, forcing click-ops fallback | HIGH | All 6 policy types: NFS export, SMB share, snapshot, object store access, network access, quota. |
+| Composite import IDs for policy rules | Policy rules have no standalone ID — naive import breaks | MEDIUM | Convention: `policy_name:rule_index` or `policy_name:rule_name`. |
+| Quota policy resource with hard/soft limits | Storage quota enforcement is a top ops requirement | MEDIUM | `flashblade_quota_policy` and `flashblade_quota_policy_rule` with `quota_limit`, `hard_limit_enabled` |
+| Object Lock configuration on buckets | Compliance/WORM requirements | HIGH | Map `retention_lock` enum, `object_lock_config.default_retention_mode` |
+| Eradication config management | Controls how quickly destroyed resources are permanently deleted | MEDIUM | `eradication_config.eradication_delay` on filesystem/bucket resources. |
+| Destroyed state lifecycle (soft delete) | FlashBlade buckets/filesystems support `destroyed=true` before permanent deletion | HIGH | Two-phase delete: PATCH `destroyed=true`, then DELETE. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Performance metrics resources (`/arrays/performance`, `/buckets/performance`) | "We want dashboards in Terraform" | Performance data is time-series, not configuration state. Terraform is a state machine, not a monitoring tool. Every plan would show spurious diffs. | Use Datadog FlashBlade integration or Prometheus purestorage-exporter for metrics. |
-| Snapshot management as resources | "We want Terraform to create on-demand snapshots" | Snapshots are operational artifacts, not declarative infrastructure. Lifecycle is incompatible (snapshots accumulate, Terraform would want to destroy old ones). | Snapshot policies (`flashblade_snapshot_policy`) declare the schedule; execution is API-driven. |
-| Multi-array management in one provider block | "We have 5 FlashBlades, why configure 5 providers?" | Provider is a single API client; one endpoint, one auth context. Multi-array = multiple provider aliases. Mixing breaks state isolation. | Use Terraform's `provider` alias pattern (`provider "flashblade" { alias = "prod" }`). Already out-of-scope per PROJECT.md. |
-| Automatic resource name generation | "Let the provider generate unique names" | Generated names = unstable state. Terraform re-creates resources if names change between runs. Forces random suffix anti-pattern. | User supplies names. Use `random_id` resource from Terraform's random provider if uniqueness is needed. |
-| Hardware management (blades, drives) | "We can see `/api/2.22/blades` and `/api/2.22/drives` in the API" | Hardware state is read-only observation, not declarative configuration. Physical hardware can't be created or destroyed via API. | Read-only data sources at most — but hardware topology is outside platform engineering scope. Already out-of-scope per PROJECT.md. |
-| Audit log target resources (`/log-targets/file-systems`, `/log-targets/object-store`) | "We want audit logs configured as code" | Audit log targets reference file system and bucket resources, creating circular dependencies in state. | Manage audit log targets via separate operational scripts post-resource-creation, or as a v1.x add-on after dependency ordering is solved. |
-| Session/client management (`/file-systems/sessions`, `/file-systems/locks`) | "We want to manage active sessions" | Sessions are ephemeral runtime state. Terraform managing sessions would terminate user connections on `terraform destroy`. | Operational runbooks, not IaC. |
+| Performance metrics resources | "We want dashboards in Terraform" | Time-series data, not configuration state. Every plan shows spurious diffs. | Datadog FlashBlade integration or Prometheus purestorage-exporter. |
+| Snapshot management as resources | "We want on-demand snapshots via Terraform" | Snapshots are operational artifacts, not declarative infrastructure. | Snapshot policies declare the schedule; execution is API-driven. |
+| Multi-array management in one provider block | "We have 5 FlashBlades" | Provider is a single API client; mixing breaks state isolation. | Terraform `provider` alias pattern. |
+| Automatic resource name generation | "Let the provider generate unique names" | Generated names = unstable state. | User supplies names. |
+| Hardware management (blades, drives) | "I see `/api/2.22/blades` in the API" | Hardware state is read-only observation, not declarative configuration. | Out of scope. |
+| Session/client management | "We want to manage active sessions" | Sessions are ephemeral runtime state. | Operational runbooks, not IaC. |
 
 ---
 
-## Feature Dependencies
+## Feature Dependencies (full provider)
 
 ```
 flashblade_object_store_account
@@ -85,129 +240,24 @@ flashblade_network_access_policy
     └──optional attachment──> flashblade_bucket (via policy reference)
     └──optional attachment──> flashblade_file_system (via policy reference)
 
+flashblade_network_interface (NEW — v2.1.1)
+    └──references──> subnet (pre-existing, by name)
+    └──references──> flashblade_server (via attached_servers, optional)
+
 flashblade_array_dns / flashblade_array_ntp / flashblade_array_smtp
     └──singleton resources──> no dependencies, managed independently
 ```
-
-### Dependency Notes
-
-- **`flashblade_bucket` requires `flashblade_object_store_account`:** The `account` field on bucket creation is mandatory. The account must exist before the bucket can be created.
-- **`flashblade_object_store_access_key` references account, not bucket:** Access keys are scoped to an object store user/account pair — not directly to a bucket.
-- **Policy attachment is optional for resources:** File systems and buckets can be created without any policy attached; policies are attached post-creation via PATCH. This means policy resources are independent — they can be created before or after the resource they attach to.
-- **Policy rules require parent policy:** NFS export policy rules, SMB share policy rules, quota rules, etc., cannot exist without their parent policy. Parent policy must be created first.
-- **Destroyed state precedes eradication:** Calling DELETE on a bucket/filesystem that has `destroyed=false` is an API error on some resources. Provider must first PATCH `destroyed=true`, then DELETE — or check current state in Delete.
-
----
-
-## MVP Definition
-
-### Launch With (v1)
-
-Minimum viable set to cover the ops team's high-frequency CRUD use cases.
-
-- [ ] Provider configuration (endpoint, api_token, OAuth2, TLS CA cert, env var fallbacks) — foundation for everything
-- [ ] `flashblade_file_system` resource + data source — highest-frequency ops resource
-- [ ] `flashblade_object_store_account` resource + data source — required before buckets
-- [ ] `flashblade_bucket` resource + data source — second-highest-frequency ops resource
-- [ ] `flashblade_object_store_access_key` resource + data source — access management critical path
-- [ ] `flashblade_nfs_export_policy` + `flashblade_nfs_export_policy_rule` resource + data source — NFS filesystems are unusable without exports
-- [ ] `flashblade_smb_share_policy` + `flashblade_smb_share_policy_rule` resource + data source — Windows workload access
-- [ ] `flashblade_snapshot_policy` + `flashblade_snapshot_policy_rule` resource + data source — backup/recovery SLA
-- [ ] `flashblade_object_store_access_policy` + `flashblade_object_store_access_policy_rule` resource + data source — S3 IAM equivalent
-- [ ] `flashblade_network_access_policy` + `flashblade_network_access_policy_rule` resource + data source — security boundary
-- [ ] `flashblade_quota_policy` + `flashblade_quota_policy_rule` resource + data source — storage cost control
-- [ ] Array admin resources (DNS, NTP, SMTP, alerts) — `flashblade_array_dns`, `flashblade_array_ntp`, `flashblade_array_smtp`
-- [ ] Import support for all resources — adoption of existing infrastructure
-- [ ] Drift detection with structured tflog output — compliance requirement per PROJECT.md
-- [ ] Unit tests for schema, validators, plan modifiers
-- [ ] Mocked API integration tests (CI-safe)
-- [ ] Acceptance tests for core resource families (filesystem, bucket, policies)
-
-### Add After Validation (v1.x)
-
-- [ ] Object Lock and WORM bucket configuration — add when compliance/WORM use cases surface
-- [ ] QoS policy attachment — add when storage performance management is requested
-- [ ] Eradication config management — add when retention/compliance teams engage
-- [ ] Additional array admin data sources (read-only array info) — low effort, add on demand
-- [ ] Terraform Registry publication — after internal validation proves stability
-
-### Future Consideration (v2+)
-
-- [ ] Pulumi bridge — provider structure intentionally compatible; defer until provider API is stable
-- [ ] Bucket replica links (`flashblade_bucket_replica_link`) — DR automation use case, complex state machine
-- [ ] File system replica links (`flashblade_file_system_replica_link`) — same DR complexity
-- [ ] Array connection management (`flashblade_array_connection`) — multi-array connectivity, requires test infrastructure
-- [ ] API client management (`flashblade_api_client`) — security automation, low priority initially
-- [ ] Active Directory integration (`flashblade_active_directory`) — domain join via Terraform, high risk
-
----
-
-## Feature Prioritization Matrix
-
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| Provider authentication + config | HIGH | LOW | P1 |
-| `flashblade_file_system` resource | HIGH | MEDIUM | P1 |
-| `flashblade_bucket` resource | HIGH | MEDIUM | P1 |
-| `flashblade_object_store_account` resource | HIGH | LOW | P1 |
-| `flashblade_object_store_access_key` resource | HIGH | MEDIUM | P1 |
-| NFS/SMB policy resources | HIGH | MEDIUM | P1 |
-| Snapshot policy resource | HIGH | MEDIUM | P1 |
-| Object store access policy resource | HIGH | HIGH | P1 |
-| Network access policy resource | MEDIUM | MEDIUM | P1 |
-| Quota policy resource | MEDIUM | MEDIUM | P1 |
-| Import support (all resources) | HIGH | MEDIUM | P1 |
-| Drift detection + audit logging | HIGH | MEDIUM | P1 |
-| Array admin resources (DNS/NTP/SMTP) | MEDIUM | LOW | P1 |
-| Mocked integration tests | HIGH | HIGH | P1 |
-| Acceptance tests (core resources) | HIGH | HIGH | P1 |
-| Object Lock / WORM config | MEDIUM | HIGH | P2 |
-| QoS policy attachment | MEDIUM | MEDIUM | P2 |
-| Eradication config management | MEDIUM | MEDIUM | P2 |
-| Bucket/FS replica links | LOW | HIGH | P3 |
-| Array connection management | LOW | HIGH | P3 |
-| API client management | LOW | MEDIUM | P3 |
-| Active Directory resource | LOW | HIGH | P3 |
-
-**Priority key:**
-- P1: Must have for launch
-- P2: Should have, add when possible
-- P3: Nice to have, future consideration
-
----
-
-## Competitor Feature Analysis
-
-| Feature | devans10/terraform-provider-flash (FlashArray) | PureStorage-OpenConnect/terraform-provider-cbs (Cloud Block Store) | Our Approach |
-|---------|----------------------------------------------|----------------------------------------------------------------------|--------------|
-| Auth methods | API token + username/password | API token | API token + OAuth2 client_credentials (production-grade) |
-| Framework | SDK v2 | SDK v2 | terraform-plugin-framework (protocol v6, modern) |
-| Import support | Partial (some resources) | Unknown | All resources — non-negotiable |
-| Policy management | None (FlashArray doesn't have FlashBlade policy model) | None | Full coverage: 6 policy types + rules as sub-resources |
-| Drift detection | Read-based (passive) | Read-based (passive) | Read-based + structured tflog diff output for audit compliance |
-| Testing | Unit + acceptance | Unknown | Three-tier: unit + mocked integration + acceptance |
-| Sensitive fields | `sensitive` flag on tokens | Unknown | `sensitive` flag + ephemeral resources for auth tokens |
-| Data sources | Full coverage per resource | Limited | Full coverage: data source for every resource type |
-| Registry status | Published (registry.terraform.io) | Published | Internal first, Registry v1.x |
 
 ---
 
 ## Sources
 
-- [HashiCorp Terraform Provider Best Practices](https://developer.hashicorp.com/terraform/plugin/best-practices)
-- [HashiCorp Provider Design Principles](https://developer.hashicorp.com/terraform/plugin/best-practices/hashicorp-provider-design-principles)
-- [terraform-plugin-framework Resources](https://developer.hashicorp.com/terraform/plugin/framework/resources)
-- [terraform-plugin-framework Data Sources](https://developer.hashicorp.com/terraform/plugin/framework/data-sources)
-- [Resource Import — terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/import)
-- [Sensitive State Best Practices](https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state)
-- [Detecting Drift — SDKv2 (patterns apply to framework)](https://developer.hashicorp.com/terraform/plugin/sdkv2/best-practices/detecting-drift)
-- [Plan Modification — terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework/resources/plan-modification)
-- [Timeouts — terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts)
-- [Acceptance Tests — terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework/acctests)
-- [Writing Log Output — tflog](https://developer.hashicorp.com/terraform/plugin/log/writing)
-- [devans10/terraform-provider-flash (FlashArray community provider)](https://github.com/devans10/terraform-provider-flash)
 - FlashBlade REST API 2.22 reference (`FLASHBLADE_API.md` in repo root)
+- Existing provider implementation: `internal/provider/server_resource.go`, `internal/provider/object_store_virtual_host_resource.go`
+- [HashiCorp Terraform Provider Best Practices](https://developer.hashicorp.com/terraform/plugin/best-practices)
+- [terraform-plugin-framework Resources](https://developer.hashicorp.com/terraform/plugin/framework/resources)
+- [Plan Modification — terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework/resources/plan-modification)
 
 ---
-*Feature research for: Terraform provider for Pure Storage FlashBlade*
-*Researched: 2026-03-26*
+*Feature research for: Terraform provider for Pure Storage FlashBlade — network interface (VIP) milestone v2.1.1*
+*Researched: 2026-03-30*
