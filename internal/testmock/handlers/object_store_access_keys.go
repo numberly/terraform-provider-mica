@@ -176,7 +176,7 @@ func generateAccessKeyID() string {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, 16)
 	for i := range b {
-		b[i] = chars[rand.IntN(len(chars))]
+		b[i] = chars[rand.IntN(len(chars))] //nolint:gosec // G404: test mock generating fake key IDs — crypto strength not needed
 	}
 	return "PSFB" + string(b)
 }
@@ -186,7 +186,7 @@ func generateSecretAccessKey() string {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/"
 	b := make([]byte, 40)
 	for i := range b {
-		b[i] = chars[rand.IntN(len(chars))]
+		b[i] = chars[rand.IntN(len(chars))] //nolint:gosec // G404: test mock generating fake secret keys — crypto strength not needed
 	}
 	return string(b)
 }

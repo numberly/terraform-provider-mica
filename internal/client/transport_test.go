@@ -29,7 +29,11 @@ func TestUnit_RetryTransport_429(t *testing.T) {
 		t.Fatalf("new client: %v", err)
 	}
 
-	resp, err := c.HTTPClient().Get(srv.URL + "/api/2.22/file-systems")
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL+"/api/2.22/file-systems", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	resp, err := c.HTTPClient().Do(req)
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}
@@ -62,7 +66,11 @@ func TestUnit_RetryTransport_503(t *testing.T) {
 		t.Fatalf("new client: %v", err)
 	}
 
-	resp, err := c.HTTPClient().Get(srv.URL + "/test")
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL+"/test", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	resp, err := c.HTTPClient().Do(req)
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}
@@ -90,7 +98,11 @@ func TestUnit_RetryTransport_MaxRetries(t *testing.T) {
 		t.Fatalf("new client: %v", err)
 	}
 
-	resp, err := c.HTTPClient().Get(srv.URL + "/test")
+	req2, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL+"/test", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	resp, err := c.HTTPClient().Do(req2)
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -9,7 +10,7 @@ import (
 )
 
 func TestValidateQueryParams_AcceptsKnownParams(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/test?names=foo&ids=bar", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test?names=foo&ids=bar", nil)
 	w := httptest.NewRecorder()
 
 	ok := ValidateQueryParams(w, req, []string{"names", "ids"})
@@ -22,7 +23,7 @@ func TestValidateQueryParams_AcceptsKnownParams(t *testing.T) {
 }
 
 func TestValidateQueryParams_AcceptsGlobalParams(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/test?names=foo&limit=10&offset=0", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test?names=foo&limit=10&offset=0", nil)
 	w := httptest.NewRecorder()
 
 	ok := ValidateQueryParams(w, req, []string{"names"})
@@ -32,7 +33,7 @@ func TestValidateQueryParams_AcceptsGlobalParams(t *testing.T) {
 }
 
 func TestValidateQueryParams_RejectsUnknownParam(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/test?names=foo&bogus=bar", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test?names=foo&bogus=bar", nil)
 	w := httptest.NewRecorder()
 
 	ok := ValidateQueryParams(w, req, []string{"names", "ids"})
@@ -58,7 +59,7 @@ func TestValidateQueryParams_RejectsUnknownParam(t *testing.T) {
 }
 
 func TestValidateQueryParams_AllowsEmptyQuery(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	w := httptest.NewRecorder()
 
 	ok := ValidateQueryParams(w, req, []string{"names"})
@@ -68,7 +69,7 @@ func TestValidateQueryParams_AllowsEmptyQuery(t *testing.T) {
 }
 
 func TestRequireQueryParam_ReturnsValueWhenPresent(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/test?names=myfs", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test?names=myfs", nil)
 	w := httptest.NewRecorder()
 
 	val, ok := RequireQueryParam(w, req, "names")
@@ -81,7 +82,7 @@ func TestRequireQueryParam_ReturnsValueWhenPresent(t *testing.T) {
 }
 
 func TestRequireQueryParam_ReturnsFalseWhenMissing(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	w := httptest.NewRecorder()
 
 	val, ok := RequireQueryParam(w, req, "names")

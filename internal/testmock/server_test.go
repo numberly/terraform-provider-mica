@@ -2,6 +2,7 @@ package testmock_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,7 +24,7 @@ func doJSON(t *testing.T, method, url string, body any) *http.Response {
 		}
 		bodyReader = bytes.NewReader(data)
 	}
-	req, err := http.NewRequest(method, url, bodyReader)
+	req, err := http.NewRequestWithContext(context.Background(), method, url, bodyReader)
 	if err != nil {
 		t.Fatalf("new request: %v", err)
 	}

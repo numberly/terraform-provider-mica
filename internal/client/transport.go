@@ -48,7 +48,7 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			return nil, fmt.Errorf("retryTransport: read request body: %w", err)
 		}
-		req.Body.Close()
+		_ = req.Body.Close()
 	}
 
 	var resp *http.Response
@@ -72,10 +72,10 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		// Drain and close the response body before retrying to release the
 		// underlying TCP connection back to the pool.
 		_, _ = io.Copy(io.Discard, resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 
 		delay := computeDelay(t.baseDelay, attempt)
-		log.Printf("[DEBUG] retryTransport: attempt %d/%d returned %d — retrying in %v (X-Request-ID: %s)",
+		log.Printf("[DEBUG] retryTransport: attempt %d/%d returned %d — retrying in %v (X-Request-ID: %s)", //nolint:gosec // G706: format string is hardcoded; args are numeric/duration values, not user-controlled
 			attempt+1, t.maxRetries, resp.StatusCode, delay, req.Header.Get("X-Request-ID"))
 
 		select {
@@ -98,7 +98,7 @@ func computeDelay(baseDelay time.Duration, attempt int) time.Duration {
 	}
 	// Apply +/-20% jitter to prevent thundering herds.
 	jitterRange := float64(delay) * 0.2
-	jitter := (mathrand.Float64()*2 - 1) * jitterRange // [-20%, +20%]
+	jitter := (mathrand.Float64()*2 - 1) * jitterRange //nolint:gosec // G404: retry jitter does not require crypto-strength randomness
 	delay = time.Duration(float64(delay) + jitter)
 	if delay < 0 {
 		delay = 0

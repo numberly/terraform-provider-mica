@@ -8,9 +8,18 @@ linters:
     - staticcheck
     - unused
     - ineffassign
+    - gosec
+    - bodyclose
+    - noctx
+    - exhaustive
   settings:
     govet:
       enable-all: false
+    exhaustive:
+      default-signifies-exhaustive: true
+    gosec:
+      excludes:
+        - G115  # integer overflow — not applicable to provider context
   exclusions:
     presets:
       - std-error-handling
@@ -19,3 +28,6 @@ linters:
       - linters:
           - staticcheck
         text: "SA1019"
+      - linters:
+          - gosec
+        path: "_test\\.go"

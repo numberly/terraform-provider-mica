@@ -101,7 +101,11 @@ func TestUnit_APIError_NotFound(t *testing.T) {
 		t.Fatalf("new client: %v", err)
 	}
 
-	resp, err := c.HTTPClient().Get(srv.URL + "/api/2.22/file-systems?names=missing")
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL+"/api/2.22/file-systems?names=missing", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	resp, err := c.HTTPClient().Do(req)
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}
