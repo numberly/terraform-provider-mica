@@ -9,9 +9,9 @@ Requirements for code review fixes. Addresses all issues (critical, important, m
 
 ### Code Correctness
 
-- [ ] **CC-01**: FreezeLockgedObjects typo renamed to FreezeLockedObjects across all Go files
-- [ ] **CC-02**: Dead schema attributes nfs_export_policy and smb_share_policy removed from filesystem resource
-- [ ] **CC-03**: Diagnostic severity preserved when converting mapFSToModel results — warnings remain warnings, errors remain errors
+- [x] **CC-01**: FreezeLockgedObjects typo renamed to FreezeLockedObjects across all Go files
+- [x] **CC-02**: Dead schema attributes nfs_export_policy and smb_share_policy removed from filesystem resource
+- [x] **CC-03**: Diagnostic severity preserved when converting mapFSToModel results — warnings remain warnings, errors remain errors
 
 ### Test Quality
 
@@ -22,11 +22,11 @@ Requirements for code review fixes. Addresses all issues (critical, important, m
 
 - [ ] **CH-01**: OAuth2 token refresh uses caller context where possible instead of context.Background()
 - [ ] **CH-02**: RetryBaseDelay duration heuristic removed — callers must use explicit time.Duration values
-- [ ] **CH-03**: Unused ctx parameters removed from bucket extract functions (extractEradicationConfig, extractObjectLockConfig, extractPublicAccessConfig)
+- [x] **CH-03**: Unused ctx parameters removed from bucket extract functions (extractEradicationConfig, extractObjectLockConfig, extractPublicAccessConfig)
 
 ### Code Cleanup
 
-- [ ] **CL-01**: mustObjectValue passthrough helper removed — callers use types.ObjectValue directly
+- [x] **CL-01**: mustObjectValue passthrough helper removed — callers use types.ObjectValue directly
 - [ ] **CL-02**: golangci-lint configuration expanded with gosec, bodyclose, noctx, and exhaustive linters
 
 ## v2.1.1 Requirements (completed)
@@ -149,11 +149,11 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | DOC-02 | Phase 31 | Complete |
 | DOC-03 | Phase 31 | Complete |
 | DOC-04 | Phase 31 | Complete |
-| CC-01 | Phase 32 | Pending |
-| CC-02 | Phase 32 | Pending |
-| CC-03 | Phase 32 | Pending |
-| CH-03 | Phase 32 | Pending |
-| CL-01 | Phase 32 | Pending |
+| CC-01 | Phase 32 | Complete |
+| CC-02 | Phase 32 | Complete |
+| CC-03 | Phase 32 | Complete |
+| CH-03 | Phase 32 | Complete |
+| CL-01 | Phase 32 | Complete |
 | CH-01 | Phase 33 | Pending |
 | CH-02 | Phase 33 | Pending |
 | CL-02 | Phase 33 | Pending |

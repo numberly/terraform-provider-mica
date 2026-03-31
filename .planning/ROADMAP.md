@@ -586,7 +586,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 29. Network Interface Resource & Data Source | 2/2 | Complete    | 2026-03-31 | - |
 | 30. Server Enrichment & Provider Registration | 1/1 | Complete    | 2026-03-31 | - |
 | 31. Documentation & Workflow Examples | 1/1 | Complete    | 2026-03-31 | - |
-| 32. Code Correctness Fixes | v2.1.3 | 0/1 | Not started | - |
+| 32. Code Correctness Fixes | 1/1 | Complete   | 2026-03-31 | - |
 | 33. Client Hardening | v2.1.3 | 0/1 | Not started | - |
 | 34. Test Quality | v2.1.3 | 0/1 | Not started | - |
 
@@ -596,7 +596,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 
 **Milestone Goal:** Fix all issues identified by the full codebase code review — critical typos, dead schema attributes, diagnostic severity loss, client hardening, linting improvements, and acceptance test quality.
 
-- [ ] **Phase 32: Code Correctness Fixes** - Typo rename, dead schema removal, diagnostic severity, and dead helper/param cleanup
+- [x] **Phase 32: Code Correctness Fixes** - Typo rename, dead schema removal, diagnostic severity, and dead helper/param cleanup (completed 2026-03-31)
 - [ ] **Phase 33: Client Hardening** - OAuth2 context propagation, RetryBaseDelay removal, and golangci-lint expansion
 - [ ] **Phase 34: Test Quality** - Fix ExpectNonEmptyPlan masking and expand acceptance test coverage
 

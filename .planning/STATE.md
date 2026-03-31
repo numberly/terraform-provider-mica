@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.3
-milestone_name: Code Review Fixes
-status: roadmap_ready
-stopped_at: Roadmap created — Phase 32 not started
-last_updated: "2026-03-31T00:00:00Z"
+milestone: v2.1
+milestone_name: Bucket Advanced Features
+status: Roadmap ready, awaiting plan-phase 32
+stopped_at: Completed 32-01-PLAN.md
+last_updated: "2026-03-31T16:19:25.579Z"
 last_activity: 2026-03-31 — Roadmap created for v2.1.3
 progress:
-  total_phases: 3
-  completed_phases: 0
-  total_plans: 3
-  completed_plans: 0
-  percent: 0
+  total_phases: 34
+  completed_phases: 31
+  total_plans: 71
+  completed_plans: 69
 ---
 
 # Project State
@@ -25,13 +24,13 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 ## Current Position
 
-Phase: 32 (Code Correctness Fixes) — not started
-Plan: —
-Status: Roadmap ready, awaiting plan-phase 32
-Last activity: 2026-03-31 — Roadmap created for v2.1.3
+Phase: 32 (Code Correctness Fixes) — complete
+Plan: 32-01 complete
+Status: Phase 32 done — Phase 33 next
+Last activity: 2026-03-31 — Phase 32-01 complete (5 code correctness fixes)
 
 ```
-v2.1.3 Progress: [                    ] 0/3 phases
+v2.1.3 Progress: [███                 ] 1/3 phases
 ```
 
 ## Performance Metrics
@@ -43,6 +42,7 @@ v2.1.3 Progress: [                    ] 0/3 phases
 | Plans defined | 3 (1 per phase, TBD detail) |
 | Plans complete | 0 |
 | Requirements mapped | 10/10 |
+| Phase 32-code-correctness-fixes P01 | 15 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -51,6 +51,9 @@ v2.1.3 Progress: [                    ] 0/3 phases
 - [quick-7]: ServerDNS struct deleted — DNS field is []NamedReference matching real API response format
 - [quick-7]: directory_services added as Computed-only []NamedReference; schema v1->v2 with state upgrader chain
 - [quick-7]: v1 nested DNS objects lack name field so v1->v2 upgrader resets DNS to null (refreshed on next Read)
+- [Phase 32-01]: JSON tag freeze_locked_objects unchanged — only Go field name renamed to FreezeLockedObjects
+- [Phase 32-01]: DiagnosticReporter.AddWarning added — backward compatible since *diag.Diagnostics already satisfies the extended interface
+- [Phase 32-01]: nfs_export_policy and smb_share_policy removed from filesystem schema — had no API backing in filesystem CRUD
 
 ### v2.1.3 Phase Groupings
 
@@ -74,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31
-Stopped at: Roadmap created — run `/gsd:plan-phase 32` to begin
+Last session: 2026-03-31T16:19:25.569Z
+Stopped at: Completed 32-01-PLAN.md
 Resume file: None
