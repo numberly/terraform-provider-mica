@@ -407,7 +407,7 @@ Plans:
 
 - [x] **Phase 28: LAG Data Source & Subnet Resource** - LAG read-only data source and full subnet CRUD resource with LAG reference (completed 2026-03-31)
 - [x] **Phase 29: Network Interface Resource & Data Source** - Full VIP CRUD resource with service/server semantics and read-only data source (completed 2026-03-31)
-- [ ] **Phase 30: Server Enrichment & Provider Registration** - Computed VIP list on server resource/data source, schema migration, provider registration
+- [x] **Phase 30: Server Enrichment & Provider Registration** - Computed VIP list on server resource/data source, schema migration, provider registration (completed 2026-03-31)
 
 ## Phase Details
 
@@ -583,5 +583,5 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 27. Testing & Documentation | 1/1 | Complete    | 2026-03-30 | - |
 | 28. LAG Data Source & Subnet Resource | 2/2 | Complete    | 2026-03-31 | - |
 | 29. Network Interface Resource & Data Source | 2/2 | Complete    | 2026-03-31 | - |
-| 30. Server Enrichment & Provider Registration | v2.1.1 | 0/1 | Not started | - |
+| 30. Server Enrichment & Provider Registration | 1/1 | Complete   | 2026-03-31 | - |
 | 31. Documentation & Workflow Examples | v2.1.1 | 0/1 | Not started | - |

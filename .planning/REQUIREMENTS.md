@@ -42,8 +42,8 @@ Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP)
 
 ### Server Enrichment
 
-- [ ] **SRV-01**: Server resource and data source expose associated VIPs as computed network_interfaces list
-- [ ] **SRV-02**: Server schema version bumped from 0 to 1 with StateUpgrader migration
+- [x] **SRV-01**: Server resource and data source expose associated VIPs as computed network_interfaces list
+- [x] **SRV-02**: Server schema version bumped from 0 to 1 with StateUpgrader migration
 
 ## v2.1 Requirements (completed)
 
@@ -117,8 +117,8 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | NI-09 | Phase 29 | Complete |
 | NI-10 | Phase 29 | Complete |
 | LAG-01 | Phase 28 | Complete |
-| SRV-01 | Phase 30 | Pending |
-| SRV-02 | Phase 30 | Pending |
+| SRV-01 | Phase 30 | Complete |
+| SRV-02 | Phase 30 | Complete |
 | DOC-01 | Phase 31 | Pending |
 | DOC-02 | Phase 31 | Pending |
 | DOC-03 | Phase 31 | Pending |

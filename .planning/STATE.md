@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 29-02-PLAN.md
-last_updated: "2026-03-31T09:14:50.193Z"
+stopped_at: Completed 30-01-PLAN.md
+last_updated: "2026-03-31T09:27:19.026Z"
 last_activity: 2026-03-31 — Roadmap created for v2.1.1 (4 phases, 23 requirements)
 progress:
   total_phases: 31
-  completed_phases: 28
-  total_plans: 68
-  completed_plans: 66
+  completed_phases: 29
+  total_plans: 69
+  completed_plans: 67
   percent: 0
 ---
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 29-network-interface-resource]: AttachedServers uses empty list (not null) when API returns no servers — prevents spurious drift on next plan
 - [Phase 29-network-interface-resource]: services collapsed from []string to single types.String in schema — API enforces one service per NI
 - [Phase 29-network-interface-resource]: ConfigValidator defers validation when Services or AttachedServers is Unknown — supports plan-time deferral
+- [Phase 30-server-enrichment]: StateUpgrader v0->v1 sets network_interfaces to empty list; VIP enrichment uses warning diagnostic (not error) to avoid blocking CRUD; Client-side filter by attached_servers — API has no server filter param
 
 ### Pending Todos
 
@@ -74,6 +75,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T09:09:21.325Z
-Stopped at: Completed 29-02-PLAN.md
+Last session: 2026-03-31T09:27:12.645Z
+Stopped at: Completed 30-01-PLAN.md
 Resume file: None
