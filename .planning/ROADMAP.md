@@ -514,7 +514,7 @@ Plans:
   3. `terraform validate` rejects invalid service values and rejects attached_servers when service is egress-only or replication (plan-time, not API-time)
   4. Operator can import an existing network interface by its auto-assigned name (e.g., `vip0`) and subsequent `plan` shows 0 diff
   5. All computed read-only fields (enabled, gateway, mtu, netmask, vlan, realms) are populated after `terraform apply` and `terraform refresh`
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 29-01-PLAN.md — Client models (NetworkInterfacePost/Patch/Get), client CRUD methods, mock handler
@@ -528,7 +528,7 @@ Plans:
   1. `flashblade_server` resource and data source expose a computed `network_interfaces` list populated from VIPs whose `attached_servers` includes that server
   2. Existing users upgrading the provider do not see a state deserialization error -- schema version bump 0→1 with StateUpgrader migrates old state by setting `network_interfaces` to an empty list
   3. `flashblade_network_interface` resource and `flashblade_subnet` resource are registered in `provider.go` and appear in `terraform providers` output
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 30-01-PLAN.md — Server resource/data source enrichment (network_interfaces computed list, schema v0→v1 StateUpgrader, client-side join), provider registration, end-to-end acceptance test
@@ -542,7 +542,7 @@ Plans:
   2. A workflow example in `examples/networking/` demonstrates the full stack: LAG data source → subnet creation → VIP creation (data + sts with server, egress-only without) → server data source reading VIPs
   3. `tfplugindocs generate` produces documentation for all new resources and data sources without errors
   4. README coverage table includes the networking resources category with correct resource and data source counts
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 31-01-PLAN.md — Import docs, networking workflow example, tfplugindocs regeneration, README update
