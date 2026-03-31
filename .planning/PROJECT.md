@@ -8,14 +8,21 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.1.1 — Network Interfaces (VIPs)
+## Current Milestone: v2.1.3 — Code Review Fixes
 
-**Goal:** Add network interface (Virtual IP) management as a resource and data source, and expose VIPs on the server data source/resource for consumer endpoint discovery.
+**Goal:** Fix all issues identified by the full codebase code review — critical typos, dead schema attributes, test masking, client hardening, and linting improvements.
 
 **Target features:**
-- Network interface resource (CRUD — VIP addresses with subnet, services, attached servers)
-- Network interface data source (read existing VIPs by name)
-- Server resource/data source enrichment with associated VIP information
+- Fix FreezeLockgedObjects typo in Go struct field name (C1)
+- Remove dead nfs_export_policy/smb_share_policy attributes from filesystem schema (I1)
+- Fix ExpectNonEmptyPlan masking in acceptance tests (I2)
+- Improve OAuth2 token refresh context propagation (I3)
+- Expand acceptance test coverage beyond 3 resources (I4)
+- Remove fragile RetryBaseDelay heuristic (I5)
+- Remove mustObjectValue passthrough helper (M1)
+- Remove unused ctx parameters from bucket extract functions (M2)
+- Fix diagnostic severity loss in readIntoState (M3)
+- Expand golangci-lint configuration (M4)
 
 ## Requirements
 
@@ -32,9 +39,16 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 
 ### Active
 
-- [ ] Network interface resource (CRUD — VIP type, address, subnet, services, attached servers)
-- [ ] Network interface data source (read existing VIPs)
-- [ ] Server resource/data source enrichment with VIP information
+- [ ] Fix FreezeLockgedObjects typo → FreezeLockedObjects (C1)
+- [ ] Remove dead filesystem schema attributes nfs_export_policy/smb_share_policy (I1)
+- [ ] Fix ExpectNonEmptyPlan masking in acceptance tests (I2)
+- [ ] Improve OAuth2 token refresh context handling (I3)
+- [ ] Expand acceptance test coverage to more resources (I4)
+- [ ] Remove fragile RetryBaseDelay duration heuristic (I5)
+- [ ] Remove mustObjectValue passthrough helper (M1)
+- [ ] Remove unused ctx params from bucket extract functions (M2)
+- [ ] Fix diagnostic severity loss in readIntoState (M3)
+- [ ] Expand golangci-lint linter configuration (M4)
 
 ### Out of Scope
 
@@ -75,4 +89,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-31 after milestone v2.1.1 initialization*
+*Last updated: 2026-03-31 after milestone v2.1.3 initialization*
