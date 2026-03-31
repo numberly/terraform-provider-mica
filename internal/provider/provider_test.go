@@ -38,8 +38,7 @@ var providerType = tftypes.Object{
 		"ca_cert":              tftypes.String,
 		"insecure_skip_verify": tftypes.Bool,
 		"max_retries":          tftypes.Number,
-		"retry_base_delay":     tftypes.String,
-		"auth":                 authType,
+		"auth": authType,
 	},
 }
 
@@ -66,8 +65,7 @@ func baseProviderConfig(overrides map[string]tftypes.Value) tftypes.Value {
 		"ca_cert":              tftypes.NewValue(tftypes.String, nil),
 		"insecure_skip_verify": tftypes.NewValue(tftypes.Bool, nil),
 		"max_retries":          tftypes.NewValue(tftypes.Number, nil),
-		"retry_base_delay":     tftypes.NewValue(tftypes.String, nil),
-		"auth":                 nullAuth,
+		"auth": nullAuth,
 	}
 	for k, v := range overrides {
 		base[k] = v
@@ -126,7 +124,7 @@ func mockFlashBladeServer(t *testing.T) *httptest.Server {
 
 // TestUnit_ProviderSchema verifies that the schema exposes all expected attributes:
 // endpoint, auth block, ca_cert_file, ca_cert, insecure_skip_verify, max_retries,
-// retry_base_delay, and that auth has api_token and oauth2 sub-block.
+// and that auth has api_token and oauth2 sub-block.
 func TestUnit_ProviderSchema(t *testing.T) {
 	p := &FlashBladeProvider{version: "test"}
 	var resp provider.SchemaResponse
@@ -134,7 +132,7 @@ func TestUnit_ProviderSchema(t *testing.T) {
 
 	attrs := resp.Schema.Attributes
 
-	required := []string{"endpoint", "ca_cert_file", "ca_cert", "insecure_skip_verify", "max_retries", "retry_base_delay", "auth"}
+	required := []string{"endpoint", "ca_cert_file", "ca_cert", "insecure_skip_verify", "max_retries", "auth"}
 	for _, name := range required {
 		if _, ok := attrs[name]; !ok {
 			t.Errorf("schema missing attribute %q", name)

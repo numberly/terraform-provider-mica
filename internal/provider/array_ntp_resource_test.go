@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
