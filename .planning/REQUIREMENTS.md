@@ -24,10 +24,10 @@ Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP)
 - [x] **NI-04**: subnet and type are immutable after creation (RequiresReplace)
 - [x] **NI-05**: services accepts a single value from: data, sts, egress-only, replication
 - [x] **NI-06**: attached_servers is required for data/sts services and forbidden for egress-only/replication services
-- [ ] **NI-07**: Operator can read an existing network interface by name via data source
-- [ ] **NI-08**: Operator can import an existing network interface into Terraform state with no drift on subsequent plan
-- [ ] **NI-09**: Drift detection logs changes when network interface is modified outside Terraform
-- [ ] **NI-10**: All read-only fields exposed as computed (enabled, gateway, mtu, netmask, vlan, realms)
+- [x] **NI-07**: Operator can read an existing network interface by name via data source
+- [x] **NI-08**: Operator can import an existing network interface into Terraform state with no drift on subsequent plan
+- [x] **NI-09**: Drift detection logs changes when network interface is modified outside Terraform
+- [x] **NI-10**: All read-only fields exposed as computed (enabled, gateway, mtu, netmask, vlan, realms)
 
 ### LAG (Link Aggregation Group)
 
@@ -112,10 +112,10 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | NI-04 | Phase 29 | Complete |
 | NI-05 | Phase 29 | Complete |
 | NI-06 | Phase 29 | Complete |
-| NI-07 | Phase 29 | Pending |
-| NI-08 | Phase 29 | Pending |
-| NI-09 | Phase 29 | Pending |
-| NI-10 | Phase 29 | Pending |
+| NI-07 | Phase 29 | Complete |
+| NI-08 | Phase 29 | Complete |
+| NI-09 | Phase 29 | Complete |
+| NI-10 | Phase 29 | Complete |
 | LAG-01 | Phase 28 | Complete |
 | SRV-01 | Phase 30 | Pending |
 | SRV-02 | Phase 30 | Pending |

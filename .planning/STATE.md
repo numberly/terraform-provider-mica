@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 29-network-interface-resource-01-PLAN.md
-last_updated: "2026-03-31T08:58:01.397Z"
+stopped_at: Completed 29-02-PLAN.md
+last_updated: "2026-03-31T09:09:21.334Z"
 last_activity: 2026-03-31 — Roadmap created for v2.1.1 (4 phases, 23 requirements)
 progress:
   total_phases: 31
-  completed_phases: 27
+  completed_phases: 28
   total_plans: 68
-  completed_plans: 65
+  completed_plans: 66
   percent: 0
 ---
 
@@ -59,6 +59,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 28-lag-ds-subnet-resource]: lag_name exposed as flat types.String — consistent with all other reference attributes in the codebase
 - [Phase 28-lag-ds-subnet-resource]: Services/Interfaces computed lists use types.ListNull for empty (not emptyStringList) to signal absent data vs empty
 - [Phase 29-network-interface-resource]: NetworkInterfacePatch.Services and .AttachedServers have NO omitempty — full-replace semantics require sending [] in JSON
+- [Phase 29-network-interface-resource]: AttachedServers uses empty list (not null) when API returns no servers — prevents spurious drift on next plan
+- [Phase 29-network-interface-resource]: services collapsed from []string to single types.String in schema — API enforces one service per NI
+- [Phase 29-network-interface-resource]: ConfigValidator defers validation when Services or AttachedServers is Unknown — supports plan-time deferral
 
 ### Pending Todos
 
@@ -71,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T08:58:01.390Z
-Stopped at: Completed 29-network-interface-resource-01-PLAN.md
+Last session: 2026-03-31T09:09:21.325Z
+Stopped at: Completed 29-02-PLAN.md
 Resume file: None
