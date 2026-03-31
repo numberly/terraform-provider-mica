@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.1
-milestone_name: Network Interfaces (VIPs)
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-03-31"
-last_activity: 2026-03-31 — Roadmap created for v2.1.1, Phase 28 ready to plan
+milestone: v2.1
+milestone_name: Bucket Advanced Features
+status: planning
+stopped_at: Completed 28-lag-ds-subnet-resource-01-PLAN.md
+last_updated: "2026-03-31T08:25:42.032Z"
+last_activity: 2026-03-31 — Roadmap created for v2.1.1 (4 phases, 23 requirements)
 progress:
-  total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 31
+  completed_phases: 26
+  total_plans: 66
+  completed_plans: 63
   percent: 0
 ---
 
@@ -53,6 +53,9 @@ Progress: [░░░░░░░░░░] 0%
 - [v2.1.1]: Build order: models → client methods → mock handler → resource/DS → server enrichment → registration
 - [v2.0.1]: Volatile attrs (lag, recovery_point, backlog) should NOT use UseStateForUnknown
 - [v2.0.1]: Bucket Update must check IsUnknown() before including fields in PATCH
+- [Phase 28-lag-ds-subnet-resource]: SubnetPost does not include Name field — passed via ?names= query param only
+- [Phase 28-lag-ds-subnet-resource]: LAG client is GET-only — no POST/PATCH/DELETE (hardware-managed)
+- [Phase 28-lag-ds-subnet-resource]: SubnetPatch uses *int64 for MTU and VLAN for zero-value safety (VLAN=0 = untagged)
 
 ### Pending Todos
 
@@ -65,6 +68,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31
-Stopped at: Roadmap written, ready to plan Phase 28
+Last session: 2026-03-31T08:25:42.022Z
+Stopped at: Completed 28-lag-ds-subnet-resource-01-PLAN.md
 Resume file: None

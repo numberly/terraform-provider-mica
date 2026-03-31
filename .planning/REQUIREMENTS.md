@@ -9,12 +9,12 @@ Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP)
 
 ### Subnet
 
-- [ ] **SUB-01**: Operator can create a subnet with name, prefix, gateway, mtu, vlan, and link_aggregation_group via Terraform
-- [ ] **SUB-02**: Operator can update subnet settings (gateway, prefix, mtu, vlan, link_aggregation_group) via Terraform apply
-- [ ] **SUB-03**: Operator can delete a subnet via Terraform destroy
-- [ ] **SUB-04**: Operator can read any existing subnet by name via data source
-- [ ] **SUB-05**: Operator can import an existing subnet into Terraform state with no drift on subsequent plan
-- [ ] **SUB-06**: Drift detection logs changes when subnet is modified outside Terraform
+- [x] **SUB-01**: Operator can create a subnet with name, prefix, gateway, mtu, vlan, and link_aggregation_group via Terraform
+- [x] **SUB-02**: Operator can update subnet settings (gateway, prefix, mtu, vlan, link_aggregation_group) via Terraform apply
+- [x] **SUB-03**: Operator can delete a subnet via Terraform destroy
+- [x] **SUB-04**: Operator can read any existing subnet by name via data source
+- [x] **SUB-05**: Operator can import an existing subnet into Terraform state with no drift on subsequent plan
+- [x] **SUB-06**: Drift detection logs changes when subnet is modified outside Terraform
 
 ### Network Interface (VIP)
 
@@ -31,7 +31,7 @@ Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP)
 
 ### LAG (Link Aggregation Group)
 
-- [ ] **LAG-01**: Operator can read an existing LAG by name via data source (name, status, ports, port_speed, lag_speed, mac_address)
+- [x] **LAG-01**: Operator can read an existing LAG by name via data source (name, status, ports, port_speed, lag_speed, mac_address)
 
 ### Documentation & Workflow
 
@@ -100,12 +100,12 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SUB-01 | Phase 28 | Pending |
-| SUB-02 | Phase 28 | Pending |
-| SUB-03 | Phase 28 | Pending |
-| SUB-04 | Phase 28 | Pending |
-| SUB-05 | Phase 28 | Pending |
-| SUB-06 | Phase 28 | Pending |
+| SUB-01 | Phase 28 | Complete |
+| SUB-02 | Phase 28 | Complete |
+| SUB-03 | Phase 28 | Complete |
+| SUB-04 | Phase 28 | Complete |
+| SUB-05 | Phase 28 | Complete |
+| SUB-06 | Phase 28 | Complete |
 | NI-01 | Phase 29 | Pending |
 | NI-02 | Phase 29 | Pending |
 | NI-03 | Phase 29 | Pending |
@@ -116,7 +116,7 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | NI-08 | Phase 29 | Pending |
 | NI-09 | Phase 29 | Pending |
 | NI-10 | Phase 29 | Pending |
-| LAG-01 | Phase 28 | Pending |
+| LAG-01 | Phase 28 | Complete |
 | SRV-01 | Phase 30 | Pending |
 | SRV-02 | Phase 30 | Pending |
 | DOC-01 | Phase 31 | Pending |
