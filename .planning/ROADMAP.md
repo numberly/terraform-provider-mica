@@ -623,10 +623,11 @@ Plans:
   1. OAuth2 token refresh passes caller context to the HTTP token request — cancelling the Terraform context cancels the in-flight token refresh (not just the resource operation)
   2. `RetryBaseDelay` identifier is removed from the codebase — all callers pass explicit `time.Duration` values; `go build ./...` confirms no compilation errors
   3. `golangci-lint run ./...` passes with gosec, bodyclose, noctx, and exhaustive linters active — zero new violations introduced by this milestone
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 33-01-PLAN.md — OAuth2 context propagation fix, RetryBaseDelay removal, golangci-lint config expansion and violation fixes
+- [ ] 33-01-PLAN.md — OAuth2 context propagation fix and RetryBaseDelay removal (CH-01, CH-02)
+- [ ] 33-02-PLAN.md — golangci-lint config with gosec, bodyclose, noctx, exhaustive and violation fixes (CL-02)
 
 ### Phase 34: Test Quality
 **Goal**: Acceptance tests accurately verify plan convergence and cover a broader set of high-risk resources — no test silently hides a drift bug, and critical resources beyond the initial 3 are exercised end-to-end
