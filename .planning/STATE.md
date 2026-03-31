@@ -4,7 +4,7 @@ milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
 stopped_at: Completed 28-lag-ds-subnet-resource-02-PLAN.md
-last_updated: "2026-03-31T08:34:20.603Z"
+last_updated: "2026-03-31T08:39:24.009Z"
 last_activity: 2026-03-31 — Roadmap created for v2.1.1 (4 phases, 23 requirements)
 progress:
   total_phases: 31
