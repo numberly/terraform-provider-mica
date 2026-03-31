@@ -4,7 +4,6 @@ import (
 	"context"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -25,7 +24,6 @@ func newTestS3RuleResource(t *testing.T, ms *testmock.MockServer) *s3ExportPolic
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)

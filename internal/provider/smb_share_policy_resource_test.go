@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -25,7 +24,6 @@ func newTestSMBPolicyResource(t *testing.T, ms *testmock.MockServer) *smbSharePo
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -292,7 +290,6 @@ func newTestSMBPolicyDataSource(t *testing.T, ms *testmock.MockServer) *smbShare
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -343,7 +340,6 @@ func TestSmbSharePolicyDataSource(t *testing.T) {
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)

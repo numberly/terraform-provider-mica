@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -25,7 +24,6 @@ func newTestArraySmtpResource(t *testing.T, ms *testmock.MockServer) *arraySmtpR
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -396,7 +394,6 @@ func newTestArraySmtpDataSource(t *testing.T, ms *testmock.MockServer) *arraySmt
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -434,7 +431,6 @@ func TestArraySmtpDataSource(t *testing.T) {
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)

@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -24,7 +23,6 @@ func newTestSMBRuleResource(t *testing.T, ms *testmock.MockServer) *smbSharePoli
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -113,7 +111,6 @@ func createSMBPolicyForRuleTest(t *testing.T, ms *testmock.MockServer, policyNam
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)

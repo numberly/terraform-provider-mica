@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -23,7 +22,6 @@ func newTestSubnetResource(t *testing.T, ms *testmock.MockServer) *subnetResourc
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)

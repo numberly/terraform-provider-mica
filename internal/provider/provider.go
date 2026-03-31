@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -31,7 +30,6 @@ type flashBladeProviderModel struct {
 	CACert             types.String `tfsdk:"ca_cert"`
 	InsecureSkipVerify types.Bool   `tfsdk:"insecure_skip_verify"`
 	MaxRetries         types.Int64  `tfsdk:"max_retries"`
-	RetryBaseDelay     types.String `tfsdk:"retry_base_delay"`
 	Auth               *authModel   `tfsdk:"auth"`
 }
 
@@ -85,10 +83,6 @@ func (p *FlashBladeProvider) Schema(_ context.Context, _ provider.SchemaRequest,
 			"max_retries": schema.Int64Attribute{
 				Optional:    true,
 				Description: "Maximum number of retry attempts for transient errors (429, 5xx). Default: 3.",
-			},
-			"retry_base_delay": schema.StringAttribute{
-				Optional:    true,
-				Description: "Initial retry delay as a Go duration string (e.g. '1s', '500ms'). Default: '1s'.",
 			},
 			"auth": schema.SingleNestedAttribute{
 				Optional:    true,
@@ -211,19 +205,6 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 		maxRetries = 3
 	}
 
-	retryBaseDelay := time.Second
-	if delayStr := config.RetryBaseDelay.ValueString(); delayStr != "" {
-		parsed, err := time.ParseDuration(delayStr)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Invalid retry_base_delay",
-				fmt.Sprintf("Cannot parse %q as a Go duration: %s. Use a value like '1s', '500ms'.", delayStr, err),
-			)
-			return
-		}
-		retryBaseDelay = parsed
-	}
-
 	// Build the client config.
 	cfg := client.Config{
 		Endpoint:           endpoint,
@@ -232,7 +213,6 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 		OAuth2KeyID:        oauth2KeyID,
 		OAuth2Issuer:       oauth2Issuer,
 		MaxRetries:         maxRetries,
-		RetryBaseDelay:     retryBaseDelay,
 		CACertFile:         caCertFile,
 		CACert:             caCert,
 		InsecureSkipVerify: insecureSkipVerify,

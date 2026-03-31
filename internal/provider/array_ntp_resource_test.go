@@ -25,7 +25,6 @@ func newTestArrayNtpResource(t *testing.T, ms *testmock.MockServer) *arrayNtpRes
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -261,7 +260,6 @@ func newTestArrayNtpDataSource(t *testing.T, ms *testmock.MockServer) *arrayNtpD
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -296,7 +294,6 @@ func TestArrayNtpDataSource(t *testing.T) {
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)

@@ -34,10 +34,8 @@ type Config struct {
 	OAuth2Issuer   string
 
 	// MaxRetries is the number of retry attempts for transient failures (default: 3).
+	// The retry delay is fixed at 1000ms.
 	MaxRetries int
-
-	// RetryBaseDelay is the initial retry delay in milliseconds (default: 1000ms).
-	RetryBaseDelay time.Duration
 
 	// CACertFile is the path to a PEM-encoded CA certificate file for TLS verification.
 	CACertFile string
@@ -69,17 +67,9 @@ func NewClient(ctx context.Context, cfg Config) (*FlashBladeClient, error) {
 	if cfg.MaxRetries <= 0 {
 		cfg.MaxRetries = 3
 	}
-	if cfg.RetryBaseDelay <= 0 {
-		cfg.RetryBaseDelay = 1000 * time.Millisecond
-	} else {
-		// Treat as milliseconds if the value is small enough to be raw ms.
-		// This allows tests to pass RetryBaseDelay: 1 (meaning 1ms).
-		if cfg.RetryBaseDelay < time.Millisecond {
-			cfg.RetryBaseDelay = cfg.RetryBaseDelay * time.Millisecond
-		}
-	}
+	const defaultRetryDelay = 1000 * time.Millisecond
 
-	transport, err := buildTransport(cfg)
+	transport, err := buildTransport(cfg, defaultRetryDelay)
 	if err != nil {
 		return nil, fmt.Errorf("client: build transport: %w", err)
 	}
@@ -115,7 +105,7 @@ func NewClient(ctx context.Context, cfg Config) (*FlashBladeClient, error) {
 		oauthHTTPClient.Transport = &retryTransport{
 			base:       oauthHTTPClient.Transport,
 			maxRetries: cfg.MaxRetries,
-			baseDelay:  cfg.RetryBaseDelay,
+			baseDelay:  defaultRetryDelay,
 		}
 		c.httpClient = oauthHTTPClient
 		c.useOAuth2 = true
@@ -125,7 +115,7 @@ func NewClient(ctx context.Context, cfg Config) (*FlashBladeClient, error) {
 }
 
 // buildTransport creates a TLS-aware http.RoundTripper with retry logic.
-func buildTransport(cfg Config) (http.RoundTripper, error) {
+func buildTransport(cfg Config, retryDelay time.Duration) (http.RoundTripper, error) {
 	tlsCfg := &tls.Config{
 		InsecureSkipVerify: cfg.InsecureSkipVerify, //nolint:gosec
 	}
@@ -162,7 +152,7 @@ func buildTransport(cfg Config) (http.RoundTripper, error) {
 	return &retryTransport{
 		base:       base,
 		maxRetries: cfg.MaxRetries,
-		baseDelay:  cfg.RetryBaseDelay,
+		baseDelay:  retryDelay,
 	}, nil
 }
 

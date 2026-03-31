@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -24,7 +23,6 @@ func newTestAccessKeyResource(t *testing.T, ms *testmock.MockServer) *objectStor
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
@@ -95,7 +93,6 @@ func seedAccount(t *testing.T, ms *testmock.MockServer, accountName string) {
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("NewClient for seed: %v", err)
@@ -202,7 +199,6 @@ func TestUnit_AccessKey_Delete(t *testing.T) {
 		APIToken:           "test-token",
 		InsecureSkipVerify: true,
 		MaxRetries:         1,
-		RetryBaseDelay:     1 * time.Millisecond,
 	})
 	_, err := c.GetObjectStoreAccessKey(context.Background(), created.Name.ValueString())
 	if err == nil || !client.IsNotFound(err) {

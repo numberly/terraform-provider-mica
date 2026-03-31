@@ -21,7 +21,6 @@ func newTestClient(t *testing.T, srv *httptest.Server) *client.FlashBladeClient 
 		Endpoint:       srv.URL,
 		APIToken:       "test-api-token",
 		MaxRetries:     1,
-		RetryBaseDelay: 1,
 	})
 	if err != nil {
 		t.Fatalf("newTestClient: %v", err)

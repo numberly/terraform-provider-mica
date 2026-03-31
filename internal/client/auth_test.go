@@ -96,7 +96,6 @@ func TestUnit_APIError_NotFound(t *testing.T) {
 
 	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
-		RetryBaseDelay: 1,
 	})
 	if err != nil {
 		t.Fatalf("new client: %v", err)

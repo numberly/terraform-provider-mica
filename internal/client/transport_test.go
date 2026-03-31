@@ -24,7 +24,6 @@ func TestUnit_RetryTransport_429(t *testing.T) {
 
 	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
-		RetryBaseDelay: 1, // 1ms for tests
 	})
 	if err != nil {
 		t.Fatalf("new client: %v", err)
@@ -58,7 +57,6 @@ func TestUnit_RetryTransport_503(t *testing.T) {
 
 	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
-		RetryBaseDelay: 1,
 	})
 	if err != nil {
 		t.Fatalf("new client: %v", err)
@@ -87,7 +85,6 @@ func TestUnit_RetryTransport_MaxRetries(t *testing.T) {
 	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:       srv.URL,
 		MaxRetries:     maxRetries,
-		RetryBaseDelay: 1,
 	})
 	if err != nil {
 		t.Fatalf("new client: %v", err)
