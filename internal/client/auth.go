@@ -59,7 +59,10 @@ type oauthTokenResponse struct {
 // urn:ietf:params:oauth:grant-type:token-exchange grant type.
 //
 // Tokens are cached until they expire to avoid unnecessary round-trips.
+// The context provided at construction is used for all token exchanges, ensuring
+// that cancelling a Terraform operation also cancels the in-flight token exchange.
 type FlashBladeTokenSource struct {
+	ctx         context.Context
 	endpoint    string
 	apiToken    string
 	httpClient  *http.Client
@@ -68,11 +71,13 @@ type FlashBladeTokenSource struct {
 }
 
 // NewFlashBladeTokenSource creates a new FlashBladeTokenSource.
-func NewFlashBladeTokenSource(endpoint, apiToken string, httpClient *http.Client) *FlashBladeTokenSource {
+// The provided ctx is stored and used for all token exchanges via Token().
+func NewFlashBladeTokenSource(ctx context.Context, endpoint, apiToken string, httpClient *http.Client) *FlashBladeTokenSource {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 	return &FlashBladeTokenSource{
+		ctx:        ctx,
 		endpoint:   strings.TrimRight(endpoint, "/"),
 		apiToken:   apiToken,
 		httpClient: httpClient,
@@ -89,9 +94,7 @@ func (ts *FlashBladeTokenSource) Token() (*oauth2.Token, error) {
 		return ts.cachedToken, nil
 	}
 
-	// TODO: oauth2.TokenSource.Token() has no context parameter —
-	// we use context.Background() here as a workaround.
-	tok, err := ts.fetchToken(context.Background())
+	tok, err := ts.fetchToken(ts.ctx)
 	if err != nil {
 		return nil, err
 	}

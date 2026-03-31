@@ -22,7 +22,7 @@ func TestUnit_OAuth2TokenSource(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ts := client.NewFlashBladeTokenSource(srv.URL, "my-api-token", srv.Client())
+	ts := client.NewFlashBladeTokenSource(context.Background(), srv.URL, "my-api-token", srv.Client())
 
 	tok, err := ts.Token()
 	if err != nil {
@@ -46,7 +46,7 @@ func TestUnit_OAuth2TokenSource_Caching(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ts := client.NewFlashBladeTokenSource(srv.URL, "my-api-token", srv.Client())
+	ts := client.NewFlashBladeTokenSource(context.Background(), srv.URL, "my-api-token", srv.Client())
 
 	// First call — fetches from server.
 	if _, err := ts.Token(); err != nil {
@@ -125,7 +125,7 @@ func TestUnit_OAuth2TokenSource_ErrorSanitized(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ts := client.NewFlashBladeTokenSource(srv.URL, "bad-token", srv.Client())
+	ts := client.NewFlashBladeTokenSource(context.Background(), srv.URL, "bad-token", srv.Client())
 
 	_, err := ts.Token()
 	if err == nil {
@@ -154,7 +154,7 @@ func TestUnit_OAuth2TokenSource_ContextCancelled(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ts := client.NewFlashBladeTokenSource(srv.URL, "my-api-token", srv.Client())
+	ts := client.NewFlashBladeTokenSource(context.Background(), srv.URL, "my-api-token", srv.Client())
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately.
@@ -175,7 +175,7 @@ func TestUnit_OAuth2TokenSource_InvalidJSON(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ts := client.NewFlashBladeTokenSource(srv.URL, "my-api-token", srv.Client())
+	ts := client.NewFlashBladeTokenSource(context.Background(), srv.URL, "my-api-token", srv.Client())
 
 	_, err := ts.Token()
 	if err == nil {

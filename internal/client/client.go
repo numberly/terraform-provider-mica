@@ -109,7 +109,7 @@ func NewClient(ctx context.Context, cfg Config) (*FlashBladeClient, error) {
 
 	// Fall back to OAuth2 token exchange.
 	if cfg.OAuth2ClientID != "" || cfg.OAuth2KeyID != "" {
-		ts := NewFlashBladeTokenSource(endpoint, cfg.OAuth2ClientID, httpClient)
+		ts := NewFlashBladeTokenSource(ctx, endpoint, cfg.OAuth2ClientID, httpClient)
 		oauthHTTPClient := oauth2.NewClient(ctx, ts)
 		// Wrap the oauth2 client's transport with the retry transport too.
 		oauthHTTPClient.Transport = &retryTransport{
