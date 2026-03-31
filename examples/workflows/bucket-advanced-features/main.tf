@@ -78,7 +78,7 @@ resource "flashblade_bucket" "this" {
   hard_limit_enabled = true
 
   eradication_config = {
-    eradication_delay  = 86400000        # 24 hours in ms
+    eradication_delay  = 86400000 # 24 hours in ms
     eradication_mode   = "retention-based"
     manual_eradication = "disabled"
   }
@@ -86,7 +86,7 @@ resource "flashblade_bucket" "this" {
   object_lock_config = {
     object_lock_enabled    = true
     default_retention_mode = "compliance"
-    default_retention      = 7776000000  # 90 days in ms
+    default_retention      = 7776000000 # 90 days in ms
     freeze_locked_objects  = false
   }
 
@@ -147,8 +147,8 @@ resource "flashblade_bucket_audit_filter" "this" {
 resource "flashblade_qos_policy" "standard" {
   name                    = "${var.bucket_name}-qos"
   enabled                 = true
-  max_total_bytes_per_sec = 1073741824  # 1 GiB/s
-  max_total_ops_per_sec   = 10000       # 10k IOPS
+  max_total_bytes_per_sec = 1073741824 # 1 GiB/s
+  max_total_ops_per_sec   = 10000      # 10k IOPS
 }
 
 # Note: QoS member_type only supports "file-systems" and "realms" on API v2.22.
