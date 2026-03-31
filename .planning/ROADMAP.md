@@ -610,7 +610,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
   3. When `readIntoState` encounters a warning diagnostic from `mapFSToModel`, the resulting Terraform diagnostic is a warning (not silently promoted to error or dropped)
   4. `grep -r extractEradicationConfig\|extractObjectLockConfig\|extractPublicAccessConfig` shows ctx parameter removed from all three function signatures
   5. `grep -r mustObjectValue` returns zero results — all callers use `types.ObjectValue` directly
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 32-01-PLAN.md — FreezeLockgedObjects rename, dead schema removal, diagnostic severity fix, unused ctx removal, mustObjectValue elimination
