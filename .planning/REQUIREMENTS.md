@@ -35,10 +35,10 @@ Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP)
 
 ### Documentation & Workflow
 
-- [ ] **DOC-01**: Import documentation (import.sh) exists for all new importable resources with correct syntax
-- [ ] **DOC-02**: Workflow example in examples/networking/ demonstrates full LAG → subnet → VIP → server stack
-- [ ] **DOC-03**: tfplugindocs generates documentation for all new resources and data sources without errors
-- [ ] **DOC-04**: README coverage table includes networking resources category with correct counts
+- [x] **DOC-01**: Import documentation (import.sh) exists for all new importable resources with correct syntax
+- [x] **DOC-02**: Workflow example in examples/networking/ demonstrates full LAG → subnet → VIP → server stack
+- [x] **DOC-03**: tfplugindocs generates documentation for all new resources and data sources without errors
+- [x] **DOC-04**: README coverage table includes networking resources category with correct counts
 
 ### Server Enrichment
 
@@ -119,10 +119,10 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | LAG-01 | Phase 28 | Complete |
 | SRV-01 | Phase 30 | Complete |
 | SRV-02 | Phase 30 | Complete |
-| DOC-01 | Phase 31 | Pending |
-| DOC-02 | Phase 31 | Pending |
-| DOC-03 | Phase 31 | Pending |
-| DOC-04 | Phase 31 | Pending |
+| DOC-01 | Phase 31 | Complete |
+| DOC-02 | Phase 31 | Complete |
+| DOC-03 | Phase 31 | Complete |
+| DOC-04 | Phase 31 | Complete |
 
 **Coverage:**
 - v2.1.1 requirements: 23 total

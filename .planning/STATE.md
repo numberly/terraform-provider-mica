@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 30-01-PLAN.md
-last_updated: "2026-03-31T09:31:30.519Z"
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-03-31T09:42:07.059Z"
 last_activity: 2026-03-31 — Roadmap created for v2.1.1 (4 phases, 23 requirements)
 progress:
   total_phases: 31
-  completed_phases: 29
-  total_plans: 69
-  completed_plans: 67
-  percent: 0
+  completed_phases: 31
+  total_plans: 70
+  completed_plans: 69
+  percent: 97
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 28 — LAG Data Source & Subnet Resource (v2.1.1)
+**Current focus:** Phase 31 — Documentation & Workflow (v2.1.1)
 
 ## Current Position
 
-Phase: 28 of 31 (LAG Data Source & Subnet Resource)
-Plan: — (not started)
-Status: Ready to plan
-Last activity: 2026-03-31 — Roadmap created for v2.1.1 (4 phases, 23 requirements)
+Phase: 31 of 31 (Documentation & Workflow)
+Plan: 01 completed
+Status: Phase 31 complete — all v2.1.1 phases done
+Last activity: 2026-03-31 — Completed 31-01 networking documentation
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 29-network-interface-resource]: services collapsed from []string to single types.String in schema — API enforces one service per NI
 - [Phase 29-network-interface-resource]: ConfigValidator defers validation when Services or AttachedServers is Unknown — supports plan-time deferral
 - [Phase 30-server-enrichment]: StateUpgrader v0->v1 sets network_interfaces to empty list; VIP enrichment uses warning diagnostic (not error) to avoid blocking CRUD; Client-side filter by attached_servers — API has no server filter param
+- [Phase 31-documentation-workflow]: Server docs picked up network_interfaces attribute on first go generate since Phase 30 — correct behavior, included in docs commit
 
 ### Pending Todos
 
@@ -75,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T09:27:12.645Z
-Stopped at: Completed 30-01-PLAN.md
+Last session: 2026-03-31T09:41:47.181Z
+Stopped at: Completed 31-01-PLAN.md
 Resume file: None
