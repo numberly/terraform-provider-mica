@@ -8,18 +8,14 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.1 — Bucket Advanced Features
+## Current Milestone: v2.1.1 — Network Interfaces (VIPs)
 
-**Goal:** Complete bucket management with lifecycle rules, bucket access policies, audit filters, eradication config, object lock, public access config, and QoS policy support.
+**Goal:** Add network interface (Virtual IP) management as a resource and data source, and expose VIPs on the server data source/resource for consumer endpoint discovery.
 
 **Target features:**
-- Bucket eradication config (eradication_delay, eradication_mode, manual_eradication)
-- Bucket object lock config (freeze_locked_objects, default_retention, default_retention_mode)
-- Bucket public access config (block_new_public_policies, block_public_access)
-- Lifecycle rules resource (CRUD — version retention, multipart upload cleanup, prefix-based)
-- Bucket access policies resource + rules (IAM-style per-bucket authorization)
-- Bucket audit filters resource (actions + S3 prefix filtering)
-- QoS policies resource + bucket/filesystem member assignment
+- Network interface resource (CRUD — VIP addresses with subnet, services, attached servers)
+- Network interface data source (read existing VIPs by name)
+- Server resource/data source enrichment with associated VIP information
 
 ## Requirements
 
@@ -36,13 +32,9 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 
 ### Active
 
-- [ ] Bucket eradication config (eradication_delay, eradication_mode, manual_eradication)
-- [ ] Bucket object lock config (freeze_locked_objects, default_retention)
-- [ ] Bucket public access config (block_new_public_policies, block_public_access)
-- [ ] Lifecycle rules resource (CRUD per bucket)
-- [ ] Bucket access policies resource + rules (CRUD per bucket)
-- [ ] Bucket audit filters resource (CRUD per bucket)
-- [ ] QoS policies resource + member assignment (buckets + filesystems)
+- [ ] Network interface resource (CRUD — VIP type, address, subnet, services, attached servers)
+- [ ] Network interface data source (read existing VIPs)
+- [ ] Server resource/data source enrichment with VIP information
 
 ### Out of Scope
 
@@ -83,4 +75,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-30 after milestone v2.1 initialization*
+*Last updated: 2026-03-31 after milestone v2.1.1 initialization*

@@ -1,43 +1,41 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Bucket Advanced Features
-status: completed
-stopped_at: Completed 27-01-PLAN.md
-last_updated: "2026-03-30T11:36:17.723Z"
-last_activity: 2026-03-30 — Completed 27-01 testing, examples, and registry docs
+milestone: v2.1.1
+milestone_name: Network Interfaces (VIPs)
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-03-31"
+last_activity: 2026-03-31 — Milestone v2.1.1 started
 progress:
-  total_phases: 27
-  completed_phases: 26
-  total_plans: 64
-  completed_plans: 62
-  percent: 98
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-30)
+See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 27 — Testing & Documentation (v2.1)
+**Current focus:** Defining requirements for v2.1.1
 
 ## Current Position
 
-Phase: 27 of 27 (Testing & Documentation)
-Plan: 1 of 1 in current phase
-Status: Plan Complete
-Last activity: 2026-03-30 — Completed 27-01 testing, examples, and registry docs
-
-Progress: [██████████] 98% (62/64 plans complete)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-31 — Milestone v2.1.1 started
 
 ## Performance Metrics
 
-**Velocity (from v1.0 through v2.0.1):**
-- Total plans completed: 54
-- Phases completed: 22
-- Total execution time: ~56 hours
+**Velocity (from v1.0 through v2.1):**
+- Total plans completed: 64
+- Phases completed: 27
+- Total execution time: ~60 hours
 
 *Updated after each plan completion*
 
@@ -79,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:35:02.897Z
-Stopped at: Completed 27-01-PLAN.md
+Last session: 2026-03-31
+Stopped at: null
 Resume file: None
