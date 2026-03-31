@@ -498,7 +498,7 @@ Plans:
   3. Operator can update mutable subnet settings (gateway, prefix, mtu, vlan, link_aggregation_group) and destroy a subnet via Terraform
   4. Operator can import an existing subnet into Terraform state with no drift on subsequent `plan`
   5. Drift detection logs changes when a subnet is modified outside Terraform
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 28-01-PLAN.md — Client models (LAG + Subnet), client CRUD methods, mock handlers
