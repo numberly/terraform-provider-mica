@@ -103,7 +103,7 @@ func TestUnit_Server_Post(t *testing.T) {
 
 	c := newTestClient(t, srv)
 	got, err := c.PostServer(context.Background(), "new-server", client.ServerPost{
-		DNS: []client.ServerDNS{{Domain: "example.com", Nameservers: []string{"8.8.8.8"}}},
+		DNS: []client.NamedReference{{Name: "management"}},
 	})
 	if err != nil {
 		t.Fatalf("PostServer: %v", err)
@@ -114,8 +114,8 @@ func TestUnit_Server_Post(t *testing.T) {
 	if got.Name != "new-server" {
 		t.Errorf("expected Name new-server, got %q", got.Name)
 	}
-	if len(got.DNS) != 1 || got.DNS[0].Domain != "example.com" {
-		t.Errorf("expected DNS domain example.com, got %v", got.DNS)
+	if len(got.DNS) != 1 || got.DNS[0].Name != "management" {
+		t.Errorf("expected DNS name management, got %v", got.DNS)
 	}
 }
 
@@ -150,7 +150,7 @@ func TestUnit_Server_Patch(t *testing.T) {
 
 	c := newTestClient(t, srv)
 	got, err := c.PatchServer(context.Background(), "existing-server", client.ServerPatch{
-		DNS: []client.ServerDNS{{Domain: "updated.example.com"}},
+		DNS: []client.NamedReference{{Name: "updated-dns"}},
 	})
 	if err != nil {
 		t.Fatalf("PatchServer: %v", err)
@@ -158,8 +158,8 @@ func TestUnit_Server_Patch(t *testing.T) {
 	if got.Name != "existing-server" {
 		t.Errorf("expected Name existing-server, got %q", got.Name)
 	}
-	if len(got.DNS) != 1 || got.DNS[0].Domain != "updated.example.com" {
-		t.Errorf("expected updated DNS domain, got %v", got.DNS)
+	if len(got.DNS) != 1 || got.DNS[0].Name != "updated-dns" {
+		t.Errorf("expected updated DNS name, got %v", got.DNS)
 	}
 }
 

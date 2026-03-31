@@ -1,29 +1,23 @@
 package client
 
-// ServerDNS represents the DNS configuration block for a FlashBlade server.
-type ServerDNS struct {
-	Domain      string   `json:"domain,omitempty"`
-	Nameservers []string `json:"nameservers,omitempty"`
-	Services    []string `json:"services,omitempty"`
-}
-
 // Server represents a FlashBlade server object from GET /servers responses.
 type Server struct {
-	Name    string      `json:"name"`
-	ID      string      `json:"id"`
-	Created int64       `json:"created,omitempty"`
-	DNS     []ServerDNS `json:"dns,omitempty"`
+	Name              string           `json:"name"`
+	ID                string           `json:"id"`
+	Created           int64            `json:"created,omitempty"`
+	DNS               []NamedReference `json:"dns,omitempty"`
+	DirectoryServices []NamedReference `json:"directory_services,omitempty"`
 }
 
 // ServerPost contains the fields accepted on POST /servers.
 // The server name is passed via the ?create_ds= query parameter.
 type ServerPost struct {
-	DNS []ServerDNS `json:"dns,omitempty"`
+	DNS []NamedReference `json:"dns,omitempty"`
 }
 
 // ServerPatch contains the fields accepted on PATCH /servers.
 type ServerPatch struct {
-	DNS []ServerDNS `json:"dns,omitempty"`
+	DNS []NamedReference `json:"dns,omitempty"`
 }
 
 // FileSystemExport represents a FlashBlade file system export from GET responses.

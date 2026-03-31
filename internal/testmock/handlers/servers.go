@@ -34,15 +34,11 @@ func (s *serverStore) AddServer(name string) *client.Server {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	srv := &client.Server{
-		ID:      uuid.New().String(),
-		Name:    name,
-		Created: time.Now().UnixMilli(),
-		DNS: []client.ServerDNS{
-			{
-				Domain:      "test.local",
-				Nameservers: []string{"10.0.0.1"},
-			},
-		},
+		ID:                uuid.New().String(),
+		Name:              name,
+		Created:           time.Now().UnixMilli(),
+		DNS:               []client.NamedReference{{Name: "management"}},
+		DirectoryServices: []client.NamedReference{{Name: "srv-backup_nfs"}},
 	}
 	s.byName[srv.Name] = srv
 	s.byID[srv.ID] = srv
@@ -116,10 +112,11 @@ func (s *serverStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	srv := &client.Server{
-		ID:      uuid.New().String(),
-		Name:    name,
-		Created: time.Now().UnixMilli(),
-		DNS:     body.DNS,
+		ID:                uuid.New().String(),
+		Name:              name,
+		Created:           time.Now().UnixMilli(),
+		DNS:               body.DNS,
+		DirectoryServices: []client.NamedReference{},
 	}
 
 	s.byName[srv.Name] = srv
@@ -153,7 +150,7 @@ func (s *serverStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v, ok := rawPatch["dns"]; ok {
-		var dns []client.ServerDNS
+		var dns []client.NamedReference
 		if err := json.Unmarshal(v, &dns); err != nil {
 			WriteJSONError(w, http.StatusBadRequest, "invalid dns field")
 			return
