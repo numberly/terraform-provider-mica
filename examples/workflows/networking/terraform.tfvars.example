@@ -1,0 +1,7 @@
+flashblade_endpoint  = "https://flashblade.example.com"
+flashblade_api_token = "T-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+lag_name             = "lag1"
+subnet_name          = "my-subnet"
+subnet_prefix        = "10.0.0.0/24"
+subnet_gateway       = "10.0.0.1"
+server_name          = "srv-my-server"
