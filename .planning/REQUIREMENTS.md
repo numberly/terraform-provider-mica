@@ -18,12 +18,12 @@ Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP)
 
 ### Network Interface (VIP)
 
-- [ ] **NI-01**: Operator can create a network interface with name, address, subnet, type, services, and attached_servers via Terraform
-- [ ] **NI-02**: Operator can update network interface settings (address, services, attached_servers) via Terraform apply
-- [ ] **NI-03**: Operator can delete a network interface via Terraform destroy
-- [ ] **NI-04**: subnet and type are immutable after creation (RequiresReplace)
-- [ ] **NI-05**: services accepts a single value from: data, sts, egress-only, replication
-- [ ] **NI-06**: attached_servers is required for data/sts services and forbidden for egress-only/replication services
+- [x] **NI-01**: Operator can create a network interface with name, address, subnet, type, services, and attached_servers via Terraform
+- [x] **NI-02**: Operator can update network interface settings (address, services, attached_servers) via Terraform apply
+- [x] **NI-03**: Operator can delete a network interface via Terraform destroy
+- [x] **NI-04**: subnet and type are immutable after creation (RequiresReplace)
+- [x] **NI-05**: services accepts a single value from: data, sts, egress-only, replication
+- [x] **NI-06**: attached_servers is required for data/sts services and forbidden for egress-only/replication services
 - [ ] **NI-07**: Operator can read an existing network interface by name via data source
 - [ ] **NI-08**: Operator can import an existing network interface into Terraform state with no drift on subsequent plan
 - [ ] **NI-09**: Drift detection logs changes when network interface is modified outside Terraform
@@ -106,12 +106,12 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | SUB-04 | Phase 28 | Complete |
 | SUB-05 | Phase 28 | Complete |
 | SUB-06 | Phase 28 | Complete |
-| NI-01 | Phase 29 | Pending |
-| NI-02 | Phase 29 | Pending |
-| NI-03 | Phase 29 | Pending |
-| NI-04 | Phase 29 | Pending |
-| NI-05 | Phase 29 | Pending |
-| NI-06 | Phase 29 | Pending |
+| NI-01 | Phase 29 | Complete |
+| NI-02 | Phase 29 | Complete |
+| NI-03 | Phase 29 | Complete |
+| NI-04 | Phase 29 | Complete |
+| NI-05 | Phase 29 | Complete |
+| NI-06 | Phase 29 | Complete |
 | NI-07 | Phase 29 | Pending |
 | NI-08 | Phase 29 | Pending |
 | NI-09 | Phase 29 | Pending |
