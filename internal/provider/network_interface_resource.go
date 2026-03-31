@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -534,30 +535,30 @@ func (v networkInterfaceServicesValidator) MarkdownDescription(ctx context.Conte
 }
 
 func (v networkInterfaceServicesValidator) ValidateResource(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var data networkInterfaceResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	// Read each attribute individually to avoid crashing on unknown list elements.
+	var services types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("services"), &services)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var attachedServers types.List
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("attached_servers"), &attachedServers)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Defer validation if either value is unknown (not yet known at plan time).
-	if data.Services.IsUnknown() || data.AttachedServers.IsUnknown() {
+	if services.IsUnknown() || attachedServers.IsUnknown() {
 		return
 	}
 
-	svc := data.Services.ValueString()
+	svc := services.ValueString()
 	requiresServers := svc == "data" || svc == "sts"
 	forbidsServers := svc == "egress-only" || svc == "replication"
 
-	var serverNames []string
-	if !data.AttachedServers.IsNull() {
-		resp.Diagnostics.Append(data.AttachedServers.ElementsAs(ctx, &serverNames, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	hasServers := len(serverNames) > 0
+	// Count elements without converting to native strings (elements may be individually unknown).
+	hasServers := !attachedServers.IsNull() && len(attachedServers.Elements()) > 0
 
 	if requiresServers && !hasServers {
 		resp.Diagnostics.AddError(
