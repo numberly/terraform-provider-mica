@@ -1,9 +1,44 @@
 # Requirements: Terraform Provider FlashBlade
 
-**Defined:** 2026-03-30
+**Defined:** 2026-03-31
 **Core Value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
 
-## v2.1 Requirements
+## v2.1.1 Requirements
+
+Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP), and LAG resources/data sources to enable operators to manage FlashBlade networking infrastructure as code.
+
+### Subnet
+
+- [ ] **SUB-01**: Operator can create a subnet with name, prefix, gateway, mtu, vlan, and link_aggregation_group via Terraform
+- [ ] **SUB-02**: Operator can update subnet settings (gateway, prefix, mtu, vlan, link_aggregation_group) via Terraform apply
+- [ ] **SUB-03**: Operator can delete a subnet via Terraform destroy
+- [ ] **SUB-04**: Operator can read any existing subnet by name via data source
+- [ ] **SUB-05**: Operator can import an existing subnet into Terraform state with no drift on subsequent plan
+- [ ] **SUB-06**: Drift detection logs changes when subnet is modified outside Terraform
+
+### Network Interface (VIP)
+
+- [ ] **NI-01**: Operator can create a network interface with name, address, subnet, type, services, and attached_servers via Terraform
+- [ ] **NI-02**: Operator can update network interface settings (address, services, attached_servers) via Terraform apply
+- [ ] **NI-03**: Operator can delete a network interface via Terraform destroy
+- [ ] **NI-04**: subnet and type are immutable after creation (RequiresReplace)
+- [ ] **NI-05**: services accepts a single value from: data, sts, egress-only, replication
+- [ ] **NI-06**: attached_servers is required for data/sts services and forbidden for egress-only/replication services
+- [ ] **NI-07**: Operator can read an existing network interface by name via data source
+- [ ] **NI-08**: Operator can import an existing network interface into Terraform state with no drift on subsequent plan
+- [ ] **NI-09**: Drift detection logs changes when network interface is modified outside Terraform
+- [ ] **NI-10**: All read-only fields exposed as computed (enabled, gateway, mtu, netmask, vlan, realms)
+
+### LAG (Link Aggregation Group)
+
+- [ ] **LAG-01**: Operator can read an existing LAG by name via data source (name, status, ports, port_speed, lag_speed, mac_address)
+
+### Server Enrichment
+
+- [ ] **SRV-01**: Server resource and data source expose associated VIPs as computed network_interfaces list
+- [ ] **SRV-02**: Server schema version bumped from 0 to 1 with StateUpgrader migration
+
+## v2.1 Requirements (completed)
 
 Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and inline config attributes from the FlashBlade REST API v2.22.
 
@@ -28,90 +63,61 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 - [x] **BAP-02**: Operator can delete a bucket access policy via Terraform destroy
 - [x] **BAP-03**: Operator can create/delete individual bucket access policy rules independently
 - [x] **BAP-04**: Operator can import existing bucket access policies into Terraform state
-- [x] **BAP-05**: Bucket access policy data source reads existing policy by bucket name
 
 ### Bucket Audit Filters
 
-- [x] **BAF-01**: Operator can create a bucket audit filter with actions and S3 prefix filtering via Terraform
-- [x] **BAF-02**: Operator can update audit filter settings (actions, s3_prefixes) via Terraform apply
-- [x] **BAF-03**: Operator can delete a bucket audit filter via Terraform destroy
-- [x] **BAF-04**: Operator can import an existing audit filter into Terraform state
+- [x] **AUD-01**: Operator can create a bucket audit filter with actions and S3 prefix filtering via Terraform
+- [x] **AUD-02**: Operator can update audit filter settings via Terraform apply
+- [x] **AUD-03**: Operator can delete a bucket audit filter via Terraform destroy
+- [x] **AUD-04**: Operator can import an existing bucket audit filter into Terraform state
 
 ### QoS Policies
 
-- [x] **QOS-01**: Operator can create a QoS policy with max_total_bytes_per_sec and max_total_ops_per_sec via Terraform
-- [x] **QOS-02**: Operator can update QoS policy limits via Terraform apply
+- [x] **QOS-01**: Operator can create a QoS policy with bandwidth and IOPS limits via Terraform
+- [x] **QOS-02**: Operator can update QoS policy settings via Terraform apply
 - [x] **QOS-03**: Operator can delete a QoS policy via Terraform destroy
-- [x] **QOS-04**: Operator can assign a QoS policy to buckets and file systems as members
-- [x] **QOS-05**: Operator can import existing QoS policies into Terraform state
-- [x] **QOS-06**: QoS policy data source reads existing policy by name
-
-### Testing & Documentation
-
-- [x] **TST-01**: Unit tests for all new resources and bucket attribute additions (Read + NotFound + Lifecycle)
-- [x] **TST-02**: Mock handlers for all new API endpoints
-- [x] **DOC-01**: Import documentation for all new importable resources
-- [x] **DOC-02**: Workflow example showing bucket with lifecycle rules, access policy, audit filter, and QoS
-
-## Future Requirements
-
-### v2.2+
-
-- **FUT-01**: Audit object store policies resource (CRUD + member assignment)
-- **FUT-02**: Audit file systems policies resource (CRUD + member assignment + rules)
-- **FUT-03**: CORS policies for buckets (if API supports it in future versions)
-- **FUT-04**: Array connection resource (create/delete — currently data source only)
-- **FUT-05**: File system replica links
-- **FUT-06**: Cascading replication
+- [x] **QOS-04**: Operator can assign buckets and file systems as QoS policy members
+- [x] **QOS-05**: Operator can import existing QoS policies and members into Terraform state
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Audit policies (file system + object store) | Complex (log targets, rules, members) — defer to v2.2 |
-| Array connection resource | Data source sufficient for replication — defer to v2.2 |
-| File system replica links | Different API pattern than bucket links — defer to v2.2 |
-| CORS policies | Not visible in API v2.22 |
-| Pulumi bridge | Provider structure compatible but separate effort |
+| Realms | Not relevant for current usage |
+| Network interface connectors | Physical infrastructure, not managed via Terraform |
+| TLS policies on network interfaces | Defer to future milestone |
+| Network interface ping/trace | Diagnostic tools, not resource management |
+| Pulumi bridge | Deferred, provider structure compatible |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BKT-01 | Phase 23 | Complete |
-| BKT-02 | Phase 23 | Complete |
-| BKT-03 | Phase 23 | Complete |
-| BKT-04 | Phase 23 | Complete |
-| LCR-01 | Phase 24 | Complete |
-| LCR-02 | Phase 24 | Complete |
-| LCR-03 | Phase 24 | Complete |
-| LCR-04 | Phase 24 | Complete |
-| LCR-05 | Phase 24 | Complete |
-| BAP-01 | Phase 25 | Complete |
-| BAP-02 | Phase 25 | Complete |
-| BAP-03 | Phase 25 | Complete |
-| BAP-04 | Phase 25 | Complete |
-| BAP-05 | Phase 25 | Complete |
-| BAF-01 | Phase 26 | Complete |
-| BAF-02 | Phase 26 | Complete |
-| BAF-03 | Phase 26 | Complete |
-| BAF-04 | Phase 26 | Complete |
-| QOS-01 | Phase 26 | Complete |
-| QOS-02 | Phase 26 | Complete |
-| QOS-03 | Phase 26 | Complete |
-| QOS-04 | Phase 26 | Complete |
-| QOS-05 | Phase 26 | Complete |
-| QOS-06 | Phase 26 | Complete |
-| TST-01 | Phase 27 | Complete |
-| TST-02 | Phase 27 | Complete |
-| DOC-01 | Phase 27 | Complete |
-| DOC-02 | Phase 27 | Complete |
+| SUB-01 | — | Pending |
+| SUB-02 | — | Pending |
+| SUB-03 | — | Pending |
+| SUB-04 | — | Pending |
+| SUB-05 | — | Pending |
+| SUB-06 | — | Pending |
+| NI-01 | — | Pending |
+| NI-02 | — | Pending |
+| NI-03 | — | Pending |
+| NI-04 | — | Pending |
+| NI-05 | — | Pending |
+| NI-06 | — | Pending |
+| NI-07 | — | Pending |
+| NI-08 | — | Pending |
+| NI-09 | — | Pending |
+| NI-10 | — | Pending |
+| LAG-01 | — | Pending |
+| SRV-01 | — | Pending |
+| SRV-02 | — | Pending |
 
 **Coverage:**
-- v2.1 requirements: 28 total
-- Mapped to phases: 28
-- Unmapped: 0
+- v2.1.1 requirements: 19 total
+- Mapped to phases: 0
+- Unmapped: 19
 
 ---
-*Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after v2.1 roadmap creation*
+*Requirements defined: 2026-03-31*
+*Last updated: 2026-03-31 after milestone v2.1.1 definition*
