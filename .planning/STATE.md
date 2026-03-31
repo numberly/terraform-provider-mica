@@ -4,8 +4,8 @@ milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: completed
 stopped_at: Completed 31-01-PLAN.md
-last_updated: "2026-03-31T09:46:01.259Z"
-last_activity: 2026-03-31 — Completed 31-01 networking documentation
+last_updated: "2026-03-30T00:00:00Z"
+last_activity: 2026-03-30 — Completed quick-7 server DNS NamedReference refactor
 progress:
   total_phases: 31
   completed_phases: 30
@@ -64,6 +64,9 @@ Progress: [██████████] 97%
 - [Phase 29-network-interface-resource]: ConfigValidator defers validation when Services or AttachedServers is Unknown — supports plan-time deferral
 - [Phase 30-server-enrichment]: StateUpgrader v0->v1 sets network_interfaces to empty list; VIP enrichment uses warning diagnostic (not error) to avoid blocking CRUD; Client-side filter by attached_servers — API has no server filter param
 - [Phase 31-documentation-workflow]: Server docs picked up network_interfaces attribute on first go generate since Phase 30 — correct behavior, included in docs commit
+- [quick-7]: ServerDNS struct deleted — DNS field is []NamedReference matching real API response format
+- [quick-7]: directory_services added as Computed-only []NamedReference; schema v1->v2 with state upgrader chain
+- [quick-7]: v1 nested DNS objects lack name field so v1->v2 upgrader resets DNS to null (refreshed on next Read)
 
 ### Pending Todos
 
