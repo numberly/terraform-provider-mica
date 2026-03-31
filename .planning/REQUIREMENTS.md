@@ -149,11 +149,21 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | DOC-02 | Phase 31 | Complete |
 | DOC-03 | Phase 31 | Complete |
 | DOC-04 | Phase 31 | Complete |
+| CC-01 | Phase 32 | Pending |
+| CC-02 | Phase 32 | Pending |
+| CC-03 | Phase 32 | Pending |
+| CH-03 | Phase 32 | Pending |
+| CL-01 | Phase 32 | Pending |
+| CH-01 | Phase 33 | Pending |
+| CH-02 | Phase 33 | Pending |
+| CL-02 | Phase 33 | Pending |
+| TQ-01 | Phase 34 | Pending |
+| TQ-02 | Phase 34 | Pending |
 
 **v2.1.3 Coverage:**
 - v2.1.3 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10 ⚠️
+- Mapped to phases: 10
+- Unmapped: 0 ✓
 
 **v2.1.1 Coverage:**
 - v2.1.1 requirements: 23 total
@@ -162,4 +172,4 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 
 ---
 *Requirements defined: 2026-03-31*
-*Last updated: 2026-03-31 after milestone v2.1.3 definition*
+*Last updated: 2026-03-31 after milestone v2.1.3 roadmap creation*

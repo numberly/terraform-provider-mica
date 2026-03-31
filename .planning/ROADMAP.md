@@ -9,7 +9,8 @@
 - v2.0 Cross-Array Bucket Replication (Phases 14-17) -- shipped 2026-03-29
 - v2.0.1 Quality & Hardening (Phases 18-22) -- shipped 2026-03-30
 - v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
-- v2.1.1 Network Interfaces (VIPs) (Phases 28-30) -- in progress
+- v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
+- v2.1.3 Code Review Fixes (Phases 32-34) -- in progress
 
 ## Phases
 
@@ -401,7 +402,7 @@ Plans:
 - [x] **Phase 26: Audit Filters & QoS Policies** - New resources for audit filtering and bandwidth/IOPS limiting (completed 2026-03-30)
 - [x] **Phase 27: Testing & Documentation** - Unit tests, mock handlers, import docs, and workflow example (completed 2026-03-30)
 
-### v2.1.1 Network Interfaces (VIPs) (In Progress)
+### v2.1.1 Network Interfaces (VIPs) (Shipped 2026-03-31)
 
 **Milestone Goal:** Add network interface (Virtual IP) management as a resource and data source, and expose VIPs on the server data source/resource for consumer endpoint discovery.
 
@@ -550,7 +551,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31
+Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33 -> 34
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -585,3 +586,57 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 29. Network Interface Resource & Data Source | 2/2 | Complete    | 2026-03-31 | - |
 | 30. Server Enrichment & Provider Registration | 1/1 | Complete    | 2026-03-31 | - |
 | 31. Documentation & Workflow Examples | 1/1 | Complete    | 2026-03-31 | - |
+| 32. Code Correctness Fixes | v2.1.3 | 0/1 | Not started | - |
+| 33. Client Hardening | v2.1.3 | 0/1 | Not started | - |
+| 34. Test Quality | v2.1.3 | 0/1 | Not started | - |
+
+---
+
+## v2.1.3 Code Review Fixes (Phases 32-34)
+
+**Milestone Goal:** Fix all issues identified by the full codebase code review — critical typos, dead schema attributes, diagnostic severity loss, client hardening, linting improvements, and acceptance test quality.
+
+- [ ] **Phase 32: Code Correctness Fixes** - Typo rename, dead schema removal, diagnostic severity, and dead helper/param cleanup
+- [ ] **Phase 33: Client Hardening** - OAuth2 context propagation, RetryBaseDelay removal, and golangci-lint expansion
+- [ ] **Phase 34: Test Quality** - Fix ExpectNonEmptyPlan masking and expand acceptance test coverage
+
+### Phase 32: Code Correctness Fixes
+**Goal**: All correctness issues found in review are resolved — the codebase compiles with no typos, carries no dead schema attributes, propagates diagnostic severity faithfully, and has no unused parameters or passthrough helpers
+**Depends on**: Phase 31 (v2.1.1 complete)
+**Requirements**: CC-01, CC-02, CC-03, CH-03, CL-01
+**Success Criteria** (what must be TRUE):
+  1. `grep -r FreezeLockgedObjects .` returns zero results — the correct spelling `FreezeLockedObjects` is used everywhere across structs, tests, and examples
+  2. `terraform plan` on an existing filesystem resource shows 0 diff for nfs_export_policy and smb_share_policy — those attributes no longer exist in the schema
+  3. When `readIntoState` encounters a warning diagnostic from `mapFSToModel`, the resulting Terraform diagnostic is a warning (not silently promoted to error or dropped)
+  4. `grep -r extractEradicationConfig\|extractObjectLockConfig\|extractPublicAccessConfig` shows ctx parameter removed from all three function signatures
+  5. `grep -r mustObjectValue` returns zero results — all callers use `types.ObjectValue` directly
+**Plans**: TBD
+
+Plans:
+- [ ] 32-01-PLAN.md — FreezeLockgedObjects rename, dead schema removal, diagnostic severity fix, unused ctx removal, mustObjectValue elimination
+
+### Phase 33: Client Hardening
+**Goal**: The HTTP client and retry logic are free of fragile heuristics and context shortcuts — OAuth2 token refresh respects caller cancellation, retry delay is explicit, and the linter catches new categories of issues
+**Depends on**: Phase 32 (code correctness fixes landed first)
+**Requirements**: CH-01, CH-02, CL-02
+**Success Criteria** (what must be TRUE):
+  1. OAuth2 token refresh passes caller context to the HTTP token request — cancelling the Terraform context cancels the in-flight token refresh (not just the resource operation)
+  2. `RetryBaseDelay` identifier is removed from the codebase — all callers pass explicit `time.Duration` values; `go build ./...` confirms no compilation errors
+  3. `golangci-lint run ./...` passes with gosec, bodyclose, noctx, and exhaustive linters active — zero new violations introduced by this milestone
+**Plans**: TBD
+
+Plans:
+- [ ] 33-01-PLAN.md — OAuth2 context propagation fix, RetryBaseDelay removal, golangci-lint config expansion and violation fixes
+
+### Phase 34: Test Quality
+**Goal**: Acceptance tests accurately verify plan convergence and cover a broader set of high-risk resources — no test silently hides a drift bug, and critical resources beyond the initial 3 are exercised end-to-end
+**Depends on**: Phase 33 (client changes landed so tests validate final behaviour)
+**Requirements**: TQ-01, TQ-02
+**Success Criteria** (what must be TRUE):
+  1. `grep -r ExpectNonEmptyPlan` in acceptance test files returns zero results — all tests either assert `ExpectNonEmptyPlan: false` explicitly or omit the field (defaulting to false)
+  2. At least 3 additional resources (from: server, bucket replica link, network interface, or any policy family) have acceptance tests exercising plan, apply, refresh, import, and destroy via `resource.UnitTest` with a mock server
+  3. All acceptance tests pass (`go test ./... -run TestAcc`) with zero failures after the convergence fix is applied
+**Plans**: TBD
+
+Plans:
+- [ ] 34-01-PLAN.md — Remove ExpectNonEmptyPlan from existing acceptance tests, add acceptance tests for 3+ additional high-risk resources
