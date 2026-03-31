@@ -72,6 +72,12 @@ Progress: [██████████] 97%
 
 None yet.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 7 | Refactor server DNS to NamedReference, add directory_services, schema v2 | 2026-03-31 | c1df886 | [7-refactor-server-dns](./quick/7-refactor-server-dns-to-namedreference-ad/) |
+
 ### Blockers/Concerns
 
 - [Phase 29] Pre-impl: Verify whether POST /api/2.22/network-interfaces accepts ?names= query param (determines if name is Required vs Computed-only)
@@ -80,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-31T09:41:47.181Z
-Stopped at: Completed 31-01-PLAN.md
+Stopped at: Completed quick task 7 — server DNS refactor
 Resume file: None
