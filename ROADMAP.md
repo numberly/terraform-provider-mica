@@ -4,7 +4,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 **Last updated:** 2026-03-31
 **Provider version:** v2.1.3
-**Total API sections:** 84 | **Covered:** ~31 | **Coverage of IaC-relevant CRUD:** ~61%
+**Total API sections:** 84 | **Covered:** ~32 | **Coverage of IaC-relevant CRUD:** ~62%
 
 ## Coverage Legend
 
@@ -28,7 +28,8 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | Buckets | `flashblade_bucket` | Yes | Done | Versioning, quota, eradication, object lock, public access |
 | Object Store Accounts | `flashblade_object_store_account` | Yes | Done | S3 namespace |
 | Object Store Access Keys | `flashblade_object_store_access_key` | Yes | Done | Cross-array secret sharing |
-| Object Store Users | `flashblade_object_store_user` | Yes | Done | S3 user management (account/username), full_access flag |
+| Object Store Users | `flashblade_object_store_user` | Yes | Done | CRD only (no PATCH); full_access optional; import supported |
+| Object Store User Policy | `flashblade_object_store_user_policy` | No | Done | user to policy association; import format: account/username/policyname |
 
 ### Bucket Sub-resources
 
