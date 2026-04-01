@@ -110,6 +110,12 @@ func isAlreadyExists(err error) bool {
 	if !errors.As(err, &apiErr) {
 		return false
 	}
+	// Check sub-error messages first (FlashBlade typically uses Errors[0].Message).
+	for _, sub := range apiErr.Errors {
+		if strings.Contains(strings.ToLower(sub.Message), "already exists") {
+			return true
+		}
+	}
 	return strings.Contains(strings.ToLower(apiErr.Message), "already exists")
 }
 
