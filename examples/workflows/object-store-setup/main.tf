@@ -106,7 +106,8 @@ resource "flashblade_object_store_user" "app" {
 # ---------------------------------------------------------------------------
 
 resource "flashblade_object_store_access_key" "this" {
-  user = flashblade_object_store_user.app.name
+  object_store_account = flashblade_object_store_account.this.name
+  user                 = flashblade_object_store_user.app.name
 
   # Access keys have no ImportState — the secret is only available at creation.
   # Store the outputs in Vault/AWS Secrets Manager immediately after apply.

@@ -173,7 +173,8 @@ resource "flashblade_object_store_user_policy" "tenant_rw" {
 # In production, pipe this to Vault (see vault-s3-onboarding workflow).
 
 resource "flashblade_object_store_access_key" "tenant" {
-  user = flashblade_object_store_user.tenant.name
+  object_store_account = flashblade_object_store_account.tenant.name
+  user                 = flashblade_object_store_user.tenant.name
 }
 
 # -----------------------------------------------------------------------------

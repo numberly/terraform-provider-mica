@@ -173,7 +173,8 @@ resource "flashblade_object_store_user_policy" "tenant_rw" {
 # -----------------------------------------------------------------------------
 
 resource "flashblade_object_store_access_key" "tenant" {
-  user = flashblade_object_store_user.tenant.name
+  object_store_account = flashblade_object_store_account.tenant.name
+  user                 = flashblade_object_store_user.tenant.name
 }
 
 resource "vault_kv_secret_v2" "tenant_s3_credentials" {
