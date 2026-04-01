@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: completed
-stopped_at: Completed 33-02-PLAN.md
-last_updated: "2026-03-31T16:48:35.012Z"
+stopped_at: Completed 35-01-PLAN.md
+last_updated: "2026-04-01T06:21:17.854Z"
 last_activity: 2026-03-31 — Phase 32-01 complete (5 code correctness fixes)
 progress:
-  total_phases: 34
+  total_phases: 35
   completed_phases: 32
-  total_plans: 73
-  completed_plans: 71
+  total_plans: 77
+  completed_plans: 72
 ---
 
 # Project State
@@ -45,6 +45,7 @@ v2.1.3 Progress: [███                 ] 1/3 phases
 | Phase 32-code-correctness-fixes P01 | 15 | 3 tasks | 6 files |
 | Phase 33-client-hardening P01 | 10 | 2 tasks | 61 files |
 | Phase 33-client-hardening P02 | 10 | 1 tasks | 7 files |
+| Phase 35-object-store-users P01 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ v2.1.3 Progress: [███                 ] 1/3 phases
 - [Phase 33-02]: G104 body close errors suppressed with _ assignment — errors from cleanup Body.Close() are not actionable
 - [Phase 33-02]: G706/G404 in transport.go suppressed via nolint with rationale — format string is hardcoded, jitter rand needs no crypto strength
 - [Phase 33-02]: noctx violations in test files fixed with real code (not nolint) — NewRequestWithContext + context.Background()
+- [Phase 35-01]: GetObjectStoreUser upgraded from error-only to (*ObjectStoreUser, error) using getOneByName pattern
+- [Phase 35-01]: PostObjectStoreUser upgraded to accept ObjectStoreUserPost body; EnsureObjectStoreUser passes empty struct
+- [Phase 35-01]: PostObjectStoreUserPolicy sends nil body — all params are query params per API spec
 
 ### v2.1.3 Phase Groupings
 
@@ -84,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T16:44:19.411Z
-Stopped at: Completed 33-02-PLAN.md
+Last session: 2026-04-01T06:21:17.847Z
+Stopped at: Completed 35-01-PLAN.md
 Resume file: None
