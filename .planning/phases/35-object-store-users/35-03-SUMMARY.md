@@ -104,3 +104,11 @@ None - no external service configuration required.
 ---
 *Phase: 35-object-store-users*
 *Completed: 2026-03-31*
+
+## Self-Check: PASSED
+
+- `internal/provider/object_store_user_policy_resource.go` — FOUND
+- `examples/resources/flashblade_object_store_user_policy/resource.tf` — FOUND
+- `examples/resources/flashblade_object_store_user_policy/import.sh` — FOUND
+- Commit `5dad19a` — FOUND in git log
+- `go build ./...` — PASSED
