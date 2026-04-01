@@ -33,8 +33,8 @@ Requirements for code review fixes. Addresses all issues (critical, important, m
 
 - [x] **OSU-01**: Operator can create a named S3 user under an account via Terraform (format: account/username)
 - [x] **OSU-02**: Operator can delete an S3 user via Terraform destroy
-- [ ] **OSU-03**: Operator can read an existing S3 user by name via data source
-- [ ] **OSU-04**: Operator can import an existing S3 user into Terraform state with no drift on subsequent plan
+- [x] **OSU-03**: Operator can read an existing S3 user by name via data source
+- [x] **OSU-04**: Operator can import an existing S3 user into Terraform state with no drift on subsequent plan
 - [x] **OSU-05**: Operator can associate one or more access policies to a user via a member resource
 - [x] **OSU-06**: Operator can remove a policy association from a user via Terraform destroy
 - [x] **OSU-07**: Drift detection logs changes when user or policy association is modified outside Terraform
@@ -171,8 +171,8 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | TQ-02 | Phase 34 | Pending |
 | OSU-01 | Phase 35 | Complete |
 | OSU-02 | Phase 35 | Complete |
-| OSU-03 | Phase 35 | Pending |
-| OSU-04 | Phase 35 | Pending |
+| OSU-03 | Phase 35 | Complete |
+| OSU-04 | Phase 35 | Complete |
 | OSU-05 | Phase 35 | Complete |
 | OSU-06 | Phase 35 | Complete |
 | OSU-07 | Phase 35 | Complete |
