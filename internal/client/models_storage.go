@@ -376,6 +376,24 @@ type QosPolicyMember struct {
 	Policy NamedReference `json:"policy"`
 }
 
+// ObjectStoreUser represents a FlashBlade object store user from GET responses.
+type ObjectStoreUser struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	FullAccess bool   `json:"full_access"`
+}
+
+// ObjectStoreUserPost contains the fields for POST /object-store-users.
+type ObjectStoreUserPost struct {
+	FullAccess *bool `json:"full_access,omitempty"`
+}
+
+// ObjectStoreUserPolicyMember represents a user-to-policy association from GET responses.
+type ObjectStoreUserPolicyMember struct {
+	Member NamedReference `json:"member"`
+	Policy NamedReference `json:"policy"`
+}
+
 // QosPolicyMemberPost contains the fields for POST /qos-policies/members.
 type QosPolicyMemberPost struct {
 	Member NamedReference `json:"member"`
