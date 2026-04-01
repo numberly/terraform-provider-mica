@@ -285,6 +285,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewBucketAuditFilterResource,
 		NewQosPolicyResource,
 		NewQosPolicyMemberResource,
+		NewObjectStoreUserResource,
 		NewObjectStoreUserPolicyResource, // registered here by plan 35-03
 		NewSubnetResource,
 		NewNetworkInterfaceResource,
@@ -304,6 +305,7 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewSnapshotPolicyDataSource,
 		NewNetworkAccessPolicyDataSource,
 		NewObjectStoreAccessPolicyDataSource,
+		NewObjectStoreUserDataSource,
 		NewQuotaUserDataSource,
 		NewQuotaGroupDataSource,
 		NewArrayDnsDataSource,

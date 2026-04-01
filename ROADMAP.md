@@ -4,7 +4,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 **Last updated:** 2026-03-31
 **Provider version:** v2.1.3
-**Total API sections:** 84 | **Covered:** ~30 | **Coverage of IaC-relevant CRUD:** ~60%
+**Total API sections:** 84 | **Covered:** ~31 | **Coverage of IaC-relevant CRUD:** ~61%
 
 ## Coverage Legend
 
@@ -28,6 +28,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | Buckets | `flashblade_bucket` | Yes | Done | Versioning, quota, eradication, object lock, public access |
 | Object Store Accounts | `flashblade_object_store_account` | Yes | Done | S3 namespace |
 | Object Store Access Keys | `flashblade_object_store_access_key` | Yes | Done | Cross-array secret sharing |
+| Object Store Users | `flashblade_object_store_user` | Yes | Done | S3 user management (account/username), full_access flag |
 
 ### Bucket Sub-resources
 
@@ -106,7 +107,6 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | File System Snapshots | Resource | Full CRUD | Snapshot management + policy member association for backup/DR | Candidate |
 | File System Policy Members | Resource | POST, DELETE `/file-systems/policies` | Associate NFS/SMB/snapshot policies to filesystems via TF | Candidate |
 | Snapshot Policy FS Members | Resource | POST, DELETE `/snapshot-policies/file-systems` | Link snapshot policies to filesystems | Candidate |
-| Object Store Users | Resource | GET, POST, DELETE | S3 user management -- needed for complete tenant onboarding | Candidate |
 | Object Store Roles | Resource | Full CRUD + trust policies | IAM-style roles for S3 fine-grained access | Candidate |
 | Targets | Resource | Full CRUD | External S3 replication targets (AWS, Azure, etc.) | Candidate |
 | Active Directory | Resource | Full CRUD | AD integration for SMB/NFS authentication | Candidate |

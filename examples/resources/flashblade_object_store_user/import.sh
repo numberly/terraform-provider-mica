@@ -1,0 +1,1 @@
+terraform import flashblade_object_store_user.example myaccount/myuser

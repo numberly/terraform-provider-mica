@@ -37,7 +37,7 @@ Requirements for code review fixes. Addresses all issues (critical, important, m
 - [ ] **OSU-04**: Operator can import an existing S3 user into Terraform state with no drift on subsequent plan
 - [x] **OSU-05**: Operator can associate one or more access policies to a user via a member resource
 - [x] **OSU-06**: Operator can remove a policy association from a user via Terraform destroy
-- [ ] **OSU-07**: Drift detection logs changes when user or policy association is modified outside Terraform
+- [x] **OSU-07**: Drift detection logs changes when user or policy association is modified outside Terraform
 
 ## v2.1.1 Requirements (completed)
 
@@ -175,7 +175,7 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | OSU-04 | Phase 35 | Pending |
 | OSU-05 | Phase 35 | Complete |
 | OSU-06 | Phase 35 | Complete |
-| OSU-07 | Phase 35 | Pending |
+| OSU-07 | Phase 35 | Complete |
 
 **v2.1.3 Coverage:**
 - v2.1.3 requirements: 17 total
