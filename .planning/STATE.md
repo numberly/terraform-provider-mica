@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 Phase: 32 (Code Correctness Fixes) — complete
 Plan: 32-01 complete
 Status: Phase 32 done — Phase 33 next
-Last activity: 2026-03-31 — Phase 32-01 complete (5 code correctness fixes)
+Last activity: 2026-04-01 — Quick task 8: fix quota_limit guard in object store account PATCH
 
 ```
 v2.1.3 Progress: [███                 ] 1/3 phases
@@ -91,6 +91,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 7 | Refactor server DNS to NamedReference, add directory_services, schema v2 | 2026-03-31 | c1df886 | [7-refactor-server-dns](./quick/7-refactor-server-dns-to-namedreference-ad/) |
+| 8 | fix: skip quota_limit in object store account PATCH when unchanged | 2026-04-01 | 8612b5b | [8-fix-skip-quota-limit](./quick/8-fix-skip-quota-limit-in-object-store-acc/) |
 
 ### Blockers/Concerns
 
