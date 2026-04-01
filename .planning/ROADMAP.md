@@ -653,7 +653,10 @@ Plans:
   3. `terraform import flashblade_object_store_user.x account/username` populates state; subsequent plan shows 0 diff
   4. Operator can create a `flashblade_object_store_user_policy` resource associating a user to an access policy; destroy removes only the association
   5. Drift detection logs when a user or user-policy association is modified outside Terraform
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 35-01-PLAN.md — Object store user client methods (user-policy association), resource, data source, member resource, mock handlers, tests
+- [ ] 35-01-PLAN.md — Client layer: typed models, user-policy association methods, mock handlers, unit tests
+- [ ] 35-02-PLAN.md — flashblade_object_store_user resource and data source, provider registration, examples
+- [ ] 35-03-PLAN.md — flashblade_object_store_user_policy member resource, provider registration, examples
+- [ ] 35-04-PLAN.md — Mocked provider tests for all three resources/data sources, ROADMAP.md update
