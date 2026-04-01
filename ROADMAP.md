@@ -2,7 +2,7 @@
 
 FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-flashblade.
 
-**Last updated:** 2026-03-31
+**Last updated:** 2026-04-01
 **Provider version:** v2.1.3
 **Total API sections:** 84 | **Covered:** ~32 | **Coverage of IaC-relevant CRUD:** ~62%
 
