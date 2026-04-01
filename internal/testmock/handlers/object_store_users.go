@@ -5,13 +5,14 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
 // objectStoreUserStore is the thread-safe in-memory state for object store user handlers.
 type objectStoreUserStore struct {
 	mu       sync.Mutex
-	byName   map[string]bool
+	byName   map[string]*client.ObjectStoreUser
 	policies map[string][]string // userName -> []policyName
 	accounts *objectStoreAccountStore
 }
@@ -22,7 +23,7 @@ type objectStoreUserStore struct {
 // Returns the store for cross-reference or test setup.
 func RegisterObjectStoreUserHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *objectStoreUserStore {
 	store := &objectStoreUserStore{
-		byName:   make(map[string]bool),
+		byName:   make(map[string]*client.ObjectStoreUser),
 		policies: make(map[string][]string),
 		accounts: accounts,
 	}
@@ -36,6 +37,17 @@ func (s *objectStoreUserStore) AddPolicyForTest(userName, policyName string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.policies[userName] = append(s.policies[userName], policyName)
+}
+
+// AddUserForTest pre-populates the user store for use in unit tests.
+func (s *objectStoreUserStore) AddUserForTest(name string, fullAccess bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.byName[name] = &client.ObjectStoreUser{
+		ID:         uuid.NewString(),
+		Name:       name,
+		FullAccess: fullAccess,
+	}
 }
 
 func (s *objectStoreUserStore) handle(w http.ResponseWriter, r *http.Request) {
@@ -61,14 +73,15 @@ func (s *objectStoreUserStore) handleGet(w http.ResponseWriter, r *http.Request)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !s.byName[name] {
+	u := s.byName[name]
+	if u == nil {
 		// Return empty items list (provider synthesizes 404 from this).
 		WriteJSONListResponse(w, http.StatusOK, []map[string]any{})
 		return
 	}
 
 	WriteJSONListResponse(w, http.StatusOK, []map[string]any{
-		{"name": name, "id": "", "full_access": false},
+		{"name": u.Name, "id": u.ID, "full_access": u.FullAccess},
 	})
 }
 
@@ -82,15 +95,20 @@ func (s *objectStoreUserStore) handlePost(w http.ResponseWriter, r *http.Request
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.byName[name] {
+	if s.byName[name] != nil {
 		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("object store user %q already exists", name))
 		return
 	}
 
-	s.byName[name] = true
+	u := &client.ObjectStoreUser{
+		ID:         uuid.NewString(),
+		Name:       name,
+		FullAccess: false,
+	}
+	s.byName[name] = u
 
 	WriteJSONListResponse(w, http.StatusOK, []map[string]any{
-		{"name": name, "id": "", "full_access": false},
+		{"name": u.Name, "id": u.ID, "full_access": u.FullAccess},
 	})
 }
 
@@ -105,6 +123,7 @@ func (s *objectStoreUserStore) handleDelete(w http.ResponseWriter, r *http.Reque
 	defer s.mu.Unlock()
 
 	delete(s.byName, name)
+	delete(s.policies, name)
 	w.WriteHeader(http.StatusOK)
 }
 
