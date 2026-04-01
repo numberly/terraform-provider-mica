@@ -599,7 +599,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 - [x] **Phase 32: Code Correctness Fixes** - Typo rename, dead schema removal, diagnostic severity, and dead helper/param cleanup (completed 2026-03-31)
 - [x] **Phase 33: Client Hardening** - OAuth2 context propagation, RetryBaseDelay removal, and golangci-lint expansion (completed 2026-03-31)
 - [ ] **Phase 34: Test Quality** - Fix ExpectNonEmptyPlan masking and expand acceptance test coverage
-- [ ] **Phase 35: Object Store Users** - S3 user resource, data source, and user-policy member resource
+- [x] **Phase 35: Object Store Users** - S3 user resource, data source, and user-policy member resource (completed 2026-04-01)
 
 ### Phase 32: Code Correctness Fixes
 **Goal**: All correctness issues found in review are resolved — the codebase compiles with no typos, carries no dead schema attributes, propagates diagnostic severity faithfully, and has no unused parameters or passthrough helpers

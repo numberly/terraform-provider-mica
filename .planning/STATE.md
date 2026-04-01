@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: completed
-stopped_at: Completed 35-02-PLAN.md
-last_updated: "2026-04-01T06:31:20.315Z"
+stopped_at: Completed 35-04-PLAN.md
+last_updated: "2026-04-01T06:40:56.253Z"
 last_activity: 2026-03-31 — Phase 32-01 complete (5 code correctness fixes)
 progress:
   total_phases: 35
-  completed_phases: 32
+  completed_phases: 33
   total_plans: 77
-  completed_plans: 74
+  completed_plans: 75
 ---
 
 # Project State
@@ -48,6 +48,7 @@ v2.1.3 Progress: [███                 ] 1/3 phases
 | Phase 35-object-store-users P01 | 4 | 2 tasks | 4 files |
 | Phase 35-object-store-users P03 | 5 | 1 tasks | 4 files |
 | Phase 35 P02 | 8 | 2 tasks | 9 files |
+| Phase 35-object-store-users P04 | 15 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ v2.1.3 Progress: [███                 ] 1/3 phases
 - [Phase 35-03]: Read method checks both member.Name == userName AND policy.Name == policyName to avoid false matches when user has multiple policies
 - [Phase 35]: Update stub returns AddError — all attributes are RequiresReplace so Update is never called in practice
 - [Phase 35]: ImportState uses inline CRD-only null timeouts (create/read/delete) instead of shared nullTimeoutsValue which includes update key
+- [Phase 35-04]: Mock handler fixed: objectStoreUserStore stores ObjectStoreUser with UUID id (was bool + empty string)
+- [Phase 35-04]: ImportStateId must be explicit for name-based import when id attribute holds UUID
+- [Phase 35-04]: ImportStateVerifyIdentifierAttribute=user_name for policy resource (no id field in schema)
 
 ### v2.1.3 Phase Groupings
 
@@ -94,6 +98,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-01T06:31:20.308Z
-Stopped at: Completed 35-02-PLAN.md
+Last session: 2026-04-01T06:40:56.246Z
+Stopped at: Completed 35-04-PLAN.md
 Resume file: None
