@@ -288,11 +288,11 @@ func (r *objectStoreAccountResource) Update(ctx context.Context, req resource.Up
 
 	patch := client.ObjectStoreAccountPatch{}
 
-	if !plan.QuotaLimit.Equal(state.QuotaLimit) {
+	if !plan.QuotaLimit.IsUnknown() && !plan.QuotaLimit.Equal(state.QuotaLimit) {
 		v := strconv.FormatInt(plan.QuotaLimit.ValueInt64(), 10)
 		patch.QuotaLimit = &v
 	}
-	if !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {
+	if !plan.HardLimitEnabled.IsUnknown() && !plan.HardLimitEnabled.Equal(state.HardLimitEnabled) {
 		v := plan.HardLimitEnabled.ValueBool()
 		patch.HardLimitEnabled = &v
 	}
