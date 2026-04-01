@@ -99,6 +99,20 @@ func IsConflict(err error) bool {
 	return apiErr.StatusCode == http.StatusConflict
 }
 
+// isAlreadyExists returns true when err is an *APIError whose message
+// indicates the resource already exists. FlashBlade returns HTTP 400 (not 409)
+// for some "already exists" cases (e.g. object store users).
+func isAlreadyExists(err error) bool {
+	if err == nil {
+		return false
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		return false
+	}
+	return strings.Contains(strings.ToLower(apiErr.Message), "already exists")
+}
+
 // IsRetryable returns true for HTTP status codes that represent transient
 // failures: 429 (rate limit) and 5xx server errors.
 func IsRetryable(statusCode int) bool {

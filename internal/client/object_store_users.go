@@ -41,8 +41,9 @@ func (c *FlashBladeClient) EnsureObjectStoreUser(ctx context.Context, name strin
 	if err == nil {
 		return nil
 	}
-	// If user already exists (409 Conflict), that's fine.
-	if IsConflict(err) {
+	// If user already exists, that's fine. FlashBlade may return 409 Conflict
+	// or 400 with "already exists" message depending on the firmware version.
+	if IsConflict(err) || isAlreadyExists(err) {
 		return nil
 	}
 	return fmt.Errorf("ensuring object store user %q: %w", name, err)
