@@ -10,7 +10,7 @@
 - v2.0.1 Quality & Hardening (Phases 18-22) -- shipped 2026-03-30
 - v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
 - v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
-- v2.1.3 Code Review Fixes (Phases 32-34) -- in progress
+- v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- in progress
 
 ## Phases
 
@@ -592,13 +592,14 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 
 ---
 
-## v2.1.3 Code Review Fixes (Phases 32-34)
+## v2.1.3 Code Review Fixes & S3 Users (Phases 32-35)
 
 **Milestone Goal:** Fix all issues identified by the full codebase code review — critical typos, dead schema attributes, diagnostic severity loss, client hardening, linting improvements, and acceptance test quality.
 
 - [x] **Phase 32: Code Correctness Fixes** - Typo rename, dead schema removal, diagnostic severity, and dead helper/param cleanup (completed 2026-03-31)
 - [x] **Phase 33: Client Hardening** - OAuth2 context propagation, RetryBaseDelay removal, and golangci-lint expansion (completed 2026-03-31)
 - [ ] **Phase 34: Test Quality** - Fix ExpectNonEmptyPlan masking and expand acceptance test coverage
+- [ ] **Phase 35: Object Store Users** - S3 user resource, data source, and user-policy member resource
 
 ### Phase 32: Code Correctness Fixes
 **Goal**: All correctness issues found in review are resolved — the codebase compiles with no typos, carries no dead schema attributes, propagates diagnostic severity faithfully, and has no unused parameters or passthrough helpers
@@ -641,3 +642,18 @@ Plans:
 
 Plans:
 - [ ] 34-01-PLAN.md — Remove ExpectNonEmptyPlan from existing acceptance tests, add acceptance tests for 3+ additional high-risk resources
+
+### Phase 35: Object Store Users
+**Goal**: Operators can create named S3 users, associate access policies to them, and manage per-user credentials — enabling multi-tenant S3 workflows with fine-grained access control
+**Depends on**: Phase 33 (client hardening landed)
+**Requirements**: OSU-01, OSU-02, OSU-03, OSU-04, OSU-05, OSU-06, OSU-07
+**Success Criteria** (what must be TRUE):
+  1. Operator can `terraform apply` to create an S3 user `account/myuser` and `terraform destroy` to delete it — full lifecycle works
+  2. Operator can read an existing S3 user by name via `data.flashblade_object_store_user` with all attributes populated
+  3. `terraform import flashblade_object_store_user.x account/username` populates state; subsequent plan shows 0 diff
+  4. Operator can create a `flashblade_object_store_user_policy` resource associating a user to an access policy; destroy removes only the association
+  5. Drift detection logs when a user or user-policy association is modified outside Terraform
+**Plans**: TBD
+
+Plans:
+- [ ] 35-01-PLAN.md — Object store user client methods (user-policy association), resource, data source, member resource, mock handlers, tests

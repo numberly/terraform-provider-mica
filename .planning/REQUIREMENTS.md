@@ -29,6 +29,16 @@ Requirements for code review fixes. Addresses all issues (critical, important, m
 - [x] **CL-01**: mustObjectValue passthrough helper removed — callers use types.ObjectValue directly
 - [x] **CL-02**: golangci-lint configuration expanded with gosec, bodyclose, noctx, and exhaustive linters
 
+### Object Store Users
+
+- [ ] **OSU-01**: Operator can create a named S3 user under an account via Terraform (format: account/username)
+- [ ] **OSU-02**: Operator can delete an S3 user via Terraform destroy
+- [ ] **OSU-03**: Operator can read an existing S3 user by name via data source
+- [ ] **OSU-04**: Operator can import an existing S3 user into Terraform state with no drift on subsequent plan
+- [ ] **OSU-05**: Operator can associate one or more access policies to a user via a member resource
+- [ ] **OSU-06**: Operator can remove a policy association from a user via Terraform destroy
+- [ ] **OSU-07**: Drift detection logs changes when user or policy association is modified outside Terraform
+
 ## v2.1.1 Requirements (completed)
 
 Requirements for Network Interfaces (VIPs). Adds subnet, network interface (VIP), and LAG resources/data sources to enable operators to manage FlashBlade networking infrastructure as code.
@@ -159,10 +169,17 @@ Requirements for Bucket Advanced Features. Adds missing bucket sub-resources and
 | CL-02 | Phase 33 | Complete |
 | TQ-01 | Phase 34 | Pending |
 | TQ-02 | Phase 34 | Pending |
+| OSU-01 | Phase 35 | Pending |
+| OSU-02 | Phase 35 | Pending |
+| OSU-03 | Phase 35 | Pending |
+| OSU-04 | Phase 35 | Pending |
+| OSU-05 | Phase 35 | Pending |
+| OSU-06 | Phase 35 | Pending |
+| OSU-07 | Phase 35 | Pending |
 
 **v2.1.3 Coverage:**
-- v2.1.3 requirements: 10 total
-- Mapped to phases: 10
+- v2.1.3 requirements: 17 total
+- Mapped to phases: 17
 - Unmapped: 0 ✓
 
 **v2.1.1 Coverage:**

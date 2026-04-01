@@ -8,9 +8,9 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.1.3 — Code Review Fixes
+## Current Milestone: v2.1.3 — Code Review Fixes & S3 Users
 
-**Goal:** Fix all issues identified by the full codebase code review — critical typos, dead schema attributes, test masking, client hardening, and linting improvements.
+**Goal:** Fix all issues identified by the full codebase code review, and add S3 user management with per-user policy associations.
 
 **Target features:**
 - Fix FreezeLockgedObjects typo in Go struct field name (C1)
@@ -49,6 +49,11 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - [ ] Remove unused ctx params from bucket extract functions (M2)
 - [ ] Fix diagnostic severity loss in readIntoState (M3)
 - [ ] Expand golangci-lint linter configuration (M4)
+- [ ] Object store user resource — create/delete named S3 users (OSU-01, OSU-02)
+- [ ] Object store user data source — read existing users (OSU-03)
+- [ ] Object store user import with zero drift (OSU-04)
+- [ ] User-policy member resource — associate access policies to users (OSU-05, OSU-06)
+- [ ] Drift detection on user and user-policy associations (OSU-07)
 
 ### Out of Scope
 
@@ -89,4 +94,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-03-31 after milestone v2.1.3 initialization*
+*Last updated: 2026-04-01 after adding Phase 35 (Object Store Users) to v2.1.3*
