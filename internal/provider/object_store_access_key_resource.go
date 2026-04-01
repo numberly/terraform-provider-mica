@@ -38,6 +38,7 @@ func NewAccessKeyResource() resource.Resource {
 type objectStoreAccessKeyModel struct {
 	Name               types.String   `tfsdk:"name"`
 	ObjectStoreAccount types.String   `tfsdk:"object_store_account"`
+	User               types.String   `tfsdk:"user"`
 	AccessKeyID        types.String   `tfsdk:"access_key_id"`
 	SecretAccessKey    types.String   `tfsdk:"secret_access_key"`
 	Created            types.Int64    `tfsdk:"created"`
@@ -71,6 +72,15 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 				Required:    true,
 				Description: "The object store account this access key belongs to. Changing this forces a new resource.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"user": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The S3 user this access key belongs to (format: account/username). When omitted, defaults to account/admin. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -157,8 +167,13 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	// Build user name in format "<account>/admin".
-	userName := data.ObjectStoreAccount.ValueString() + "/admin"
+	// Resolve user name: explicit user attribute takes precedence, default to account/admin.
+	var userName string
+	if !data.User.IsNull() && !data.User.IsUnknown() {
+		userName = data.User.ValueString()
+	} else {
+		userName = data.ObjectStoreAccount.ValueString() + "/admin"
+	}
 
 	// Ensure the object store user exists before creating the access key.
 	// FlashBlade requires the user to exist — it is not auto-created.
@@ -200,6 +215,7 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 	}
 	// If user provided secret_access_key, data.SecretAccessKey already holds the
 	// planned value — do not overwrite it.
+	data.User = types.StringValue(key.User.Name)
 	data.Created = types.Int64Value(key.Created)
 	data.Enabled = types.BoolValue(key.Enabled)
 
@@ -230,6 +246,7 @@ func (r *objectStoreAccessKeyResource) Read(ctx context.Context, req resource.Re
 	// Map response fields. SecretAccessKey is intentionally NOT updated here —
 	// the API never returns it on GET, and state already holds the value from Create.
 	data.Name = types.StringValue(key.Name)
+	data.User = types.StringValue(key.User.Name)
 	data.AccessKeyID = types.StringValue(key.AccessKeyID)
 	data.Created = types.Int64Value(key.Created)
 	data.Enabled = types.BoolValue(key.Enabled)

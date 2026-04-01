@@ -48,6 +48,7 @@ func buildAccessKeyType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"name":                  tftypes.String,
 		"object_store_account":  tftypes.String,
+		"user":                  tftypes.String,
 		"access_key_id":         tftypes.String,
 		"secret_access_key":     tftypes.String,
 		"created":               tftypes.Number,
@@ -65,6 +66,7 @@ func nullAccessKeyConfig() map[string]tftypes.Value {
 	return map[string]tftypes.Value{
 		"name":                  tftypes.NewValue(tftypes.String, nil),
 		"object_store_account":  tftypes.NewValue(tftypes.String, nil),
+		"user":                  tftypes.NewValue(tftypes.String, nil),
 		"access_key_id":         tftypes.NewValue(tftypes.String, nil),
 		"secret_access_key":     tftypes.NewValue(tftypes.String, nil),
 		"created":               tftypes.NewValue(tftypes.Number, nil),

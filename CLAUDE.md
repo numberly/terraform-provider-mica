@@ -76,3 +76,4 @@ This ensures the roadmap stays accurate across sessions and contributors.
 - Log credentials or sensitive values
 - Use `context.Background()` in auth paths -- propagate caller context
 - Add `RetryBaseDelay` or similar heuristic duration fields -- use explicit `time.Duration`
+- Add `Co-Authored-By` trailers in commit messages -- never include any co-author line

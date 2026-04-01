@@ -48,6 +48,7 @@ output "secret_access_key" {
 - `name` (String) The access key name (format: <account>/admin/<key-id>). When providing a secret_access_key for cross-array replication, this must be set to the same name as the source key. When omitted, the API assigns it automatically.
 - `secret_access_key` (String, Sensitive) The secret access key. When provided, the key is created with this exact secret (for cross-array replication). When omitted, the API generates it. Returned only at creation time and stored in state (encrypted).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `user` (String) The S3 user this access key belongs to (format: account/username). When omitted, defaults to account/admin. Changing this forces a new resource.
 
 ### Read-Only
 
