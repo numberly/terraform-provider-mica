@@ -17,7 +17,11 @@
 #       |
 #       +-- [Access Policy + Rule] --> IAM-style S3 operation control
 #       |
-#       +-- [Access Key] --> credentials (stored in output or Vault)
+#       +-- [Named User] --> per-tenant user with policy association
+#       |       |
+#       |   [User Policy] --> links user to access policy
+#       |
+#       +-- [Access Key] --> credentials bound to named user
 #       |
 #       +-- [Bucket] --> actual storage with versioning + quota
 #
@@ -148,17 +152,32 @@ resource "flashblade_object_store_access_policy_rule" "allow_all" {
 }
 
 # -----------------------------------------------------------------------------
-# Step 5: Generate access key
+# Step 5: Named S3 user + policy association
+# -----------------------------------------------------------------------------
+# Create an explicit user for the tenant rather than relying on the implicit
+# admin user. Associate the access policy to scope this user's permissions.
+
+resource "flashblade_object_store_user" "tenant" {
+  name = "${flashblade_object_store_account.tenant.name}/${var.tenant_name}-user"
+}
+
+resource "flashblade_object_store_user_policy" "tenant_rw" {
+  user_name   = flashblade_object_store_user.tenant.name
+  policy_name = flashblade_object_store_access_policy.tenant_rw.name
+}
+
+# -----------------------------------------------------------------------------
+# Step 6: Generate access key (bound to named user)
 # -----------------------------------------------------------------------------
 # The access key is immutable and the secret is only available at creation.
 # In production, pipe this to Vault (see vault-s3-onboarding workflow).
 
 resource "flashblade_object_store_access_key" "tenant" {
-  object_store_account = flashblade_object_store_account.tenant.name
+  user = flashblade_object_store_user.tenant.name
 }
 
 # -----------------------------------------------------------------------------
-# Step 6: Create bucket
+# Step 7: Create bucket
 # -----------------------------------------------------------------------------
 # The bucket belongs to the tenant's account. Versioning enabled by default
 # for data protection. Quota enforces storage limits.

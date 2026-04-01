@@ -4,10 +4,12 @@
 # Provisions a bucket with a full security policy stack:
 #   - Object store account  (namespace + quota)
 #   - Bucket                (versioning, no access key in this workflow)
+#   - Named S3 user         (per-app credential isolation)
 #   - Network access policy (singleton, restricts S3 to internal network)
 #   - NAP rule              (allow S3 from internal CIDR only)
 #   - Object store access policy (IAM-style, least-privilege read-only)
 #   - OAP rule              (GetObject + ListBucket for application tier)
+#   - User-policy association (links named user to read-only policy)
 #
 # Typical use case: S3 bucket for an application that reads assets/artifacts.
 # Access keys are provisioned separately (e.g. via a secrets rotation workflow)
@@ -173,4 +175,19 @@ resource "flashblade_object_store_access_policy_rule" "allow_bucket_read" {
     "arn:aws:s3:::${flashblade_bucket.this.name}",
     "arn:aws:s3:::${flashblade_bucket.this.name}/*",
   ]
+}
+
+# ---------------------------------------------------------------------------
+# Named S3 user + policy association
+# ---------------------------------------------------------------------------
+# Create a dedicated user for the application tier. Bind the read-only policy
+# to this user so credentials generated for it inherit least-privilege access.
+
+resource "flashblade_object_store_user" "app" {
+  name = "${flashblade_object_store_account.this.name}/app-reader"
+}
+
+resource "flashblade_object_store_user_policy" "app_readonly" {
+  user_name   = flashblade_object_store_user.app.name
+  policy_name = flashblade_object_store_access_policy.app_readonly.name
 }

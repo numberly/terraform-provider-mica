@@ -3,8 +3,9 @@
 # =============================================================================
 # Provisions a complete S3-compatible storage stack:
 #   - Object store account  (namespace, quota ceiling)
+#   - Named S3 user        (per-app credential isolation)
 #   - Bucket               (versioning + hard quota for compliance)
-#   - Access key pair      (credentials for app or service account)
+#   - Access key pair      (bound to named user, not implicit admin)
 #
 # Typical use case: onboarding a new application team onto FlashBlade S3.
 # The account acts as a billing/quota boundary; the bucket is the S3 endpoint.
@@ -90,12 +91,22 @@ resource "flashblade_bucket" "this" {
 }
 
 # ---------------------------------------------------------------------------
-# Access key
+# Named S3 user
+# ---------------------------------------------------------------------------
+# Create an explicit user rather than relying on the implicit admin user.
+# Named users enable per-application credential isolation — each app gets
+# its own access key scoped to its own policy.
+
+resource "flashblade_object_store_user" "app" {
+  name = "${flashblade_object_store_account.this.name}/app-user"
+}
+
+# ---------------------------------------------------------------------------
+# Access key (bound to the named user)
 # ---------------------------------------------------------------------------
 
 resource "flashblade_object_store_access_key" "this" {
-  account = flashblade_object_store_account.this.name
-  enabled = true
+  user = flashblade_object_store_user.app.name
 
   # Access keys have no ImportState — the secret is only available at creation.
   # Store the outputs in Vault/AWS Secrets Manager immediately after apply.

@@ -14,7 +14,8 @@
 #   [Object Store Account]
 #       +-- [Account Export] + [S3 Export Policy]
 #       +-- [Access Policy + Rule]
-#       +-- [Access Key] --> written back to Vault
+#       +-- [Named User] + [User Policy] --> per-tenant user with policy
+#       +-- [Access Key] --> bound to named user, written back to Vault
 #       +-- [Bucket]
 #       |
 #   [Vault] <-- S3 credentials stored for apps
@@ -155,11 +156,24 @@ resource "flashblade_object_store_access_policy_rule" "allow_all" {
 }
 
 # -----------------------------------------------------------------------------
-# Step 6: Generate access key + store in Vault
+# Step 6: Named S3 user + policy association
+# -----------------------------------------------------------------------------
+
+resource "flashblade_object_store_user" "tenant" {
+  name = "${flashblade_object_store_account.tenant.name}/${var.tenant_name}-user"
+}
+
+resource "flashblade_object_store_user_policy" "tenant_rw" {
+  user_name   = flashblade_object_store_user.tenant.name
+  policy_name = flashblade_object_store_access_policy.tenant_rw.name
+}
+
+# -----------------------------------------------------------------------------
+# Step 7: Generate access key (bound to named user) + store in Vault
 # -----------------------------------------------------------------------------
 
 resource "flashblade_object_store_access_key" "tenant" {
-  object_store_account = flashblade_object_store_account.tenant.name
+  user = flashblade_object_store_user.tenant.name
 }
 
 resource "vault_kv_secret_v2" "tenant_s3_credentials" {
@@ -179,7 +193,7 @@ resource "vault_kv_secret_v2" "tenant_s3_credentials" {
 }
 
 # -----------------------------------------------------------------------------
-# Step 7: Create bucket
+# Step 8: Create bucket
 # -----------------------------------------------------------------------------
 
 resource "flashblade_bucket" "tenant" {
