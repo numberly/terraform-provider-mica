@@ -289,6 +289,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewObjectStoreUserPolicyResource, // registered here by plan 35-03
 		NewSubnetResource,
 		NewNetworkInterfaceResource,
+		NewTargetResource,
 	}
 }
 
@@ -327,5 +328,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewSubnetDataSource,
 		NewLinkAggregationGroupDataSource,
 		NewNetworkInterfaceDataSource,
+		NewTargetDataSource,
 	}
 }
