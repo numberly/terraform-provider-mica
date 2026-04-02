@@ -73,7 +73,7 @@ func TestUnit_RemoteCredentials_Get_NotFound(t *testing.T) {
 	}
 }
 
-func TestUnit_RemoteCredentials_Post(t *testing.T) {
+func TestUnit_RemoteCredentials_Post_WithRemote(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case r.URL.Path == "/api/login":
@@ -82,8 +82,13 @@ func TestUnit_RemoteCredentials_Post(t *testing.T) {
 		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-remote-credentials":
 			name := r.URL.Query().Get("names")
 			remoteName := r.URL.Query().Get("remote_names")
-			if name == "" || remoteName == "" {
-				http.Error(w, "names and remote_names required", http.StatusBadRequest)
+			targetName := r.URL.Query().Get("target_names")
+			if name == "" || (remoteName == "" && targetName == "") {
+				http.Error(w, "names and (remote_names or target_names) required", http.StatusBadRequest)
+				return
+			}
+			if remoteName != "" && targetName != "" {
+				http.Error(w, "provide remote_names or target_names, not both", http.StatusBadRequest)
 				return
 			}
 			var body client.ObjectStoreRemoteCredentialsPost
@@ -91,11 +96,15 @@ func TestUnit_RemoteCredentials_Post(t *testing.T) {
 				http.Error(w, "bad body", http.StatusBadRequest)
 				return
 			}
+			refName := remoteName
+			if targetName != "" {
+				refName = targetName
+			}
 			result := client.ObjectStoreRemoteCredentials{
 				ID:          "rc-id-002",
 				Name:        name,
 				AccessKeyID: body.AccessKeyID,
-				Remote:      client.NamedReference{Name: remoteName},
+				Remote:      client.NamedReference{Name: refName},
 			}
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreRemoteCredentials{result}))
 		default:
@@ -109,6 +118,7 @@ func TestUnit_RemoteCredentials_Post(t *testing.T) {
 		context.Background(),
 		"remote-array/new-creds",
 		"remote-array",
+		"",
 		client.ObjectStoreRemoteCredentialsPost{
 			AccessKeyID:     "AKIAIOSFODNN7EXAMPLE",
 			SecretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
@@ -125,6 +135,102 @@ func TestUnit_RemoteCredentials_Post(t *testing.T) {
 	}
 	if got.Remote.Name != "remote-array" {
 		t.Errorf("expected Remote.Name remote-array, got %q", got.Remote.Name)
+	}
+}
+
+func TestUnit_RemoteCredentials_Post_WithTarget(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+			name := r.URL.Query().Get("names")
+			remoteName := r.URL.Query().Get("remote_names")
+			targetName := r.URL.Query().Get("target_names")
+			if remoteName != "" {
+				http.Error(w, "expected target_names not remote_names", http.StatusBadRequest)
+				return
+			}
+			if targetName == "" {
+				http.Error(w, "target_names required", http.StatusBadRequest)
+				return
+			}
+			var body client.ObjectStoreRemoteCredentialsPost
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				http.Error(w, "bad body", http.StatusBadRequest)
+				return
+			}
+			result := client.ObjectStoreRemoteCredentials{
+				ID:          "rc-id-003",
+				Name:        name,
+				AccessKeyID: body.AccessKeyID,
+				Remote:      client.NamedReference{Name: targetName},
+			}
+			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreRemoteCredentials{result}))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	got, err := c.PostRemoteCredentials(
+		context.Background(),
+		"target-creds",
+		"",
+		"my-target",
+		client.ObjectStoreRemoteCredentialsPost{
+			AccessKeyID:     "AKIAIOSFODNN7EXAMPLE",
+			SecretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+		},
+	)
+	if err != nil {
+		t.Fatalf("PostRemoteCredentials with target: %v", err)
+	}
+	if got.Name != "target-creds" {
+		t.Errorf("expected Name target-creds, got %q", got.Name)
+	}
+	if got.Remote.Name != "my-target" {
+		t.Errorf("expected Remote.Name my-target, got %q", got.Remote.Name)
+	}
+}
+
+func TestUnit_RemoteCredentials_Post_NeitherParam(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+			remoteName := r.URL.Query().Get("remote_names")
+			targetName := r.URL.Query().Get("target_names")
+			if remoteName == "" && targetName == "" {
+				http.Error(w, "remote_names or target_names is required", http.StatusBadRequest)
+				return
+			}
+			// Shouldn't reach here in this test.
+			w.WriteHeader(http.StatusOK)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	// Pass empty strings for both remoteName and targetName — server should reject.
+	_, err := c.PostRemoteCredentials(
+		context.Background(),
+		"creds-name",
+		"",
+		"",
+		client.ObjectStoreRemoteCredentialsPost{
+			AccessKeyID:     "AKIAIOSFODNN7EXAMPLE",
+			SecretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+		},
+	)
+	if err == nil {
+		t.Fatal("expected error when neither remote_names nor target_names provided, got nil")
 	}
 }
 

@@ -142,7 +142,7 @@ func (r *remoteCredentialsResource) Create(ctx context.Context, req resource.Cre
 		SecretAccessKey: data.SecretAccessKey.ValueString(),
 	}
 
-	cred, err := r.client.PostRemoteCredentials(ctx, data.Name.ValueString(), data.RemoteName.ValueString(), post)
+	cred, err := r.client.PostRemoteCredentials(ctx, data.Name.ValueString(), data.RemoteName.ValueString(), "", post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating remote credentials", err.Error())
 		return

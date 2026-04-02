@@ -37,9 +37,15 @@ func (c *FlashBladeClient) ListRemoteCredentials(ctx context.Context) ([]ObjectS
 }
 
 // PostRemoteCredentials creates a new remote credentials entry.
-// The name is passed via ?names= and the remote array connection via ?remote_names=.
-func (c *FlashBladeClient) PostRemoteCredentials(ctx context.Context, name string, remoteName string, body ObjectStoreRemoteCredentialsPost) (*ObjectStoreRemoteCredentials, error) {
-	path := "/object-store-remote-credentials?names=" + url.QueryEscape(name) + "&remote_names=" + url.QueryEscape(remoteName)
+// The name is passed via ?names=. Either targetName or remoteName must be non-empty (not both).
+// When targetName is non-empty, routes to ?target_names=; otherwise routes to ?remote_names=.
+func (c *FlashBladeClient) PostRemoteCredentials(ctx context.Context, name string, remoteName string, targetName string, body ObjectStoreRemoteCredentialsPost) (*ObjectStoreRemoteCredentials, error) {
+	path := "/object-store-remote-credentials?names=" + url.QueryEscape(name)
+	if targetName != "" {
+		path += "&target_names=" + url.QueryEscape(targetName)
+	} else if remoteName != "" {
+		path += "&remote_names=" + url.QueryEscape(remoteName)
+	}
 	var resp ListResponse[ObjectStoreRemoteCredentials]
 	if err := c.post(ctx, path, body, &resp); err != nil {
 		return nil, err

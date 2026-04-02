@@ -87,10 +87,11 @@ func (s *remoteCredentialsStore) handleGet(w http.ResponseWriter, r *http.Reques
 }
 
 // handlePost handles POST /api/2.22/object-store-remote-credentials.
-// Requires ?names= and ?remote_names= query params. Body contains access_key_id + secret_access_key.
+// Requires ?names= and exactly one of ?remote_names= or ?target_names=.
+// Body contains access_key_id + secret_access_key.
 // Response includes secret_access_key — POST only.
 func (s *remoteCredentialsStore) handlePost(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"names", "remote_names"}) {
+	if !ValidateQueryParams(w, r, []string{"names", "remote_names", "target_names"}) {
 		return
 	}
 
@@ -98,9 +99,24 @@ func (s *remoteCredentialsStore) handlePost(w http.ResponseWriter, r *http.Reque
 	if !ok {
 		return
 	}
-	remoteName, ok := RequireQueryParam(w, r, "remote_names")
-	if !ok {
+
+	q := r.URL.Query()
+	remoteName := q.Get("remote_names")
+	targetName := q.Get("target_names")
+
+	if remoteName != "" && targetName != "" {
+		WriteJSONError(w, http.StatusBadRequest, "provide remote_names or target_names, not both")
 		return
+	}
+	if remoteName == "" && targetName == "" {
+		WriteJSONError(w, http.StatusBadRequest, "remote_names or target_names is required")
+		return
+	}
+
+	// Use whichever ref param was provided as the Remote.Name on the stored credential.
+	refName := remoteName
+	if targetName != "" {
+		refName = targetName
 	}
 
 	var body client.ObjectStoreRemoteCredentialsPost
@@ -134,7 +150,7 @@ func (s *remoteCredentialsStore) handlePost(w http.ResponseWriter, r *http.Reque
 		Name:            name,
 		AccessKeyID:     body.AccessKeyID,
 		SecretAccessKey: body.SecretAccessKey,
-		Remote:          client.NamedReference{Name: remoteName},
+		Remote:          client.NamedReference{Name: refName},
 	}
 
 	s.byName[name] = cred
