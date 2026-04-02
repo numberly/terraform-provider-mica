@@ -4,7 +4,7 @@ milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
 stopped_at: Completed 36-target-resource/36-02-PLAN.md
-last_updated: "2026-04-02T15:22:05.664Z"
+last_updated: "2026-04-02T15:27:16.663Z"
 last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
   total_phases: 38
