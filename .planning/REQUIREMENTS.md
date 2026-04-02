@@ -9,11 +9,11 @@ Requirements for S3 Target Replication. Enables operators to replicate buckets t
 
 ### Target Management
 
-- [ ] **TGT-01**: Operator can create a target with name, address, and optional ca_certificate_group via `terraform apply` — `apply -> plan` shows 0 diff
-- [ ] **TGT-02**: Operator can update mutable target fields (address, ca_certificate_group) and destroy a target via Terraform
-- [ ] **TGT-03**: Operator can import an existing target into Terraform state and subsequent `plan` shows 0 diff
-- [ ] **TGT-04**: Operator can read an existing target by name via `flashblade_target` data source and access its address, status, and status_details attributes
-- [ ] **TGT-05**: Drift detection logs changes when a target is modified outside Terraform
+- [x] **TGT-01**: Operator can create a target with name, address, and optional ca_certificate_group via `terraform apply` — `apply -> plan` shows 0 diff
+- [x] **TGT-02**: Operator can update mutable target fields (address, ca_certificate_group) and destroy a target via Terraform
+- [x] **TGT-03**: Operator can import an existing target into Terraform state and subsequent `plan` shows 0 diff
+- [x] **TGT-04**: Operator can read an existing target by name via `flashblade_target` data source and access its address, status, and status_details attributes
+- [x] **TGT-05**: Drift detection logs changes when a target is modified outside Terraform
 
 ### Remote Credentials Enhancement
 
@@ -87,11 +87,11 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TGT-01 | Phase 36 | Pending |
-| TGT-02 | Phase 36 | Pending |
-| TGT-03 | Phase 36 | Pending |
-| TGT-04 | Phase 36 | Pending |
-| TGT-05 | Phase 36 | Pending |
+| TGT-01 | Phase 36 | Complete |
+| TGT-02 | Phase 36 | Complete |
+| TGT-03 | Phase 36 | Complete |
+| TGT-04 | Phase 36 | Complete |
+| TGT-05 | Phase 36 | Complete |
 | RC-01 | Phase 37 | Pending |
 | RC-02 | Phase 37 | Pending |
 | BRL-01 | Phase 37 | Pending |

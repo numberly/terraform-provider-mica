@@ -1,16 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.2
-milestone_name: S3 Target Replication
-status: active
-stopped_at: null
-last_updated: "2026-04-02T14:30:00.000Z"
-last_activity: 2026-04-02 — Milestone v2.2 roadmap created (Phases 36-38)
+milestone: v2.1
+milestone_name: Bucket Advanced Features
+status: planning
+stopped_at: Completed 36-target-resource/36-01-PLAN.md
+last_updated: "2026-04-02T15:13:31.725Z"
+last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
-  total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 38
+  completed_phases: 33
+  total_plans: 79
+  completed_plans: 76
+  percent: 0
 ---
 
 # Project State
@@ -40,6 +41,7 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 | Plans defined | TBD |
 | Plans complete | 0 |
 | Requirements mapped | 11/11 |
+| Phase 36-target-resource P01 | 12 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -51,6 +53,9 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 - [Phase 35]: Update stub returns AddError — all attributes are RequiresReplace so Update is never called in practice
 - [Phase 35]: ImportState uses inline CRD-only null timeouts (create/read/delete) instead of shared nullTimeoutsValue which includes update key
 - [v2.2 roadmap]: 3 phases at coarse granularity — Phase 36 (target CRUD), Phase 37 (RC + BRL extension), Phase 38 (docs)
+- [Phase 36-01]: Use **NamedReference for TargetPatch.CACertificateGroup to support nil=omit vs inner-nil=set-null PATCH semantics
+- [Phase 36-01]: Mock GET handler returns HTTP 404 (not empty list) when ?names= filter finds no match so getOneByName detects not-found via HTTP status
+- [Phase 36-01]: targetStoreFacade wrapper in test file exposes Seed without making internal targetStore type public
 
 ### v2.2 Phase Groupings
 
@@ -68,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02
-Stopped at: v2.2 roadmap created — Phase 36 ready to plan
+Last session: 2026-04-02T15:13:31.718Z
+Stopped at: Completed 36-target-resource/36-01-PLAN.md
 Resume file: None

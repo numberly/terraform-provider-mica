@@ -591,7 +591,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 33. Client Hardening | v2.1.3 | 2/2 | Complete | 2026-03-31 |
 | 34. Test Quality | v2.1.3 | 0/1 | Not started | - |
 | 35. Object Store Users | v2.1.3 | 4/4 | Complete | 2026-04-01 |
-| 36. Target Resource | v2.2 | 0/2 | Not started | - |
+| 36. Target Resource | 1/2 | In Progress|  | - |
 | 37. Remote Credentials & Replica Link Enhancement | v2.2 | 0/1 | Not started | - |
 | 38. Documentation & Workflow | v2.2 | 0/1 | Not started | - |
 
