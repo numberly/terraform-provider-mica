@@ -545,6 +545,56 @@ func TestUnit_BucketReplicaLink_Lifecycle(t *testing.T) {
 	}
 }
 
+// TestUnit_BRL_WithTargetCredentials verifies that a BRL can be created when
+// remote_credentials_name references a credential seeded as target-backed (Remote.Name = target).
+func TestUnit_BRL_WithTargetCredentials(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+
+	// Register both mock handlers.
+	rcStore := handlers.RegisterRemoteCredentialsHandlers(ms.Mux)
+	handlers.RegisterBucketReplicaLinkHandlers(ms.Mux)
+
+	// Seed a target-backed remote credential directly.
+	rcStore.Seed(&client.ObjectStoreRemoteCredentials{
+		ID:          "rc-tgt-001",
+		Name:        "target-cred",
+		AccessKeyID: "AKID-TGT",
+		Remote:      client.NamedReference{Name: "my-target"},
+	})
+
+	r := newTestBucketReplicaLinkResource(t, ms)
+	s := bucketReplicaLinkResourceSchema(t).Schema
+
+	// Create BRL referencing the target-backed credential.
+	plan := bucketReplicaLinkPlanWith(t, "local-bucket", "remote-bucket", "target-cred", false)
+	req := resource.CreateRequest{Plan: plan}
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketReplicaLinkType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create BRL with target-backed credentials returned error: %s", resp.Diagnostics)
+	}
+
+	var model bucketReplicaLinkModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.ID.IsNull() || model.ID.ValueString() == "" {
+		t.Error("expected non-empty id after Create")
+	}
+	if model.RemoteCredentialsName.ValueString() != "target-cred" {
+		t.Errorf("expected remote_credentials_name=target-cred, got %s", model.RemoteCredentialsName.ValueString())
+	}
+	if model.LocalBucketName.ValueString() != "local-bucket" {
+		t.Errorf("expected local_bucket_name=local-bucket, got %s", model.LocalBucketName.ValueString())
+	}
+}
+
 // TestUnit_BucketReplicaLink_Schema verifies schema properties:
 // - local_bucket_name and remote_bucket_name have RequiresReplace
 // - paused is Optional+Computed

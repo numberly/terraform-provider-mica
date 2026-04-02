@@ -35,12 +35,23 @@ func NewRemoteCredentialsResource() resource.Resource {
 
 // remoteCredentialsModel is the top-level model for the flashblade_object_store_remote_credentials resource.
 type remoteCredentialsModel struct {
-	ID             types.String   `tfsdk:"id"`
-	Name           types.String   `tfsdk:"name"`
-	AccessKeyID    types.String   `tfsdk:"access_key_id"`
-	SecretAccessKey types.String  `tfsdk:"secret_access_key"`
-	RemoteName     types.String   `tfsdk:"remote_name"`
-	Timeouts       timeouts.Value `tfsdk:"timeouts"`
+	ID              types.String   `tfsdk:"id"`
+	Name            types.String   `tfsdk:"name"`
+	AccessKeyID     types.String   `tfsdk:"access_key_id"`
+	SecretAccessKey types.String   `tfsdk:"secret_access_key"`
+	RemoteName      types.String   `tfsdk:"remote_name"`
+	TargetName      types.String   `tfsdk:"target_name"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
+}
+
+// remoteCredentialsV0Model is the v0 state model (no target_name field).
+type remoteCredentialsV0Model struct {
+	ID              types.String   `tfsdk:"id"`
+	Name            types.String   `tfsdk:"name"`
+	AccessKeyID     types.String   `tfsdk:"access_key_id"`
+	SecretAccessKey types.String   `tfsdk:"secret_access_key"`
+	RemoteName      types.String   `tfsdk:"remote_name"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
 }
 
 // ---------- resource interface methods --------------------------------------
@@ -53,7 +64,7 @@ func (r *remoteCredentialsResource) Metadata(_ context.Context, _ resource.Metad
 // Schema defines the resource schema.
 func (r *remoteCredentialsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages FlashBlade object store remote credentials for cross-array bucket replication.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -81,8 +92,16 @@ func (r *remoteCredentialsResource) Schema(ctx context.Context, _ resource.Schem
 				Description: "The secret access key for the remote S3 credentials.",
 			},
 			"remote_name": schema.StringAttribute{
-				Required:    true,
-				Description: "The name of the remote array connection. Changing this forces a new resource.",
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the remote array connection. Populated automatically from the API response. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"target_name": schema.StringAttribute{
+				Optional:    true,
+				Description: "The name of the target (S3-compatible endpoint). Mutually exclusive with remote_name. Changing this forces a new resource.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -97,10 +116,61 @@ func (r *remoteCredentialsResource) Schema(ctx context.Context, _ resource.Schem
 	}
 }
 
-
 // UpgradeState returns state upgraders for schema migrations.
-func (r *remoteCredentialsResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *remoteCredentialsResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		// v0 -> v1: add target_name attribute (null for all existing resources).
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages FlashBlade object store remote credentials for cross-array bucket replication.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Required: true,
+					},
+					"access_key_id": schema.StringAttribute{
+						Required:  true,
+						Sensitive: true,
+					},
+					"secret_access_key": schema.StringAttribute{
+						Required:  true,
+						Sensitive: true,
+					},
+					"remote_name": schema.StringAttribute{
+						Required: true,
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState remoteCredentialsV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				newState := remoteCredentialsModel{
+					ID:              oldState.ID,
+					Name:            oldState.Name,
+					AccessKeyID:     oldState.AccessKeyID,
+					SecretAccessKey: oldState.SecretAccessKey,
+					RemoteName:      oldState.RemoteName,
+					TargetName:      types.StringNull(),
+					Timeouts:        oldState.Timeouts,
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -138,20 +208,34 @@ func (r *remoteCredentialsResource) Create(ctx context.Context, req resource.Cre
 	defer cancel()
 
 	post := client.ObjectStoreRemoteCredentialsPost{
-		AccessKeyID:    data.AccessKeyID.ValueString(),
+		AccessKeyID:     data.AccessKeyID.ValueString(),
 		SecretAccessKey: data.SecretAccessKey.ValueString(),
 	}
 
-	cred, err := r.client.PostRemoteCredentials(ctx, data.Name.ValueString(), data.RemoteName.ValueString(), "", post)
+	// Route to ?target_names= or ?remote_names= based on which attribute is set.
+	remoteName := ""
+	targetName := ""
+	if !data.TargetName.IsNull() && !data.TargetName.IsUnknown() && data.TargetName.ValueString() != "" {
+		targetName = data.TargetName.ValueString()
+	} else if !data.RemoteName.IsNull() && !data.RemoteName.IsUnknown() {
+		remoteName = data.RemoteName.ValueString()
+	}
+
+	cred, err := r.client.PostRemoteCredentials(ctx, data.Name.ValueString(), remoteName, targetName, post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating remote credentials", err.Error())
 		return
 	}
 
+	// Preserve target_name from plan (not returned by API).
+	planTargetName := data.TargetName
+
 	mapRemoteCredentialsToModel(cred, &data)
 	// Preserve user-provided secrets in state (API may not return them on subsequent reads).
 	data.AccessKeyID = types.StringValue(post.AccessKeyID)
 	data.SecretAccessKey = types.StringValue(post.SecretAccessKey)
+	// Preserve target_name from plan (API does not return it).
+	data.TargetName = planTargetName
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -183,11 +267,13 @@ func (r *remoteCredentialsResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	// Preserve secret_access_key from state — GET does not return it.
+	// Preserve secret_access_key and target_name from state — GET does not return them.
 	existingSecret := data.SecretAccessKey
+	existingTargetName := data.TargetName
 
 	mapRemoteCredentialsToModel(cred, &data)
 	data.SecretAccessKey = existingSecret
+	data.TargetName = existingTargetName
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -233,10 +319,15 @@ func (r *remoteCredentialsResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
+	// Preserve target_name from plan (API does not return it).
+	planTargetName := plan.TargetName
+
 	mapRemoteCredentialsToModel(cred, &plan)
 	// Preserve user-provided secrets in state from plan values.
 	plan.AccessKeyID = types.StringValue(plan.AccessKeyID.ValueString())
 	plan.SecretAccessKey = types.StringValue(plan.SecretAccessKey.ValueString())
+	// Preserve target_name from plan (API does not return it).
+	plan.TargetName = planTargetName
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -282,6 +373,8 @@ func (r *remoteCredentialsResource) ImportState(ctx context.Context, req resourc
 	mapRemoteCredentialsToModel(cred, &data)
 	// secret_access_key will be empty after import — user must provide it in config or use ignore_changes.
 	data.SecretAccessKey = types.StringValue("")
+	// target_name is not returned by GET — set to null on import.
+	data.TargetName = types.StringNull()
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -289,8 +382,8 @@ func (r *remoteCredentialsResource) ImportState(ctx context.Context, req resourc
 // ---------- helpers ---------------------------------------------------------
 
 // mapRemoteCredentialsToModel maps a client.ObjectStoreRemoteCredentials to a remoteCredentialsModel.
-// It preserves user-managed fields (Timeouts, SecretAccessKey).
-// IMPORTANT: Does NOT set SecretAccessKey — GET does not return it.
+// It preserves user-managed fields (Timeouts, SecretAccessKey, TargetName).
+// IMPORTANT: Does NOT set SecretAccessKey or TargetName — GET does not return them.
 func mapRemoteCredentialsToModel(cred *client.ObjectStoreRemoteCredentials, data *remoteCredentialsModel) {
 	data.ID = types.StringValue(cred.ID)
 	data.Name = types.StringValue(cred.Name)

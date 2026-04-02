@@ -53,6 +53,7 @@ func buildRemoteCredentialsType() tftypes.Object {
 		"access_key_id":     tftypes.String,
 		"secret_access_key": tftypes.String,
 		"remote_name":       tftypes.String,
+		"target_name":       tftypes.String,
 		"timeouts":          timeoutsType,
 	}}
 }
@@ -71,17 +72,33 @@ func nullRemoteCredentialsConfig() map[string]tftypes.Value {
 		"access_key_id":     tftypes.NewValue(tftypes.String, nil),
 		"secret_access_key": tftypes.NewValue(tftypes.String, nil),
 		"remote_name":       tftypes.NewValue(tftypes.String, nil),
+		"target_name":       tftypes.NewValue(tftypes.String, nil),
 		"timeouts":          tftypes.NewValue(timeoutsType, nil),
 	}
 }
 
-// remoteCredentialsPlanWith returns a tfsdk.Plan with the given field values.
+// remoteCredentialsPlanWith returns a tfsdk.Plan with the given field values (remote_name variant).
 func remoteCredentialsPlanWith(t *testing.T, name, remoteName, accessKeyID, secretAccessKey string) tfsdk.Plan {
 	t.Helper()
 	s := remoteCredentialsResourceSchema(t).Schema
 	cfg := nullRemoteCredentialsConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["remote_name"] = tftypes.NewValue(tftypes.String, remoteName)
+	cfg["access_key_id"] = tftypes.NewValue(tftypes.String, accessKeyID)
+	cfg["secret_access_key"] = tftypes.NewValue(tftypes.String, secretAccessKey)
+	return tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildRemoteCredentialsType(), cfg),
+		Schema: s,
+	}
+}
+
+// remoteCredentialsPlanWithTarget returns a tfsdk.Plan with target_name set (remote_name null).
+func remoteCredentialsPlanWithTarget(t *testing.T, name, targetName, accessKeyID, secretAccessKey string) tfsdk.Plan {
+	t.Helper()
+	s := remoteCredentialsResourceSchema(t).Schema
+	cfg := nullRemoteCredentialsConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, name)
+	cfg["target_name"] = tftypes.NewValue(tftypes.String, targetName)
 	cfg["access_key_id"] = tftypes.NewValue(tftypes.String, accessKeyID)
 	cfg["secret_access_key"] = tftypes.NewValue(tftypes.String, secretAccessKey)
 	return tfsdk.Plan{
@@ -445,7 +462,9 @@ func TestUnit_RemoteCredentials_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_RemoteCredentials_Schema verifies schema properties:
-// - name and remote_name have RequiresReplace
+// - name has RequiresReplace and is Required
+// - remote_name is Optional+Computed+RequiresReplace (no longer Required)
+// - target_name is Optional+RequiresReplace
 // - access_key_id and secret_access_key are Required+Sensitive
 func TestUnit_RemoteCredentials_Schema(t *testing.T) {
 	s := remoteCredentialsResourceSchema(t).Schema
@@ -462,16 +481,37 @@ func TestUnit_RemoteCredentials_Schema(t *testing.T) {
 		t.Error("name: expected RequiresReplace plan modifier")
 	}
 
-	// remote_name: Required + RequiresReplace.
+	// remote_name: Optional + Computed + RequiresReplace (not Required anymore).
 	remoteNameAttr, ok := s.Attributes["remote_name"].(resschema.StringAttribute)
 	if !ok {
 		t.Fatal("remote_name attribute not found or wrong type")
 	}
-	if !remoteNameAttr.Required {
-		t.Error("remote_name: expected Required=true")
+	if remoteNameAttr.Required {
+		t.Error("remote_name: expected Required=false (Optional+Computed)")
+	}
+	if !remoteNameAttr.Optional {
+		t.Error("remote_name: expected Optional=true")
+	}
+	if !remoteNameAttr.Computed {
+		t.Error("remote_name: expected Computed=true")
 	}
 	if len(remoteNameAttr.PlanModifiers) == 0 {
 		t.Error("remote_name: expected RequiresReplace plan modifier")
+	}
+
+	// target_name: Optional + RequiresReplace.
+	targetNameAttr, ok := s.Attributes["target_name"].(resschema.StringAttribute)
+	if !ok {
+		t.Fatal("target_name attribute not found or wrong type")
+	}
+	if !targetNameAttr.Optional {
+		t.Error("target_name: expected Optional=true")
+	}
+	if targetNameAttr.Required {
+		t.Error("target_name: expected Required=false")
+	}
+	if len(targetNameAttr.PlanModifiers) == 0 {
+		t.Error("target_name: expected RequiresReplace plan modifier")
 	}
 
 	// access_key_id: Required + Sensitive.
@@ -496,5 +536,138 @@ func TestUnit_RemoteCredentials_Schema(t *testing.T) {
 	}
 	if !secretAttr.Sensitive {
 		t.Error("secret_access_key: expected Sensitive=true")
+	}
+}
+
+// TestUnit_RemoteCredentials_Schema_V1 verifies schema version is 1.
+func TestUnit_RemoteCredentials_Schema_V1(t *testing.T) {
+	s := remoteCredentialsResourceSchema(t).Schema
+	if s.Version != 1 {
+		t.Errorf("expected schema version 1, got %d", s.Version)
+	}
+}
+
+// TestUnit_RemoteCredentials_Create_WithTarget verifies Create with target_name routes to
+// ?target_names= and state has target_name preserved + remote_name populated from API response.
+func TestUnit_RemoteCredentials_Create_WithTarget(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterRemoteCredentialsHandlers(ms.Mux)
+
+	r := newTestRemoteCredentialsResource(t, ms)
+	s := remoteCredentialsResourceSchema(t).Schema
+
+	plan := remoteCredentialsPlanWithTarget(t, "target-cred", "my-target", "AKID-TGT", "SECRET-TGT")
+	req := resource.CreateRequest{Plan: plan}
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildRemoteCredentialsType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create (with target) returned error: %s", resp.Diagnostics)
+	}
+
+	var model remoteCredentialsModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.ID.IsNull() || model.ID.ValueString() == "" {
+		t.Error("expected non-empty id after Create")
+	}
+	if model.Name.ValueString() != "target-cred" {
+		t.Errorf("expected name=target-cred, got %s", model.Name.ValueString())
+	}
+	// target_name must be preserved from plan (API doesn't return it).
+	if model.TargetName.ValueString() != "my-target" {
+		t.Errorf("expected target_name=my-target, got %s", model.TargetName.ValueString())
+	}
+	// remote_name is populated from API response Remote.Name (which is the target name in this case).
+	if model.RemoteName.IsNull() {
+		t.Error("expected remote_name to be populated from API response, got null")
+	}
+	if model.AccessKeyID.ValueString() != "AKID-TGT" {
+		t.Errorf("expected access_key_id=AKID-TGT, got %s", model.AccessKeyID.ValueString())
+	}
+	if model.SecretAccessKey.ValueString() != "SECRET-TGT" {
+		t.Errorf("expected secret_access_key=SECRET-TGT, got %s", model.SecretAccessKey.ValueString())
+	}
+}
+
+// TestUnit_RemoteCredentials_StateUpgrade_V0toV1 verifies that a v0 state (without target_name)
+// is correctly upgraded to v1 with target_name=null.
+func TestUnit_RemoteCredentials_StateUpgrade_V0toV1(t *testing.T) {
+	r := &remoteCredentialsResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0->v1 upgrader at key 0")
+	}
+
+	// Build a v0 state using the PriorSchema.
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema to be set for v0->v1 upgrader")
+	}
+
+	// Build a tftypes.Object matching v0 schema (no target_name field).
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                tftypes.String,
+		"name":              tftypes.String,
+		"access_key_id":     tftypes.String,
+		"secret_access_key": tftypes.String,
+		"remote_name":       tftypes.String,
+		"timeouts":          timeoutsType,
+	}}
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":                tftypes.NewValue(tftypes.String, "rc-001"),
+		"name":              tftypes.NewValue(tftypes.String, "old-cred"),
+		"access_key_id":     tftypes.NewValue(tftypes.String, "AKID"),
+		"secret_access_key": tftypes.NewValue(tftypes.String, ""),
+		"remote_name":       tftypes.NewValue(tftypes.String, "remote-array"),
+		"timeouts":          tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	req := resource.UpgradeStateRequest{State: &priorState}
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildRemoteCredentialsType(), nil),
+			Schema: remoteCredentialsResourceSchema(t).Schema,
+		},
+	}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model remoteCredentialsModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.Name.ValueString() != "old-cred" {
+		t.Errorf("expected name=old-cred, got %s", model.Name.ValueString())
+	}
+	if model.RemoteName.ValueString() != "remote-array" {
+		t.Errorf("expected remote_name=remote-array, got %s", model.RemoteName.ValueString())
+	}
+	// target_name must be null after v0->v1 upgrade.
+	if !model.TargetName.IsNull() {
+		t.Errorf("expected target_name=null after v0->v1 upgrade, got %s", model.TargetName.ValueString())
 	}
 }
