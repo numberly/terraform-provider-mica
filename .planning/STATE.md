@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 36-target-resource/36-01-PLAN.md
-last_updated: "2026-04-02T15:13:31.725Z"
+stopped_at: Completed 36-target-resource/36-02-PLAN.md
+last_updated: "2026-04-02T15:22:05.664Z"
 last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
   total_phases: 38
-  completed_phases: 33
+  completed_phases: 34
   total_plans: 79
-  completed_plans: 76
+  completed_plans: 77
   percent: 0
 ---
 
@@ -42,6 +42,7 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 | Plans complete | 0 |
 | Requirements mapped | 11/11 |
 | Phase 36-target-resource P01 | 12 | 3 tasks | 4 files |
+| Phase 36-target-resource P02 | 348s | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -56,6 +57,8 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 - [Phase 36-01]: Use **NamedReference for TargetPatch.CACertificateGroup to support nil=omit vs inner-nil=set-null PATCH semantics
 - [Phase 36-01]: Mock GET handler returns HTTP 404 (not empty list) when ?names= filter finds no match so getOneByName detects not-found via HTTP status
 - [Phase 36-01]: targetStoreFacade wrapper in test file exposes Seed without making internal targetStore type public
+- [Phase 36-02]: Flat ca_certificate_group string in resource schema (not nested object) — keeps HCL simple and consistent with plan spec
+- [Phase 36-02]: Drift detection on Read logs all four mutable/computed fields via tflog.Debug with field/was/now keys
 
 ### v2.2 Phase Groupings
 
@@ -73,6 +76,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T15:13:31.718Z
-Stopped at: Completed 36-target-resource/36-01-PLAN.md
+Last session: 2026-04-02T15:22:05.656Z
+Stopped at: Completed 36-target-resource/36-02-PLAN.md
 Resume file: None

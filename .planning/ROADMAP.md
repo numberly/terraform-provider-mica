@@ -591,7 +591,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 33. Client Hardening | v2.1.3 | 2/2 | Complete | 2026-03-31 |
 | 34. Test Quality | v2.1.3 | 0/1 | Not started | - |
 | 35. Object Store Users | v2.1.3 | 4/4 | Complete | 2026-04-01 |
-| 36. Target Resource | 1/2 | In Progress|  | - |
+| 36. Target Resource | 2/2 | Complete   | 2026-04-02 | - |
 | 37. Remote Credentials & Replica Link Enhancement | v2.2 | 0/1 | Not started | - |
 | 38. Documentation & Workflow | v2.2 | 0/1 | Not started | - |
 
@@ -672,7 +672,7 @@ Plans:
 
 **Milestone Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) through Terraform, complementing existing FlashBlade-to-FlashBlade replication.
 
-- [ ] **Phase 36: Target Resource** - New resource and data source for managing external S3 endpoint targets (CRUD, import, drift detection)
+- [x] **Phase 36: Target Resource** - New resource and data source for managing external S3 endpoint targets (CRUD, import, drift detection) (completed 2026-04-02)
 - [ ] **Phase 37: Remote Credentials & Replica Link Enhancement** - Extend existing resources to support target references, enabling end-to-end S3 target replication
 - [ ] **Phase 38: Documentation & Workflow** - Import docs, workflow example, and tfplugindocs generation for all new resources
 
