@@ -79,7 +79,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | Array connection resource (create/delete) | Separate concern, deferred to future milestone |
 | File system replica links to targets | S3 bucket replication only for v2.2 |
 | Target certificate management | Handled by existing certificate + TLS policy resources |
-| Cascading replication (target → target) | Not supported by FlashBlade API |
+| Cascading replication (target -> target) | Not supported by FlashBlade API |
 | Realms | Not relevant for current usage |
 | Pulumi bridge | Deferred, provider structure compatible |
 
@@ -87,23 +87,23 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TGT-01 | — | Pending |
-| TGT-02 | — | Pending |
-| TGT-03 | — | Pending |
-| TGT-04 | — | Pending |
-| TGT-05 | — | Pending |
-| RC-01 | — | Pending |
-| RC-02 | — | Pending |
-| BRL-01 | — | Pending |
-| DOC-01 | — | Pending |
-| DOC-02 | — | Pending |
-| DOC-03 | — | Pending |
+| TGT-01 | Phase 36 | Pending |
+| TGT-02 | Phase 36 | Pending |
+| TGT-03 | Phase 36 | Pending |
+| TGT-04 | Phase 36 | Pending |
+| TGT-05 | Phase 36 | Pending |
+| RC-01 | Phase 37 | Pending |
+| RC-02 | Phase 37 | Pending |
+| BRL-01 | Phase 37 | Pending |
+| DOC-01 | Phase 38 | Pending |
+| DOC-02 | Phase 38 | Pending |
+| DOC-03 | Phase 38 | Pending |
 
 **v2.2 Coverage:**
 - v2.2 requirements: 11 total
-- Mapped to phases: 0
-- Unmapped: 11
+- Mapped to phases: 11
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after initial definition*
+*Last updated: 2026-04-02 after v2.2 roadmap creation*

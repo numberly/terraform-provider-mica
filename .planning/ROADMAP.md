@@ -11,6 +11,7 @@
 - v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
 - v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
 - v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- in progress
+- v2.2 S3 Target Replication (Phases 36-38) -- planned
 
 ## Phases
 
@@ -527,12 +528,12 @@ Plans:
 **Requirements**: SRV-01, SRV-02
 **Success Criteria** (what must be TRUE):
   1. `flashblade_server` resource and data source expose a computed `network_interfaces` list populated from VIPs whose `attached_servers` includes that server
-  2. Existing users upgrading the provider do not see a state deserialization error -- schema version bump 0→1 with StateUpgrader migrates old state by setting `network_interfaces` to an empty list
+  2. Existing users upgrading the provider do not see a state deserialization error -- schema version bump 0->1 with StateUpgrader migrates old state by setting `network_interfaces` to an empty list
   3. `flashblade_network_interface` resource and `flashblade_subnet` resource are registered in `provider.go` and appear in `terraform providers` output
 **Plans**: 1 plan
 
 Plans:
-- [ ] 30-01-PLAN.md — Server resource/data source enrichment (network_interfaces computed list, schema v0→v1 StateUpgrader, VIP client-side join, tests)
+- [ ] 30-01-PLAN.md — Server resource/data source enrichment (network_interfaces computed list, schema v0->v1 StateUpgrader, VIP client-side join, tests)
 
 ### Phase 31: Documentation & Workflow Examples
 **Goal**: All new v2.1.1 resources have complete documentation, import guides, workflow examples, and the README reflects the expanded networking capabilities
@@ -540,7 +541,7 @@ Plans:
 **Requirements**: DOC-01, DOC-02, DOC-03, DOC-04
 **Success Criteria** (what must be TRUE):
   1. Import documentation (import.sh) exists for all new importable resources (subnet, network interface) with correct syntax and realistic identifiers
-  2. A workflow example in `examples/networking/` demonstrates the full stack: LAG data source → subnet creation → VIP creation (data + sts with server, egress-only without) → server data source reading VIPs
+  2. A workflow example in `examples/networking/` demonstrates the full stack: LAG data source -> subnet creation -> VIP creation -> server data source reading VIPs
   3. `tfplugindocs generate` produces documentation for all new resources and data sources without errors
   4. README coverage table includes the networking resources category with correct resource and data source counts
 **Plans**: 1 plan
@@ -551,7 +552,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33 -> 34
+Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33 -> 34 -> 35 -> 36 -> 37 -> 38
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -577,18 +578,22 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 20. Code Quality -- Validators & Dedup | v2.0.1 | 2/2 | Complete | 2026-03-29 |
 | 21. Dead Code Removal & Modernization | v2.0.1 | 1/1 | Complete | 2026-03-29 |
 | 22. Test Coverage | v2.0.1 | 2/2 | Complete | 2026-03-29 |
-| 23. Bucket Inline Attributes | 2/2 | Complete    | 2026-03-30 | - |
-| 24. Lifecycle Rules | 2/2 | Complete    | 2026-03-30 | - |
-| 25. Bucket Access Policies | 2/2 | Complete    | 2026-03-30 | - |
-| 26. Audit Filters & QoS Policies | 3/3 | Complete    | 2026-03-30 | - |
-| 27. Testing & Documentation | 1/1 | Complete    | 2026-03-30 | - |
-| 28. LAG Data Source & Subnet Resource | 2/2 | Complete    | 2026-03-31 | - |
-| 29. Network Interface Resource & Data Source | 2/2 | Complete    | 2026-03-31 | - |
-| 30. Server Enrichment & Provider Registration | 1/1 | Complete    | 2026-03-31 | - |
-| 31. Documentation & Workflow Examples | 1/1 | Complete    | 2026-03-31 | - |
-| 32. Code Correctness Fixes | 1/1 | Complete    | 2026-03-31 | - |
-| 33. Client Hardening | 2/2 | Complete    | 2026-03-31 | - |
+| 23. Bucket Inline Attributes | v2.1 | 2/2 | Complete | 2026-03-30 |
+| 24. Lifecycle Rules | v2.1 | 2/2 | Complete | 2026-03-30 |
+| 25. Bucket Access Policies | v2.1 | 2/2 | Complete | 2026-03-30 |
+| 26. Audit Filters & QoS Policies | v2.1 | 3/3 | Complete | 2026-03-30 |
+| 27. Testing & Documentation | v2.1 | 1/1 | Complete | 2026-03-30 |
+| 28. LAG Data Source & Subnet Resource | v2.1.1 | 2/2 | Complete | 2026-03-31 |
+| 29. Network Interface Resource & Data Source | v2.1.1 | 2/2 | Complete | 2026-03-31 |
+| 30. Server Enrichment & Provider Registration | v2.1.1 | 1/1 | Complete | 2026-03-31 |
+| 31. Documentation & Workflow Examples | v2.1.1 | 1/1 | Complete | 2026-03-31 |
+| 32. Code Correctness Fixes | v2.1.3 | 1/1 | Complete | 2026-03-31 |
+| 33. Client Hardening | v2.1.3 | 2/2 | Complete | 2026-03-31 |
 | 34. Test Quality | v2.1.3 | 0/1 | Not started | - |
+| 35. Object Store Users | v2.1.3 | 4/4 | Complete | 2026-04-01 |
+| 36. Target Resource | v2.2 | 0/2 | Not started | - |
+| 37. Remote Credentials & Replica Link Enhancement | v2.2 | 0/1 | Not started | - |
+| 38. Documentation & Workflow | v2.2 | 0/1 | Not started | - |
 
 ---
 
@@ -606,11 +611,11 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 **Depends on**: Phase 31 (v2.1.1 complete)
 **Requirements**: CC-01, CC-02, CC-03, CH-03, CL-01
 **Success Criteria** (what must be TRUE):
-  1. `grep -r FreezeLockgedObjects .` returns zero results — the correct spelling `FreezeLockedObjects` is used everywhere across structs, tests, and examples
+  1. grep for FreezeLockgedObjects returns zero results — the correct spelling FreezeLockedObjects is used everywhere across structs, tests, and examples
   2. `terraform plan` on an existing filesystem resource shows 0 diff for nfs_export_policy and smb_share_policy — those attributes no longer exist in the schema
   3. When `readIntoState` encounters a warning diagnostic from `mapFSToModel`, the resulting Terraform diagnostic is a warning (not silently promoted to error or dropped)
-  4. `grep -r extractEradicationConfig\|extractObjectLockConfig\|extractPublicAccessConfig` shows ctx parameter removed from all three function signatures
-  5. `grep -r mustObjectValue` returns zero results — all callers use `types.ObjectValue` directly
+  4. grep for extractEradicationConfig/extractObjectLockConfig/extractPublicAccessConfig shows ctx parameter removed from all three function signatures
+  5. grep for mustObjectValue returns zero results — all callers use `types.ObjectValue` directly
 **Plans**: 1 plan
 
 Plans:
@@ -622,7 +627,7 @@ Plans:
 **Requirements**: CH-01, CH-02, CL-02
 **Success Criteria** (what must be TRUE):
   1. OAuth2 token refresh passes caller context to the HTTP token request — cancelling the Terraform context cancels the in-flight token refresh (not just the resource operation)
-  2. `RetryBaseDelay` identifier is removed from the codebase — all callers pass explicit `time.Duration` values; `go build ./...` confirms no compilation errors
+  2. RetryBaseDelay identifier is removed from the codebase — all callers pass explicit `time.Duration` values; `go build ./...` confirms no compilation errors
   3. `golangci-lint run ./...` passes with gosec, bodyclose, noctx, and exhaustive linters active — zero new violations introduced by this milestone
 **Plans**: 2 plans
 
@@ -635,9 +640,9 @@ Plans:
 **Depends on**: Phase 33 (client changes landed so tests validate final behaviour)
 **Requirements**: TQ-01, TQ-02
 **Success Criteria** (what must be TRUE):
-  1. `grep -r ExpectNonEmptyPlan` in acceptance test files returns zero results — all tests either assert `ExpectNonEmptyPlan: false` explicitly or omit the field (defaulting to false)
+  1. grep for ExpectNonEmptyPlan in acceptance test files returns zero results — all tests either assert `ExpectNonEmptyPlan: false` explicitly or omit the field (defaulting to false)
   2. At least 3 additional resources (from: server, bucket replica link, network interface, or any policy family) have acceptance tests exercising plan, apply, refresh, import, and destroy via `resource.UnitTest` with a mock server
-  3. All acceptance tests pass (`go test ./... -run TestAcc`) with zero failures after the convergence fix is applied
+  3. All acceptance tests pass (go test ./... -run TestAcc) with zero failures after the convergence fix is applied
 **Plans**: TBD
 
 Plans:
@@ -648,7 +653,7 @@ Plans:
 **Depends on**: Phase 33 (client hardening landed)
 **Requirements**: OSU-01, OSU-02, OSU-03, OSU-04, OSU-05, OSU-06, OSU-07
 **Success Criteria** (what must be TRUE):
-  1. Operator can `terraform apply` to create an S3 user `account/myuser` and `terraform destroy` to delete it — full lifecycle works
+  1. Operator can apply to create an S3 user `account/myuser` and destroy to delete it — full lifecycle works
   2. Operator can read an existing S3 user by name via `data.flashblade_object_store_user` with all attributes populated
   3. `terraform import flashblade_object_store_user.x account/username` populates state; subsequent plan shows 0 diff
   4. Operator can create a `flashblade_object_store_user_policy` resource associating a user to an access policy; destroy removes only the association
@@ -660,3 +665,55 @@ Plans:
 - [ ] 35-02-PLAN.md — flashblade_object_store_user resource and data source, provider registration, examples
 - [ ] 35-03-PLAN.md — flashblade_object_store_user_policy member resource, provider registration, examples
 - [ ] 35-04-PLAN.md — Mocked provider tests for all three resources/data sources, ROADMAP.md update
+
+---
+
+## v2.2 S3 Target Replication (Phases 36-38)
+
+**Milestone Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) through Terraform, complementing existing FlashBlade-to-FlashBlade replication.
+
+- [ ] **Phase 36: Target Resource** - New resource and data source for managing external S3 endpoint targets (CRUD, import, drift detection)
+- [ ] **Phase 37: Remote Credentials & Replica Link Enhancement** - Extend existing resources to support target references, enabling end-to-end S3 target replication
+- [ ] **Phase 38: Documentation & Workflow** - Import docs, workflow example, and tfplugindocs generation for all new resources
+
+### Phase 36: Target Resource
+**Goal**: Operators can manage external S3 endpoint targets through Terraform with full CRUD, import, and drift detection
+**Depends on**: Phase 35 (v2.1.3 complete)
+**Requirements**: TGT-01, TGT-02, TGT-03, TGT-04, TGT-05
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a target with name, address, and optional ca_certificate_group via `terraform apply` -- subsequent `plan` shows 0 diff
+  2. Operator can update mutable target fields (address, ca_certificate_group) and destroy a target via `terraform apply` and `terraform destroy` without errors
+  3. `terraform import flashblade_target.x target-name` populates all attributes; subsequent `plan` shows 0 diff
+  4. `data.flashblade_target` data source reads an existing target by name and exposes address, status, and status_details attributes
+  5. Drift detection logs field-level changes via tflog when a target is modified outside Terraform
+**Plans**: TBD
+
+Plans:
+- [ ] 36-01-PLAN.md — Client models (TargetPost/Patch/Get), client CRUD methods, mock handler, unit tests
+- [ ] 36-02-PLAN.md — flashblade_target resource (CRUD, import, drift detection), data source, provider registration
+
+### Phase 37: Remote Credentials & Replica Link Enhancement
+**Goal**: Operators can create remote credentials referencing a target (not just an array connection), and existing bucket replica links work end-to-end against external S3 endpoints with no regression on array-to-array replication
+**Depends on**: Phase 36 (target resource must exist for remote credentials to reference)
+**Requirements**: RC-01, RC-02, BRL-01
+**Success Criteria** (what must be TRUE):
+  1. Operator can create `flashblade_object_store_remote_credentials` with a `target` reference (instead of an array connection) -- `apply -> plan` shows 0 diff
+  2. Existing remote credentials referencing array connections continue to work unchanged after the enhancement -- `apply -> plan` shows 0 diff for pre-existing configs
+  3. Operator can create a bucket replica link using remote credentials that reference a target -- end-to-end replication to an external S3 endpoint completes without provider errors
+**Plans**: TBD
+
+Plans:
+- [ ] 37-01-PLAN.md — Remote credentials target support (schema extension, client update, mock handler, unit tests) + BRL-01 validation and tests
+
+### Phase 38: Documentation & Workflow
+**Goal**: All new v2.2 resources have complete import documentation, a workflow example demonstrates the full S3 target replication stack, and tfplugindocs generates without errors
+**Depends on**: Phase 37 (all resources must exist before documentation and examples)
+**Requirements**: DOC-01, DOC-02, DOC-03
+**Success Criteria** (what must be TRUE):
+  1. Import documentation (import.sh) exists for `flashblade_target` with correct `terraform import` syntax and a realistic identifier
+  2. A workflow example in `examples/s3-target-replication/` demonstrates the full stack: target creation, remote credentials referencing the target, and a bucket replica link to the external S3 endpoint
+  3. `tfplugindocs generate` produces documentation for all new resources and data sources without errors and without manual edits to the docs/ directory
+**Plans**: TBD
+
+Plans:
+- [ ] 38-01-PLAN.md — import.sh for flashblade_target, s3-target-replication workflow example, tfplugindocs regeneration
