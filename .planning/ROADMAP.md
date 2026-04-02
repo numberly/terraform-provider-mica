@@ -643,7 +643,7 @@ Plans:
   1. grep for ExpectNonEmptyPlan in acceptance test files returns zero results — all tests either assert `ExpectNonEmptyPlan: false` explicitly or omit the field (defaulting to false)
   2. At least 3 additional resources (from: server, bucket replica link, network interface, or any policy family) have acceptance tests exercising plan, apply, refresh, import, and destroy via `resource.UnitTest` with a mock server
   3. All acceptance tests pass (go test ./... -run TestAcc) with zero failures after the convergence fix is applied
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 34-01-PLAN.md — Remove ExpectNonEmptyPlan from existing acceptance tests, add acceptance tests for 3+ additional high-risk resources
@@ -700,7 +700,7 @@ Plans:
   1. Operator can create `flashblade_object_store_remote_credentials` with a `target` reference (instead of an array connection) -- `apply -> plan` shows 0 diff
   2. Existing remote credentials referencing array connections continue to work unchanged after the enhancement -- `apply -> plan` shows 0 diff for pre-existing configs
   3. Operator can create a bucket replica link using remote credentials that reference a target -- end-to-end replication to an external S3 endpoint completes without provider errors
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 37-01-PLAN.md — Remote credentials target support (schema extension, client update, mock handler, unit tests) + BRL-01 validation and tests
@@ -713,7 +713,7 @@ Plans:
   1. Import documentation (import.sh) exists for `flashblade_target` with correct `terraform import` syntax and a realistic identifier
   2. A workflow example in `examples/s3-target-replication/` demonstrates the full stack: target creation, remote credentials referencing the target, and a bucket replica link to the external S3 endpoint
   3. `tfplugindocs generate` produces documentation for all new resources and data sources without errors and without manual edits to the docs/ directory
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 38-01-PLAN.md — import.sh for flashblade_target, s3-target-replication workflow example, tfplugindocs regeneration
