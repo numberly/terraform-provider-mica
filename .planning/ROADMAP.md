@@ -686,7 +686,7 @@ Plans:
   3. `terraform import flashblade_target.x target-name` populates all attributes; subsequent `plan` shows 0 diff
   4. `data.flashblade_target` data source reads an existing target by name and exposes address, status, and status_details attributes
   5. Drift detection logs field-level changes via tflog when a target is modified outside Terraform
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 36-01-PLAN.md — Client models (TargetPost/Patch/Get), client CRUD methods, mock handler, unit tests
