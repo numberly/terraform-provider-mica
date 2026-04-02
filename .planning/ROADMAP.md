@@ -593,7 +593,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 35. Object Store Users | v2.1.3 | 4/4 | Complete | 2026-04-01 |
 | 36. Target Resource | 2/2 | Complete    | 2026-04-02 | - |
 | 37. Remote Credentials & Replica Link Enhancement | 1/1 | Complete    | 2026-04-02 | - |
-| 38. Documentation & Workflow | 1/1 | Complete   | 2026-04-02 | - |
+| 38. Documentation & Workflow | 1/1 | Complete    | 2026-04-02 | - |
 
 ---
 
