@@ -17,12 +17,12 @@ Requirements for S3 Target Replication. Enables operators to replicate buckets t
 
 ### Remote Credentials Enhancement
 
-- [ ] **RC-01**: Operator can create remote credentials referencing a target (not just an array connection) via the existing `flashblade_object_store_remote_credentials` resource
-- [ ] **RC-02**: Existing remote credentials functionality for array connections is not broken by the enhancement
+- [x] **RC-01**: Operator can create remote credentials referencing a target (not just an array connection) via the existing `flashblade_object_store_remote_credentials` resource
+- [x] **RC-02**: Existing remote credentials functionality for array connections is not broken by the enhancement
 
 ### Replication Workflow
 
-- [ ] **BRL-01**: Operator can create a bucket replica link using remote credentials that reference a target — replication to external S3 endpoint works end-to-end
+- [x] **BRL-01**: Operator can create a bucket replica link using remote credentials that reference a target — replication to external S3 endpoint works end-to-end
 
 ### Documentation
 
@@ -92,9 +92,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | TGT-03 | Phase 36 | Complete |
 | TGT-04 | Phase 36 | Complete |
 | TGT-05 | Phase 36 | Complete |
-| RC-01 | Phase 37 | Pending |
-| RC-02 | Phase 37 | Pending |
-| BRL-01 | Phase 37 | Pending |
+| RC-01 | Phase 37 | Complete |
+| RC-02 | Phase 37 | Complete |
+| BRL-01 | Phase 37 | Complete |
 | DOC-01 | Phase 38 | Pending |
 | DOC-02 | Phase 38 | Pending |
 | DOC-03 | Phase 38 | Pending |

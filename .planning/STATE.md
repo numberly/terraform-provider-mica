@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 36-target-resource/36-02-PLAN.md
-last_updated: "2026-04-02T15:27:16.663Z"
+stopped_at: Completed 37-remote-credentials-replica-link-enhancement/37-01-PLAN.md
+last_updated: "2026-04-02T15:57:40.829Z"
 last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
   total_phases: 38
-  completed_phases: 34
-  total_plans: 79
-  completed_plans: 77
+  completed_phases: 35
+  total_plans: 80
+  completed_plans: 78
   percent: 0
 ---
 
@@ -43,6 +43,7 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 | Requirements mapped | 11/11 |
 | Phase 36-target-resource P01 | 12 | 3 tasks | 4 files |
 | Phase 36-target-resource P02 | 348s | 2 tasks | 9 files |
+| Phase 37-remote-credentials-replica-link-enhancement P01 | 388s | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,9 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 - [Phase 36-01]: targetStoreFacade wrapper in test file exposes Seed without making internal targetStore type public
 - [Phase 36-02]: Flat ca_certificate_group string in resource schema (not nested object) — keeps HCL simple and consistent with plan spec
 - [Phase 36-02]: Drift detection on Read logs all four mutable/computed fields via tflog.Debug with field/was/now keys
+- [Phase 37-01]: remote_name changed to Optional+Computed: API always populates Remote.Name field
+- [Phase 37-01]: target_name preserved from plan/state like SecretAccessKey (not returned by GET)
+- [Phase 37-01]: v0->v1 upgrader uses remoteCredentialsV0Model intermediate struct; sets target_name=null
 
 ### v2.2 Phase Groupings
 
@@ -76,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T15:22:05.656Z
-Stopped at: Completed 36-target-resource/36-02-PLAN.md
+Last session: 2026-04-02T15:57:40.815Z
+Stopped at: Completed 37-remote-credentials-replica-link-enhancement/37-01-PLAN.md
 Resume file: None
