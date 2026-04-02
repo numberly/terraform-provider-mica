@@ -14,13 +14,6 @@ import (
 
 // ---- helpers ----------------------------------------------------------------
 
-// targetStoreFacade exposes the opaque *targetStore's Seed method for test setup.
-type targetStoreFacade struct {
-	store interface {
-		Seed(t *client.Target)
-	}
-}
-
 // newTestTargetResource creates a targetResource wired to the given mock server.
 func newTestTargetResource(t *testing.T, ms *testmock.MockServer) *targetResource {
 	t.Helper()
