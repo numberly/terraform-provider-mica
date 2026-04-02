@@ -85,3 +85,48 @@
 
 **Phases:** 18–22 (7 plans)
 **Last phase number:** 22
+
+### v2.1 — Bucket Advanced Features (completed 2026-03-30)
+
+**Goal:** Complete bucket sub-resource ecosystem — lifecycle rules, access policies, audit filters, QoS policies, and inline config blocks.
+
+**Delivered:**
+- Bucket inline attributes: eradication_config, object_lock_config, public_access_config, public_status
+- Lifecycle rule resource + data source (prefix, retention, multipart cleanup)
+- Bucket access policy + rule resources + data source (IAM-style per-bucket authorization)
+- Bucket audit filter resource + data source (S3 operation auditing with prefix filters)
+- QoS policy resource + member resource + data source (bandwidth/IOPS limits)
+- Testing and documentation for all new resources
+
+**Phases:** 23–27 (10 plans)
+**Last phase number:** 27
+
+### v2.1.1 — Network Interfaces (VIPs) (completed 2026-03-31)
+
+**Goal:** Enable operators to manage the full networking stack — subnets, VIPs, and server-to-VIP relationships — through Terraform.
+
+**Delivered:**
+- LAG data source (read existing link aggregation groups)
+- Subnet resource + data source (CRUD, import, drift detection)
+- Network interface resource + data source (VIPs with service/server semantics, validators)
+- Server enrichment: computed network_interfaces list, schema v0→v1 migration
+- Networking workflow example (LAG → subnet → VIP → server)
+- Documentation and import guides for all new resources
+
+**Phases:** 28–31 (6 plans)
+**Last phase number:** 31
+
+### v2.1.3 — Code Review Fixes & S3 Users (completed 2026-04-02)
+
+**Goal:** Fix all issues identified by the full codebase code review, and add S3 user management with per-user policy associations.
+
+**Delivered:**
+- FreezeLockedObjects typo fix, dead filesystem schema attrs removed, diagnostic severity fix
+- OAuth2 context propagation, RetryBaseDelay removal, golangci-lint expansion (gosec/bodyclose/noctx/exhaustive)
+- Object store user resource + data source (create/delete named S3 users, full_access support)
+- Object store user-policy member resource (associate access policies to users)
+- full_access fix: sent as query param (write-only, not returned by API)
+- quota_limit PATCH guard on object store account (IsUnknown check)
+
+**Phases:** 32–35 (7 plans)
+**Last phase number:** 35
