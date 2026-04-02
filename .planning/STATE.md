@@ -4,7 +4,7 @@ milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
 stopped_at: Completed 37-remote-credentials-replica-link-enhancement/37-01-PLAN.md
-last_updated: "2026-04-02T15:57:40.829Z"
+last_updated: "2026-04-02T16:01:54.863Z"
 last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
   total_phases: 38
