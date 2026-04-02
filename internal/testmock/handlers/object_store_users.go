@@ -100,10 +100,11 @@ func (s *objectStoreUserStore) handlePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	fullAccess := r.URL.Query().Get("full_access") == "true"
 	u := &client.ObjectStoreUser{
 		ID:         uuid.NewString(),
 		Name:       name,
-		FullAccess: false,
+		FullAccess: fullAccess,
 	}
 	s.byName[name] = u
 

@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
@@ -133,12 +132,23 @@ func (r *objectStoreUserResource) Create(ctx context.Context, req resource.Creat
 		body.FullAccess = &v
 	}
 
-	user, err := r.client.PostObjectStoreUser(ctx, data.Name.ValueString(), body)
+	_, err := r.client.PostObjectStoreUser(ctx, data.Name.ValueString(), body)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating object store user", err.Error())
 		return
 	}
 
+	// Re-read from API to get the actual state (POST response may not reflect full_access).
+	user, err := r.client.GetObjectStoreUser(ctx, data.Name.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading object store user after create", err.Error())
+		return
+	}
+
+	// full_access is write-only — preserve from plan; default to false if unset.
+	if data.FullAccess.IsNull() || data.FullAccess.IsUnknown() {
+		data.FullAccess = types.BoolValue(false)
+	}
 	mapObjectStoreUserToModel(user, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -170,16 +180,11 @@ func (r *objectStoreUserResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	// Drift detection: log when full_access changed outside Terraform.
-	if user.FullAccess != data.FullAccess.ValueBool() {
-		tflog.Warn(ctx, "drift detected on object store user", map[string]any{
-			"resource":    name,
-			"field":       "full_access",
-			"state_value": data.FullAccess.ValueBool(),
-			"api_value":   user.FullAccess,
-		})
+	// full_access is write-only (not returned by API) — preserve from state.
+	// If state has no value yet (e.g. after import), default to false.
+	if data.FullAccess.IsNull() || data.FullAccess.IsUnknown() {
+		data.FullAccess = types.BoolValue(false)
 	}
-
 	mapObjectStoreUserToModel(user, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -251,8 +256,9 @@ func (r *objectStoreUserResource) ImportState(ctx context.Context, req resource.
 // ---------- helpers ---------------------------------------------------------
 
 // mapObjectStoreUserToModel maps a client.ObjectStoreUser to an objectStoreUserModel.
+// Note: full_access is a write-only POST parameter — the API does not return it
+// in GET/POST responses. The caller must preserve FullAccess from plan or state.
 func mapObjectStoreUserToModel(user *client.ObjectStoreUser, data *objectStoreUserModel) {
 	data.ID = types.StringValue(user.ID)
 	data.Name = types.StringValue(user.Name)
-	data.FullAccess = types.BoolValue(user.FullAccess)
 }

@@ -16,8 +16,11 @@ func (c *FlashBladeClient) GetObjectStoreUser(ctx context.Context, name string) 
 // The user name is passed as a query parameter (?names=); optional fields (e.g. full_access) are in body.
 func (c *FlashBladeClient) PostObjectStoreUser(ctx context.Context, name string, body ObjectStoreUserPost) (*ObjectStoreUser, error) {
 	path := "/object-store-users?names=" + url.QueryEscape(name)
+	if body.FullAccess != nil {
+		path += fmt.Sprintf("&full_access=%t", *body.FullAccess)
+	}
 	var resp ListResponse[ObjectStoreUser]
-	if err := c.post(ctx, path, body, &resp); err != nil {
+	if err := c.post(ctx, path, nil, &resp); err != nil {
 		return nil, err
 	}
 	if len(resp.Items) == 0 {

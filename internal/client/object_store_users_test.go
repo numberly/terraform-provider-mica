@@ -2,7 +2,6 @@ package client_test
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -120,7 +119,7 @@ func TestUnit_PostObjectStoreUser(t *testing.T) {
 }
 
 func TestUnit_PostObjectStoreUser_FullAccess(t *testing.T) {
-	var bodyFullAccess *bool
+	var queryFullAccess string
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
@@ -128,14 +127,10 @@ func TestUnit_PostObjectStoreUser_FullAccess(t *testing.T) {
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
 		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-users":
-			var body client.ObjectStoreUserPost
-			if err := json.NewDecoder(r.Body).Decode(&body); err == nil {
-				bodyFullAccess = body.FullAccess
-			}
+			queryFullAccess = r.URL.Query().Get("full_access")
 			name := r.URL.Query().Get("names")
-			fa := true
 			writeJSON(w, http.StatusOK, listResponse([]map[string]any{
-				{"name": name, "id": "ghi", "full_access": fa},
+				{"name": name, "id": "ghi", "full_access": true},
 			}))
 		default:
 			http.NotFound(w, r)
@@ -152,8 +147,8 @@ func TestUnit_PostObjectStoreUser_FullAccess(t *testing.T) {
 	if user == nil {
 		t.Fatal("expected non-nil ObjectStoreUser, got nil")
 	}
-	if bodyFullAccess == nil || !*bodyFullAccess {
-		t.Errorf("expected body.FullAccess=true, got %v", bodyFullAccess)
+	if queryFullAccess != "true" {
+		t.Errorf("expected query param full_access=true, got %q", queryFullAccess)
 	}
 }
 
