@@ -1,54 +1,43 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Bucket Advanced Features
-status: completed
-stopped_at: Completed 35-04-PLAN.md
-last_updated: "2026-04-01T06:46:25.451Z"
-last_activity: 2026-03-31 — Phase 32-01 complete (5 code correctness fixes)
+milestone: v2.2
+milestone_name: S3 Target Replication
+status: active
+stopped_at: null
+last_updated: "2026-04-02T14:00:00.000Z"
+last_activity: 2026-04-02 — Milestone v2.2 started
 progress:
-  total_phases: 35
-  completed_phases: 33
-  total_plans: 77
-  completed_plans: 75
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-31)
+See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** v2.1.3 Code Review Fixes — Phase 32 next
+**Current focus:** v2.2 S3 Target Replication
 
 ## Current Position
 
-Phase: 32 (Code Correctness Fixes) — complete
-Plan: 32-01 complete
-Status: Phase 32 done — Phase 33 next
-Last activity: 2026-04-01 — Quick task 8: fix quota_limit guard in object store account PATCH
-
-```
-v2.1.3 Progress: [███                 ] 1/3 phases
-```
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-02 — Milestone v2.2 started
 
 ## Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| Phases defined | 3 |
+| Phases defined | 0 |
 | Phases complete | 0 |
-| Plans defined | 3 (1 per phase, TBD detail) |
+| Plans defined | 0 |
 | Plans complete | 0 |
-| Requirements mapped | 10/10 |
-| Phase 32-code-correctness-fixes P01 | 15 | 3 tasks | 6 files |
-| Phase 33-client-hardening P01 | 10 | 2 tasks | 61 files |
-| Phase 33-client-hardening P02 | 10 | 1 tasks | 7 files |
-| Phase 35-object-store-users P01 | 4 | 2 tasks | 4 files |
-| Phase 35-object-store-users P03 | 5 | 1 tasks | 4 files |
-| Phase 35 P02 | 8 | 2 tasks | 9 files |
-| Phase 35-object-store-users P04 | 15 | 2 tasks | 5 files |
+| Requirements mapped | 0 |
 
 ## Accumulated Context
 
@@ -99,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-01T06:40:56.246Z
-Stopped at: Completed 35-04-PLAN.md
+Last session: 2026-04-02
+Stopped at: Milestone v2.2 started — defining requirements
 Resume file: None

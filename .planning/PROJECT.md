@@ -8,21 +8,15 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.1.3 — Code Review Fixes & S3 Users
+## Current Milestone: v2.2 — S3 Target Replication
 
-**Goal:** Fix all issues identified by the full codebase code review, and add S3 user management with per-user policy associations.
+**Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) through Terraform, complementing the existing FlashBlade-to-FlashBlade array replication.
 
 **Target features:**
-- Fix FreezeLockgedObjects typo in Go struct field name (C1)
-- Remove dead nfs_export_policy/smb_share_policy attributes from filesystem schema (I1)
-- Fix ExpectNonEmptyPlan masking in acceptance tests (I2)
-- Improve OAuth2 token refresh context propagation (I3)
-- Expand acceptance test coverage beyond 3 resources (I4)
-- Remove fragile RetryBaseDelay heuristic (I5)
-- Remove mustObjectValue passthrough helper (M1)
-- Remove unused ctx parameters from bucket extract functions (M2)
-- Fix diagnostic severity loss in readIntoState (M3)
-- Expand golangci-lint configuration (M4)
+- Target resource for managing external S3 endpoints (address, CA certificate group)
+- Remote credentials support for S3 targets (not just array connections)
+- Bucket replica links to external S3 targets
+- Workflow examples and documentation for S3 target replication
 
 ## Requirements
 
@@ -36,30 +30,22 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ 368 unit tests, dual-provider replication workflow example — v2.0
 - ✓ Security hardening, code quality, 8 shared helpers, dead code removal — v2.0.1
 - ✓ 394 unit tests, HCL acceptance tests, 68.4% coverage — v2.0.1
+- ✓ Bucket advanced features (lifecycle rules, access policies, audit filters, QoS) — v2.1
+- ✓ Network interfaces/VIPs, subnets, LAG data source — v2.1.1
+- ✓ Code review fixes, S3 users + user-policy associations, full_access fix — v2.1.3
 
 ### Active
 
-- [ ] Fix FreezeLockgedObjects typo → FreezeLockedObjects (C1)
-- [ ] Remove dead filesystem schema attributes nfs_export_policy/smb_share_policy (I1)
-- [ ] Fix ExpectNonEmptyPlan masking in acceptance tests (I2)
-- [ ] Improve OAuth2 token refresh context handling (I3)
-- [ ] Expand acceptance test coverage to more resources (I4)
-- [ ] Remove fragile RetryBaseDelay duration heuristic (I5)
-- [ ] Remove mustObjectValue passthrough helper (M1)
-- [ ] Remove unused ctx params from bucket extract functions (M2)
-- [ ] Fix diagnostic severity loss in readIntoState (M3)
-- [ ] Expand golangci-lint linter configuration (M4)
-- [ ] Object store user resource — create/delete named S3 users (OSU-01, OSU-02)
-- [ ] Object store user data source — read existing users (OSU-03)
-- [ ] Object store user import with zero drift (OSU-04)
-- [ ] User-policy member resource — associate access policies to users (OSU-05, OSU-06)
-- [ ] Drift detection on user and user-policy associations (OSU-07)
+- [ ] Target resource — CRUD for external S3 endpoints (TGT-01)
+- [ ] Target data source — read existing targets (TGT-02)
+- [ ] Remote credentials support for S3 targets (RC-01)
+- [ ] Bucket replica links to S3 targets (BRL-01)
+- [ ] Workflow examples and documentation (DOC-01)
 
 ### Out of Scope
 
 - Pulumi bridge — deferred, provider structure compatible
-- Target resource (external S3 replication) — defer to v2.1
-- Array connection resource (create/delete) — defer to v2.1
+- Array connection resource (create/delete) — defer to future
 - File system replica links — defer to v2.1
 - Cascading replication — defer to v2.1
 
@@ -94,4 +80,4 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
 ---
-*Last updated: 2026-04-01 after adding Phase 35 (Object Store Users) to v2.1.3*
+*Last updated: 2026-04-02 after starting milestone v2.2 (S3 Target Replication)*
