@@ -26,9 +26,9 @@ Requirements for S3 Target Replication. Enables operators to replicate buckets t
 
 ### Documentation
 
-- [ ] **DOC-01**: Import documentation (import.sh) exists for `flashblade_target` with correct syntax and realistic identifiers
-- [ ] **DOC-02**: A workflow example in `examples/s3-target-replication/` demonstrates the full stack: target creation → remote credentials → bucket replica link to external S3
-- [ ] **DOC-03**: `tfplugindocs generate` produces documentation for all new resources and data sources without errors
+- [x] **DOC-01**: Import documentation (import.sh) exists for `flashblade_target` with correct syntax and realistic identifiers
+- [x] **DOC-02**: A workflow example in `examples/s3-target-replication/` demonstrates the full stack: target creation → remote credentials → bucket replica link to external S3
+- [x] **DOC-03**: `tfplugindocs generate` produces documentation for all new resources and data sources without errors
 
 ## v2.1.3 Requirements (completed)
 
@@ -95,9 +95,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | RC-01 | Phase 37 | Complete |
 | RC-02 | Phase 37 | Complete |
 | BRL-01 | Phase 37 | Complete |
-| DOC-01 | Phase 38 | Pending |
-| DOC-02 | Phase 38 | Pending |
-| DOC-03 | Phase 38 | Pending |
+| DOC-01 | Phase 38 | Complete |
+| DOC-02 | Phase 38 | Complete |
+| DOC-03 | Phase 38 | Complete |
 
 **v2.2 Coverage:**
 - v2.2 requirements: 11 total

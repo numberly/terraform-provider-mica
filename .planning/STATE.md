@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 37-remote-credentials-replica-link-enhancement/37-01-PLAN.md
-last_updated: "2026-04-02T16:01:54.863Z"
+stopped_at: Completed 38-documentation-workflow/38-01-PLAN.md
+last_updated: "2026-04-02T16:22:16.135Z"
 last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
   total_phases: 38
-  completed_phases: 35
-  total_plans: 80
-  completed_plans: 78
+  completed_phases: 36
+  total_plans: 81
+  completed_plans: 79
   percent: 0
 ---
 
@@ -44,6 +44,7 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 | Phase 36-target-resource P01 | 12 | 3 tasks | 4 files |
 | Phase 36-target-resource P02 | 348s | 2 tasks | 9 files |
 | Phase 37-remote-credentials-replica-link-enhancement P01 | 388s | 2 tasks | 6 files |
+| Phase 38-documentation-workflow P01 | 135 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,9 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 - [Phase 37-01]: remote_name changed to Optional+Computed: API always populates Remote.Name field
 - [Phase 37-01]: target_name preserved from plan/state like SecretAccessKey (not returned by GET)
 - [Phase 37-01]: v0->v1 upgrader uses remoteCredentialsV0Model intermediate struct; sets target_name=null
+- [Phase 38-01]: DOC-01: import.sh uses the target name (not UUID) as the import identifier, matching the ImportState implementation
+- [Phase 38-01]: DOC-02: s3-target-replication workflow uses single-provider pattern (one FlashBlade, one external S3) — no provider aliases
+- [Phase 38-01]: DOC-03: make docs regenerates target.md with Import section; object_store_remote_credentials.md updated to reflect target_name attribute from Phase 37
 
 ### v2.2 Phase Groupings
 
@@ -80,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T15:57:40.815Z
-Stopped at: Completed 37-remote-credentials-replica-link-enhancement/37-01-PLAN.md
+Last session: 2026-04-02T16:22:16.127Z
+Stopped at: Completed 38-documentation-workflow/38-01-PLAN.md
 Resume file: None
