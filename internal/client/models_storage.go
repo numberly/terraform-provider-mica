@@ -398,3 +398,26 @@ type ObjectStoreUserPolicyMember struct {
 type QosPolicyMemberPost struct {
 	Member NamedReference `json:"member"`
 }
+
+// Target represents a FlashBlade replication target from GET responses.
+type Target struct {
+	ID                 string          `json:"id"`
+	Name               string          `json:"name"`
+	Address            string          `json:"address"`
+	CACertificateGroup *NamedReference `json:"ca_certificate_group,omitempty"`
+	Status             string          `json:"status,omitempty"`
+	StatusDetails      string          `json:"status_details,omitempty"`
+}
+
+// TargetPost contains the fields for POST /targets.
+// Name is passed via ?names= query param.
+type TargetPost struct {
+	Address string `json:"address"`
+}
+
+// TargetPatch contains pointer fields for PATCH semantics on /targets.
+// A nil outer pointer means omit the field; a non-nil outer pointer with nil inner means set to null.
+type TargetPatch struct {
+	Address            *string          `json:"address,omitempty"`
+	CACertificateGroup **NamedReference `json:"ca_certificate_group,omitempty"`
+}
