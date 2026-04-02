@@ -29,11 +29,12 @@ resource "flashblade_object_store_remote_credentials" "example" {
 
 - `access_key_id` (String, Sensitive) The access key ID for the remote S3 credentials.
 - `name` (String) The name of the remote credentials. Changing this forces a new resource.
-- `remote_name` (String) The name of the remote array connection. Changing this forces a new resource.
 - `secret_access_key` (String, Sensitive) The secret access key for the remote S3 credentials.
 
 ### Optional
 
+- `remote_name` (String) The name of the remote array connection. Populated automatically from the API response. Changing this forces a new resource.
+- `target_name` (String) The name of the target (S3-compatible endpoint). Mutually exclusive with remote_name. Changing this forces a new resource.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
