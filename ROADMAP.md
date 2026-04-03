@@ -4,7 +4,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 **Last updated:** 2026-04-03
 **Provider version:** v2.2
-**Total API sections:** 84 | **Covered:** ~35 | **Coverage of IaC-relevant CRUD:** ~65%
+**Total API sections:** 84 | **Covered:** ~36 | **Coverage of IaC-relevant CRUD:** ~66%
 
 ## Coverage Legend
 
@@ -84,7 +84,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
-| Certificates | `flashblade_certificate` | Yes | Planned | Import PEM + private key; no self-signed/CSR |
+| Certificates | `flashblade_certificate` | Yes | Done | Import PEM + private key; drift detection; no self-signed/CSR |
 | TLS Policies | `flashblade_tls_policy` | Yes | Planned | Cipher suites, min version, mTLS; + `flashblade_tls_policy_member` for NI assignment |
 
 ### Array Administration
