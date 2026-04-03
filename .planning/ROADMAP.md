@@ -731,10 +731,11 @@ Plans:
   4. `data.flashblade_certificate` data source reads an existing certificate by name and exposes type, status, issuer, validity, and SAN attributes
   5. Drift detection logs field-level changes via tflog when a certificate is modified outside Terraform
   6. Private key and passphrase are marked Sensitive and never appear in plan output or logs
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-(to be created by /gsd:plan-phase 39)
+- [ ] 39-01-PLAN.md — Client models (Certificate/Post/Patch), client CRUD methods, mock handler, unit tests
+- [ ] 39-02-PLAN.md — flashblade_certificate resource (CRUD, import, drift detection), data source, provider registration, examples, docs
 
 ### Phase 40: TLS Policies
 **Goal**: Operators can manage TLS policies and assign them to network interfaces through Terraform, controlling cipher suites, minimum TLS version, mutual TLS settings, and appliance certificate selection
