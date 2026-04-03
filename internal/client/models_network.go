@@ -87,46 +87,53 @@ type NetworkInterfacePatch struct {
 	AttachedServers []NamedReference `json:"attached_servers"`
 }
 
-// Certificate represents a FlashBlade certificate from GET responses.
-type Certificate struct {
-	ID                      string   `json:"id"`
-	Name                    string   `json:"name"`
-	Certificate             string   `json:"certificate"`
-	CertificateType         string   `json:"certificate_type"`
-	CommonName              string   `json:"common_name"`
-	Country                 string   `json:"country"`
-	Email                   string   `json:"email"`
-	IntermediateCertificate string   `json:"intermediate_certificate"`
-	IssuedBy                string   `json:"issued_by"`
-	IssuedTo                string   `json:"issued_to"`
-	KeyAlgorithm            string   `json:"key_algorithm"`
-	KeySize                 int      `json:"key_size"`
-	Locality                string   `json:"locality"`
-	Organization            string   `json:"organization"`
-	OrganizationalUnit      string   `json:"organizational_unit"`
-	State                   string   `json:"state"`
-	Status                  string   `json:"status"`
-	SubjectAlternativeNames []string `json:"subject_alternative_names"`
-	ValidFrom               int64    `json:"valid_from"`
-	ValidTo                 int64    `json:"valid_to"`
+// TlsPolicy represents a FlashBlade TLS policy from GET /api/2.22/tls-policies.
+type TlsPolicy struct {
+	ID                               string          `json:"id"`
+	Name                             string          `json:"name"`
+	ApplianceCertificate             *NamedReference `json:"appliance_certificate"`
+	ClientCertificatesRequired       bool            `json:"client_certificates_required"`
+	DisabledTlsCiphers               []string        `json:"disabled_tls_ciphers"`
+	Enabled                          bool            `json:"enabled"`
+	EnabledTlsCiphers                []string        `json:"enabled_tls_ciphers"`
+	IsLocal                          bool            `json:"is_local"`
+	MinTlsVersion                    string          `json:"min_tls_version"`
+	PolicyType                       string          `json:"policy_type"`
+	TrustedClientCertificateAuthority *NamedReference `json:"trusted_client_certificate_authority"`
+	VerifyClientCertificateTrust     bool            `json:"verify_client_certificate_trust"`
 }
 
-// CertificatePost contains the fields for POST /certificates.
-// Name is passed via ?names= query param.
-// For import mode: certificate + private_key required, passphrase + intermediate_certificate optional.
-type CertificatePost struct {
-	Certificate             string `json:"certificate"`
-	CertificateType         string `json:"certificate_type,omitempty"`
-	IntermediateCertificate string `json:"intermediate_certificate,omitempty"`
-	Passphrase              string `json:"passphrase,omitempty"`
-	PrivateKey              string `json:"private_key,omitempty"`
+// TlsPolicyPost contains writable fields for POST /api/2.22/tls-policies.
+// Name is passed via ?names= query parameter, not in body.
+type TlsPolicyPost struct {
+	ApplianceCertificate             *NamedReference `json:"appliance_certificate,omitempty"`
+	ClientCertificatesRequired       bool            `json:"client_certificates_required,omitempty"`
+	DisabledTlsCiphers               []string        `json:"disabled_tls_ciphers,omitempty"`
+	Enabled                          bool            `json:"enabled,omitempty"`
+	EnabledTlsCiphers                []string        `json:"enabled_tls_ciphers,omitempty"`
+	MinTlsVersion                    string          `json:"min_tls_version,omitempty"`
+	TrustedClientCertificateAuthority *NamedReference `json:"trusted_client_certificate_authority,omitempty"`
+	VerifyClientCertificateTrust     bool            `json:"verify_client_certificate_trust,omitempty"`
 }
 
-// CertificatePatch contains pointer fields for PATCH semantics on /certificates.
-// A nil pointer means omit the field from the JSON body.
-type CertificatePatch struct {
-	Certificate             *string `json:"certificate,omitempty"`
-	IntermediateCertificate *string `json:"intermediate_certificate,omitempty"`
-	Passphrase              *string `json:"passphrase,omitempty"`
-	PrivateKey              *string `json:"private_key,omitempty"`
+// TlsPolicyPatch contains pointer fields for PATCH semantics on /tls-policies.
+// nil = omit from JSON. Non-nil = send.
+// **NamedReference is used for ref fields: outer nil = omit, outer non-nil + inner nil = set to null,
+// outer non-nil + inner non-nil = set value.
+type TlsPolicyPatch struct {
+	ApplianceCertificate             **NamedReference `json:"appliance_certificate,omitempty"`
+	ClientCertificatesRequired       *bool            `json:"client_certificates_required,omitempty"`
+	DisabledTlsCiphers               *[]string        `json:"disabled_tls_ciphers,omitempty"`
+	Enabled                          *bool            `json:"enabled,omitempty"`
+	EnabledTlsCiphers                *[]string        `json:"enabled_tls_ciphers,omitempty"`
+	MinTlsVersion                    *string          `json:"min_tls_version,omitempty"`
+	TrustedClientCertificateAuthority **NamedReference `json:"trusted_client_certificate_authority,omitempty"`
+	VerifyClientCertificateTrust     *bool            `json:"verify_client_certificate_trust,omitempty"`
+}
+
+// TlsPolicyMember represents an association between a TLS policy and a network interface.
+// Returned by GET /api/2.22/tls-policies/members and GET /api/2.22/network-interfaces/tls-policies.
+type TlsPolicyMember struct {
+	Policy NamedReference `json:"policy"`
+	Member NamedReference `json:"member"`
 }
