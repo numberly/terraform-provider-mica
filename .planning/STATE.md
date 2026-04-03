@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: planning
-stopped_at: Completed 38-documentation-workflow/38-01-PLAN.md
-last_updated: "2026-04-02T16:24:49.061Z"
+stopped_at: Completed 40-tls-policies/40-01-PLAN.md
+last_updated: "2026-04-03T07:22:30.670Z"
 last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
   total_phases: 38
   completed_phases: 36
   total_plans: 81
-  completed_plans: 79
+  completed_plans: 80
   percent: 0
 ---
 
@@ -45,6 +45,7 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 | Phase 36-target-resource P02 | 348s | 2 tasks | 9 files |
 | Phase 37-remote-credentials-replica-link-enhancement P01 | 388s | 2 tasks | 6 files |
 | Phase 38-documentation-workflow P01 | 135 | 3 tasks | 4 files |
+| Phase 40 P01 | 21 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 - [Phase 38-01]: DOC-01: import.sh uses the target name (not UUID) as the import identifier, matching the ImportState implementation
 - [Phase 38-01]: DOC-02: s3-target-replication workflow uses single-provider pattern (one FlashBlade, one external S3) — no provider aliases
 - [Phase 38-01]: DOC-03: make docs regenerates target.md with Import section; object_store_remote_credentials.md updated to reflect target_name attribute from Phase 37
+- [Phase 40-01]: TlsPolicyStoreFacade exported wrapper added to handlers package to expose Seed/SeedMember — matches targetStoreFacade pattern
+- [Phase 40-01]: TLS policy member POST/DELETE use /network-interfaces/tls-policies endpoint; member GET listing uses /tls-policies/members
+- [Phase 40-01]: Mock GET /tls-policies returns empty list HTTP 200 when name not found — consistent with getOneByName behavior
 
 ### v2.2 Phase Groupings
 
@@ -84,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T16:22:16.127Z
-Stopped at: Completed 38-documentation-workflow/38-01-PLAN.md
+Last session: 2026-04-03T07:22:17.430Z
+Stopped at: Completed 40-tls-policies/40-01-PLAN.md
 Resume file: None
