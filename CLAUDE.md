@@ -1,5 +1,7 @@
 # Project Instructions
 
+@CONVENTIONS.md
+
 ## Overview
 
 Terraform provider for Pure Storage FlashBlade (REST API v2.22, Purity//FB 4.6.7).
