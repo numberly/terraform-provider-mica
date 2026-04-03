@@ -86,3 +86,47 @@ type NetworkInterfacePatch struct {
 	Services        []string         `json:"services"`
 	AttachedServers []NamedReference `json:"attached_servers"`
 }
+
+// Certificate represents a FlashBlade certificate from GET responses.
+type Certificate struct {
+	ID                      string   `json:"id"`
+	Name                    string   `json:"name"`
+	Certificate             string   `json:"certificate"`
+	CertificateType         string   `json:"certificate_type"`
+	CommonName              string   `json:"common_name"`
+	Country                 string   `json:"country"`
+	Email                   string   `json:"email"`
+	IntermediateCertificate string   `json:"intermediate_certificate"`
+	IssuedBy                string   `json:"issued_by"`
+	IssuedTo                string   `json:"issued_to"`
+	KeyAlgorithm            string   `json:"key_algorithm"`
+	KeySize                 int      `json:"key_size"`
+	Locality                string   `json:"locality"`
+	Organization            string   `json:"organization"`
+	OrganizationalUnit      string   `json:"organizational_unit"`
+	State                   string   `json:"state"`
+	Status                  string   `json:"status"`
+	SubjectAlternativeNames []string `json:"subject_alternative_names"`
+	ValidFrom               int64    `json:"valid_from"`
+	ValidTo                 int64    `json:"valid_to"`
+}
+
+// CertificatePost contains the fields for POST /certificates.
+// Name is passed via ?names= query param.
+// For import mode: certificate + private_key required, passphrase + intermediate_certificate optional.
+type CertificatePost struct {
+	Certificate             string `json:"certificate"`
+	CertificateType         string `json:"certificate_type,omitempty"`
+	IntermediateCertificate string `json:"intermediate_certificate,omitempty"`
+	Passphrase              string `json:"passphrase,omitempty"`
+	PrivateKey              string `json:"private_key,omitempty"`
+}
+
+// CertificatePatch contains pointer fields for PATCH semantics on /certificates.
+// A nil pointer means omit the field from the JSON body.
+type CertificatePatch struct {
+	Certificate             *string `json:"certificate,omitempty"`
+	IntermediateCertificate *string `json:"intermediate_certificate,omitempty"`
+	Passphrase              *string `json:"passphrase,omitempty"`
+	PrivateKey              *string `json:"private_key,omitempty"`
+}
