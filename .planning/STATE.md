@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: planning
-stopped_at: Completed 40-tls-policies/40-01-PLAN.md
-last_updated: "2026-04-03T07:22:30.670Z"
-last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
+status: executing
+stopped_at: Completed 39-02-PLAN.md
+last_updated: "2026-04-03T07:15:53.819Z"
+last_activity: 2026-04-03 -- Phase 40 execution started
 progress:
-  total_phases: 38
-  completed_phases: 36
-  total_plans: 81
-  completed_plans: 80
-  percent: 0
+  total_phases: 39
+  completed_phases: 37
+  total_plans: 85
+  completed_plans: 81
+  percent: 60
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** v2.2 S3 Target Replication — Phase 36 ready to plan
+**Current focus:** Phase 40 — tls-policies
 
 ## Current Position
 
-Phase: 36 of 38 (Target Resource)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
+Phase: 40 (tls-policies) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 40
+Last activity: 2026-04-03 -- Phase 40 execution started
 
-Progress: [░░░░░░░░░░] 0% (v2.2)
+Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 
 ## Performance Metrics
 
@@ -45,7 +45,8 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 | Phase 36-target-resource P02 | 348s | 2 tasks | 9 files |
 | Phase 37-remote-credentials-replica-link-enhancement P01 | 388s | 2 tasks | 6 files |
 | Phase 38-documentation-workflow P01 | 135 | 3 tasks | 4 files |
-| Phase 40 P01 | 21 | 2 tasks | 4 files |
+| Phase 39-certificates P01 | 300 | 2 tasks | 4 files |
+| Phase 39-certificates P02 | 513 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -68,15 +69,19 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 - [Phase 38-01]: DOC-01: import.sh uses the target name (not UUID) as the import identifier, matching the ImportState implementation
 - [Phase 38-01]: DOC-02: s3-target-replication workflow uses single-provider pattern (one FlashBlade, one external S3) — no provider aliases
 - [Phase 38-01]: DOC-03: make docs regenerates target.md with Import section; object_store_remote_credentials.md updated to reflect target_name attribute from Phase 37
-- [Phase 40-01]: TlsPolicyStoreFacade exported wrapper added to handlers package to expose Seed/SeedMember — matches targetStoreFacade pattern
-- [Phase 40-01]: TLS policy member POST/DELETE use /network-interfaces/tls-policies endpoint; member GET listing uses /tls-policies/members
-- [Phase 40-01]: Mock GET /tls-policies returns empty list HTTP 200 when name not found — consistent with getOneByName behavior
+- [Phase 39-01]: Certificate models appended to models_network.go (network/TLS domain)
+- [Phase 39-01]: POST struct excludes X.509 subject fields (extracted from PEM by API) — import-only mode
+- [Phase 39-01]: passphrase and private_key are write-only — never stored or returned by mock handler
+- [Phase 39-certificates]: UseStateForUnknown only on id and certificate_type; all renewal-volatile fields (issued_by, issued_to, valid_from, valid_to, key_algorithm, key_size, status) have no plan modifier to avoid masking drift
+- [Phase 39-certificates]: private_key and passphrase Sensitive, preserved from plan/state; set to empty string on ImportState — API never returns write-only fields
 
 ### v2.2 Phase Groupings
 
-- Phase 36: TGT-01, TGT-02, TGT-03, TGT-04, TGT-05 — new flashblade_target resource + data source
-- Phase 37: RC-01, RC-02, BRL-01 — extend existing remote credentials + validate replica link with target
-- Phase 38: DOC-01, DOC-02, DOC-03 — import docs, workflow example, tfplugindocs
+- Phase 36: TGT-01, TGT-02, TGT-03, TGT-04, TGT-05 — new flashblade_target resource + data source ✓
+- Phase 37: RC-01, RC-02, BRL-01 — extend existing remote credentials + validate replica link with target ✓
+- Phase 38: DOC-01, DOC-02, DOC-03 — import docs, workflow example, tfplugindocs ✓
+- Phase 39: CERT-01 to CERT-05 — flashblade_certificate resource + data source (import PEM only)
+- Phase 40: TLSP-01 to TLSP-06 — flashblade_tls_policy resource + DS + flashblade_tls_policy_member
 
 ### Pending Todos
 
@@ -88,6 +93,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T07:22:17.430Z
-Stopped at: Completed 40-tls-policies/40-01-PLAN.md
+Last session: 2026-04-03T06:51:44.629Z
+Stopped at: Completed 39-02-PLAN.md
 Resume file: None
