@@ -2,9 +2,9 @@
 
 FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-flashblade.
 
-**Last updated:** 2026-04-01
-**Provider version:** v2.1.3
-**Total API sections:** 84 | **Covered:** ~32 | **Coverage of IaC-relevant CRUD:** ~62%
+**Last updated:** 2026-04-03
+**Provider version:** v2.2
+**Total API sections:** 84 | **Covered:** ~33 | **Coverage of IaC-relevant CRUD:** ~63%
 
 ## Coverage Legend
 
@@ -76,7 +76,8 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
 | Bucket Replica Links | `flashblade_bucket_replica_link` | Yes | Done | Bidirectional, pause/resume |
-| Remote Credentials | `flashblade_remote_credentials` | Yes | Done | S3 cross-array auth |
+| Remote Credentials | `flashblade_remote_credentials` | Yes | Done | S3 cross-array + S3 target auth; target_name attr (v2.2) |
+| Targets | `flashblade_target` | Yes | Done | External S3 replication endpoints (address, CA cert group) |
 | Array Connections | No | Yes | DS-only | Read existing connections only |
 
 ### Array Administration
@@ -109,7 +110,6 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | File System Policy Members | Resource | POST, DELETE `/file-systems/policies` | Associate NFS/SMB/snapshot policies to filesystems via TF | Candidate |
 | Snapshot Policy FS Members | Resource | POST, DELETE `/snapshot-policies/file-systems` | Link snapshot policies to filesystems | Candidate |
 | Object Store Roles | Resource | Full CRUD + trust policies | IAM-style roles for S3 fine-grained access | Candidate |
-| Targets | Resource | Full CRUD | External S3 replication targets (AWS, Azure, etc.) | Candidate |
 | Active Directory | Resource | Full CRUD | AD integration for SMB/NFS authentication | Candidate |
 | Directory Services | Resource | GET, PATCH + roles | LDAP/NIS config for user/group resolution | Candidate |
 
