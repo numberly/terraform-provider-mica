@@ -80,6 +80,9 @@ func (r *targetResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 				Computed:    true,
 				Description: "The name of the CA certificate group used to validate the target's TLS certificate. Null when not set.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"status": schema.StringAttribute{
 				Computed:    true,
@@ -246,7 +249,7 @@ func (r *targetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		patch.Address = &v
 	}
 
-	if !plan.CACertificateGroup.Equal(state.CACertificateGroup) {
+	if !plan.CACertificateGroup.Equal(state.CACertificateGroup) && !plan.CACertificateGroup.IsUnknown() {
 		if plan.CACertificateGroup.IsNull() || plan.CACertificateGroup.ValueString() == "" {
 			// Clear the cert group: outer ptr non-nil, inner ptr nil.
 			var inner *client.NamedReference
