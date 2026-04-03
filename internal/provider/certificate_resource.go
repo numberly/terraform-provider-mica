@@ -1,0 +1,574 @@
+package provider
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+)
+
+// Ensure certificateResource satisfies the resource interfaces.
+var _ resource.Resource = &certificateResource{}
+var _ resource.ResourceWithConfigure = &certificateResource{}
+var _ resource.ResourceWithImportState = &certificateResource{}
+var _ resource.ResourceWithUpgradeState = &certificateResource{}
+
+// certificateResource implements the flashblade_certificate resource.
+type certificateResource struct {
+	client *client.FlashBladeClient
+}
+
+// NewCertificateResource is the factory function registered in the provider.
+func NewCertificateResource() resource.Resource {
+	return &certificateResource{}
+}
+
+// ---------- model structs ----------------------------------------------------
+
+// certificateModel is the top-level model for the flashblade_certificate resource.
+type certificateModel struct {
+	ID                      types.String   `tfsdk:"id"`
+	Name                    types.String   `tfsdk:"name"`
+	Certificate             types.String   `tfsdk:"certificate"`
+	CertificateType         types.String   `tfsdk:"certificate_type"`
+	CommonName              types.String   `tfsdk:"common_name"`
+	Country                 types.String   `tfsdk:"country"`
+	Email                   types.String   `tfsdk:"email"`
+	IntermediateCertificate types.String   `tfsdk:"intermediate_certificate"`
+	IssuedBy                types.String   `tfsdk:"issued_by"`
+	IssuedTo                types.String   `tfsdk:"issued_to"`
+	KeyAlgorithm            types.String   `tfsdk:"key_algorithm"`
+	KeySize                 types.Int64    `tfsdk:"key_size"`
+	Locality                types.String   `tfsdk:"locality"`
+	Organization            types.String   `tfsdk:"organization"`
+	OrganizationalUnit      types.String   `tfsdk:"organizational_unit"`
+	Passphrase              types.String   `tfsdk:"passphrase"`
+	PrivateKey              types.String   `tfsdk:"private_key"`
+	State                   types.String   `tfsdk:"state"`
+	Status                  types.String   `tfsdk:"status"`
+	SubjectAlternativeNames types.List     `tfsdk:"subject_alternative_names"`
+	ValidFrom               types.Int64    `tfsdk:"valid_from"`
+	ValidTo                 types.Int64    `tfsdk:"valid_to"`
+	Timeouts                timeouts.Value `tfsdk:"timeouts"`
+}
+
+// ---------- resource interface methods --------------------------------------
+
+// Metadata sets the Terraform type name.
+func (r *certificateResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = "flashblade_certificate"
+}
+
+// Schema defines the resource schema.
+func (r *certificateResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Version:     0,
+		Description: "Manages a FlashBlade TLS certificate (import-mode: PEM certificate with private key).",
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The unique identifier of the certificate.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the certificate. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"certificate": schema.StringAttribute{
+				Required:    true,
+				Description: "The PEM-encoded X.509 certificate body.",
+			},
+			"certificate_type": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The certificate type (e.g. appliance, external). Defaults to 'appliance' when not specified.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"common_name": schema.StringAttribute{
+				Computed:    true,
+				Description: "The common name (CN) extracted from the certificate.",
+			},
+			"country": schema.StringAttribute{
+				Computed:    true,
+				Description: "The country (C) field extracted from the certificate.",
+			},
+			"email": schema.StringAttribute{
+				Computed:    true,
+				Description: "The email address extracted from the certificate.",
+			},
+			"intermediate_certificate": schema.StringAttribute{
+				Optional:    true,
+				Description: "The PEM-encoded intermediate certificate chain.",
+			},
+			"issued_by": schema.StringAttribute{
+				Computed:    true,
+				Description: "The issuer of the certificate. Changes when the certificate is renewed.",
+			},
+			"issued_to": schema.StringAttribute{
+				Computed:    true,
+				Description: "The subject of the certificate. Changes when the certificate is renewed.",
+			},
+			"key_algorithm": schema.StringAttribute{
+				Computed:    true,
+				Description: "The key algorithm (e.g. RSA, EC). Changes when the certificate is renewed.",
+			},
+			"key_size": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The key size in bits. Changes when the certificate is renewed.",
+			},
+			"locality": schema.StringAttribute{
+				Computed:    true,
+				Description: "The locality (L) field extracted from the certificate.",
+			},
+			"organization": schema.StringAttribute{
+				Computed:    true,
+				Description: "The organization (O) field extracted from the certificate.",
+			},
+			"organizational_unit": schema.StringAttribute{
+				Computed:    true,
+				Description: "The organizational unit (OU) field extracted from the certificate.",
+			},
+			"passphrase": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The passphrase protecting the private key. Not returned by the API after creation.",
+			},
+			"private_key": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The PEM-encoded private key. Not returned by the API after creation.",
+			},
+			"state": schema.StringAttribute{
+				Computed:    true,
+				Description: "The state/province (ST) field extracted from the certificate.",
+			},
+			"status": schema.StringAttribute{
+				Computed:    true,
+				Description: "The certificate status (e.g. imported, self-signed). Changes when the certificate is renewed.",
+			},
+			"subject_alternative_names": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "The subject alternative names (SANs) extracted from the certificate.",
+			},
+			"valid_from": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The Unix timestamp (milliseconds) from which the certificate is valid. Changes when renewed.",
+			},
+			"valid_to": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The Unix timestamp (milliseconds) until which the certificate is valid. Changes when renewed.",
+			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+				Create: true,
+				Read:   true,
+				Update: true,
+				Delete: true,
+			}),
+		},
+	}
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *certificateResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
+
+// Configure injects the FlashBladeClient into the resource.
+func (r *certificateResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	c, ok := req.ProviderData.(*client.FlashBladeClient)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Provider Data Type",
+			fmt.Sprintf("Expected *client.FlashBladeClient, got: %T. This is a bug in the provider.", req.ProviderData),
+		)
+		return
+	}
+	r.client = c
+}
+
+// ---------- CRUD methods ----------------------------------------------------
+
+// Create imports a new certificate.
+func (r *certificateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data certificateModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createTimeout, diags := data.Timeouts.Create(ctx, 20*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
+
+	post := client.CertificatePost{
+		Certificate: data.Certificate.ValueString(),
+	}
+	if !data.CertificateType.IsNull() && !data.CertificateType.IsUnknown() {
+		post.CertificateType = data.CertificateType.ValueString()
+	}
+	if !data.IntermediateCertificate.IsNull() {
+		post.IntermediateCertificate = data.IntermediateCertificate.ValueString()
+	}
+	if !data.Passphrase.IsNull() {
+		post.Passphrase = data.Passphrase.ValueString()
+	}
+	if !data.PrivateKey.IsNull() {
+		post.PrivateKey = data.PrivateKey.ValueString()
+	}
+
+	cert, err := r.client.PostCertificate(ctx, data.Name.ValueString(), post)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating certificate", err.Error())
+		return
+	}
+
+	// Preserve write-only fields from plan — API never returns them.
+	privateKey := data.PrivateKey
+	passphrase := data.Passphrase
+
+	mapCertificateToModel(cert, &data)
+
+	data.PrivateKey = privateKey
+	data.Passphrase = passphrase
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// Read refreshes Terraform state from the API, logging field-level drift.
+func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data certificateModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	readTimeout, diags := data.Timeouts.Read(ctx, 5*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, readTimeout)
+	defer cancel()
+
+	name := data.Name.ValueString()
+	cert, err := r.client.GetCertificate(ctx, name)
+	if err != nil {
+		if client.IsNotFound(err) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		resp.Diagnostics.AddError("Error reading certificate", err.Error())
+		return
+	}
+
+	// Drift detection: compare old state vs API response and log each changed field.
+	if data.Certificate.ValueString() != cert.Certificate {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "certificate",
+			"was":      data.Certificate.ValueString(),
+			"now":      cert.Certificate,
+		})
+	}
+	if data.CertificateType.ValueString() != cert.CertificateType {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "certificate_type",
+			"was":      data.CertificateType.ValueString(),
+			"now":      cert.CertificateType,
+		})
+	}
+	if data.CommonName.ValueString() != cert.CommonName {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "common_name",
+			"was":      data.CommonName.ValueString(),
+			"now":      cert.CommonName,
+		})
+	}
+	if data.Country.ValueString() != cert.Country {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "country",
+			"was":      data.Country.ValueString(),
+			"now":      cert.Country,
+		})
+	}
+	if data.Email.ValueString() != cert.Email {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "email",
+			"was":      data.Email.ValueString(),
+			"now":      cert.Email,
+		})
+	}
+	if data.IntermediateCertificate.ValueString() != cert.IntermediateCertificate {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "intermediate_certificate",
+			"was":      data.IntermediateCertificate.ValueString(),
+			"now":      cert.IntermediateCertificate,
+		})
+	}
+	if data.IssuedBy.ValueString() != cert.IssuedBy {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "issued_by",
+			"was":      data.IssuedBy.ValueString(),
+			"now":      cert.IssuedBy,
+		})
+	}
+	if data.IssuedTo.ValueString() != cert.IssuedTo {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "issued_to",
+			"was":      data.IssuedTo.ValueString(),
+			"now":      cert.IssuedTo,
+		})
+	}
+	if data.KeyAlgorithm.ValueString() != cert.KeyAlgorithm {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "key_algorithm",
+			"was":      data.KeyAlgorithm.ValueString(),
+			"now":      cert.KeyAlgorithm,
+		})
+	}
+	if data.KeySize.ValueInt64() != int64(cert.KeySize) {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "key_size",
+			"was":      data.KeySize.ValueInt64(),
+			"now":      int64(cert.KeySize),
+		})
+	}
+	if data.Locality.ValueString() != cert.Locality {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "locality",
+			"was":      data.Locality.ValueString(),
+			"now":      cert.Locality,
+		})
+	}
+	if data.Organization.ValueString() != cert.Organization {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "organization",
+			"was":      data.Organization.ValueString(),
+			"now":      cert.Organization,
+		})
+	}
+	if data.OrganizationalUnit.ValueString() != cert.OrganizationalUnit {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "organizational_unit",
+			"was":      data.OrganizationalUnit.ValueString(),
+			"now":      cert.OrganizationalUnit,
+		})
+	}
+	if data.State.ValueString() != cert.State {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "state",
+			"was":      data.State.ValueString(),
+			"now":      cert.State,
+		})
+	}
+	if data.Status.ValueString() != cert.Status {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "status",
+			"was":      data.Status.ValueString(),
+			"now":      cert.Status,
+		})
+	}
+	if data.ValidFrom.ValueInt64() != cert.ValidFrom {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "valid_from",
+			"was":      data.ValidFrom.ValueInt64(),
+			"now":      cert.ValidFrom,
+		})
+	}
+	if data.ValidTo.ValueInt64() != cert.ValidTo {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "valid_to",
+			"was":      data.ValidTo.ValueInt64(),
+			"now":      cert.ValidTo,
+		})
+	}
+
+	// Preserve write-only fields from prior state.
+	privateKey := data.PrivateKey
+	passphrase := data.Passphrase
+
+	mapCertificateToModel(cert, &data)
+
+	data.PrivateKey = privateKey
+	data.Passphrase = passphrase
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// Update applies cert renewal to an existing certificate.
+func (r *certificateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, state certificateModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateTimeout, diags := plan.Timeouts.Update(ctx, 20*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	defer cancel()
+
+	patch := client.CertificatePatch{}
+
+	if !plan.Certificate.Equal(state.Certificate) {
+		v := plan.Certificate.ValueString()
+		patch.Certificate = &v
+	}
+	if !plan.IntermediateCertificate.Equal(state.IntermediateCertificate) {
+		v := plan.IntermediateCertificate.ValueString()
+		patch.IntermediateCertificate = &v
+	}
+	if !plan.Passphrase.IsNull() {
+		v := plan.Passphrase.ValueString()
+		patch.Passphrase = &v
+	}
+	if !plan.PrivateKey.IsNull() {
+		v := plan.PrivateKey.ValueString()
+		patch.PrivateKey = &v
+	}
+
+	cert, err := r.client.PatchCertificate(ctx, state.Name.ValueString(), patch)
+	if err != nil {
+		resp.Diagnostics.AddError("Error updating certificate", err.Error())
+		return
+	}
+
+	// Preserve write-only fields from plan.
+	privateKey := plan.PrivateKey
+	passphrase := plan.Passphrase
+
+	mapCertificateToModel(cert, &plan)
+
+	plan.PrivateKey = privateKey
+	plan.Passphrase = passphrase
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+// Delete removes a certificate.
+func (r *certificateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data certificateModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, 30*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	defer cancel()
+
+	err := r.client.DeleteCertificate(ctx, data.Name.ValueString())
+	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
+		resp.Diagnostics.AddError("Error deleting certificate", err.Error())
+		return
+	}
+}
+
+// ImportState imports an existing certificate by name.
+func (r *certificateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	name := req.ID
+	cert, err := r.client.GetCertificate(ctx, name)
+	if err != nil {
+		resp.Diagnostics.AddError("Error importing certificate", err.Error())
+		return
+	}
+
+	var data certificateModel
+	data.Timeouts = nullTimeoutsValue()
+
+	mapCertificateToModel(cert, &data)
+
+	// Write-only sensitive fields are not returned by the API — set to empty string after import.
+	data.PrivateKey = types.StringValue("")
+	data.Passphrase = types.StringValue("")
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// ---------- helpers ---------------------------------------------------------
+
+// mapCertificateToModel maps a client.Certificate to a certificateModel.
+// Does NOT set PrivateKey or Passphrase — write-only fields preserved by the caller.
+func mapCertificateToModel(cert *client.Certificate, data *certificateModel) {
+	data.ID = types.StringValue(cert.ID)
+	data.Name = types.StringValue(cert.Name)
+	data.Certificate = types.StringValue(cert.Certificate)
+	data.CertificateType = types.StringValue(cert.CertificateType)
+	data.CommonName = types.StringValue(cert.CommonName)
+	data.Country = types.StringValue(cert.Country)
+	data.Email = types.StringValue(cert.Email)
+	data.IntermediateCertificate = types.StringValue(cert.IntermediateCertificate)
+	data.IssuedBy = types.StringValue(cert.IssuedBy)
+	data.IssuedTo = types.StringValue(cert.IssuedTo)
+	data.KeyAlgorithm = types.StringValue(cert.KeyAlgorithm)
+	data.KeySize = types.Int64Value(int64(cert.KeySize))
+	data.Locality = types.StringValue(cert.Locality)
+	data.Organization = types.StringValue(cert.Organization)
+	data.OrganizationalUnit = types.StringValue(cert.OrganizationalUnit)
+	data.State = types.StringValue(cert.State)
+	data.Status = types.StringValue(cert.Status)
+	data.ValidFrom = types.Int64Value(cert.ValidFrom)
+	data.ValidTo = types.Int64Value(cert.ValidTo)
+
+	if len(cert.SubjectAlternativeNames) == 0 {
+		data.SubjectAlternativeNames = types.ListValueMust(types.StringType, []attr.Value{})
+	} else {
+		elems := make([]attr.Value, len(cert.SubjectAlternativeNames))
+		for i, san := range cert.SubjectAlternativeNames {
+			elems[i] = types.StringValue(san)
+		}
+		data.SubjectAlternativeNames = types.ListValueMust(types.StringType, elems)
+	}
+}
