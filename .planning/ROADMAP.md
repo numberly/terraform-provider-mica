@@ -11,7 +11,7 @@
 - v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
 - v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
 - v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- in progress
-- v2.2 S3 Target Replication (Phases 36-38) -- planned
+- v2.2 S3 Target Replication & TLS (Phases 36-40) -- in progress
 
 ## Phases
 
@@ -668,13 +668,15 @@ Plans:
 
 ---
 
-## v2.2 S3 Target Replication (Phases 36-38)
+## v2.2 S3 Target Replication & TLS (Phases 36-40)
 
-**Milestone Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) through Terraform, complementing existing FlashBlade-to-FlashBlade replication.
+**Milestone Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) and manage TLS certificates and policies for network interfaces through Terraform.
 
 - [x] **Phase 36: Target Resource** - New resource and data source for managing external S3 endpoint targets (CRUD, import, drift detection) (completed 2026-04-02)
 - [x] **Phase 37: Remote Credentials & Replica Link Enhancement** - Extend existing resources to support target references, enabling end-to-end S3 target replication (completed 2026-04-02)
 - [x] **Phase 38: Documentation & Workflow** - Import docs, workflow example, and tfplugindocs generation for all new resources (completed 2026-04-02)
+- [ ] **Phase 39: Certificates** - Import and manage TLS certificates (appliance certs with PEM + private key); resource + data source
+- [ ] **Phase 40: TLS Policies** - TLS policy CRUD, TLS policy member association (policy ↔ network interface); resource + data source + member resource
 
 ### Phase 36: Target Resource
 **Goal**: Operators can manage external S3 endpoint targets through Terraform with full CRUD, import, and drift detection
@@ -717,3 +719,35 @@ Plans:
 
 Plans:
 - [ ] 38-01-PLAN.md — import.sh for flashblade_target, s3-target-replication workflow example, tfplugindocs regeneration
+
+### Phase 39: Certificates
+**Goal**: Operators can import and manage TLS certificates on a FlashBlade through Terraform with full CRUD, import, and drift detection
+**Depends on**: Phase 38 (v2.2 target replication complete)
+**Requirements**: CERT-01, CERT-02, CERT-03, CERT-04, CERT-05
+**Success Criteria** (what must be TRUE):
+  1. Operator can import a certificate with name, PEM certificate body, private key, and optional intermediate certificate via `terraform apply` -- subsequent `plan` shows 0 diff
+  2. Operator can update mutable certificate fields and destroy a certificate via `terraform apply` and `terraform destroy` without errors
+  3. `terraform import flashblade_certificate.x cert-name` populates all non-sensitive attributes; subsequent `plan` shows 0 diff
+  4. `data.flashblade_certificate` data source reads an existing certificate by name and exposes type, status, issuer, validity, and SAN attributes
+  5. Drift detection logs field-level changes via tflog when a certificate is modified outside Terraform
+  6. Private key and passphrase are marked Sensitive and never appear in plan output or logs
+**Plans**: TBD
+
+Plans:
+(to be created by /gsd:plan-phase 39)
+
+### Phase 40: TLS Policies
+**Goal**: Operators can manage TLS policies and assign them to network interfaces through Terraform, controlling cipher suites, minimum TLS version, mutual TLS settings, and appliance certificate selection
+**Depends on**: Phase 39 (certificates must exist for TLS policy to reference)
+**Requirements**: TLSP-01, TLSP-02, TLSP-03, TLSP-04, TLSP-05, TLSP-06
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a TLS policy with name, appliance_certificate, min_tls_version, cipher lists, and mTLS settings via `terraform apply` -- subsequent `plan` shows 0 diff
+  2. Operator can update all mutable TLS policy fields and destroy a policy via `terraform apply` and `terraform destroy` without errors
+  3. `terraform import flashblade_tls_policy.x policy-name` populates all attributes; subsequent `plan` shows 0 diff
+  4. `data.flashblade_tls_policy` data source reads an existing TLS policy by name and exposes all configuration attributes
+  5. Operator can assign a TLS policy to a network interface via `flashblade_tls_policy_member` and remove the assignment via `terraform destroy`
+  6. Drift detection logs field-level changes via tflog when a TLS policy is modified outside Terraform
+**Plans**: TBD
+
+Plans:
+(to be created by /gsd:plan-phase 40)

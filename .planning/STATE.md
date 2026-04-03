@@ -7,11 +7,11 @@ stopped_at: Completed 38-documentation-workflow/38-01-PLAN.md
 last_updated: "2026-04-02T16:24:49.061Z"
 last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
 progress:
-  total_phases: 38
-  completed_phases: 36
+  total_phases: 40
+  completed_phases: 38
   total_plans: 81
   completed_plans: 79
-  percent: 0
+  percent: 60
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** v2.2 S3 Target Replication — Phase 36 ready to plan
+**Current focus:** v2.2 S3 Target Replication & TLS — Phase 39 ready to plan
 
 ## Current Position
 
-Phase: 36 of 38 (Target Resource)
+Phase: 39 of 40 (Certificates)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
+Last activity: 2026-04-03 — Phases 36-38 complete, Phases 39-40 added (Certificates + TLS Policies)
 
-Progress: [░░░░░░░░░░] 0% (v2.2)
+Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 
 ## Performance Metrics
 
@@ -70,9 +70,11 @@ Progress: [░░░░░░░░░░] 0% (v2.2)
 
 ### v2.2 Phase Groupings
 
-- Phase 36: TGT-01, TGT-02, TGT-03, TGT-04, TGT-05 — new flashblade_target resource + data source
-- Phase 37: RC-01, RC-02, BRL-01 — extend existing remote credentials + validate replica link with target
-- Phase 38: DOC-01, DOC-02, DOC-03 — import docs, workflow example, tfplugindocs
+- Phase 36: TGT-01, TGT-02, TGT-03, TGT-04, TGT-05 — new flashblade_target resource + data source ✓
+- Phase 37: RC-01, RC-02, BRL-01 — extend existing remote credentials + validate replica link with target ✓
+- Phase 38: DOC-01, DOC-02, DOC-03 — import docs, workflow example, tfplugindocs ✓
+- Phase 39: CERT-01 to CERT-05 — flashblade_certificate resource + data source (import PEM only)
+- Phase 40: TLSP-01 to TLSP-06 — flashblade_tls_policy resource + DS + flashblade_tls_policy_member
 
 ### Pending Todos
 
@@ -84,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T16:22:16.127Z
-Stopped at: Completed 38-documentation-workflow/38-01-PLAN.md
+Last session: 2026-04-03
+Stopped at: Phases 39-40 added to roadmap, ready to plan Phase 39
 Resume file: None

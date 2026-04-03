@@ -4,7 +4,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 **Last updated:** 2026-04-03
 **Provider version:** v2.2
-**Total API sections:** 84 | **Covered:** ~33 | **Coverage of IaC-relevant CRUD:** ~63%
+**Total API sections:** 84 | **Covered:** ~35 | **Coverage of IaC-relevant CRUD:** ~65%
 
 ## Coverage Legend
 
@@ -80,6 +80,13 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | Targets | `flashblade_target` | Yes | Done | External S3 replication endpoints (address, CA cert group) |
 | Array Connections | No | Yes | DS-only | Read existing connections only |
 
+### Security & TLS
+
+| API Section | Resource | Data Source | Status | Notes |
+|-------------|----------|:----------:|--------|-------|
+| Certificates | `flashblade_certificate` | Yes | Planned | Import PEM + private key; no self-signed/CSR |
+| TLS Policies | `flashblade_tls_policy` | Yes | Planned | Cipher suites, min version, mTLS; + `flashblade_tls_policy_member` for NI assignment |
+
 ### Array Administration
 
 | API Section | Resource | Data Source | Status | Notes |
@@ -117,7 +124,6 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 | API Section | Type | Endpoints | Use Case | Status |
 |-------------|------|-----------|----------|--------|
-| Certificates | Resource | Full CRUD + CSR | TLS certificate management for FlashBlade endpoints | Candidate |
 | Certificate Groups | Resource | POST, DELETE + members | Certificate grouping and rotation | Candidate |
 | KMIP | Resource | Full CRUD | External encryption key management | Candidate |
 | SAML2 SSO | Resource | Full CRUD | SAML-based single sign-on for admin console | Candidate |
@@ -144,7 +150,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | RDL (Rapid Data Locking) | Resource | GET, POST, PATCH | Crypto/compliance key rotation | Deferred |
 | Storage Class Tiering Policies | Resource | Full CRUD | NVMe/SSD tiering -- rare use case | Deferred |
 | WORM Data Policies | Resource | Full CRUD | Write-Once-Read-Many compliance | Deferred |
-| TLS Policies | Resource | Full CRUD + NI members | Fine-grained TLS per network interface | Deferred |
+
 | Management Access Policies | Resource | Full CRUD | Admin console access control | Deferred |
 | Management Auth Policies | Resource | Full CRUD | Admin authentication policies | Deferred |
 | SSH CA Policies | Resource | Full CRUD | SSH certificate authority management | Deferred |
