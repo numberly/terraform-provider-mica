@@ -20,6 +20,20 @@ func (c *FlashBladeClient) GetBucketReplicaLink(ctx context.Context, localBucket
 	return &resp.Items[0], nil
 }
 
+// GetBucketReplicaLinkByID retrieves a bucket replica link by its unique ID.
+// Returns an IsNotFound error if the link does not exist.
+func (c *FlashBladeClient) GetBucketReplicaLinkByID(ctx context.Context, id string) (*BucketReplicaLink, error) {
+	path := "/bucket-replica-links?ids=" + url.QueryEscape(id)
+	var resp ListResponse[BucketReplicaLink]
+	if err := c.get(ctx, path, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("bucket replica link with id %q not found", id)}
+	}
+	return &resp.Items[0], nil
+}
+
 // ListBucketReplicaLinks returns all bucket replica links.
 // It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListBucketReplicaLinks(ctx context.Context) ([]BucketReplicaLink, error) {

@@ -10,9 +10,10 @@ import (
 )
 
 // bucketReplicaLinkStore is the thread-safe in-memory state for bucket replica link handlers.
+// Primary key is the link ID — multiple links can exist for the same bucket pair
+// (e.g., one via array connection and one via S3 target).
 type bucketReplicaLinkStore struct {
 	mu     sync.Mutex
-	links  map[string]*client.BucketReplicaLink // keyed by "localBucket/remoteBucket"
 	byID   map[string]*client.BucketReplicaLink
 	nextID int
 }
@@ -21,8 +22,7 @@ type bucketReplicaLinkStore struct {
 // against the provided ServeMux. The returned store pointer can be used for cross-reference.
 func RegisterBucketReplicaLinkHandlers(mux *http.ServeMux) *bucketReplicaLinkStore {
 	store := &bucketReplicaLinkStore{
-		links: make(map[string]*client.BucketReplicaLink),
-		byID:  make(map[string]*client.BucketReplicaLink),
+		byID: make(map[string]*client.BucketReplicaLink),
 	}
 	mux.HandleFunc("/api/2.22/bucket-replica-links", store.handle)
 	return store
@@ -32,8 +32,6 @@ func RegisterBucketReplicaLinkHandlers(mux *http.ServeMux) *bucketReplicaLinkSto
 func (s *bucketReplicaLinkStore) Seed(link *client.BucketReplicaLink) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	key := compositeKey(link.LocalBucket.Name, link.RemoteBucket.Name)
-	s.links[key] = link
 	s.byID[link.ID] = link
 }
 
@@ -51,11 +49,6 @@ func (s *bucketReplicaLinkStore) handle(w http.ResponseWriter, r *http.Request) 
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
-}
-
-// compositeKey returns the store key for a bucket replica link.
-func compositeKey(localBucket, remoteBucket string) string {
-	return localBucket + "/" + remoteBucket
 }
 
 // handleGet handles GET /api/2.22/bucket-replica-links with optional query parameters:
@@ -76,26 +69,17 @@ func (s *bucketReplicaLinkStore) handleGet(w http.ResponseWriter, r *http.Reques
 	var items []client.BucketReplicaLink
 
 	if idsFilter != "" {
-		// Lookup by ID.
 		if link, ok := s.byID[idsFilter]; ok {
 			items = append(items, *link)
 		}
-	} else if localFilter != "" && remoteFilter != "" {
-		// Lookup by composite key.
-		key := compositeKey(localFilter, remoteFilter)
-		if link, ok := s.links[key]; ok {
-			items = append(items, *link)
-		}
-	} else if localFilter != "" {
-		// Return all links for a given local bucket.
-		for _, link := range s.links {
-			if link.LocalBucket.Name == localFilter {
-				items = append(items, *link)
-			}
-		}
 	} else {
-		// Return all links.
-		for _, link := range s.links {
+		for _, link := range s.byID {
+			if localFilter != "" && link.LocalBucket.Name != localFilter {
+				continue
+			}
+			if remoteFilter != "" && link.RemoteBucket.Name != remoteFilter {
+				continue
+			}
 			items = append(items, *link)
 		}
 	}
@@ -134,10 +118,18 @@ func (s *bucketReplicaLinkStore) handlePost(w http.ResponseWriter, r *http.Reque
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	key := compositeKey(localBucket, remoteBucket)
-	if _, exists := s.links[key]; exists {
-		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("bucket replica link %q already exists", key))
-		return
+	// Check for duplicate: same bucket pair AND same remote_credentials.
+	for _, existing := range s.byID {
+		if existing.LocalBucket.Name == localBucket && existing.RemoteBucket.Name == remoteBucket {
+			existingRC := ""
+			if existing.RemoteCredentials != nil {
+				existingRC = existing.RemoteCredentials.Name
+			}
+			if existingRC == remoteCredentials {
+				WriteJSONError(w, http.StatusConflict, fmt.Sprintf("bucket replica link %s/%s with credentials %q already exists", localBucket, remoteBucket, remoteCredentials))
+				return
+			}
+		}
 	}
 
 	s.nextID++
@@ -158,36 +150,28 @@ func (s *bucketReplicaLinkStore) handlePost(w http.ResponseWriter, r *http.Reque
 		link.RemoteCredentials = &client.NamedReference{Name: remoteCredentials}
 	}
 
-	s.links[key] = link
 	s.byID[id] = link
 
 	WriteJSONListResponse(w, http.StatusOK, []client.BucketReplicaLink{*link})
 }
 
 // handlePatch handles PATCH /api/2.22/bucket-replica-links.
-// Identification by ?ids= (primary) or ?local_bucket_names= + ?remote_bucket_names=.
-// Only paused is mutable.
+// Identification by ?ids= only (unambiguous).
 func (s *bucketReplicaLinkStore) handlePatch(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"ids", "local_bucket_names", "remote_bucket_names"}) {
+	if !ValidateQueryParams(w, r, []string{"ids"}) {
 		return
 	}
 
-	q := r.URL.Query()
-	idsFilter := q.Get("ids")
-	localFilter := q.Get("local_bucket_names")
-	remoteFilter := q.Get("remote_bucket_names")
+	idsFilter := r.URL.Query().Get("ids")
+	if idsFilter == "" {
+		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for PATCH")
+		return
+	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	var link *client.BucketReplicaLink
-
-	if idsFilter != "" {
-		link = s.byID[idsFilter]
-	} else if localFilter != "" && remoteFilter != "" {
-		link = s.links[compositeKey(localFilter, remoteFilter)]
-	}
-
+	link := s.byID[idsFilter]
 	if link == nil {
 		WriteJSONError(w, http.StatusNotFound, "bucket replica link not found")
 		return
@@ -212,40 +196,27 @@ func (s *bucketReplicaLinkStore) handlePatch(w http.ResponseWriter, r *http.Requ
 }
 
 // handleDelete handles DELETE /api/2.22/bucket-replica-links.
-// Identification by ?local_bucket_names= + ?remote_bucket_names= (or ?ids=).
+// Identification by ?ids= only (unambiguous).
 func (s *bucketReplicaLinkStore) handleDelete(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"ids", "local_bucket_names", "remote_bucket_names"}) {
+	if !ValidateQueryParams(w, r, []string{"ids"}) {
 		return
 	}
 
-	q := r.URL.Query()
-	idsFilter := q.Get("ids")
-	localFilter := q.Get("local_bucket_names")
-	remoteFilter := q.Get("remote_bucket_names")
+	idsFilter := r.URL.Query().Get("ids")
+	if idsFilter == "" {
+		WriteJSONError(w, http.StatusBadRequest, "ids query parameter is required for DELETE")
+		return
+	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	var link *client.BucketReplicaLink
-	var key string
-
-	if idsFilter != "" {
-		link = s.byID[idsFilter]
-		if link != nil {
-			key = compositeKey(link.LocalBucket.Name, link.RemoteBucket.Name)
-		}
-	} else if localFilter != "" && remoteFilter != "" {
-		key = compositeKey(localFilter, remoteFilter)
-		link = s.links[key]
-	}
-
-	if link == nil {
+	if _, ok := s.byID[idsFilter]; !ok {
 		WriteJSONError(w, http.StatusNotFound, "bucket replica link not found")
 		return
 	}
 
-	delete(s.links, key)
-	delete(s.byID, link.ID)
+	delete(s.byID, idsFilter)
 
 	w.WriteHeader(http.StatusOK)
 }

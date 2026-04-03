@@ -217,7 +217,7 @@ func (r *bucketReplicaLinkResource) Read(ctx context.Context, req resource.ReadR
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	link, err := r.client.GetBucketReplicaLink(ctx, data.LocalBucketName.ValueString(), data.RemoteBucketName.ValueString())
+	link, err := r.client.GetBucketReplicaLinkByID(ctx, data.ID.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -261,8 +261,8 @@ func (r *bucketReplicaLinkResource) Update(ctx context.Context, req resource.Upd
 		}
 	}
 
-	// Re-read to refresh computed fields.
-	link, err := r.client.GetBucketReplicaLink(ctx, plan.LocalBucketName.ValueString(), plan.RemoteBucketName.ValueString())
+	// Re-read by ID to refresh computed fields (avoids ambiguity when multiple links share same bucket pair).
+	link, err := r.client.GetBucketReplicaLinkByID(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading bucket replica link after update", err.Error())
 		return
@@ -298,17 +298,16 @@ func (r *bucketReplicaLinkResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-// ImportState imports an existing bucket replica link by composite ID "localBucket/remoteBucket".
+// ImportState imports an existing bucket replica link by its UUID.
+// The UUID is required because multiple replica links can exist for the same bucket pair
+// (e.g., one via array connection and one via S3 target).
 func (r *bucketReplicaLinkResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts, err := parseCompositeID(req.ID, 2)
-	if err != nil {
-		resp.Diagnostics.AddError("Invalid import ID", fmt.Sprintf("Expected format: localBucket/remoteBucket. Error: %s", err))
-		return
-	}
+	id := req.ID
 
-	link, err := r.client.GetBucketReplicaLink(ctx, parts[0], parts[1])
+	link, err := r.client.GetBucketReplicaLinkByID(ctx, id)
 	if err != nil {
-		resp.Diagnostics.AddError("Error importing bucket replica link", err.Error())
+		resp.Diagnostics.AddError("Error importing bucket replica link",
+			fmt.Sprintf("Could not find bucket replica link with ID %q. Use the link UUID as import identifier.", id))
 		return
 	}
 

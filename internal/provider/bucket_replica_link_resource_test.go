@@ -332,8 +332,7 @@ func TestUnit_BucketReplicaLink_Delete(t *testing.T) {
 	}
 }
 
-// TestUnit_BucketReplicaLink_Import verifies ImportState by composite ID
-// "localBucket/remoteBucket" populates all fields.
+// TestUnit_BucketReplicaLink_Import verifies ImportState by UUID populates all fields.
 func TestUnit_BucketReplicaLink_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
@@ -352,11 +351,17 @@ func TestUnit_BucketReplicaLink_Import(t *testing.T) {
 		t.Fatalf("Create: %s", createResp.Diagnostics)
 	}
 
-	// Import by composite ID.
+	// Extract generated UUID from create state.
+	var afterCreate bucketReplicaLinkModel
+	if diags := createResp.State.Get(context.Background(), &afterCreate); diags.HasError() {
+		t.Fatalf("Get create state: %s", diags)
+	}
+
+	// Import by UUID (no longer composite localBucket/remoteBucket — ambiguous when multiple links exist).
 	importResp := &resource.ImportStateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketReplicaLinkType(), nil), Schema: s},
 	}
-	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "imp-local/imp-remote"}, importResp)
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: afterCreate.ID.ValueString()}, importResp)
 
 	if importResp.Diagnostics.HasError() {
 		t.Fatalf("ImportState returned error: %s", importResp.Diagnostics)
