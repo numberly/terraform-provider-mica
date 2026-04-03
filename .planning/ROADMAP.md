@@ -676,7 +676,7 @@ Plans:
 - [x] **Phase 37: Remote Credentials & Replica Link Enhancement** - Extend existing resources to support target references, enabling end-to-end S3 target replication (completed 2026-04-02)
 - [x] **Phase 38: Documentation & Workflow** - Import docs, workflow example, and tfplugindocs generation for all new resources (completed 2026-04-02)
 - [x] **Phase 39: Certificates** - Import and manage TLS certificates (appliance certs with PEM + private key); resource + data source (completed 2026-04-03)
-- [ ] **Phase 40: TLS Policies** - TLS policy CRUD, TLS policy member association (policy ↔ network interface); resource + data source + member resource
+- [x] **Phase 40: TLS Policies** - TLS policy CRUD, TLS policy member association (policy ↔ network interface); resource + data source + member resource (completed 2026-04-03)
 
 ### Phase 36: Target Resource
 **Goal**: Operators can manage external S3 endpoint targets through Terraform with full CRUD, import, and drift detection
