@@ -30,7 +30,7 @@ type targetStoreFacade struct {
 	}
 }
 
-func TestGetTarget_found(t *testing.T) {
+func TestUnit_Target_Get_Found(t *testing.T) {
 	srv, facade := newTargetServer(t)
 	facade.store.Seed(&client.Target{
 		ID:      "tgt-seed-1",
@@ -55,7 +55,7 @@ func TestGetTarget_found(t *testing.T) {
 	}
 }
 
-func TestGetTarget_notFound(t *testing.T) {
+func TestUnit_Target_Get_NotFound(t *testing.T) {
 	srv, _ := newTargetServer(t)
 	c := newTestClient(t, srv)
 
@@ -68,7 +68,7 @@ func TestGetTarget_notFound(t *testing.T) {
 	}
 }
 
-func TestPostTarget(t *testing.T) {
+func TestUnit_Target_Post(t *testing.T) {
 	srv, _ := newTargetServer(t)
 	c := newTestClient(t, srv)
 
@@ -92,7 +92,7 @@ func TestPostTarget(t *testing.T) {
 	}
 }
 
-func TestPatchTarget_address(t *testing.T) {
+func TestUnit_Target_Patch_Address(t *testing.T) {
 	srv, facade := newTargetServer(t)
 	facade.store.Seed(&client.Target{
 		ID:      "tgt-patch-1",
@@ -114,7 +114,7 @@ func TestPatchTarget_address(t *testing.T) {
 	}
 }
 
-func TestPatchTarget_caCertGroup(t *testing.T) {
+func TestUnit_Target_Patch_CACertGroup(t *testing.T) {
 	srv, facade := newTargetServer(t)
 	facade.store.Seed(&client.Target{
 		ID:      "tgt-patch-2",
@@ -139,7 +139,7 @@ func TestPatchTarget_caCertGroup(t *testing.T) {
 	}
 }
 
-func TestDeleteTarget(t *testing.T) {
+func TestUnit_Target_Delete(t *testing.T) {
 	srv, facade := newTargetServer(t)
 	facade.store.Seed(&client.Target{
 		ID:      "tgt-del-1",

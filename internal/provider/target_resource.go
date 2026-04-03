@@ -84,16 +84,10 @@ func (r *targetResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"status": schema.StringAttribute{
 				Computed:    true,
 				Description: "The connection status of the target (e.g. connected, connecting, error).",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"status_details": schema.StringAttribute{
 				Computed:    true,
 				Description: "Additional details about the connection status.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,

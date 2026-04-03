@@ -60,8 +60,8 @@ func nullTargetDSConfig() map[string]tftypes.Value {
 	}
 }
 
-// TestTargetDataSource_basic seeds a target in the mock and reads it via the data source.
-func TestTargetDataSource_basic(t *testing.T) {
+// TestUnit_TargetDataSource_Basic seeds a target in the mock and reads it via the data source.
+func TestUnit_TargetDataSource_Basic(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterTargetHandlers(ms.Mux)

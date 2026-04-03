@@ -94,8 +94,8 @@ func targetPlanWith(t *testing.T, name, address, caCertGroup string) tfsdk.Plan 
 
 // ---- tests ------------------------------------------------------------------
 
-// TestTargetResource_lifecycle: create → verify state → update address → verify → destroy.
-func TestTargetResource_lifecycle(t *testing.T) {
+// TestUnit_TargetResource_Lifecycle: create → verify state → update address → verify → destroy.
+func TestUnit_TargetResource_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterTargetHandlers(ms.Mux)
@@ -180,8 +180,8 @@ func TestTargetResource_lifecycle(t *testing.T) {
 	}
 }
 
-// TestTargetResource_import: create → import by name → check plan converges.
-func TestTargetResource_import(t *testing.T) {
+// TestUnit_TargetResource_Import: create → import by name → check plan converges.
+func TestUnit_TargetResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterTargetHandlers(ms.Mux)
@@ -239,8 +239,8 @@ func TestTargetResource_import(t *testing.T) {
 	}
 }
 
-// TestTargetResource_driftDetection: create → Seed modified target in mock → refresh → check state updated.
-func TestTargetResource_driftDetection(t *testing.T) {
+// TestUnit_TargetResource_DriftDetection: create → Seed modified target in mock → refresh → check state updated.
+func TestUnit_TargetResource_DriftDetection(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterTargetHandlers(ms.Mux)

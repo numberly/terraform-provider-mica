@@ -65,11 +65,9 @@ func (s *targetStore) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	if namesFilter != "" {
 		tgt, ok := s.byName[namesFilter]
-		if !ok {
-			WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("target %q not found", namesFilter))
-			return
+		if ok {
+			items = append(items, *tgt)
 		}
-		items = append(items, *tgt)
 	} else {
 		for _, tgt := range s.byName {
 			items = append(items, *tgt)
