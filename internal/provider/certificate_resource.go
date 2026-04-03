@@ -437,6 +437,9 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 // Update applies cert renewal to an existing certificate.
+// Only calls the API if certificate or intermediate_certificate actually changed (renewal).
+// If only private_key/passphrase changed (e.g., after import), the state is updated without
+// an API call — the API already has the key and doesn't accept it in isolation.
 func (r *certificateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan, state certificateModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -445,47 +448,72 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	updateTimeout, diags := plan.Timeouts.Update(ctx, 20*time.Minute)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
-	defer cancel()
+	certChanged := !plan.Certificate.Equal(state.Certificate)
+	intermediateChanged := !plan.IntermediateCertificate.Equal(state.IntermediateCertificate)
 
-	patch := client.CertificatePatch{}
+	// Only call the API if the actual certificate content changed (renewal scenario).
+	if certChanged || intermediateChanged {
+		updateTimeout, diags := plan.Timeouts.Update(ctx, 20*time.Minute)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+		defer cancel()
 
-	if !plan.Certificate.Equal(state.Certificate) {
-		v := plan.Certificate.ValueString()
-		patch.Certificate = &v
-	}
-	if !plan.IntermediateCertificate.Equal(state.IntermediateCertificate) {
-		v := plan.IntermediateCertificate.ValueString()
-		patch.IntermediateCertificate = &v
-	}
-	if !plan.Passphrase.IsNull() {
-		v := plan.Passphrase.ValueString()
-		patch.Passphrase = &v
-	}
-	if !plan.PrivateKey.IsNull() {
-		v := plan.PrivateKey.ValueString()
-		patch.PrivateKey = &v
-	}
+		patch := client.CertificatePatch{}
 
-	cert, err := r.client.PatchCertificate(ctx, state.Name.ValueString(), patch)
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating certificate", err.Error())
-		return
+		if certChanged {
+			v := plan.Certificate.ValueString()
+			patch.Certificate = &v
+		}
+		if intermediateChanged {
+			v := plan.IntermediateCertificate.ValueString()
+			patch.IntermediateCertificate = &v
+		}
+		// Include private_key and passphrase only when renewing the cert.
+		if !plan.PrivateKey.IsNull() && plan.PrivateKey.ValueString() != "" {
+			v := plan.PrivateKey.ValueString()
+			patch.PrivateKey = &v
+		}
+		if !plan.Passphrase.IsNull() && plan.Passphrase.ValueString() != "" {
+			v := plan.Passphrase.ValueString()
+			patch.Passphrase = &v
+		}
+
+		cert, err := r.client.PatchCertificate(ctx, state.Name.ValueString(), patch)
+		if err != nil {
+			resp.Diagnostics.AddError("Error updating certificate", err.Error())
+			return
+		}
+
+		// Preserve write-only fields before mapping overwrites the model.
+		privateKey := plan.PrivateKey
+		passphrase := plan.Passphrase
+
+		mapCertificateToModel(cert, &plan)
+
+		plan.PrivateKey = privateKey
+		plan.Passphrase = passphrase
+	} else {
+		// No API call needed — only write-only fields changed (e.g., import → apply).
+		// Copy all computed fields from current state so Terraform gets known values.
+		plan.CommonName = state.CommonName
+		plan.Country = state.Country
+		plan.Email = state.Email
+		plan.IssuedBy = state.IssuedBy
+		plan.IssuedTo = state.IssuedTo
+		plan.KeyAlgorithm = state.KeyAlgorithm
+		plan.KeySize = state.KeySize
+		plan.Locality = state.Locality
+		plan.Organization = state.Organization
+		plan.OrganizationalUnit = state.OrganizationalUnit
+		plan.State = state.State
+		plan.Status = state.Status
+		plan.SubjectAlternativeNames = state.SubjectAlternativeNames
+		plan.ValidFrom = state.ValidFrom
+		plan.ValidTo = state.ValidTo
 	}
-
-	// Preserve write-only fields from plan.
-	privateKey := plan.PrivateKey
-	passphrase := plan.Passphrase
-
-	mapCertificateToModel(cert, &plan)
-
-	plan.PrivateKey = privateKey
-	plan.Passphrase = passphrase
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

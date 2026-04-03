@@ -19,6 +19,49 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
+// useDefaultIfNull marks the planned value as unknown when the config value is null,
+// signaling to Terraform that the API will compute a default. On updates, it preserves
+// the prior state value (same as UseStateForUnknown).
+type useDefaultIfNullStringModifier struct{}
+
+func (m useDefaultIfNullStringModifier) Description(_ context.Context) string {
+	return "Uses API default when config is null; preserves state on updates."
+}
+
+func (m useDefaultIfNullStringModifier) MarkdownDescription(_ context.Context) string {
+	return "Uses API default when config is null; preserves state on updates."
+}
+
+func (m useDefaultIfNullStringModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if req.ConfigValue.IsNull() {
+		if !req.StateValue.IsNull() {
+			resp.PlanValue = req.StateValue
+		} else {
+			resp.PlanValue = types.StringUnknown()
+		}
+	}
+}
+
+type useDefaultIfNullListModifier struct{}
+
+func (m useDefaultIfNullListModifier) Description(_ context.Context) string {
+	return "Uses API default when config is null; preserves state on updates."
+}
+
+func (m useDefaultIfNullListModifier) MarkdownDescription(_ context.Context) string {
+	return "Uses API default when config is null; preserves state on updates."
+}
+
+func (m useDefaultIfNullListModifier) PlanModifyList(_ context.Context, req planmodifier.ListRequest, resp *planmodifier.ListResponse) {
+	if req.ConfigValue.IsNull() {
+		if !req.StateValue.IsNull() {
+			resp.PlanValue = req.StateValue
+		} else {
+			resp.PlanValue = types.ListUnknown(types.StringType)
+		}
+	}
+}
+
 // Ensure tlsPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &tlsPolicyResource{}
 var _ resource.ResourceWithConfigure = &tlsPolicyResource{}
@@ -92,8 +135,12 @@ func (r *tlsPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"disabled_tls_ciphers": schema.ListAttribute{
 				Optional:    true,
+				Computed:    true,
 				ElementType: types.StringType,
 				Description: "List of TLS cipher suites to disable.",
+				PlanModifiers: []planmodifier.List{
+					useDefaultIfNullListModifier{},
+				},
 			},
 			"enabled": schema.BoolAttribute{
 				Optional:    true,
@@ -102,8 +149,12 @@ func (r *tlsPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"enabled_tls_ciphers": schema.ListAttribute{
 				Optional:    true,
+				Computed:    true,
 				ElementType: types.StringType,
 				Description: "List of explicitly enabled TLS cipher suites.",
+				PlanModifiers: []planmodifier.List{
+					useDefaultIfNullListModifier{},
+				},
 			},
 			"is_local": schema.BoolAttribute{
 				Computed:    true,
@@ -123,7 +174,11 @@ func (r *tlsPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"trusted_client_certificate_authority": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The name of the certificate authority used to verify client certificates for mTLS.",
+				PlanModifiers: []planmodifier.String{
+					useDefaultIfNullStringModifier{},
+				},
 			},
 			"verify_client_certificate_trust": schema.BoolAttribute{
 				Optional:    true,
@@ -488,7 +543,7 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	data.ClientCertificatesRequired = types.BoolValue(policy.ClientCertificatesRequired)
 
 	if len(policy.DisabledTlsCiphers) == 0 {
-		data.DisabledTlsCiphers = types.ListValueMust(types.StringType, []attr.Value{})
+		data.DisabledTlsCiphers = types.ListNull(types.StringType)
 	} else {
 		elems := make([]attr.Value, len(policy.DisabledTlsCiphers))
 		for i, c := range policy.DisabledTlsCiphers {
@@ -500,7 +555,7 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	data.Enabled = types.BoolValue(policy.Enabled)
 
 	if len(policy.EnabledTlsCiphers) == 0 {
-		data.EnabledTlsCiphers = types.ListValueMust(types.StringType, []attr.Value{})
+		data.EnabledTlsCiphers = types.ListNull(types.StringType)
 	} else {
 		elems := make([]attr.Value, len(policy.EnabledTlsCiphers))
 		for i, c := range policy.EnabledTlsCiphers {
@@ -513,7 +568,7 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	data.MinTlsVersion = types.StringValue(policy.MinTlsVersion)
 	data.PolicyType = types.StringValue(policy.PolicyType)
 
-	if policy.TrustedClientCertificateAuthority != nil {
+	if policy.TrustedClientCertificateAuthority != nil && policy.TrustedClientCertificateAuthority.Name != "" {
 		data.TrustedClientCertificateAuthority = types.StringValue(policy.TrustedClientCertificateAuthority.Name)
 	} else {
 		data.TrustedClientCertificateAuthority = types.StringNull()
