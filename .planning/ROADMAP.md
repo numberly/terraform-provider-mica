@@ -675,7 +675,7 @@ Plans:
 - [x] **Phase 36: Target Resource** - New resource and data source for managing external S3 endpoint targets (CRUD, import, drift detection) (completed 2026-04-02)
 - [x] **Phase 37: Remote Credentials & Replica Link Enhancement** - Extend existing resources to support target references, enabling end-to-end S3 target replication (completed 2026-04-02)
 - [x] **Phase 38: Documentation & Workflow** - Import docs, workflow example, and tfplugindocs generation for all new resources (completed 2026-04-02)
-- [ ] **Phase 39: Certificates** - Import and manage TLS certificates (appliance certs with PEM + private key); resource + data source
+- [x] **Phase 39: Certificates** - Import and manage TLS certificates (appliance certs with PEM + private key); resource + data source (completed 2026-04-03)
 - [ ] **Phase 40: TLS Policies** - TLS policy CRUD, TLS policy member association (policy ↔ network interface); resource + data source + member resource
 
 ### Phase 36: Target Resource
@@ -735,7 +735,7 @@ Plans:
 
 Plans:
 - [x] 39-01-PLAN.md — Client models (Certificate/Post/Patch), client CRUD methods, mock handler, unit tests
-- [ ] 39-02-PLAN.md — flashblade_certificate resource (CRUD, import, drift detection), data source, provider registration, examples, docs
+- [x] 39-02-PLAN.md — flashblade_certificate resource (CRUD, import, drift detection), data source, provider registration, examples, docs
 
 ### Phase 40: TLS Policies
 **Goal**: Operators can manage TLS policies and assign them to network interfaces through Terraform, controlling cipher suites, minimum TLS version, mutual TLS settings, and appliance certificate selection

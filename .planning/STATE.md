@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: executing
-stopped_at: Completed 39-01-PLAN.md
-last_updated: "2026-04-03T06:40:48.590Z"
+status: verifying
+stopped_at: Completed 39-02-PLAN.md
+last_updated: "2026-04-03T06:51:44.637Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 38
-  completed_phases: 36
+  completed_phases: 37
   total_plans: 83
-  completed_plans: 80
+  completed_plans: 81
   percent: 60
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Phase: 39 (certificates) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
@@ -46,6 +46,7 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 | Phase 37-remote-credentials-replica-link-enhancement P01 | 388s | 2 tasks | 6 files |
 | Phase 38-documentation-workflow P01 | 135 | 3 tasks | 4 files |
 | Phase 39-certificates P01 | 300 | 2 tasks | 4 files |
+| Phase 39-certificates P02 | 513 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - [Phase 39-01]: Certificate models appended to models_network.go (network/TLS domain)
 - [Phase 39-01]: POST struct excludes X.509 subject fields (extracted from PEM by API) — import-only mode
 - [Phase 39-01]: passphrase and private_key are write-only — never stored or returned by mock handler
+- [Phase 39-certificates]: UseStateForUnknown only on id and certificate_type; all renewal-volatile fields (issued_by, issued_to, valid_from, valid_to, key_algorithm, key_size, status) have no plan modifier to avoid masking drift
+- [Phase 39-certificates]: private_key and passphrase Sensitive, preserved from plan/state; set to empty string on ImportState — API never returns write-only fields
 
 ### v2.2 Phase Groupings
 
@@ -90,6 +93,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T06:40:48.582Z
-Stopped at: Completed 39-01-PLAN.md
+Last session: 2026-04-03T06:51:44.629Z
+Stopped at: Completed 39-02-PLAN.md
 Resume file: None
