@@ -77,9 +77,8 @@ func (r *targetResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Description: "The hostname or IP address of the target S3 endpoint.",
 			},
 			"ca_certificate_group": schema.StringAttribute{
-				Optional:    true,
 				Computed:    true,
-				Description: "The name of the CA certificate group used to validate the target's TLS certificate. Null when not set.",
+				Description: "The CA certificate group used by the target (read-only, managed by the array).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -247,18 +246,6 @@ func (r *targetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if !plan.Address.Equal(state.Address) {
 		v := plan.Address.ValueString()
 		patch.Address = &v
-	}
-
-	if !plan.CACertificateGroup.Equal(state.CACertificateGroup) && !plan.CACertificateGroup.IsUnknown() {
-		if plan.CACertificateGroup.IsNull() || plan.CACertificateGroup.ValueString() == "" {
-			// Clear the cert group: outer ptr non-nil, inner ptr nil.
-			var inner *client.NamedReference
-			patch.CACertificateGroup = &inner
-		} else {
-			// Set to a specific group.
-			nr := &client.NamedReference{Name: plan.CACertificateGroup.ValueString()}
-			patch.CACertificateGroup = &nr
-		}
 	}
 
 	_, err := r.client.PatchTarget(ctx, state.Name.ValueString(), patch)

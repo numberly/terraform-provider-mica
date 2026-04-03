@@ -38,11 +38,11 @@ resource "flashblade_target" "with_ca" {
 
 ### Optional
 
-- `ca_certificate_group` (String) The name of the CA certificate group used to validate the target's TLS certificate. Null when not set.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
+- `ca_certificate_group` (String) The CA certificate group used by the target (read-only, managed by the array).
 - `id` (String) The unique identifier of the target.
 - `status` (String) The connection status of the target (e.g. connected, connecting, error).
 - `status_details` (String) Additional details about the connection status.
