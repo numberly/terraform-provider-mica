@@ -543,7 +543,7 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	data.ClientCertificatesRequired = types.BoolValue(policy.ClientCertificatesRequired)
 
 	if len(policy.DisabledTlsCiphers) == 0 {
-		data.DisabledTlsCiphers = types.ListNull(types.StringType)
+		data.DisabledTlsCiphers = types.ListValueMust(types.StringType, []attr.Value{})
 	} else {
 		elems := make([]attr.Value, len(policy.DisabledTlsCiphers))
 		for i, c := range policy.DisabledTlsCiphers {
@@ -555,7 +555,7 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	data.Enabled = types.BoolValue(policy.Enabled)
 
 	if len(policy.EnabledTlsCiphers) == 0 {
-		data.EnabledTlsCiphers = types.ListNull(types.StringType)
+		data.EnabledTlsCiphers = types.ListValueMust(types.StringType, []attr.Value{})
 	} else {
 		elems := make([]attr.Value, len(policy.EnabledTlsCiphers))
 		for i, c := range policy.EnabledTlsCiphers {
@@ -571,7 +571,7 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	if policy.TrustedClientCertificateAuthority != nil && policy.TrustedClientCertificateAuthority.Name != "" {
 		data.TrustedClientCertificateAuthority = types.StringValue(policy.TrustedClientCertificateAuthority.Name)
 	} else {
-		data.TrustedClientCertificateAuthority = types.StringNull()
+		data.TrustedClientCertificateAuthority = types.StringValue("")
 	}
 
 	data.VerifyClientCertificateTrust = types.BoolValue(policy.VerifyClientCertificateTrust)
