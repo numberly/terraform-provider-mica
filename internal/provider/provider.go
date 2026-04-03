@@ -291,6 +291,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewNetworkInterfaceResource,
 		NewTargetResource,
 		NewCertificateResource,
+		NewTlsPolicyResource,
+		NewTlsPolicyMemberResource,
 	}
 }
 
@@ -331,5 +333,6 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewNetworkInterfaceDataSource,
 		NewTargetDataSource,
 		NewCertificateDataSource,
+		NewTlsPolicyDataSource,
 	}
 }
