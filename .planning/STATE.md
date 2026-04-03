@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: executing
-stopped_at: Completed 39-02-PLAN.md
-last_updated: "2026-04-03T07:15:53.819Z"
-last_activity: 2026-04-03 -- Phase 40 execution started
+stopped_at: Completed 40-tls-policies/40-02-PLAN.md
+last_updated: "2026-04-03T07:35:55.783Z"
+last_activity: 2026-04-03
 progress:
   total_phases: 39
   completed_phases: 37
   total_plans: 85
-  completed_plans: 81
+  completed_plans: 82
   percent: 60
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 40 (tls-policies) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 40
-Last activity: 2026-04-03 -- Phase 40 execution started
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-03
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 
@@ -47,6 +47,7 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 | Phase 38-documentation-workflow P01 | 135 | 3 tasks | 4 files |
 | Phase 39-certificates P01 | 300 | 2 tasks | 4 files |
 | Phase 39-certificates P02 | 513 | 2 tasks | 11 files |
+| Phase 40-tls-policies P02 | 480 | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - [Phase 39-01]: passphrase and private_key are write-only — never stored or returned by mock handler
 - [Phase 39-certificates]: UseStateForUnknown only on id and certificate_type; all renewal-volatile fields (issued_by, issued_to, valid_from, valid_to, key_algorithm, key_size, status) have no plan modifier to avoid masking drift
 - [Phase 39-certificates]: private_key and passphrase Sensitive, preserved from plan/state; set to empty string on ImportState — API never returns write-only fields
+- [Phase 40-tls-policies]: is_local gets UseStateForUnknown: computed stable field set by API at creation
+- [Phase 40-tls-policies]: policy_type is Computed-only without UseStateForUnknown: volatile, drift detection still logs
+- [Phase 40-tls-policies]: listToStringSlice defined locally in tls_policy_resource.go (not helpers.go) - single consumer
 
 ### v2.2 Phase Groupings
 
@@ -93,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T06:51:44.629Z
-Stopped at: Completed 39-02-PLAN.md
+Last session: 2026-04-03T07:35:55.775Z
+Stopped at: Completed 40-tls-policies/40-02-PLAN.md
 Resume file: None

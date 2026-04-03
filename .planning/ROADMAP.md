@@ -751,5 +751,5 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 40-01-PLAN.md — Client models (TlsPolicy/TlsPolicyPost/TlsPolicyPatch/TlsPolicyMember), client CRUD + member methods, mock handler, unit tests
+- [x] 40-01-PLAN.md — Client models (TlsPolicy/TlsPolicyPost/TlsPolicyPatch/TlsPolicyMember), client CRUD + member methods, mock handler, unit tests
 - [ ] 40-02-PLAN.md — flashblade_tls_policy resource (CRUD, import, drift detection), data source, flashblade_tls_policy_member resource, provider registration, examples, docs
