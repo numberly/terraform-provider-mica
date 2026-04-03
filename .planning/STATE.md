@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: planning
-stopped_at: Completed 38-documentation-workflow/38-01-PLAN.md
-last_updated: "2026-04-02T16:24:49.061Z"
-last_activity: 2026-04-02 — v2.2 roadmap created, Phases 36-38 defined
+status: executing
+stopped_at: Completed 39-01-PLAN.md
+last_updated: "2026-04-03T06:40:48.590Z"
+last_activity: 2026-04-03
 progress:
-  total_phases: 40
-  completed_phases: 38
-  total_plans: 81
-  completed_plans: 79
+  total_phases: 38
+  completed_phases: 36
+  total_plans: 83
+  completed_plans: 80
   percent: 60
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** v2.2 S3 Target Replication & TLS — Phase 39 ready to plan
+**Current focus:** Phase 39 — certificates
 
 ## Current Position
 
-Phase: 39 of 40 (Certificates)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-03 — Phases 36-38 complete, Phases 39-40 added (Certificates + TLS Policies)
+Phase: 39 (certificates) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-03
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 
@@ -45,6 +45,7 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 | Phase 36-target-resource P02 | 348s | 2 tasks | 9 files |
 | Phase 37-remote-credentials-replica-link-enhancement P01 | 388s | 2 tasks | 6 files |
 | Phase 38-documentation-workflow P01 | 135 | 3 tasks | 4 files |
+| Phase 39-certificates P01 | 300 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - [Phase 38-01]: DOC-01: import.sh uses the target name (not UUID) as the import identifier, matching the ImportState implementation
 - [Phase 38-01]: DOC-02: s3-target-replication workflow uses single-provider pattern (one FlashBlade, one external S3) — no provider aliases
 - [Phase 38-01]: DOC-03: make docs regenerates target.md with Import section; object_store_remote_credentials.md updated to reflect target_name attribute from Phase 37
+- [Phase 39-01]: Certificate models appended to models_network.go (network/TLS domain)
+- [Phase 39-01]: POST struct excludes X.509 subject fields (extracted from PEM by API) — import-only mode
+- [Phase 39-01]: passphrase and private_key are write-only — never stored or returned by mock handler
 
 ### v2.2 Phase Groupings
 
@@ -86,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03
-Stopped at: Phases 39-40 added to roadmap, ready to plan Phase 39
+Last session: 2026-04-03T06:40:48.582Z
+Stopped at: Completed 39-01-PLAN.md
 Resume file: None

@@ -734,7 +734,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 39-01-PLAN.md — Client models (Certificate/Post/Patch), client CRUD methods, mock handler, unit tests
+- [x] 39-01-PLAN.md — Client models (Certificate/Post/Patch), client CRUD methods, mock handler, unit tests
 - [ ] 39-02-PLAN.md — flashblade_certificate resource (CRUD, import, drift detection), data source, provider registration, examples, docs
 
 ### Phase 40: TLS Policies
