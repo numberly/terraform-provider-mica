@@ -448,7 +448,7 @@ func nullXxxDSConfig() map[string]tftypes.Value
 
 ### Coverage rules
 
-- **Total test count MUST NOT decrease.** Current baseline: **692 tests**.
+- **Total test count MUST NOT decrease.** Current baseline: **716 tests**.
 - Every new resource adds at minimum **8 tests** (4 client + 3 resource + 1 data source).
 - Every state upgrader adds at minimum **1 test**.
 - Run `make test` and `make lint` before every commit. Both must be clean.
@@ -513,7 +513,7 @@ Before considering a new resource complete, every item must be done:
 11. [ ] Registration in `provider.go` (Resources + DataSources)
 12. [ ] HCL examples (`resource.tf`, `import.sh`, `data-source.tf`)
 13. [ ] `make docs` regenerated
-14. [ ] `make test` passes, total count ≥ 692 baseline
+14. [ ] `make test` passes, total count ≥ 716 baseline
 15. [ ] `make lint` clean (0 issues)
 16. [ ] ROADMAP.md updated
 
