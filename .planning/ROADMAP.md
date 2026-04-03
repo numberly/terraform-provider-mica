@@ -748,7 +748,8 @@ Plans:
   4. `data.flashblade_tls_policy` data source reads an existing TLS policy by name and exposes all configuration attributes
   5. Operator can assign a TLS policy to a network interface via `flashblade_tls_policy_member` and remove the assignment via `terraform destroy`
   6. Drift detection logs field-level changes via tflog when a TLS policy is modified outside Terraform
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-(to be created by /gsd:plan-phase 40)
+- [ ] 40-01-PLAN.md — Client models (TlsPolicy/TlsPolicyPost/TlsPolicyPatch/TlsPolicyMember), client CRUD + member methods, mock handler, unit tests
+- [ ] 40-02-PLAN.md — flashblade_tls_policy resource (CRUD, import, drift detection), data source, flashblade_tls_policy_member resource, provider registration, examples, docs
