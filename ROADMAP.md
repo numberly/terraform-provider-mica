@@ -75,7 +75,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
-| Bucket Replica Links | `flashblade_bucket_replica_link` | Yes | Done | Bidirectional, pause/resume |
+| Bucket Replica Links | `flashblade_bucket_replica_link` | Yes | Done | Bidirectional, pause/resume; Read/Import by UUID (supports multiple links per bucket pair) |
 | Remote Credentials | `flashblade_remote_credentials` | Yes | Done | S3 cross-array + S3 target auth; target_name attr (v2.2) |
 | Targets | `flashblade_target` | Yes | Done | External S3 replication endpoints (address, CA cert group) |
 | Array Connections | No | Yes | DS-only | Read existing connections only |
@@ -84,8 +84,8 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
-| Certificates | `flashblade_certificate` | Yes | Done | Import PEM + private key; drift detection; no self-signed/CSR |
-| TLS Policies | `flashblade_tls_policy` | Yes | Done | Cipher suites, min version, mTLS; + `flashblade_tls_policy_member` for NI assignment |
+| Certificates | `flashblade_certificate` | Yes | Done | Import PEM + private key; drift detection; import→apply skips PATCH (state-only update) |
+| TLS Policies | `flashblade_tls_policy` | Yes | Done | Cipher suites, min version, mTLS; API-default handling; + `flashblade_tls_policy_member` for NI assignment |
 
 ### Array Administration
 
