@@ -71,15 +71,7 @@ func (c *FlashBladeClient) ListSmbSharePolicyRules(ctx context.Context, policyNa
 // GetSmbSharePolicyRuleByName retrieves an SMB share policy rule by name within a policy.
 // Synthesizes a 404 APIError if the rule does not exist.
 func (c *FlashBladeClient) GetSmbSharePolicyRuleByName(ctx context.Context, policyName, ruleName string) (*SmbSharePolicyRule, error) {
-	path := "/smb-share-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[SmbSharePolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("SMB share policy rule %q not found in policy %q", ruleName, policyName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[SmbSharePolicyRule](c, ctx, "/smb-share-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), "SMB share policy rule", ruleName)
 }
 
 // PostSmbSharePolicyRule creates a new rule in an SMB share policy.

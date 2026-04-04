@@ -86,15 +86,7 @@ func (c *FlashBladeClient) GetNfsExportPolicyRuleByIndex(ctx context.Context, po
 // GetNfsExportPolicyRuleByName retrieves an NFS export policy rule by name within a policy.
 // Synthesizes a 404 APIError if the rule does not exist.
 func (c *FlashBladeClient) GetNfsExportPolicyRuleByName(ctx context.Context, policyName, ruleName string) (*NfsExportPolicyRule, error) {
-	path := "/nfs-export-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[NfsExportPolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("NFS export policy rule %q not found in policy %q", ruleName, policyName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[NfsExportPolicyRule](c, ctx, "/nfs-export-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), "NFS export policy rule", ruleName)
 }
 
 // PostNfsExportPolicyRule creates a new rule in an NFS export policy.

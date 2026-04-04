@@ -9,29 +9,13 @@ import (
 // GetBucketReplicaLink retrieves a bucket replica link by local and remote bucket names.
 // Returns an IsNotFound error if the link does not exist.
 func (c *FlashBladeClient) GetBucketReplicaLink(ctx context.Context, localBucketName string, remoteBucketName string) (*BucketReplicaLink, error) {
-	path := "/bucket-replica-links?local_bucket_names=" + url.QueryEscape(localBucketName) + "&remote_bucket_names=" + url.QueryEscape(remoteBucketName)
-	var resp ListResponse[BucketReplicaLink]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("bucket replica link %q -> %q not found", localBucketName, remoteBucketName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[BucketReplicaLink](c, ctx, "/bucket-replica-links?local_bucket_names="+url.QueryEscape(localBucketName)+"&remote_bucket_names="+url.QueryEscape(remoteBucketName), "bucket replica link", localBucketName+"->"+remoteBucketName)
 }
 
 // GetBucketReplicaLinkByID retrieves a bucket replica link by its unique ID.
 // Returns an IsNotFound error if the link does not exist.
 func (c *FlashBladeClient) GetBucketReplicaLinkByID(ctx context.Context, id string) (*BucketReplicaLink, error) {
-	path := "/bucket-replica-links?ids=" + url.QueryEscape(id)
-	var resp ListResponse[BucketReplicaLink]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("bucket replica link with id %q not found", id)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[BucketReplicaLink](c, ctx, "/bucket-replica-links?ids="+url.QueryEscape(id), "bucket replica link", id)
 }
 
 // ListBucketReplicaLinks returns all bucket replica links.

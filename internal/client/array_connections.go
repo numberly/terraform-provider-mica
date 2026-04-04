@@ -2,22 +2,13 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
 // GetArrayConnection retrieves an array connection by remote name.
 // Returns an IsNotFound error if no connection matches.
 func (c *FlashBladeClient) GetArrayConnection(ctx context.Context, remoteName string) (*ArrayConnection, error) {
-	path := "/array-connections?remote_names=" + url.QueryEscape(remoteName)
-	var resp ListResponse[ArrayConnection]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("array connection with remote name %q not found", remoteName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ArrayConnection](c, ctx, "/array-connections?remote_names="+url.QueryEscape(remoteName), "array connection", remoteName)
 }
 
 // ListArrayConnections returns all array connections with automatic pagination.

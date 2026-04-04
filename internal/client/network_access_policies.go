@@ -76,15 +76,7 @@ func (c *FlashBladeClient) ListNetworkAccessPolicyRules(ctx context.Context, pol
 // GetNetworkAccessPolicyRuleByName retrieves a network access policy rule by name within a policy.
 // Synthesizes a 404 APIError if the rule does not exist.
 func (c *FlashBladeClient) GetNetworkAccessPolicyRuleByName(ctx context.Context, policyName, ruleName string) (*NetworkAccessPolicyRule, error) {
-	path := "/network-access-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[NetworkAccessPolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("network access policy rule %q not found in policy %q", ruleName, policyName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[NetworkAccessPolicyRule](c, ctx, "/network-access-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), "network access policy rule", ruleName)
 }
 
 // GetNetworkAccessPolicyRuleByIndex retrieves a network access policy rule by its index within the policy.

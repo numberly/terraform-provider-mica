@@ -9,15 +9,7 @@ import (
 // GetQosPolicy retrieves a QoS policy by name.
 // Returns an IsNotFound error if no policy exists with the given name.
 func (c *FlashBladeClient) GetQosPolicy(ctx context.Context, name string) (*QosPolicy, error) {
-	path := "/qos-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[QosPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("QoS policy %q not found", name)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[QosPolicy](c, ctx, "/qos-policies?names="+url.QueryEscape(name), "QoS policy", name)
 }
 
 // PostQosPolicy creates a new QoS policy. The name is passed via ?names= query parameter.

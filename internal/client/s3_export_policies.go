@@ -86,15 +86,7 @@ func (c *FlashBladeClient) GetS3ExportPolicyRuleByIndex(ctx context.Context, pol
 // GetS3ExportPolicyRuleByName retrieves an S3 export policy rule by name within a policy.
 // Synthesizes a 404 APIError if the rule does not exist.
 func (c *FlashBladeClient) GetS3ExportPolicyRuleByName(ctx context.Context, policyName, ruleName string) (*S3ExportPolicyRule, error) {
-	path := "/s3-export-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[S3ExportPolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("S3 export policy rule %q not found in policy %q", ruleName, policyName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[S3ExportPolicyRule](c, ctx, "/s3-export-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), "S3 export policy rule", ruleName)
 }
 
 // PostS3ExportPolicyRule creates a new rule in an S3 export policy.

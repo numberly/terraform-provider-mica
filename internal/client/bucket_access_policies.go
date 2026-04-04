@@ -9,15 +9,7 @@ import (
 // GetBucketAccessPolicy retrieves a bucket access policy by bucket name.
 // Returns an IsNotFound error if no policy exists for the bucket.
 func (c *FlashBladeClient) GetBucketAccessPolicy(ctx context.Context, bucketName string) (*BucketAccessPolicy, error) {
-	path := "/buckets/bucket-access-policies?bucket_names=" + url.QueryEscape(bucketName)
-	var resp ListResponse[BucketAccessPolicy]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("bucket access policy for bucket %q not found", bucketName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[BucketAccessPolicy](c, ctx, "/buckets/bucket-access-policies?bucket_names="+url.QueryEscape(bucketName), "bucket access policy", bucketName)
 }
 
 // PostBucketAccessPolicy creates a bucket access policy for the given bucket.
@@ -64,15 +56,7 @@ func (c *FlashBladeClient) ListBucketAccessPolicyRules(ctx context.Context, buck
 // GetBucketAccessPolicyRule retrieves a specific rule by bucket name and rule name.
 // Returns an IsNotFound error if the rule does not exist.
 func (c *FlashBladeClient) GetBucketAccessPolicyRule(ctx context.Context, bucketName string, ruleName string) (*BucketAccessPolicyRule, error) {
-	path := "/buckets/bucket-access-policies/rules?bucket_names=" + url.QueryEscape(bucketName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[BucketAccessPolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("bucket access policy rule %q on bucket %q not found", ruleName, bucketName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[BucketAccessPolicyRule](c, ctx, "/buckets/bucket-access-policies/rules?bucket_names="+url.QueryEscape(bucketName)+"&names="+url.QueryEscape(ruleName), "bucket access policy rule", ruleName)
 }
 
 // PostBucketAccessPolicyRule creates a new rule on the bucket's access policy.

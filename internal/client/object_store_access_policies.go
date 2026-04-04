@@ -74,15 +74,7 @@ func (c *FlashBladeClient) DeleteObjectStoreAccessPolicy(ctx context.Context, na
 // GetObjectStoreAccessPolicyRuleByName retrieves an object store access policy rule by name within a policy.
 // Synthesizes a 404 APIError if the rule does not exist.
 func (c *FlashBladeClient) GetObjectStoreAccessPolicyRuleByName(ctx context.Context, policyName, ruleName string) (*ObjectStoreAccessPolicyRule, error) {
-	path := "/object-store-access-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[ObjectStoreAccessPolicyRule]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("object store access policy rule %q not found in policy %q", ruleName, policyName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[ObjectStoreAccessPolicyRule](c, ctx, "/object-store-access-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), "object store access policy rule", ruleName)
 }
 
 // PostObjectStoreAccessPolicyRule creates a new rule in an object store access policy.

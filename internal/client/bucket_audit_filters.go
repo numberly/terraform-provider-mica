@@ -8,28 +8,12 @@ import (
 
 // GetBucketAuditFilter retrieves a bucket audit filter by filter name and bucket name.
 func (c *FlashBladeClient) GetBucketAuditFilter(ctx context.Context, filterName string, bucketName string) (*BucketAuditFilter, error) {
-	path := "/buckets/audit-filters?names=" + url.QueryEscape(filterName) + "&bucket_names=" + url.QueryEscape(bucketName)
-	var resp ListResponse[BucketAuditFilter]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("bucket audit filter %q on bucket %q not found", filterName, bucketName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[BucketAuditFilter](c, ctx, "/buckets/audit-filters?names="+url.QueryEscape(filterName)+"&bucket_names="+url.QueryEscape(bucketName), "bucket audit filter", filterName)
 }
 
 // GetBucketAuditFilterByBucket retrieves a bucket audit filter by bucket name only.
 func (c *FlashBladeClient) GetBucketAuditFilterByBucket(ctx context.Context, bucketName string) (*BucketAuditFilter, error) {
-	path := "/buckets/audit-filters?bucket_names=" + url.QueryEscape(bucketName)
-	var resp ListResponse[BucketAuditFilter]
-	if err := c.get(ctx, path, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: fmt.Sprintf("bucket audit filter for bucket %q not found", bucketName)}
-	}
-	return &resp.Items[0], nil
+	return getOneByName[BucketAuditFilter](c, ctx, "/buckets/audit-filters?bucket_names="+url.QueryEscape(bucketName), "bucket audit filter", bucketName)
 }
 
 // PostBucketAuditFilter creates a bucket audit filter.
