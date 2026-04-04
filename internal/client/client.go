@@ -292,6 +292,34 @@ func getOneByName[T any](c *FlashBladeClient, ctx context.Context, path, label, 
 	return &resp.Items[0], nil
 }
 
+// postOne sends a POST request to path with body and returns the first item from the
+// ListResponse. Returns an error if the response contains no items.
+// label is a human-readable function name for the error message (e.g., "PostTarget").
+func postOne[TBody any, TResp any](c *FlashBladeClient, ctx context.Context, path string, body TBody, label string) (*TResp, error) {
+	var resp ListResponse[TResp]
+	if err := c.post(ctx, path, body, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, fmt.Errorf("%s: empty response from server", label)
+	}
+	return &resp.Items[0], nil
+}
+
+// patchOne sends a PATCH request to path with body and returns the first item from the
+// ListResponse. Returns an error if the response contains no items.
+// label is a human-readable function name for the error message (e.g., "PatchTarget").
+func patchOne[TBody any, TResp any](c *FlashBladeClient, ctx context.Context, path string, body TBody, label string) (*TResp, error) {
+	var resp ListResponse[TResp]
+	if err := c.patch(ctx, path, body, &resp); err != nil {
+		return nil, err
+	}
+	if len(resp.Items) == 0 {
+		return nil, fmt.Errorf("%s: empty response from server", label)
+	}
+	return &resp.Items[0], nil
+}
+
 // pollUntilGone polls a FlashBlade list endpoint with ?destroyed=true until the item
 // disappears (empty items response), indicating eradication is complete.
 // basePath is the endpoint without query params (e.g., "/buckets").
