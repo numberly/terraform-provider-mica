@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"strings"
 )
@@ -55,29 +54,13 @@ func (c *FlashBladeClient) ListObjectStoreAccounts(ctx context.Context, opts Lis
 // PostObjectStoreAccount creates a new object store account.
 // The name is passed as a query parameter; optional fields are in the body.
 func (c *FlashBladeClient) PostObjectStoreAccount(ctx context.Context, name string, body ObjectStoreAccountPost) (*ObjectStoreAccount, error) {
-	path := "/object-store-accounts?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccount]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostObjectStoreAccount: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[ObjectStoreAccountPost, ObjectStoreAccount](c, ctx, "/object-store-accounts?names="+url.QueryEscape(name), body, "PostObjectStoreAccount")
 }
 
 // PatchObjectStoreAccount updates an existing object store account identified by name.
 // Only non-nil pointer fields in body are sent (PATCH semantics).
 func (c *FlashBladeClient) PatchObjectStoreAccount(ctx context.Context, name string, body ObjectStoreAccountPatch) (*ObjectStoreAccount, error) {
-	path := "/object-store-accounts?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccount]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchObjectStoreAccount: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[ObjectStoreAccountPatch, ObjectStoreAccount](c, ctx, "/object-store-accounts?names="+url.QueryEscape(name), body, "PatchObjectStoreAccount")
 }
 
 // DeleteObjectStoreAccount permanently deletes an object store account (single-phase, no soft-delete).

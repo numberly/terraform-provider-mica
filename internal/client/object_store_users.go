@@ -19,14 +19,7 @@ func (c *FlashBladeClient) PostObjectStoreUser(ctx context.Context, name string,
 	if body.FullAccess != nil {
 		path += fmt.Sprintf("&full_access=%t", *body.FullAccess)
 	}
-	var resp ListResponse[ObjectStoreUser]
-	if err := c.post(ctx, path, nil, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostObjectStoreUser: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[any, ObjectStoreUser](c, ctx, path, nil, "PostObjectStoreUser")
 }
 
 // DeleteObjectStoreUser deletes an object store user by name.
@@ -67,14 +60,7 @@ func (c *FlashBladeClient) ListObjectStoreUserPolicies(ctx context.Context, user
 func (c *FlashBladeClient) PostObjectStoreUserPolicy(ctx context.Context, userName, policyName string) (*ObjectStoreUserPolicyMember, error) {
 	path := "/object-store-users/object-store-access-policies?member_names=" + url.QueryEscape(userName) +
 		"&policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[ObjectStoreUserPolicyMember]
-	if err := c.post(ctx, path, nil, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostObjectStoreUserPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[any, ObjectStoreUserPolicyMember](c, ctx, path, nil, "PostObjectStoreUserPolicy")
 }
 
 // DeleteObjectStoreUserPolicy detaches an access policy from an object store user.

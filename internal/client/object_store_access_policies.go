@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -40,29 +39,13 @@ func (c *FlashBladeClient) ListObjectStoreAccessPolicies(ctx context.Context) ([
 // PostObjectStoreAccessPolicy creates a new object store access policy.
 // The name is passed as a query parameter; optional fields are in the body.
 func (c *FlashBladeClient) PostObjectStoreAccessPolicy(ctx context.Context, name string, body ObjectStoreAccessPolicyPost) (*ObjectStoreAccessPolicy, error) {
-	path := "/object-store-access-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccessPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostObjectStoreAccessPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[ObjectStoreAccessPolicyPost, ObjectStoreAccessPolicy](c, ctx, "/object-store-access-policies?names="+url.QueryEscape(name), body, "PostObjectStoreAccessPolicy")
 }
 
 // PatchObjectStoreAccessPolicy updates an existing object store access policy identified by name.
 // When renaming (body.Name != nil), the OLD name must be passed as the name argument.
 func (c *FlashBladeClient) PatchObjectStoreAccessPolicy(ctx context.Context, name string, body ObjectStoreAccessPolicyPatch) (*ObjectStoreAccessPolicy, error) {
-	path := "/object-store-access-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreAccessPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchObjectStoreAccessPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[ObjectStoreAccessPolicyPatch, ObjectStoreAccessPolicy](c, ctx, "/object-store-access-policies?names="+url.QueryEscape(name), body, "PatchObjectStoreAccessPolicy")
 }
 
 // DeleteObjectStoreAccessPolicy permanently deletes an object store access policy.
@@ -80,28 +63,12 @@ func (c *FlashBladeClient) GetObjectStoreAccessPolicyRuleByName(ctx context.Cont
 // PostObjectStoreAccessPolicyRule creates a new rule in an object store access policy.
 // Both policyName and ruleName are passed as query parameters.
 func (c *FlashBladeClient) PostObjectStoreAccessPolicyRule(ctx context.Context, policyName, ruleName string, body ObjectStoreAccessPolicyRulePost) (*ObjectStoreAccessPolicyRule, error) {
-	path := "/object-store-access-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[ObjectStoreAccessPolicyRule]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostObjectStoreAccessPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[ObjectStoreAccessPolicyRulePost, ObjectStoreAccessPolicyRule](c, ctx, "/object-store-access-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), body, "PostObjectStoreAccessPolicyRule")
 }
 
 // PatchObjectStoreAccessPolicyRule updates an existing object store access policy rule.
 func (c *FlashBladeClient) PatchObjectStoreAccessPolicyRule(ctx context.Context, policyName, ruleName string, body ObjectStoreAccessPolicyRulePatch) (*ObjectStoreAccessPolicyRule, error) {
-	path := "/object-store-access-policies/rules?names=" + url.QueryEscape(ruleName) + "&policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[ObjectStoreAccessPolicyRule]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchObjectStoreAccessPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[ObjectStoreAccessPolicyRulePatch, ObjectStoreAccessPolicyRule](c, ctx, "/object-store-access-policies/rules?names="+url.QueryEscape(ruleName)+"&policy_names="+url.QueryEscape(policyName), body, "PatchObjectStoreAccessPolicyRule")
 }
 
 // DeleteObjectStoreAccessPolicyRule deletes an object store access policy rule by name.

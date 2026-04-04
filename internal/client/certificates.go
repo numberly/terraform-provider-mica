@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -15,29 +14,13 @@ func (c *FlashBladeClient) GetCertificate(ctx context.Context, name string) (*Ce
 // PostCertificate imports a new certificate.
 // The name is passed via ?names= query parameter.
 func (c *FlashBladeClient) PostCertificate(ctx context.Context, name string, body CertificatePost) (*Certificate, error) {
-	path := "/certificates?names=" + url.QueryEscape(name)
-	var resp ListResponse[Certificate]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostCertificate: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[CertificatePost, Certificate](c, ctx, "/certificates?names="+url.QueryEscape(name), body, "PostCertificate")
 }
 
 // PatchCertificate updates an existing certificate identified by name.
 // Only non-nil pointer fields in body are sent (PATCH semantics).
 func (c *FlashBladeClient) PatchCertificate(ctx context.Context, name string, body CertificatePatch) (*Certificate, error) {
-	path := "/certificates?names=" + url.QueryEscape(name)
-	var resp ListResponse[Certificate]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchCertificate: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[CertificatePatch, Certificate](c, ctx, "/certificates?names="+url.QueryEscape(name), body, "PatchCertificate")
 }
 
 // DeleteCertificate permanently deletes a certificate by name.

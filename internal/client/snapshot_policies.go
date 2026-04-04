@@ -15,30 +15,14 @@ func (c *FlashBladeClient) GetSnapshotPolicy(ctx context.Context, name string) (
 // PostSnapshotPolicy creates a new snapshot policy.
 // The name is passed as a query parameter; optional fields (including inline rules) are in the body.
 func (c *FlashBladeClient) PostSnapshotPolicy(ctx context.Context, name string, body SnapshotPolicyPost) (*SnapshotPolicy, error) {
-	path := "/policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[SnapshotPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostSnapshotPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[SnapshotPolicyPost, SnapshotPolicy](c, ctx, "/policies?names="+url.QueryEscape(name), body, "PostSnapshotPolicy")
 }
 
 // PatchSnapshotPolicy updates an existing snapshot policy identified by name.
 // Name is read-only for snapshot policies — do not include name in the body.
 // Use AddSnapshotPolicyRule and RemoveSnapshotPolicyRule for rule management.
 func (c *FlashBladeClient) PatchSnapshotPolicy(ctx context.Context, name string, body SnapshotPolicyPatch) (*SnapshotPolicy, error) {
-	path := "/policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[SnapshotPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchSnapshotPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[SnapshotPolicyPatch, SnapshotPolicy](c, ctx, "/policies?names="+url.QueryEscape(name), body, "PatchSnapshotPolicy")
 }
 
 // DeleteSnapshotPolicy permanently deletes a snapshot policy.

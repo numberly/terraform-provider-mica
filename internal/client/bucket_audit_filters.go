@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -18,28 +17,12 @@ func (c *FlashBladeClient) GetBucketAuditFilterByBucket(ctx context.Context, buc
 
 // PostBucketAuditFilter creates a bucket audit filter.
 func (c *FlashBladeClient) PostBucketAuditFilter(ctx context.Context, filterName string, bucketName string, body BucketAuditFilterPost) (*BucketAuditFilter, error) {
-	path := "/buckets/audit-filters?names=" + url.QueryEscape(filterName) + "&bucket_names=" + url.QueryEscape(bucketName)
-	var resp ListResponse[BucketAuditFilter]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostBucketAuditFilter: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[BucketAuditFilterPost, BucketAuditFilter](c, ctx, "/buckets/audit-filters?names="+url.QueryEscape(filterName)+"&bucket_names="+url.QueryEscape(bucketName), body, "PostBucketAuditFilter")
 }
 
 // PatchBucketAuditFilter updates a bucket audit filter.
 func (c *FlashBladeClient) PatchBucketAuditFilter(ctx context.Context, filterName string, bucketName string, body BucketAuditFilterPatch) (*BucketAuditFilter, error) {
-	path := "/buckets/audit-filters?names=" + url.QueryEscape(filterName) + "&bucket_names=" + url.QueryEscape(bucketName)
-	var resp ListResponse[BucketAuditFilter]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchBucketAuditFilter: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[BucketAuditFilterPatch, BucketAuditFilter](c, ctx, "/buckets/audit-filters?names="+url.QueryEscape(filterName)+"&bucket_names="+url.QueryEscape(bucketName), body, "PatchBucketAuditFilter")
 }
 
 // DeleteBucketAuditFilter deletes a bucket audit filter.

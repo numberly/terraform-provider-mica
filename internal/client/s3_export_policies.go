@@ -15,29 +15,13 @@ func (c *FlashBladeClient) GetS3ExportPolicy(ctx context.Context, name string) (
 // PostS3ExportPolicy creates a new S3 export policy.
 // The name is passed as a query parameter; optional fields are in the body.
 func (c *FlashBladeClient) PostS3ExportPolicy(ctx context.Context, name string, body S3ExportPolicyPost) (*S3ExportPolicy, error) {
-	path := "/s3-export-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[S3ExportPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostS3ExportPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[S3ExportPolicyPost, S3ExportPolicy](c, ctx, "/s3-export-policies?names="+url.QueryEscape(name), body, "PostS3ExportPolicy")
 }
 
 // PatchS3ExportPolicy updates an existing S3 export policy identified by name.
 // When renaming (body.Name != nil), the OLD name must be passed as the name argument.
 func (c *FlashBladeClient) PatchS3ExportPolicy(ctx context.Context, name string, body S3ExportPolicyPatch) (*S3ExportPolicy, error) {
-	path := "/s3-export-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[S3ExportPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchS3ExportPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[S3ExportPolicyPatch, S3ExportPolicy](c, ctx, "/s3-export-policies?names="+url.QueryEscape(name), body, "PatchS3ExportPolicy")
 }
 
 // DeleteS3ExportPolicy permanently deletes an S3 export policy.
@@ -92,28 +76,12 @@ func (c *FlashBladeClient) GetS3ExportPolicyRuleByName(ctx context.Context, poli
 // PostS3ExportPolicyRule creates a new rule in an S3 export policy.
 // The policy is identified via the policy_names query parameter only.
 func (c *FlashBladeClient) PostS3ExportPolicyRule(ctx context.Context, policyName, ruleName string, body S3ExportPolicyRulePost) (*S3ExportPolicyRule, error) {
-	path := "/s3-export-policies/rules?policy_names=" + url.QueryEscape(policyName) + "&names=" + url.QueryEscape(ruleName)
-	var resp ListResponse[S3ExportPolicyRule]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostS3ExportPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[S3ExportPolicyRulePost, S3ExportPolicyRule](c, ctx, "/s3-export-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), body, "PostS3ExportPolicyRule")
 }
 
 // PatchS3ExportPolicyRule updates an existing S3 export policy rule.
 func (c *FlashBladeClient) PatchS3ExportPolicyRule(ctx context.Context, policyName, ruleName string, body S3ExportPolicyRulePatch) (*S3ExportPolicyRule, error) {
-	path := "/s3-export-policies/rules?names=" + url.QueryEscape(ruleName) + "&policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[S3ExportPolicyRule]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchS3ExportPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[S3ExportPolicyRulePatch, S3ExportPolicyRule](c, ctx, "/s3-export-policies/rules?names="+url.QueryEscape(ruleName)+"&policy_names="+url.QueryEscape(policyName), body, "PatchS3ExportPolicyRule")
 }
 
 // DeleteS3ExportPolicyRule deletes an S3 export policy rule by name.

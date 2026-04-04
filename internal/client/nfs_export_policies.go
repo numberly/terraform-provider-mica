@@ -15,29 +15,13 @@ func (c *FlashBladeClient) GetNfsExportPolicy(ctx context.Context, name string) 
 // PostNfsExportPolicy creates a new NFS export policy.
 // The name is passed as a query parameter; optional fields are in the body.
 func (c *FlashBladeClient) PostNfsExportPolicy(ctx context.Context, name string, body NfsExportPolicyPost) (*NfsExportPolicy, error) {
-	path := "/nfs-export-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[NfsExportPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostNfsExportPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[NfsExportPolicyPost, NfsExportPolicy](c, ctx, "/nfs-export-policies?names="+url.QueryEscape(name), body, "PostNfsExportPolicy")
 }
 
 // PatchNfsExportPolicy updates an existing NFS export policy identified by name.
 // When renaming (body.Name != nil), the OLD name must be passed as the name argument.
 func (c *FlashBladeClient) PatchNfsExportPolicy(ctx context.Context, name string, body NfsExportPolicyPatch) (*NfsExportPolicy, error) {
-	path := "/nfs-export-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[NfsExportPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchNfsExportPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[NfsExportPolicyPatch, NfsExportPolicy](c, ctx, "/nfs-export-policies?names="+url.QueryEscape(name), body, "PatchNfsExportPolicy")
 }
 
 // DeleteNfsExportPolicy permanently deletes an NFS export policy.
@@ -92,28 +76,12 @@ func (c *FlashBladeClient) GetNfsExportPolicyRuleByName(ctx context.Context, pol
 // PostNfsExportPolicyRule creates a new rule in an NFS export policy.
 // The policy is identified via the policy_names query parameter only — it must NOT appear in the body.
 func (c *FlashBladeClient) PostNfsExportPolicyRule(ctx context.Context, policyName string, body NfsExportPolicyRulePost) (*NfsExportPolicyRule, error) {
-	path := "/nfs-export-policies/rules?policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[NfsExportPolicyRule]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostNfsExportPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[NfsExportPolicyRulePost, NfsExportPolicyRule](c, ctx, "/nfs-export-policies/rules?policy_names="+url.QueryEscape(policyName), body, "PostNfsExportPolicyRule")
 }
 
 // PatchNfsExportPolicyRule updates an existing NFS export policy rule.
 func (c *FlashBladeClient) PatchNfsExportPolicyRule(ctx context.Context, policyName, ruleName string, body NfsExportPolicyRulePatch) (*NfsExportPolicyRule, error) {
-	path := "/nfs-export-policies/rules?names=" + url.QueryEscape(ruleName) + "&policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[NfsExportPolicyRule]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchNfsExportPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[NfsExportPolicyRulePatch, NfsExportPolicyRule](c, ctx, "/nfs-export-policies/rules?names="+url.QueryEscape(ruleName)+"&policy_names="+url.QueryEscape(policyName), body, "PatchNfsExportPolicyRule")
 }
 
 // DeleteNfsExportPolicyRule deletes an NFS export policy rule by name.

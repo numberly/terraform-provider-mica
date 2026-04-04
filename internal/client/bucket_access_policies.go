@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -14,15 +13,7 @@ func (c *FlashBladeClient) GetBucketAccessPolicy(ctx context.Context, bucketName
 
 // PostBucketAccessPolicy creates a bucket access policy for the given bucket.
 func (c *FlashBladeClient) PostBucketAccessPolicy(ctx context.Context, bucketName string, body BucketAccessPolicyPost) (*BucketAccessPolicy, error) {
-	path := "/buckets/bucket-access-policies?bucket_names=" + url.QueryEscape(bucketName)
-	var resp ListResponse[BucketAccessPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostBucketAccessPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[BucketAccessPolicyPost, BucketAccessPolicy](c, ctx, "/buckets/bucket-access-policies?bucket_names="+url.QueryEscape(bucketName), body, "PostBucketAccessPolicy")
 }
 
 // DeleteBucketAccessPolicy deletes the bucket access policy for the given bucket.
@@ -62,15 +53,7 @@ func (c *FlashBladeClient) GetBucketAccessPolicyRule(ctx context.Context, bucket
 // PostBucketAccessPolicyRule creates a new rule on the bucket's access policy.
 // The API requires ?names= with the bucket name on POST.
 func (c *FlashBladeClient) PostBucketAccessPolicyRule(ctx context.Context, bucketName string, body BucketAccessPolicyRulePost) (*BucketAccessPolicyRule, error) {
-	path := "/buckets/bucket-access-policies/rules?names=" + url.QueryEscape(bucketName) + "&bucket_names=" + url.QueryEscape(bucketName)
-	var resp ListResponse[BucketAccessPolicyRule]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostBucketAccessPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[BucketAccessPolicyRulePost, BucketAccessPolicyRule](c, ctx, "/buckets/bucket-access-policies/rules?names="+url.QueryEscape(bucketName)+"&bucket_names="+url.QueryEscape(bucketName), body, "PostBucketAccessPolicyRule")
 }
 
 // DeleteBucketAccessPolicyRule deletes a specific rule from the bucket's access policy.

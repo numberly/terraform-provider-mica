@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -50,28 +49,13 @@ func (c *FlashBladeClient) PostBucketReplicaLink(ctx context.Context, localBucke
 	if remoteCredentialsName != "" {
 		path += "&remote_credentials_names=" + url.QueryEscape(remoteCredentialsName)
 	}
-	var resp ListResponse[BucketReplicaLink]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostBucketReplicaLink: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[BucketReplicaLinkPost, BucketReplicaLink](c, ctx, path, body, "PostBucketReplicaLink")
 }
 
 // PatchBucketReplicaLink updates an existing bucket replica link identified by its ID.
 // Uses ID for PATCH stability (same pattern as PatchBucket).
 func (c *FlashBladeClient) PatchBucketReplicaLink(ctx context.Context, id string, body BucketReplicaLinkPatch) (*BucketReplicaLink, error) {
-	path := "/bucket-replica-links?ids=" + url.QueryEscape(id)
-	var resp ListResponse[BucketReplicaLink]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchBucketReplicaLink: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[BucketReplicaLinkPatch, BucketReplicaLink](c, ctx, "/bucket-replica-links?ids="+url.QueryEscape(id), body, "PatchBucketReplicaLink")
 }
 
 // DeleteBucketReplicaLink permanently deletes a bucket replica link by its ID.

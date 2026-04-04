@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -46,28 +45,13 @@ func (c *FlashBladeClient) PostRemoteCredentials(ctx context.Context, name strin
 	} else if remoteName != "" {
 		path += "&remote_names=" + url.QueryEscape(remoteName)
 	}
-	var resp ListResponse[ObjectStoreRemoteCredentials]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostRemoteCredentials: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[ObjectStoreRemoteCredentialsPost, ObjectStoreRemoteCredentials](c, ctx, path, body, "PostRemoteCredentials")
 }
 
 // PatchRemoteCredentials updates an existing remote credentials entry identified by name.
 // Only non-nil pointer fields in body are sent (PATCH semantics).
 func (c *FlashBladeClient) PatchRemoteCredentials(ctx context.Context, name string, body ObjectStoreRemoteCredentialsPatch) (*ObjectStoreRemoteCredentials, error) {
-	path := "/object-store-remote-credentials?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreRemoteCredentials]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchRemoteCredentials: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[ObjectStoreRemoteCredentialsPatch, ObjectStoreRemoteCredentials](c, ctx, "/object-store-remote-credentials?names="+url.QueryEscape(name), body, "PatchRemoteCredentials")
 }
 
 // DeleteRemoteCredentials permanently deletes a remote credentials entry by name.

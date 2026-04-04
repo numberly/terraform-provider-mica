@@ -44,28 +44,12 @@ func (c *FlashBladeClient) ListQuotaUsers(ctx context.Context, fileSystemName st
 
 // PostQuotaUser creates a new user quota on a file system.
 func (c *FlashBladeClient) PostQuotaUser(ctx context.Context, fileSystemName, uid string, body QuotaUserPost) (*QuotaUser, error) {
-	path := "/quotas/users?file_system_names=" + url.QueryEscape(fileSystemName) + "&uids=" + url.QueryEscape(uid)
-	var resp ListResponse[QuotaUser]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostQuotaUser: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[QuotaUserPost, QuotaUser](c, ctx, "/quotas/users?file_system_names="+url.QueryEscape(fileSystemName)+"&uids="+url.QueryEscape(uid), body, "PostQuotaUser")
 }
 
 // PatchQuotaUser updates an existing user quota on a file system.
 func (c *FlashBladeClient) PatchQuotaUser(ctx context.Context, fileSystemName, uid string, body QuotaUserPatch) (*QuotaUser, error) {
-	path := "/quotas/users?file_system_names=" + url.QueryEscape(fileSystemName) + "&uids=" + url.QueryEscape(uid)
-	var resp ListResponse[QuotaUser]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchQuotaUser: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[QuotaUserPatch, QuotaUser](c, ctx, "/quotas/users?file_system_names="+url.QueryEscape(fileSystemName)+"&uids="+url.QueryEscape(uid), body, "PatchQuotaUser")
 }
 
 // DeleteQuotaUser removes a user quota from a file system.
@@ -112,28 +96,12 @@ func (c *FlashBladeClient) ListQuotaGroups(ctx context.Context, fileSystemName s
 
 // PostQuotaGroup creates a new group quota on a file system.
 func (c *FlashBladeClient) PostQuotaGroup(ctx context.Context, fileSystemName, gid string, body QuotaGroupPost) (*QuotaGroup, error) {
-	path := "/quotas/groups?file_system_names=" + url.QueryEscape(fileSystemName) + "&gids=" + url.QueryEscape(gid)
-	var resp ListResponse[QuotaGroup]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostQuotaGroup: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[QuotaGroupPost, QuotaGroup](c, ctx, "/quotas/groups?file_system_names="+url.QueryEscape(fileSystemName)+"&gids="+url.QueryEscape(gid), body, "PostQuotaGroup")
 }
 
 // PatchQuotaGroup updates an existing group quota on a file system.
 func (c *FlashBladeClient) PatchQuotaGroup(ctx context.Context, fileSystemName, gid string, body QuotaGroupPatch) (*QuotaGroup, error) {
-	path := "/quotas/groups?file_system_names=" + url.QueryEscape(fileSystemName) + "&gids=" + url.QueryEscape(gid)
-	var resp ListResponse[QuotaGroup]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchQuotaGroup: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[QuotaGroupPatch, QuotaGroup](c, ctx, "/quotas/groups?file_system_names="+url.QueryEscape(fileSystemName)+"&gids="+url.QueryEscape(gid), body, "PatchQuotaGroup")
 }
 
 // DeleteQuotaGroup removes a group quota from a file system.

@@ -15,28 +15,12 @@ func (c *FlashBladeClient) GetTlsPolicy(ctx context.Context, name string) (*TlsP
 
 // PostTlsPolicy creates a new TLS policy. The name is passed via ?names= query parameter.
 func (c *FlashBladeClient) PostTlsPolicy(ctx context.Context, name string, body TlsPolicyPost) (*TlsPolicy, error) {
-	path := "/tls-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[TlsPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, fmt.Errorf("PostTlsPolicy: %w", err)
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostTlsPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[TlsPolicyPost, TlsPolicy](c, ctx, "/tls-policies?names="+url.QueryEscape(name), body, "PostTlsPolicy")
 }
 
 // PatchTlsPolicy updates an existing TLS policy identified by name.
 func (c *FlashBladeClient) PatchTlsPolicy(ctx context.Context, name string, body TlsPolicyPatch) (*TlsPolicy, error) {
-	path := "/tls-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[TlsPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, fmt.Errorf("PatchTlsPolicy: %w", err)
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchTlsPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[TlsPolicyPatch, TlsPolicy](c, ctx, "/tls-policies?names="+url.QueryEscape(name), body, "PatchTlsPolicy")
 }
 
 // DeleteTlsPolicy deletes a TLS policy by name.
@@ -71,14 +55,7 @@ func (c *FlashBladeClient) ListTlsPolicyMembers(ctx context.Context, policyName 
 func (c *FlashBladeClient) PostTlsPolicyMember(ctx context.Context, policyName string, memberName string) (*TlsPolicyMember, error) {
 	path := "/network-interfaces/tls-policies?policy_names=" + url.QueryEscape(policyName) +
 		"&member_names=" + url.QueryEscape(memberName)
-	var resp ListResponse[TlsPolicyMember]
-	if err := c.post(ctx, path, struct{}{}, &resp); err != nil {
-		return nil, fmt.Errorf("PostTlsPolicyMember: %w", err)
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostTlsPolicyMember: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[struct{}, TlsPolicyMember](c, ctx, path, struct{}{}, "PostTlsPolicyMember")
 }
 
 // DeleteTlsPolicyMember removes a network interface from a TLS policy.

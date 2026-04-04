@@ -74,30 +74,14 @@ func (c *FlashBladeClient) ListFileSystems(ctx context.Context, opts ListFileSys
 // PostFileSystem creates a new file system.
 // The name is passed as a ?names= query parameter as required by the FlashBlade API.
 func (c *FlashBladeClient) PostFileSystem(ctx context.Context, body FileSystemPost) (*FileSystem, error) {
-	path := "/file-systems?names=" + url.QueryEscape(body.Name)
-	var resp ListResponse[FileSystem]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostFileSystem: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[FileSystemPost, FileSystem](c, ctx, "/file-systems?names="+url.QueryEscape(body.Name), body, "PostFileSystem")
 }
 
 // PatchFileSystem updates an existing file system identified by its ID.
 // Only non-nil pointer fields in body are sent (PATCH semantics).
 // Uses ID (not name) for stability across renames.
 func (c *FlashBladeClient) PatchFileSystem(ctx context.Context, id string, body FileSystemPatch) (*FileSystem, error) {
-	path := "/file-systems?ids=" + url.QueryEscape(id)
-	var resp ListResponse[FileSystem]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchFileSystem: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[FileSystemPatch, FileSystem](c, ctx, "/file-systems?ids="+url.QueryEscape(id), body, "PatchFileSystem")
 }
 
 // DeleteFileSystem eradicates a soft-deleted file system identified by its ID.

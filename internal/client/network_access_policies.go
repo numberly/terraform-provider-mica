@@ -40,15 +40,7 @@ func (c *FlashBladeClient) ListNetworkAccessPolicies(ctx context.Context) ([]Net
 // PatchNetworkAccessPolicy updates an existing network access policy identified by name.
 // Network access policies are singletons — no POST or DELETE is available at the policy level.
 func (c *FlashBladeClient) PatchNetworkAccessPolicy(ctx context.Context, name string, body NetworkAccessPolicyPatch) (*NetworkAccessPolicy, error) {
-	path := "/network-access-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[NetworkAccessPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchNetworkAccessPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[NetworkAccessPolicyPatch, NetworkAccessPolicy](c, ctx, "/network-access-policies?names="+url.QueryEscape(name), body, "PatchNetworkAccessPolicy")
 }
 
 // ListNetworkAccessPolicyRules returns all rules for the given network access policy.
@@ -96,28 +88,12 @@ func (c *FlashBladeClient) GetNetworkAccessPolicyRuleByIndex(ctx context.Context
 
 // PostNetworkAccessPolicyRule creates a new rule in a network access policy.
 func (c *FlashBladeClient) PostNetworkAccessPolicyRule(ctx context.Context, policyName string, body NetworkAccessPolicyRulePost) (*NetworkAccessPolicyRule, error) {
-	path := "/network-access-policies/rules?policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[NetworkAccessPolicyRule]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostNetworkAccessPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[NetworkAccessPolicyRulePost, NetworkAccessPolicyRule](c, ctx, "/network-access-policies/rules?policy_names="+url.QueryEscape(policyName), body, "PostNetworkAccessPolicyRule")
 }
 
 // PatchNetworkAccessPolicyRule updates an existing network access policy rule.
 func (c *FlashBladeClient) PatchNetworkAccessPolicyRule(ctx context.Context, policyName, ruleName string, body NetworkAccessPolicyRulePatch) (*NetworkAccessPolicyRule, error) {
-	path := "/network-access-policies/rules?names=" + url.QueryEscape(ruleName) + "&policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[NetworkAccessPolicyRule]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchNetworkAccessPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[NetworkAccessPolicyRulePatch, NetworkAccessPolicyRule](c, ctx, "/network-access-policies/rules?names="+url.QueryEscape(ruleName)+"&policy_names="+url.QueryEscape(policyName), body, "PatchNetworkAccessPolicyRule")
 }
 
 // DeleteNetworkAccessPolicyRule deletes a network access policy rule by name.

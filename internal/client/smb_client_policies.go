@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -15,29 +14,13 @@ func (c *FlashBladeClient) GetSmbClientPolicy(ctx context.Context, name string) 
 // PostSmbClientPolicy creates a new SMB client policy.
 // The name is passed as a query parameter; optional fields are in the body.
 func (c *FlashBladeClient) PostSmbClientPolicy(ctx context.Context, name string, body SmbClientPolicyPost) (*SmbClientPolicy, error) {
-	path := "/smb-client-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[SmbClientPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostSmbClientPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[SmbClientPolicyPost, SmbClientPolicy](c, ctx, "/smb-client-policies?names="+url.QueryEscape(name), body, "PostSmbClientPolicy")
 }
 
 // PatchSmbClientPolicy updates an existing SMB client policy identified by name.
 // When renaming (body.Name != nil), the OLD name must be passed as the name argument.
 func (c *FlashBladeClient) PatchSmbClientPolicy(ctx context.Context, name string, body SmbClientPolicyPatch) (*SmbClientPolicy, error) {
-	path := "/smb-client-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[SmbClientPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchSmbClientPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[SmbClientPolicyPatch, SmbClientPolicy](c, ctx, "/smb-client-policies?names="+url.QueryEscape(name), body, "PatchSmbClientPolicy")
 }
 
 // DeleteSmbClientPolicy permanently deletes an SMB client policy.
@@ -76,28 +59,12 @@ func (c *FlashBladeClient) GetSmbClientPolicyRuleByName(ctx context.Context, pol
 
 // PostSmbClientPolicyRule creates a new rule in an SMB client policy.
 func (c *FlashBladeClient) PostSmbClientPolicyRule(ctx context.Context, policyName string, body SmbClientPolicyRulePost) (*SmbClientPolicyRule, error) {
-	path := "/smb-client-policies/rules?policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[SmbClientPolicyRule]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostSmbClientPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[SmbClientPolicyRulePost, SmbClientPolicyRule](c, ctx, "/smb-client-policies/rules?policy_names="+url.QueryEscape(policyName), body, "PostSmbClientPolicyRule")
 }
 
 // PatchSmbClientPolicyRule updates an existing SMB client policy rule.
 func (c *FlashBladeClient) PatchSmbClientPolicyRule(ctx context.Context, policyName, ruleName string, body SmbClientPolicyRulePatch) (*SmbClientPolicyRule, error) {
-	path := "/smb-client-policies/rules?names=" + url.QueryEscape(ruleName) + "&policy_names=" + url.QueryEscape(policyName)
-	var resp ListResponse[SmbClientPolicyRule]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchSmbClientPolicyRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[SmbClientPolicyRulePatch, SmbClientPolicyRule](c, ctx, "/smb-client-policies/rules?names="+url.QueryEscape(ruleName)+"&policy_names="+url.QueryEscape(policyName), body, "PatchSmbClientPolicyRule")
 }
 
 // DeleteSmbClientPolicyRule deletes an SMB client policy rule by name.

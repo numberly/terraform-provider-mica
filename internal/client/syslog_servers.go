@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"strings"
 )
@@ -55,28 +54,12 @@ func (c *FlashBladeClient) ListSyslogServers(ctx context.Context, opts ListSyslo
 // PostSyslogServer creates a new syslog server.
 // The name is passed as a query parameter; URI/services/sources are in the body.
 func (c *FlashBladeClient) PostSyslogServer(ctx context.Context, name string, body SyslogServerPost) (*SyslogServer, error) {
-	path := "/syslog-servers?names=" + url.QueryEscape(name)
-	var resp ListResponse[SyslogServer]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostSyslogServer: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[SyslogServerPost, SyslogServer](c, ctx, "/syslog-servers?names="+url.QueryEscape(name), body, "PostSyslogServer")
 }
 
 // PatchSyslogServer updates an existing syslog server identified by name.
 func (c *FlashBladeClient) PatchSyslogServer(ctx context.Context, name string, body SyslogServerPatch) (*SyslogServer, error) {
-	path := "/syslog-servers?names=" + url.QueryEscape(name)
-	var resp ListResponse[SyslogServer]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchSyslogServer: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[SyslogServerPatch, SyslogServer](c, ctx, "/syslog-servers?names="+url.QueryEscape(name), body, "PatchSyslogServer")
 }
 
 // DeleteSyslogServer permanently deletes a syslog server.

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"strings"
 )
@@ -55,29 +54,13 @@ func (c *FlashBladeClient) ListObjectStoreVirtualHosts(ctx context.Context, opts
 // PostObjectStoreVirtualHost creates a new object store virtual host.
 // The hostname is passed as the ?names= query parameter; body contains hostname and attached_servers.
 func (c *FlashBladeClient) PostObjectStoreVirtualHost(ctx context.Context, hostname string, body ObjectStoreVirtualHostPost) (*ObjectStoreVirtualHost, error) {
-	path := "/object-store-virtual-hosts?names=" + url.QueryEscape(hostname)
-	var resp ListResponse[ObjectStoreVirtualHost]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostObjectStoreVirtualHost: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[ObjectStoreVirtualHostPost, ObjectStoreVirtualHost](c, ctx, "/object-store-virtual-hosts?names="+url.QueryEscape(hostname), body, "PostObjectStoreVirtualHost")
 }
 
 // PatchObjectStoreVirtualHost updates an existing object store virtual host identified by its server-assigned name.
 // When renaming (body.Name != nil), the OLD name must be passed as the name argument.
 func (c *FlashBladeClient) PatchObjectStoreVirtualHost(ctx context.Context, name string, body ObjectStoreVirtualHostPatch) (*ObjectStoreVirtualHost, error) {
-	path := "/object-store-virtual-hosts?names=" + url.QueryEscape(name)
-	var resp ListResponse[ObjectStoreVirtualHost]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchObjectStoreVirtualHost: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[ObjectStoreVirtualHostPatch, ObjectStoreVirtualHost](c, ctx, "/object-store-virtual-hosts?names="+url.QueryEscape(name), body, "PatchObjectStoreVirtualHost")
 }
 
 // DeleteObjectStoreVirtualHost permanently deletes an object store virtual host.

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"strings"
 )
@@ -66,14 +65,7 @@ func (c *FlashBladeClient) PostObjectStoreAccessKey(ctx context.Context, names s
 	if names != "" {
 		path += "?names=" + url.QueryEscape(names)
 	}
-	var resp ListResponse[ObjectStoreAccessKey]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostObjectStoreAccessKey: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[ObjectStoreAccessKeyPost, ObjectStoreAccessKey](c, ctx, path, body, "PostObjectStoreAccessKey")
 }
 
 // DeleteObjectStoreAccessKey permanently deletes an object store access key identified by name.

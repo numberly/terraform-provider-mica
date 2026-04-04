@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"strings"
 )
@@ -15,28 +14,12 @@ func (c *FlashBladeClient) GetServer(ctx context.Context, name string) (*Server,
 
 // PostServer creates a new server. The name is passed via the ?create_ds= query parameter.
 func (c *FlashBladeClient) PostServer(ctx context.Context, name string, body ServerPost) (*Server, error) {
-	path := "/servers?create_ds=" + url.QueryEscape(name)
-	var resp ListResponse[Server]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostServer: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[ServerPost, Server](c, ctx, "/servers?create_ds="+url.QueryEscape(name), body, "PostServer")
 }
 
 // PatchServer updates an existing server identified by name.
 func (c *FlashBladeClient) PatchServer(ctx context.Context, name string, body ServerPatch) (*Server, error) {
-	path := "/servers?names=" + url.QueryEscape(name)
-	var resp ListResponse[Server]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchServer: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[ServerPatch, Server](c, ctx, "/servers?names="+url.QueryEscape(name), body, "PatchServer")
 }
 
 // DeleteServer removes a server by name. If cascadeDelete is non-empty,

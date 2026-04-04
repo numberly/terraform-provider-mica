@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -14,28 +13,12 @@ func (c *FlashBladeClient) GetQosPolicy(ctx context.Context, name string) (*QosP
 
 // PostQosPolicy creates a new QoS policy. The name is passed via ?names= query parameter.
 func (c *FlashBladeClient) PostQosPolicy(ctx context.Context, name string, body QosPolicyPost) (*QosPolicy, error) {
-	path := "/qos-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[QosPolicy]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostQosPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[QosPolicyPost, QosPolicy](c, ctx, "/qos-policies?names="+url.QueryEscape(name), body, "PostQosPolicy")
 }
 
 // PatchQosPolicy updates an existing QoS policy identified by name.
 func (c *FlashBladeClient) PatchQosPolicy(ctx context.Context, name string, body QosPolicyPatch) (*QosPolicy, error) {
-	path := "/qos-policies?names=" + url.QueryEscape(name)
-	var resp ListResponse[QosPolicy]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchQosPolicy: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[QosPolicyPatch, QosPolicy](c, ctx, "/qos-policies?names="+url.QueryEscape(name), body, "PatchQosPolicy")
 }
 
 // DeleteQosPolicy deletes a QoS policy by name.
@@ -70,14 +53,7 @@ func (c *FlashBladeClient) ListQosPolicyMembers(ctx context.Context, policyName 
 // The API requires both ?policy_names= and ?member_names= on POST.
 func (c *FlashBladeClient) PostQosPolicyMember(ctx context.Context, policyName string, memberName string, memberType string) (*QosPolicyMember, error) {
 	path := "/qos-policies/members?policy_names=" + url.QueryEscape(policyName) + "&member_names=" + url.QueryEscape(memberName) + "&member_types=" + url.QueryEscape(memberType)
-	var resp ListResponse[QosPolicyMember]
-	if err := c.post(ctx, path, struct{}{}, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostQosPolicyMember: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[struct{}, QosPolicyMember](c, ctx, path, struct{}{}, "PostQosPolicyMember")
 }
 
 // DeleteQosPolicyMember removes a member from a QoS policy.

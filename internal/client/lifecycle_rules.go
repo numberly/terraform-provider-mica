@@ -51,14 +51,7 @@ func (c *FlashBladeClient) PostLifecycleRule(ctx context.Context, body Lifecycle
 	if confirmDate {
 		path += "?confirm_date=true"
 	}
-	var resp ListResponse[LifecycleRule]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostLifecycleRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[LifecycleRulePost, LifecycleRule](c, ctx, path, body, "PostLifecycleRule")
 }
 
 // PatchLifecycleRule updates an existing lifecycle rule identified by bucket name and rule ID.
@@ -70,14 +63,7 @@ func (c *FlashBladeClient) PatchLifecycleRule(ctx context.Context, bucketName st
 	if confirmDate {
 		path += "&confirm_date=true"
 	}
-	var resp ListResponse[LifecycleRule]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchLifecycleRule: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[LifecycleRulePatch, LifecycleRule](c, ctx, path, body, "PatchLifecycleRule")
 }
 
 // DeleteLifecycleRule permanently deletes a lifecycle rule identified by bucket name and rule ID.

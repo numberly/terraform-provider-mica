@@ -80,30 +80,14 @@ func (c *FlashBladeClient) GetBucket(ctx context.Context, name string) (*Bucket,
 // PostBucket creates a new bucket with the given name.
 // The bucket name is passed as a query parameter (?names=), matching FlashBlade API semantics.
 func (c *FlashBladeClient) PostBucket(ctx context.Context, name string, body BucketPost) (*Bucket, error) {
-	path := "/buckets?names=" + url.QueryEscape(name)
-	var resp ListResponse[Bucket]
-	if err := c.post(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PostBucket: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return postOne[BucketPost, Bucket](c, ctx, "/buckets?names="+url.QueryEscape(name), body, "PostBucket")
 }
 
 // PatchBucket updates an existing bucket identified by its ID.
 // Only non-nil pointer fields in body are sent (PATCH semantics).
 // Uses ID (not name) for stability across the resource lifecycle.
 func (c *FlashBladeClient) PatchBucket(ctx context.Context, id string, body BucketPatch) (*Bucket, error) {
-	path := "/buckets?ids=" + url.QueryEscape(id)
-	var resp ListResponse[Bucket]
-	if err := c.patch(ctx, path, body, &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("PatchBucket: empty response from server")
-	}
-	return &resp.Items[0], nil
+	return patchOne[BucketPatch, Bucket](c, ctx, "/buckets?ids="+url.QueryEscape(id), body, "PatchBucket")
 }
 
 // DeleteBucket eradicates a soft-deleted bucket identified by its ID.
