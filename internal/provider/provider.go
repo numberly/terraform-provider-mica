@@ -249,10 +249,25 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 // Resources returns the list of resource types provided by this provider.
 func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		// Storage — file systems
 		NewFilesystemResource,
+
+		// Storage — object store
 		NewObjectStoreAccountResource,
-		NewBucketResource,
+		NewObjectStoreAccountExportResource,
+		NewObjectStoreVirtualHostResource,
+		NewObjectStoreUserResource,
+		NewObjectStoreUserPolicyResource,
 		NewAccessKeyResource,
+		NewBucketResource,
+		NewBucketAccessPolicyResource,
+		NewBucketAccessPolicyRuleResource,
+		NewBucketAuditFilterResource,
+		NewLifecycleRuleResource,
+		NewQosPolicyResource,
+		NewQosPolicyMemberResource,
+
+		// Policies — NFS, SMB, Snapshot, Network, S3
 		NewNfsExportPolicyResource,
 		NewNfsExportPolicyRuleResource,
 		NewSmbSharePolicyResource,
@@ -265,74 +280,93 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewNetworkAccessPolicyRuleResource,
 		NewObjectStoreAccessPolicyResource,
 		NewObjectStoreAccessPolicyRuleResource,
-		NewQuotaUserResource,
-		NewQuotaGroupResource,
-		NewArrayDnsResource,
-		NewArrayNtpResource,
-		NewArraySmtpResource,
-		NewFileSystemExportResource,
-		NewObjectStoreAccountExportResource,
-		NewServerResource,
-		NewObjectStoreVirtualHostResource,
 		NewS3ExportPolicyResource,
 		NewS3ExportPolicyRuleResource,
-		NewSyslogServerResource,
-		NewRemoteCredentialsResource,
-		NewBucketReplicaLinkResource,
-		NewLifecycleRuleResource,
-		NewBucketAccessPolicyResource,
-		NewBucketAccessPolicyRuleResource,
-		NewBucketAuditFilterResource,
-		NewQosPolicyResource,
-		NewQosPolicyMemberResource,
-		NewObjectStoreUserResource,
-		NewObjectStoreUserPolicyResource, // registered here by plan 35-03
+
+		// Servers & exports
+		NewServerResource,
+		NewFileSystemExportResource,
+
+		// Networking
 		NewSubnetResource,
 		NewNetworkInterfaceResource,
+
+		// Replication
+		NewRemoteCredentialsResource,
+		NewBucketReplicaLinkResource,
 		NewTargetResource,
+
+		// Security & TLS
 		NewCertificateResource,
 		NewTlsPolicyResource,
 		NewTlsPolicyMemberResource,
+
+		// Quotas
+		NewQuotaUserResource,
+		NewQuotaGroupResource,
+
+		// Array administration
+		NewArrayDnsResource,
+		NewArrayNtpResource,
+		NewArraySmtpResource,
+		NewSyslogServerResource,
 	}
 }
 
 // DataSources returns the list of data source types provided by this provider.
 func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		// Storage — file systems
 		NewFilesystemDataSource,
+
+		// Storage — object store
 		NewObjectStoreAccountDataSource,
-		NewBucketDataSource,
+		NewObjectStoreAccountExportDataSource,
+		NewObjectStoreVirtualHostDataSource,
+		NewObjectStoreUserDataSource,
 		NewAccessKeyDataSource,
+		NewBucketDataSource,
+		NewBucketAccessPolicyDataSource,
+		NewBucketAuditFilterDataSource,
+		NewLifecycleRuleDataSource,
+		NewQosPolicyDataSource,
+
+		// Policies — NFS, SMB, Snapshot, Network, S3
 		NewNfsExportPolicyDataSource,
 		NewSmbSharePolicyDataSource,
 		NewSmbClientPolicyDataSource,
 		NewSnapshotPolicyDataSource,
 		NewNetworkAccessPolicyDataSource,
 		NewObjectStoreAccessPolicyDataSource,
-		NewObjectStoreUserDataSource,
-		NewQuotaUserDataSource,
-		NewQuotaGroupDataSource,
-		NewArrayDnsDataSource,
-		NewArrayNtpDataSource,
-		NewArraySmtpDataSource,
+		NewS3ExportPolicyDataSource,
+
+		// Servers & exports
 		NewServerDataSource,
 		NewFileSystemExportDataSource,
-		NewObjectStoreAccountExportDataSource,
-		NewObjectStoreVirtualHostDataSource,
-		NewS3ExportPolicyDataSource,
-		NewSyslogServerDataSource,
-		NewArrayConnectionDataSource,
-		NewRemoteCredentialsDataSource,
-		NewBucketReplicaLinkDataSource,
-		NewLifecycleRuleDataSource,
-		NewBucketAccessPolicyDataSource,
-		NewBucketAuditFilterDataSource,
-		NewQosPolicyDataSource,
+
+		// Networking
 		NewSubnetDataSource,
 		NewLinkAggregationGroupDataSource,
 		NewNetworkInterfaceDataSource,
+
+		// Replication
+		NewArrayConnectionDataSource,
+		NewRemoteCredentialsDataSource,
+		NewBucketReplicaLinkDataSource,
 		NewTargetDataSource,
+
+		// Security & TLS
 		NewCertificateDataSource,
 		NewTlsPolicyDataSource,
+
+		// Quotas
+		NewQuotaUserDataSource,
+		NewQuotaGroupDataSource,
+
+		// Array administration
+		NewArrayDnsDataSource,
+		NewArrayNtpDataSource,
+		NewArraySmtpDataSource,
+		NewSyslogServerDataSource,
 	}
 }
