@@ -9,6 +9,8 @@
 
 Terraform provider for [Pure Storage FlashBlade](https://www.purestorage.com/products/file-and-object/flashblade.html), managing storage resources via the FlashBlade REST API v2.22.
 
+<img src="scorecard.png" width="100%">
+
 ## Overview
 
 This provider enables GitOps-driven management of FlashBlade storage: file systems, object store accounts and buckets, access policies, quotas, lifecycle rules, audit filters, QoS policies, cross-array replication, and array-level configuration — all as Terraform resources.
