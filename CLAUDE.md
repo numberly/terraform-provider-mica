@@ -2,6 +2,13 @@
 
 @CONVENTIONS.md
 
+## Skills
+
+When implementing a new resource, modifying an existing one, or planning provider work,
+use the `flashblade-resource-builder` skill (`.claude/skills/flashblade-resource-builder/`).
+It covers the full lifecycle: API discovery, model structs, client CRUD with generics,
+mock handlers, resource/data source, tests, docs, and roadmap tracking.
+
 ## Overview
 
 Terraform provider for Pure Storage FlashBlade (REST API v2.22, Purity//FB 4.6.7).
