@@ -181,3 +181,22 @@ type TlsPolicyMember struct {
 	Policy NamedReference `json:"policy"`
 	Member NamedReference `json:"member"`
 }
+
+// CertificateGroup represents a FlashBlade certificate group from GET /api/2.22/certificate-groups.
+// All fields are read-only: id and name set at creation, realms computed by API.
+type CertificateGroup struct {
+	ID     string   `json:"id"`
+	Name   string   `json:"name"`
+	Realms []string `json:"realms"`
+}
+
+// CertificateGroupPost is the body for POST /api/2.22/certificate-groups.
+// Name is passed via ?names= query parameter; no writable body fields exist for this resource.
+type CertificateGroupPost struct{}
+
+// CertificateGroupMember represents the association between a certificate and a certificate group.
+// Returned by GET /api/2.22/certificate-groups/certificates.
+type CertificateGroupMember struct {
+	Certificate NamedReference `json:"certificate"`
+	Group       NamedReference `json:"group"`
+}
