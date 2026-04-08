@@ -86,6 +86,11 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - Phase 38: DOC-01, DOC-02, DOC-03 — import docs, workflow example, tfplugindocs ✓
 - Phase 39: CERT-01 to CERT-05 — flashblade_certificate resource + data source (import PEM only)
 - Phase 40: TLSP-01 to TLSP-06 — flashblade_tls_policy resource + DS + flashblade_tls_policy_member
+- Phase 41: CERTG-01 to CERTG-05 — flashblade_certificate_group resource + DS + flashblade_certificate_group_member
+
+### Roadmap Evolution
+
+- Phase 41 added: Certificate Groups — flashblade_certificate_group resource + data source + flashblade_certificate_group_member resource
 
 ### Pending Todos
 
