@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: verifying
-stopped_at: Completed 41-certificate-groups/41-02-PLAN.md
-last_updated: "2026-04-08T09:44:13.367Z"
+status: executing
+stopped_at: Completed 42-array-connections/42-01-PLAN.md
+last_updated: "2026-04-08T12:08:05.459Z"
 last_activity: 2026-04-08
 progress:
-  total_phases: 40
+  total_phases: 41
   completed_phases: 39
-  total_plans: 87
-  completed_plans: 85
+  total_plans: 89
+  completed_plans: 86
   percent: 60
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 41 — certificate-groups
+**Current focus:** Phase 42 — array-connections
 
 ## Current Position
 
-Phase: 41
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 42 (array-connections) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-08
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
@@ -50,6 +50,7 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 | Phase 40-tls-policies P02 | 480 | 2 tasks | 17 files |
 | Phase 41-certificate-groups P01 | 300 | 3 tasks | 4 files |
 | Phase 41-certificate-groups P02 | 403 | 3 tasks | 17 files |
+| Phase 42-array-connections P01 | 300 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - [Phase 41-certificate-groups]: CRD resource: Update method returns AddError (no PATCH in FlashBlade certificate-groups API)
 - [Phase 41-certificate-groups]: Realms field Computed with NO UseStateForUnknown — volatile (set by array), must detect drift
 - [Phase 41-certificate-groups]: CRD inline null timeouts in ImportState: only create/read/delete keys (matches schema, not 4-key nullTimeoutsValue helper)
+- [Phase 42-01]: ArrayConnectionPatch.CACertificateGroup is **NamedReference for nil=omit vs inner-nil=set-null semantics
+- [Phase 42-01]: All CRUD operations use ?remote_names= (not ?names=) — API-mandated for array-connections
+- [Phase 42-01]: Mock handler keyed by conn.Remote.Name (replaced byID); GET returns empty-list+200 on miss
 
 ### v2.2 Phase Groupings
 
@@ -117,6 +121,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-08T09:38:16.241Z
-Stopped at: Completed 41-certificate-groups/41-02-PLAN.md
+Last session: 2026-04-08T12:08:05.451Z
+Stopped at: Completed 42-array-connections/42-01-PLAN.md
 Resume file: None

@@ -783,5 +783,5 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 42-01-PLAN.md — Client layer: ArrayConnection models extended, Post/Patch/Delete client methods, full CRUD mock handler, 7 unit tests
+- [x] 42-01-PLAN.md — Client layer: ArrayConnection models extended, Post/Patch/Delete client methods, full CRUD mock handler, 7 unit tests
 - [ ] 42-02-PLAN.md — Provider layer: flashblade_array_connection resource (full CRUD, import, sensitive connection_key), data source extended, registration, HCL examples, make docs
