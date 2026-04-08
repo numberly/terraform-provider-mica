@@ -1,0 +1,21 @@
+# FlashBlade A (initiator)
+array_a_endpoint            = "https://fb-dc1.example.com"
+array_a_api_token           = "T-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+array_a_name                = "fb-dc1"
+array_a_management_address  = "10.1.0.1"
+array_a_replication_address = "10.1.1.1"
+array_a_cert_name           = "fb-dc1"
+
+# FlashBlade B (passive)
+array_b_endpoint            = "https://fb-dc2.example.com"
+array_b_api_token           = "T-yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+array_b_name                = "fb-dc2"
+array_b_management_address  = "10.2.0.1"
+array_b_replication_address = "10.2.1.1"
+array_b_cert_name           = "fb-dc2"
+
+# Optional: custom certificate present on both arrays
+# custom_cert_name = "wildcard-replication-cert"
+
+# Encryption (default: true)
+# encrypted = true
