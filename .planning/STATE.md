@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: executing
-stopped_at: Completed 41-certificate-groups/41-01-PLAN.md
-last_updated: "2026-04-08T09:29:20.269Z"
+status: verifying
+stopped_at: Completed 41-certificate-groups/41-02-PLAN.md
+last_updated: "2026-04-08T09:38:16.249Z"
 last_activity: 2026-04-08
 progress:
   total_phases: 40
-  completed_phases: 38
+  completed_phases: 39
   total_plans: 87
-  completed_plans: 84
+  completed_plans: 85
   percent: 60
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Phase: 41 (certificate-groups) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-08
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
@@ -49,6 +49,7 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 | Phase 39-certificates P02 | 513 | 2 tasks | 11 files |
 | Phase 40-tls-policies P02 | 480 | 2 tasks | 17 files |
 | Phase 41-certificate-groups P01 | 300 | 3 tasks | 4 files |
+| Phase 41-certificate-groups P02 | 403 | 3 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - [Phase 40-tls-policies]: listToStringSlice defined locally in tls_policy_resource.go (not helpers.go) - single consumer
 - [Phase 41-certificate-groups]: CertificateGroupPost is empty struct — API creates certificate groups from ?names= query param alone
 - [Phase 41-certificate-groups]: Register /certificate-groups/certificates before /certificate-groups in ServeMux to prevent prefix collision
+- [Phase 41-certificate-groups]: CRD resource: Update method returns AddError (no PATCH in FlashBlade certificate-groups API)
+- [Phase 41-certificate-groups]: Realms field Computed with NO UseStateForUnknown — volatile (set by array), must detect drift
+- [Phase 41-certificate-groups]: CRD inline null timeouts in ImportState: only create/read/delete keys (matches schema, not 4-key nullTimeoutsValue helper)
 
 ### v2.2 Phase Groupings
 
@@ -111,6 +115,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-08T09:29:20.260Z
-Stopped at: Completed 41-certificate-groups/41-01-PLAN.md
+Last session: 2026-04-08T09:38:16.241Z
+Stopped at: Completed 41-certificate-groups/41-02-PLAN.md
 Resume file: None

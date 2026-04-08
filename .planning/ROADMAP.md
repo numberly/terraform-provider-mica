@@ -767,4 +767,4 @@ Plans:
 
 Plans:
 - [x] 41-01-PLAN.md — Client layer: CertificateGroup/CertificateGroupPost/CertificateGroupMember models, client CRUD + member methods, mock handler + facade, 7 unit tests
-- [ ] 41-02-PLAN.md — Provider layer: flashblade_certificate_group resource, data source, flashblade_certificate_group_member resource, tests, registration, HCL examples, make docs
+- [x] 41-02-PLAN.md — Provider layer: flashblade_certificate_group resource, data source, flashblade_certificate_group_member resource, tests, registration, HCL examples, make docs
