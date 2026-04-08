@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: executing
-stopped_at: Completed 42-array-connections/42-01-PLAN.md
-last_updated: "2026-04-08T12:08:05.459Z"
+status: verifying
+stopped_at: Completed 42-array-connections/42-02-PLAN.md
+last_updated: "2026-04-08T12:17:46.833Z"
 last_activity: 2026-04-08
 progress:
   total_phases: 41
-  completed_phases: 39
+  completed_phases: 40
   total_plans: 89
-  completed_plans: 86
+  completed_plans: 87
   percent: 60
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Phase: 42 (array-connections) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-08
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
@@ -51,6 +51,7 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 | Phase 41-certificate-groups P01 | 300 | 3 tasks | 4 files |
 | Phase 41-certificate-groups P02 | 403 | 3 tasks | 17 files |
 | Phase 42-array-connections P01 | 300 | 2 tasks | 4 files |
+| Phase 42-array-connections P02 | 426 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,9 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - [Phase 42-01]: ArrayConnectionPatch.CACertificateGroup is **NamedReference for nil=omit vs inner-nil=set-null semantics
 - [Phase 42-01]: All CRUD operations use ?remote_names= (not ?names=) — API-mandated for array-connections
 - [Phase 42-01]: Mock handler keyed by conn.Remote.Name (replaced byID); GET returns empty-list+200 on miss
+- [Phase 42-02]: connection_key is Sensitive+Required; preserved from plan/state; empty string on ImportState
+- [Phase 42-02]: replication_addresses maps to empty list (not ListNull) when API returns empty
+- [Phase 42-02]: throttle uses SingleNestedAttribute Optional+Computed with basetypes.ObjectAsOptions extraction
 
 ### v2.2 Phase Groupings
 
@@ -121,6 +125,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-08T12:08:05.451Z
-Stopped at: Completed 42-array-connections/42-01-PLAN.md
+Last session: 2026-04-08T12:17:46.824Z
+Stopped at: Completed 42-array-connections/42-02-PLAN.md
 Resume file: None
