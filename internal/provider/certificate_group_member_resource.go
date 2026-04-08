@@ -116,14 +116,13 @@ func (r *certificateGroupMemberResource) Create(ctx context.Context, req resourc
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	member, err := r.client.PostCertificateGroupMember(ctx, data.GroupName.ValueString(), data.CertName.ValueString())
+	_, err := r.client.PostCertificateGroupMember(ctx, data.GroupName.ValueString(), data.CertName.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating certificate group member", err.Error())
 		return
 	}
 
-	data.GroupName = types.StringValue(member.Group.Name)
-	data.CertName = types.StringValue(member.Certificate.Name)
+	// Preserve plan values — API response may not include names in NamedReference fields.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
