@@ -50,6 +50,8 @@ func buildArrayConnectionDSType() tftypes.Object {
 		"encrypted":             tftypes.Bool,
 		"type":                  tftypes.String,
 		"version":               tftypes.String,
+		"ca_certificate_group":  tftypes.String,
+		"os":                    tftypes.String,
 	}}
 }
 
@@ -65,6 +67,8 @@ func nullArrayConnectionDSConfig() map[string]tftypes.Value {
 		"encrypted":             tftypes.NewValue(tftypes.Bool, nil),
 		"type":                  tftypes.NewValue(tftypes.String, nil),
 		"version":               tftypes.NewValue(tftypes.String, nil),
+		"ca_certificate_group":  tftypes.NewValue(tftypes.String, nil),
+		"os":                    tftypes.NewValue(tftypes.String, nil),
 	}
 }
 
@@ -88,6 +92,8 @@ func TestUnit_ArrayConnection_Read(t *testing.T) {
 		Encrypted:            true,
 		Type:                 "async-replication",
 		Version:              "4.3.0",
+		CACertificateGroup:   &client.NamedReference{Name: "my-ca-group"},
+		OS:                   "Purity//FB",
 	})
 
 	d := newTestArrayConnectionDataSource(t, ms)
@@ -139,6 +145,12 @@ func TestUnit_ArrayConnection_Read(t *testing.T) {
 	}
 	if model.ReplicationAddresses.IsNull() {
 		t.Error("expected replication_addresses to be populated")
+	}
+	if model.CACertificateGroup.ValueString() != "my-ca-group" {
+		t.Errorf("expected ca_certificate_group=my-ca-group, got %s", model.CACertificateGroup.ValueString())
+	}
+	if model.OS.ValueString() != "Purity//FB" {
+		t.Errorf("expected os=Purity//FB, got %s", model.OS.ValueString())
 	}
 }
 
@@ -193,7 +205,7 @@ func TestUnit_ArrayConnection_Schema(t *testing.T) {
 	}
 
 	// All other attributes must be Computed
-	computedAttrs := []string{"id", "status", "remote_id", "management_address", "replication_addresses", "encrypted", "type", "version"}
+	computedAttrs := []string{"id", "status", "remote_id", "management_address", "replication_addresses", "encrypted", "type", "version", "ca_certificate_group", "os"}
 	for _, name := range computedAttrs {
 		a, ok := s.Attributes[name]
 		if !ok {

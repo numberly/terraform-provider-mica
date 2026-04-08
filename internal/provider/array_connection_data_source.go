@@ -38,6 +38,8 @@ type arrayConnectionDataSourceModel struct {
 	Encrypted            types.Bool   `tfsdk:"encrypted"`
 	Type                 types.String `tfsdk:"type"`
 	Version              types.String `tfsdk:"version"`
+	CACertificateGroup   types.String `tfsdk:"ca_certificate_group"`
+	OS                   types.String `tfsdk:"os"`
 }
 
 // ---------- data source interface methods -----------------------------------
@@ -88,6 +90,14 @@ func (d *arrayConnectionDataSource) Schema(_ context.Context, _ datasource.Schem
 			"version": schema.StringAttribute{
 				Computed:    true,
 				Description: "The version of the array connection protocol.",
+			},
+			"ca_certificate_group": schema.StringAttribute{
+				Computed:    true,
+				Description: "Name of the CA certificate group for TLS verification.",
+			},
+			"os": schema.StringAttribute{
+				Computed:    true,
+				Description: "Operating system of the remote array.",
 			},
 		},
 	}
@@ -150,6 +160,13 @@ func (d *arrayConnectionDataSource) Read(ctx context.Context, req datasource.Rea
 	} else {
 		config.ReplicationAddresses = types.ListNull(types.StringType)
 	}
+
+	if conn.CACertificateGroup != nil {
+		config.CACertificateGroup = types.StringValue(conn.CACertificateGroup.Name)
+	} else {
+		config.CACertificateGroup = types.StringNull()
+	}
+	config.OS = types.StringValue(conn.OS)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

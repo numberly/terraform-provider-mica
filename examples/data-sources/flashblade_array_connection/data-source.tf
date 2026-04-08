@@ -1,7 +1,7 @@
 data "flashblade_array_connection" "example" {
-  remote_name = "remote-flashblade"
+  remote_name = "remote-fb"
 }
 
-output "management_address" {
-  value = data.flashblade_array_connection.example.management_address
+output "connection_status" {
+  value = data.flashblade_array_connection.example.status
 }

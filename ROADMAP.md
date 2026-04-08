@@ -4,7 +4,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 **Last updated:** 2026-04-08
 **Provider version:** v2.2
-**Total API sections:** 84 | **Covered:** ~38 | **Coverage of IaC-relevant CRUD:** ~69%
+**Total API sections:** 84 | **Covered:** ~39 | **Coverage of IaC-relevant CRUD:** ~70%
 
 ## Coverage Legend
 
@@ -78,7 +78,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | Bucket Replica Links | `flashblade_bucket_replica_link` | Yes | Done | Bidirectional, pause/resume; Read/Import by UUID (supports multiple links per bucket pair) |
 | Remote Credentials | `flashblade_remote_credentials` | Yes | Done | S3 cross-array + S3 target auth; target_name attr (v2.2) |
 | Targets | `flashblade_target` | Yes | Done | External S3 replication endpoints (address, CA cert group) |
-| Array Connections | No | Yes | DS-only | Read existing connections only |
+| Array Connections | `flashblade_array_connection` | Yes | Done | Full CRUD, connection_key sensitive/write-only, throttle, replication_addresses |
 
 ### Security & TLS
 
@@ -112,7 +112,6 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 | API Section | Type | Endpoints | Use Case | Status |
 |-------------|------|-----------|----------|--------|
-| Array Connections (CRUD) | Resource | POST, PATCH, DELETE | Create inter-array connections via TF (currently DS-only) | Candidate |
 | File System Replica Links | Resource | Full CRUD | FS-level replication between arrays (parity with bucket replica links) | Candidate |
 | File System Snapshots | Resource | Full CRUD | Snapshot management + policy member association for backup/DR | Candidate |
 | File System Policy Members | Resource | POST, DELETE `/file-systems/policies` | Associate NFS/SMB/snapshot policies to filesystems via TF | Candidate |

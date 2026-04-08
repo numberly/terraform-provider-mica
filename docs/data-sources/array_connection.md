@@ -14,11 +14,11 @@ Reads an existing FlashBlade array connection by remote array name.
 
 ```terraform
 data "flashblade_array_connection" "example" {
-  remote_name = "remote-flashblade"
+  remote_name = "remote-fb"
 }
 
-output "management_address" {
-  value = data.flashblade_array_connection.example.management_address
+output "connection_status" {
+  value = data.flashblade_array_connection.example.status
 }
 ```
 
@@ -31,9 +31,11 @@ output "management_address" {
 
 ### Read-Only
 
+- `ca_certificate_group` (String) Name of the CA certificate group for TLS verification.
 - `encrypted` (Boolean) Whether the array connection is encrypted.
 - `id` (String) The unique identifier of the array connection.
 - `management_address` (String) Management IP address or hostname of the remote array.
+- `os` (String) Operating system of the remote array.
 - `remote_id` (String) The unique identifier of the remote array.
 - `replication_addresses` (List of String) List of replication IP addresses for the remote array.
 - `status` (String) Connection status (connected, partially_connected, connecting, incompatible, not_connected).
