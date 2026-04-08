@@ -76,7 +76,7 @@ func nullArrayConnectionDSConfig() map[string]tftypes.Value {
 
 // TestUnit_ArrayConnection_Read verifies the data source reads an array connection by remote_name
 // and returns all attributes correctly.
-func TestUnit_ArrayConnection_Read(t *testing.T) {
+func TestUnit_ArrayConnectionDataSource_Basic(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterArrayConnectionHandlers(ms.Mux)
@@ -155,7 +155,7 @@ func TestUnit_ArrayConnection_Read(t *testing.T) {
 }
 
 // TestUnit_ArrayConnection_NotFound verifies that a missing array connection returns an error diagnostic.
-func TestUnit_ArrayConnection_NotFound(t *testing.T) {
+func TestUnit_ArrayConnectionDataSource_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayConnectionHandlers(ms.Mux)
@@ -191,7 +191,7 @@ func TestUnit_ArrayConnection_NotFound(t *testing.T) {
 }
 
 // TestUnit_ArrayConnection_Schema verifies schema attributes: remote_name is Required, others Computed.
-func TestUnit_ArrayConnection_Schema(t *testing.T) {
+func TestUnit_ArrayConnectionDataSource_Schema(t *testing.T) {
 	resp := arrayConnectionDSSchema(t)
 	s := resp.Schema
 

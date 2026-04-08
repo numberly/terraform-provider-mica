@@ -346,3 +346,65 @@ func TestUnit_ArrayConnectionResource_ConnectionKeySensitive(t *testing.T) {
 		t.Errorf("expected connection_key=my-secret-key after Read, got %q", model.ConnectionKey.ValueString())
 	}
 }
+
+// TestUnit_ArrayConnectionResource_PassiveAdoption: Create without connection_key adopts an existing connection.
+func TestUnit_ArrayConnectionResource_PassiveAdoption(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	store := handlers.RegisterArrayConnectionHandlers(ms.Mux)
+
+	// Pre-seed the passive-side connection (auto-created by FlashBlade when remote connects).
+	store.Seed(&client.ArrayConnection{
+		ID:                   "passive-conn-1",
+		Remote:               client.NamedReference{Name: "remote-par5"},
+		ManagementAddress:    "10.5.0.1",
+		Encrypted:            true,
+		Status:               "connected",
+		Type:                 "async-replication",
+		OS:                   "Purity//FB",
+		Version:              "4.6.7",
+		ReplicationAddresses: []string{},
+	})
+
+	r := newTestArrayConnectionResource(t, ms)
+	s := arrayConnectionResourceSchema(t).Schema
+
+	// Build plan WITHOUT connection_key and management_address — passive side.
+	cfg := nullArrayConnectionResourceConfig()
+	cfg["remote_name"] = tftypes.NewValue(tftypes.String, "remote-par5")
+	cfg["encrypted"] = tftypes.NewValue(tftypes.Bool, true)
+	cfg["replication_addresses"] = tftypes.NewValue(
+		tftypes.List{ElementType: tftypes.String},
+		[]tftypes.Value{tftypes.NewValue(tftypes.String, "10.6.21.22")},
+	)
+	plan := tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildArrayConnectionResourceType(), cfg),
+		Schema: s,
+	}
+
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildArrayConnectionResourceType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Passive Create returned error: %s", createResp.Diagnostics)
+	}
+
+	var model arrayConnectionModel
+	if diags := createResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.ID.ValueString() != "passive-conn-1" {
+		t.Errorf("expected id=passive-conn-1, got %s", model.ID.ValueString())
+	}
+	if model.RemoteName.ValueString() != "remote-par5" {
+		t.Errorf("expected remote_name=remote-par5, got %s", model.RemoteName.ValueString())
+	}
+	if model.ManagementAddress.ValueString() != "10.5.0.1" {
+		t.Errorf("expected management_address=10.5.0.1, got %s", model.ManagementAddress.ValueString())
+	}
+	if model.Status.ValueString() != "connected" {
+		t.Errorf("expected status=connected, got %s", model.Status.ValueString())
+	}
+}

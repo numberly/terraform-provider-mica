@@ -30,6 +30,20 @@ type arrayConnectionKeyStoreFacade struct {
 	}
 }
 
+func TestUnit_ArrayConnectionKey_Get_Empty(t *testing.T) {
+	srv, _ := newArrayConnectionKeyServer(t)
+	c := newTestClient(t, srv)
+
+	// No key seeded — GET should return zero-value struct (not error).
+	got, err := c.GetArrayConnectionKey(context.Background())
+	if err != nil {
+		t.Fatalf("GetArrayConnectionKey (empty): %v", err)
+	}
+	if got.ConnectionKey != "" {
+		t.Errorf("expected empty ConnectionKey, got %q", got.ConnectionKey)
+	}
+}
+
 func TestUnit_ArrayConnectionKey_Get(t *testing.T) {
 	srv, facade := newArrayConnectionKeyServer(t)
 	facade.store.Seed(&client.ArrayConnectionKey{

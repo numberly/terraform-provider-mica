@@ -460,13 +460,6 @@ func (r *arrayConnectionResource) Update(ctx context.Context, req resource.Updat
 		hasChanges = true
 	}
 
-	// connection_key cannot be PATCHed — log warning if it changed.
-	if !plan.ConnectionKey.Equal(state.ConnectionKey) {
-		tflog.Warn(ctx, "connection_key change detected but cannot be applied via PATCH (API limitation); key change is ignored", map[string]any{
-			"resource": state.RemoteName.ValueString(),
-		})
-	}
-
 	remoteName := state.RemoteName.ValueString()
 
 	if hasChanges {
