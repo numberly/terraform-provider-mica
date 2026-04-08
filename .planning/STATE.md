@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: executing
-stopped_at: Completed 40-tls-policies/40-02-PLAN.md
-last_updated: "2026-04-03T07:42:49.559Z"
-last_activity: 2026-04-03
+stopped_at: Completed 41-certificate-groups/41-01-PLAN.md
+last_updated: "2026-04-08T09:29:20.269Z"
+last_activity: 2026-04-08
 progress:
-  total_phases: 39
+  total_phases: 40
   completed_phases: 38
-  total_plans: 85
-  completed_plans: 83
+  total_plans: 87
+  completed_plans: 84
   percent: 60
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 40 — tls-policies
+**Current focus:** Phase 41 — certificate-groups
 
 ## Current Position
 
-Phase: 40
-Plan: Not started
+Phase: 41 (certificate-groups) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-04-08 - Completed quick task 260408-bif: Fix lifecycle rule int64 zero-value handling
+Last activity: 2026-04-08
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 
@@ -48,6 +48,7 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 | Phase 39-certificates P01 | 300 | 2 tasks | 4 files |
 | Phase 39-certificates P02 | 513 | 2 tasks | 11 files |
 | Phase 40-tls-policies P02 | 480 | 2 tasks | 17 files |
+| Phase 41-certificate-groups P01 | 300 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 - [Phase 40-tls-policies]: is_local gets UseStateForUnknown: computed stable field set by API at creation
 - [Phase 40-tls-policies]: policy_type is Computed-only without UseStateForUnknown: volatile, drift detection still logs
 - [Phase 40-tls-policies]: listToStringSlice defined locally in tls_policy_resource.go (not helpers.go) - single consumer
+- [Phase 41-certificate-groups]: CertificateGroupPost is empty struct — API creates certificate groups from ?names= query param alone
+- [Phase 41-certificate-groups]: Register /certificate-groups/certificates before /certificate-groups in ServeMux to prevent prefix collision
 
 ### v2.2 Phase Groupings
 
@@ -108,6 +111,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-08
-Stopped at: Completed 40-tls-policies/40-02-PLAN.md
+Last session: 2026-04-08T09:29:20.260Z
+Stopped at: Completed 41-certificate-groups/41-01-PLAN.md
 Resume file: None
