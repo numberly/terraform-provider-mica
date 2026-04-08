@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 Phase: 40
 Plan: Not started
 Status: Ready to execute
-Last activity: 2026-04-03
+Last activity: 2026-04-08 - Completed quick task 260408-bif: Fix lifecycle rule int64 zero-value handling
 
 Progress: [██████░░░░] 60% (v2.2 — 3/5 phases complete)
 
@@ -95,8 +95,14 @@ None.
 
 None.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260408-bif | Fix lifecycle rule int64 zero-value handling: use *int64 for duration fields | 2026-04-08 | bbd00d3 | [260408-bif-fix-lifecycle-rule-int64-zero-value-hand](./quick/260408-bif-fix-lifecycle-rule-int64-zero-value-hand/) |
+
 ## Session Continuity
 
-Last session: 2026-04-03T07:35:55.775Z
+Last session: 2026-04-08
 Stopped at: Completed 40-tls-policies/40-02-PLAN.md
 Resume file: None
