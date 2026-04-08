@@ -123,6 +123,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 260408-bif | Fix lifecycle rule int64 zero-value handling: use *int64 for duration fields | 2026-04-08 | bbd00d3 | [260408-bif-fix-lifecycle-rule-int64-zero-value-hand](./quick/260408-bif-fix-lifecycle-rule-int64-zero-value-hand/) |
 | 260408-kbr | Add flashblade_array_connection_key resource: POST/GET ephemeral key, Sensitive, no-op Delete | 2026-04-08 | 99e1512 | [260408-kbr-add-flashblade-array-connection-key-reso](./quick/260408-kbr-add-flashblade-array-connection-key-reso/) |
+| 260408-o46 | Fix server POST missing ?names= query parameter (was ?create_ds=) | 2026-04-08 | 8998d4a | [260408-o46-fix-server-post-missing-names-query-para](./quick/260408-o46-fix-server-post-missing-names-query-para/) |
 
 ## Session Continuity
 
