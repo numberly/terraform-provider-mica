@@ -296,6 +296,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewBucketReplicaLinkResource,
 		NewTargetResource,
 		NewArrayConnectionResource,
+		NewArrayConnectionKeyResource,
 
 		// Security & TLS
 		NewCertificateResource,
