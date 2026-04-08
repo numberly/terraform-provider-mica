@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -55,14 +54,11 @@ func (s *arrayConnectionKeyStore) handleGet(w http.ResponseWriter, r *http.Reque
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	var key client.ArrayConnectionKey
+	var items []client.ArrayConnectionKey
 	if s.current != nil {
-		key = *s.current
+		items = append(items, *s.current)
 	}
-	_ = json.NewEncoder(w).Encode(key)
+	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
 // handlePost handles POST /api/2.22/array-connections/connection-key.
@@ -83,7 +79,5 @@ func (s *arrayConnectionKeyStore) handlePost(w http.ResponseWriter, r *http.Requ
 	s.nextID++
 	s.current = key
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(*key)
+	WriteJSONListResponse(w, http.StatusOK, []client.ArrayConnectionKey{*key})
 }
