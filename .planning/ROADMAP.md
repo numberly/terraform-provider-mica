@@ -11,7 +11,7 @@
 - v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
 - v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
 - v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- in progress
-- v2.2 S3 Target Replication & TLS (Phases 36-41) -- in progress
+- v2.2 S3 Target Replication & TLS (Phases 36-42) -- in progress
 
 ## Phases
 
@@ -666,7 +666,7 @@ Plans:
 - [ ] 35-03-PLAN.md — flashblade_object_store_user_policy member resource, provider registration, examples
 - [ ] 35-04-PLAN.md — Mocked provider tests for all three resources/data sources, ROADMAP.md update
 
-## v2.2 S3 Target Replication & TLS (Phases 36-41)
+## v2.2 S3 Target Replication & TLS (Phases 36-42)
 
 **Milestone Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) and manage TLS certificates and policies for network interfaces through Terraform.
 
@@ -768,3 +768,19 @@ Plans:
 Plans:
 - [x] 41-01-PLAN.md — Client layer: CertificateGroup/CertificateGroupPost/CertificateGroupMember models, client CRUD + member methods, mock handler + facade, 7 unit tests
 - [x] 41-02-PLAN.md — Provider layer: flashblade_certificate_group resource, data source, flashblade_certificate_group_member resource, tests, registration, HCL examples, make docs
+
+### Phase 42: Array Connections
+**Goal**: Operators can manage FlashBlade array connections through Terraform with full CRUD, enabling inter-array replication with connection key exchange, encryption, CA certificate group assignment, replication addresses, and bandwidth throttling
+**Depends on**: Phase 41 (certificate groups for ca_certificate_group reference)
+**Requirements**: ARRC-01, ARRC-02, ARRC-03, ARRC-04, ARRC-05
+**Success Criteria** (what must be TRUE):
+  1. Operator can create an array connection with management_address, connection_key, encrypted, and optional ca_certificate_group/replication_addresses via `terraform apply` -- subsequent `plan` shows 0 diff
+  2. Operator can update mutable fields (management_address, encrypted, ca_certificate_group, replication_addresses, throttle) and destroy a connection via `terraform apply` and `terraform destroy` without errors
+  3. `terraform import flashblade_array_connection.x remote-name` populates all non-sensitive attributes; subsequent `plan` shows 0 diff
+  4. `data.flashblade_array_connection` data source reads an existing connection by remote name and exposes all configuration and status attributes
+  5. connection_key is marked Sensitive and never appears in plan output or logs; it is write-only (POST only, not returned by GET)
+  6. Drift detection logs field-level changes via tflog when an array connection is modified outside Terraform
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 42 to break down)
