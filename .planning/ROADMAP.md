@@ -11,7 +11,7 @@
 - v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
 - v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
 - v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- in progress
-- v2.2 S3 Target Replication & TLS (Phases 36-40) -- in progress
+- v2.2 S3 Target Replication & TLS (Phases 36-41) -- in progress
 
 ## Phases
 
@@ -666,9 +666,7 @@ Plans:
 - [ ] 35-03-PLAN.md — flashblade_object_store_user_policy member resource, provider registration, examples
 - [ ] 35-04-PLAN.md — Mocked provider tests for all three resources/data sources, ROADMAP.md update
 
----
-
-## v2.2 S3 Target Replication & TLS (Phases 36-40)
+## v2.2 S3 Target Replication & TLS (Phases 36-41)
 
 **Milestone Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) and manage TLS certificates and policies for network interfaces through Terraform.
 
@@ -753,3 +751,20 @@ Plans:
 Plans:
 - [x] 40-01-PLAN.md — Client models (TlsPolicy/TlsPolicyPost/TlsPolicyPatch/TlsPolicyMember), client CRUD + member methods, mock handler, unit tests
 - [ ] 40-02-PLAN.md — flashblade_tls_policy resource (CRUD, import, drift detection), data source, flashblade_tls_policy_member resource, provider registration, examples, docs
+
+### Phase 41: Certificate Groups
+**Goal**: Operators can manage certificate groups and their certificate memberships through Terraform, enabling CA certificate trust bundles for targets, array connections, and directory services
+**Depends on**: Phase 39 (certificates must exist for group membership)
+**Requirements**: CERTG-01, CERTG-02, CERTG-03, CERTG-04, CERTG-05
+**Success Criteria** (what must be TRUE):
+  1. Operator can create a certificate group by name via `terraform apply` -- subsequent `plan` shows 0 diff
+  2. Operator can destroy a certificate group via `terraform destroy` without errors
+  3. `terraform import flashblade_certificate_group.x group-name` populates all attributes; subsequent `plan` shows 0 diff
+  4. `data.flashblade_certificate_group` data source reads an existing group by name and exposes id, name, and realms
+  5. Operator can add a certificate to a group via `flashblade_certificate_group_member` and remove it via `terraform destroy`
+  6. Drift detection logs field-level changes via tflog when a certificate group is modified outside Terraform
+**Plans**: 2 plans
+
+Plans:
+- [ ] 41-01-PLAN.md — Client layer: CertificateGroup/CertificateGroupPost/CertificateGroupMember models, client CRUD + member methods, mock handler + facade, 7 unit tests
+- [ ] 41-02-PLAN.md — Provider layer: flashblade_certificate_group resource, data source, flashblade_certificate_group_member resource, tests, registration, HCL examples, make docs
