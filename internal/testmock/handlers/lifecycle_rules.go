@@ -197,7 +197,7 @@ func (s *lifecycleRuleStore) handlePatch(w http.ResponseWriter, r *http.Request)
 			WriteJSONError(w, http.StatusBadRequest, "invalid abort_incomplete_multipart_uploads_after field")
 			return
 		}
-		rule.AbortIncompleteMultipartUploadsAfter = val
+		rule.AbortIncompleteMultipartUploadsAfter = &val
 	}
 	if v, ok := rawPatch["keep_current_version_for"]; ok {
 		var val int64
@@ -205,7 +205,7 @@ func (s *lifecycleRuleStore) handlePatch(w http.ResponseWriter, r *http.Request)
 			WriteJSONError(w, http.StatusBadRequest, "invalid keep_current_version_for field")
 			return
 		}
-		rule.KeepCurrentVersionFor = val
+		rule.KeepCurrentVersionFor = &val
 	}
 	if v, ok := rawPatch["keep_current_version_until"]; ok {
 		var val int64
@@ -213,7 +213,7 @@ func (s *lifecycleRuleStore) handlePatch(w http.ResponseWriter, r *http.Request)
 			WriteJSONError(w, http.StatusBadRequest, "invalid keep_current_version_until field")
 			return
 		}
-		rule.KeepCurrentVersionUntil = val
+		rule.KeepCurrentVersionUntil = &val
 	}
 	if v, ok := rawPatch["keep_previous_version_for"]; ok {
 		var val int64
@@ -221,7 +221,7 @@ func (s *lifecycleRuleStore) handlePatch(w http.ResponseWriter, r *http.Request)
 			WriteJSONError(w, http.StatusBadRequest, "invalid keep_previous_version_for field")
 			return
 		}
-		rule.KeepPreviousVersionFor = val
+		rule.KeepPreviousVersionFor = &val
 	}
 
 	WriteJSONListResponse(w, http.StatusOK, []client.LifecycleRule{*rule})

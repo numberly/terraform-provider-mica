@@ -10,6 +10,8 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
+func ptrInt64LCR(v int64) *int64 { return &v }
+
 func TestUnit_LifecycleRule_Get(t *testing.T) {
 	rules := []client.LifecycleRule{
 		{
@@ -19,7 +21,7 @@ func TestUnit_LifecycleRule_Get(t *testing.T) {
 			RuleID:                "expire-old",
 			Prefix:                "logs/",
 			Enabled:               true,
-			KeepCurrentVersionFor: 604800000, // 7 days in ms
+			KeepCurrentVersionFor: ptrInt64LCR(604800000), // 7 days in ms
 		},
 		{
 			ID:     "lr-id-002",
@@ -109,7 +111,7 @@ func TestUnit_LifecycleRule_Post(t *testing.T) {
 				Bucket:                body.Bucket,
 				RuleID:                body.RuleID,
 				Prefix:                body.Prefix,
-				KeepCurrentVersionFor: body.KeepCurrentVersionFor,
+				KeepCurrentVersionFor: body.KeepCurrentVersionFor, // *int64 from POST body
 				Enabled:               true,
 			}
 			writeJSON(w, http.StatusOK, listResponse([]client.LifecycleRule{result}))
@@ -124,7 +126,7 @@ func TestUnit_LifecycleRule_Post(t *testing.T) {
 		Bucket:                client.NamedReference{Name: "my-bucket"},
 		RuleID:                "new-rule",
 		Prefix:                "data/",
-		KeepCurrentVersionFor: 86400000,
+		KeepCurrentVersionFor: ptrInt64LCR(86400000),
 	}, false)
 	if err != nil {
 		t.Fatalf("PostLifecycleRule: %v", err)

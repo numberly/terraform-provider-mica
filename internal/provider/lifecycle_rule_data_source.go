@@ -141,26 +141,26 @@ func (d *lifecycleRuleDataSource) Read(ctx context.Context, req datasource.ReadR
 	config.Enabled = types.BoolValue(rule.Enabled)
 	config.CleanupExpiredObjectDeleteMarker = types.BoolValue(rule.CleanupExpiredObjectDeleteMarker)
 
-	if rule.AbortIncompleteMultipartUploadsAfter != 0 {
-		config.AbortIncompleteMultipartUploadsAfter = types.Int64Value(rule.AbortIncompleteMultipartUploadsAfter)
+	if rule.AbortIncompleteMultipartUploadsAfter != nil {
+		config.AbortIncompleteMultipartUploadsAfter = types.Int64Value(*rule.AbortIncompleteMultipartUploadsAfter)
 	} else {
 		config.AbortIncompleteMultipartUploadsAfter = types.Int64Null()
 	}
 
-	if rule.KeepCurrentVersionFor != 0 {
-		config.KeepCurrentVersionFor = types.Int64Value(rule.KeepCurrentVersionFor)
+	if rule.KeepCurrentVersionFor != nil {
+		config.KeepCurrentVersionFor = types.Int64Value(*rule.KeepCurrentVersionFor)
 	} else {
 		config.KeepCurrentVersionFor = types.Int64Null()
 	}
 
-	if rule.KeepCurrentVersionUntil != 0 {
-		config.KeepCurrentVersionUntil = types.Int64Value(rule.KeepCurrentVersionUntil)
+	if rule.KeepCurrentVersionUntil != nil {
+		config.KeepCurrentVersionUntil = types.Int64Value(*rule.KeepCurrentVersionUntil)
 	} else {
 		config.KeepCurrentVersionUntil = types.Int64Null()
 	}
 
-	if rule.KeepPreviousVersionFor != 0 {
-		config.KeepPreviousVersionFor = types.Int64Value(rule.KeepPreviousVersionFor)
+	if rule.KeepPreviousVersionFor != nil {
+		config.KeepPreviousVersionFor = types.Int64Value(*rule.KeepPreviousVersionFor)
 	} else {
 		config.KeepPreviousVersionFor = types.Int64Null()
 	}

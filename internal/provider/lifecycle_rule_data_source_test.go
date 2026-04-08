@@ -12,6 +12,8 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
 )
 
+func ptrInt64LRDS(v int64) *int64 { return &v }
+
 func newTestLifecycleRuleDataSource(t *testing.T, ms *testmock.MockServer) *lifecycleRuleDataSource {
 	t.Helper()
 	c, err := client.NewClient(context.Background(), client.Config{
@@ -75,7 +77,7 @@ func TestLifecycleRuleDataSource_Read(t *testing.T) {
 		RuleID:                "ds-rule",
 		Prefix:                "logs/",
 		Enabled:               true,
-		KeepCurrentVersionFor: 86400000,
+		KeepCurrentVersionFor: ptrInt64LRDS(86400000),
 		CleanupExpiredObjectDeleteMarker: true,
 	})
 

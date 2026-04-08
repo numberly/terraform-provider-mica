@@ -15,6 +15,8 @@ import (
 
 // ---- helpers ----------------------------------------------------------------
 
+func ptrInt64LR(v int64) *int64 { return &v }
+
 // newTestLifecycleRuleResource creates a lifecycleRuleResource wired to the given mock server.
 func newTestLifecycleRuleResource(t *testing.T, ms *testmock.MockServer) *lifecycleRuleResource {
 	t.Helper()
@@ -350,7 +352,7 @@ func TestLifecycleRuleResource_Import(t *testing.T) {
 		RuleID:                "imp-rule",
 		Prefix:                "archive/",
 		Enabled:               true,
-		KeepCurrentVersionFor: 172800000,
+		KeepCurrentVersionFor: ptrInt64LR(172800000),
 	})
 
 	r := newTestLifecycleRuleResource(t, ms)

@@ -172,16 +172,20 @@ func (r *lifecycleRuleResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	if !data.AbortIncompleteMultipartUploadsAfter.IsNull() && !data.AbortIncompleteMultipartUploadsAfter.IsUnknown() {
-		body.AbortIncompleteMultipartUploadsAfter = data.AbortIncompleteMultipartUploadsAfter.ValueInt64()
+		v := data.AbortIncompleteMultipartUploadsAfter.ValueInt64()
+		body.AbortIncompleteMultipartUploadsAfter = &v
 	}
 	if !data.KeepCurrentVersionFor.IsNull() && !data.KeepCurrentVersionFor.IsUnknown() {
-		body.KeepCurrentVersionFor = data.KeepCurrentVersionFor.ValueInt64()
+		v := data.KeepCurrentVersionFor.ValueInt64()
+		body.KeepCurrentVersionFor = &v
 	}
 	if !data.KeepCurrentVersionUntil.IsNull() && !data.KeepCurrentVersionUntil.IsUnknown() {
-		body.KeepCurrentVersionUntil = data.KeepCurrentVersionUntil.ValueInt64()
+		v := data.KeepCurrentVersionUntil.ValueInt64()
+		body.KeepCurrentVersionUntil = &v
 	}
 	if !data.KeepPreviousVersionFor.IsNull() && !data.KeepPreviousVersionFor.IsUnknown() {
-		body.KeepPreviousVersionFor = data.KeepPreviousVersionFor.ValueInt64()
+		v := data.KeepPreviousVersionFor.ValueInt64()
+		body.KeepPreviousVersionFor = &v
 	}
 
 	rule, err := r.client.PostLifecycleRule(ctx, body, false)
@@ -352,27 +356,27 @@ func mapLifecycleRuleToModel(rule *client.LifecycleRule, data *lifecycleRuleMode
 	data.Enabled = types.BoolValue(rule.Enabled)
 	data.CleanupExpiredObjectDeleteMarker = types.BoolValue(rule.CleanupExpiredObjectDeleteMarker)
 
-	if rule.AbortIncompleteMultipartUploadsAfter != 0 {
-		data.AbortIncompleteMultipartUploadsAfter = types.Int64Value(rule.AbortIncompleteMultipartUploadsAfter)
-	} else if data.AbortIncompleteMultipartUploadsAfter.IsNull() || data.AbortIncompleteMultipartUploadsAfter.IsUnknown() {
+	if rule.AbortIncompleteMultipartUploadsAfter != nil {
+		data.AbortIncompleteMultipartUploadsAfter = types.Int64Value(*rule.AbortIncompleteMultipartUploadsAfter)
+	} else {
 		data.AbortIncompleteMultipartUploadsAfter = types.Int64Null()
 	}
 
-	if rule.KeepCurrentVersionFor != 0 {
-		data.KeepCurrentVersionFor = types.Int64Value(rule.KeepCurrentVersionFor)
-	} else if data.KeepCurrentVersionFor.IsNull() || data.KeepCurrentVersionFor.IsUnknown() {
+	if rule.KeepCurrentVersionFor != nil {
+		data.KeepCurrentVersionFor = types.Int64Value(*rule.KeepCurrentVersionFor)
+	} else {
 		data.KeepCurrentVersionFor = types.Int64Null()
 	}
 
-	if rule.KeepCurrentVersionUntil != 0 {
-		data.KeepCurrentVersionUntil = types.Int64Value(rule.KeepCurrentVersionUntil)
-	} else if data.KeepCurrentVersionUntil.IsNull() || data.KeepCurrentVersionUntil.IsUnknown() {
+	if rule.KeepCurrentVersionUntil != nil {
+		data.KeepCurrentVersionUntil = types.Int64Value(*rule.KeepCurrentVersionUntil)
+	} else {
 		data.KeepCurrentVersionUntil = types.Int64Null()
 	}
 
-	if rule.KeepPreviousVersionFor != 0 {
-		data.KeepPreviousVersionFor = types.Int64Value(rule.KeepPreviousVersionFor)
-	} else if data.KeepPreviousVersionFor.IsNull() || data.KeepPreviousVersionFor.IsUnknown() {
+	if rule.KeepPreviousVersionFor != nil {
+		data.KeepPreviousVersionFor = types.Int64Value(*rule.KeepPreviousVersionFor)
+	} else {
 		data.KeepPreviousVersionFor = types.Int64Null()
 	}
 }
