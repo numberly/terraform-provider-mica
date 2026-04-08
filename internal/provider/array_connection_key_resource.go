@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
@@ -147,64 +146,12 @@ func (r *arrayConnectionKeyResource) Create(ctx context.Context, req resource.Cr
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API, logging field-level drift.
-// If the API returns an empty key (expired or array reset), the resource is removed from state.
-func (r *arrayConnectionKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data arrayConnectionKeyModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	readTimeout, diags := data.Timeouts.Read(ctx, 5*time.Minute)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	ctx, cancel := context.WithTimeout(ctx, readTimeout)
-	defer cancel()
-
-	key, err := r.client.GetArrayConnectionKey(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading array connection key", err.Error())
-		return
-	}
-
-	// If the key has expired or been reset, remove from state to force re-creation.
-	if key.ConnectionKey == "" {
-		resp.State.RemoveResource(ctx)
-		return
-	}
-
-	// Drift detection: log field-level changes.
-	if data.ConnectionKey.ValueString() != key.ConnectionKey {
-		tflog.Debug(ctx, "array_connection_key field changed outside Terraform", map[string]any{
-			"field": "connection_key",
-			"was":   data.ConnectionKey.ValueString(),
-			"now":   key.ConnectionKey,
-		})
-	}
-	if data.Created.ValueInt64() != key.Created {
-		tflog.Debug(ctx, "array_connection_key field changed outside Terraform", map[string]any{
-			"field": "created",
-			"was":   data.Created.ValueInt64(),
-			"now":   key.Created,
-		})
-	}
-	if data.Expires.ValueInt64() != key.Expires {
-		tflog.Debug(ctx, "array_connection_key field changed outside Terraform", map[string]any{
-			"field": "expires",
-			"was":   data.Expires.ValueInt64(),
-			"now":   key.Expires,
-		})
-	}
-
-	data.ID = types.StringValue(key.ConnectionKey)
-	data.ConnectionKey = types.StringValue(key.ConnectionKey)
-	data.Created = types.Int64Value(key.Created)
-	data.Expires = types.Int64Value(key.Expires)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+// Read preserves state as-is. Connection keys are ephemeral — once consumed by the
+// remote array or expired, the API no longer returns them. Calling GET would remove
+// the resource from state on every refresh, causing perpetual recreations.
+// The key value in state remains valid for reference (e.g., by flashblade_array_connection).
+func (r *arrayConnectionKeyResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
+	// No-op: preserve existing state. Key is write-once, read from state only.
 }
 
 // Update is a stub — all attributes are Computed so Update is never called in practice.

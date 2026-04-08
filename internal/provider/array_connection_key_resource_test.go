@@ -151,11 +151,12 @@ func TestUnit_ArrayConnectionKeyResource_Lifecycle(t *testing.T) {
 	}
 }
 
-// TestUnit_ArrayConnectionKeyResource_DriftDetection: POST key, modify mock, Read → state updated.
-func TestUnit_ArrayConnectionKeyResource_DriftDetection(t *testing.T) {
+// TestUnit_ArrayConnectionKeyResource_ReadPreservesState: Read is a no-op that preserves state
+// (connection keys are ephemeral — API may not return them after consumption/expiry).
+func TestUnit_ArrayConnectionKeyResource_ReadPreservesState(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
-	store := handlers.RegisterArrayConnectionKeyHandlers(ms.Mux)
+	handlers.RegisterArrayConnectionKeyHandlers(ms.Mux)
 
 	r := newTestArrayConnectionKeyResource(t, ms)
 	s := arrayConnectionKeyResourceSchema(t).Schema
@@ -170,31 +171,23 @@ func TestUnit_ArrayConnectionKeyResource_DriftDetection(t *testing.T) {
 		t.Fatalf("Create: %s", createResp.Diagnostics)
 	}
 
-	// Simulate external key rotation by seeding a different key.
-	store.Seed(&client.ArrayConnectionKey{
-		ConnectionKey: "rotated-key-xyz",
-		Created:       2000000000000,
-		Expires:       2000003600000,
-	})
-
-	// Read should detect and reflect the new key.
+	// Read should preserve state (no-op).
 	readResp := &resource.ReadResponse{State: createResp.State}
 	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
 	if readResp.Diagnostics.HasError() {
-		t.Fatalf("Read drift detection: %s", readResp.Diagnostics)
+		t.Fatalf("Read: %s", readResp.Diagnostics)
 	}
 
-	var afterDrift arrayConnectionKeyModel
-	if diags := readResp.State.Get(context.Background(), &afterDrift); diags.HasError() {
-		t.Fatalf("Get drift state: %s", diags)
+	var afterRead arrayConnectionKeyModel
+	if diags := readResp.State.Get(context.Background(), &afterRead); diags.HasError() {
+		t.Fatalf("Get state after Read: %s", diags)
 	}
 
-	if afterDrift.ConnectionKey.ValueString() != "rotated-key-xyz" {
-		t.Errorf("expected state to reflect drifted connection_key=rotated-key-xyz, got %q",
-			afterDrift.ConnectionKey.ValueString())
+	if afterRead.ConnectionKey.IsNull() || afterRead.ConnectionKey.ValueString() == "" {
+		t.Error("expected connection_key preserved in state after Read, got empty/null")
 	}
-	if afterDrift.Created.ValueInt64() != 2000000000000 {
-		t.Errorf("expected drifted created=2000000000000, got %d", afterDrift.Created.ValueInt64())
+	if afterRead.Created.IsNull() {
+		t.Error("expected created preserved in state after Read")
 	}
 }
 

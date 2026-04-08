@@ -104,7 +104,10 @@ func (r *arrayConnectionResource) Schema(ctx context.Context, _ resource.SchemaR
 			"connection_key": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
-				Description: "Connection key of the remote array. Write-only: set on creation only, not returned by GET.",
+				Description: "Connection key of the remote array. Write-only: set on creation only, not returned by GET. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"encrypted": schema.BoolAttribute{
 				Optional:    true,
