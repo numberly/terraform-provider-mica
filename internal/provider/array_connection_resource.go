@@ -97,13 +97,14 @@ func (r *arrayConnectionResource) Schema(ctx context.Context, _ resource.SchemaR
 				},
 			},
 			"management_address": schema.StringAttribute{
-				Required:    true,
-				Description: "Management IP or hostname of the remote array.",
+				Optional:    true,
+				Computed:    true,
+				Description: "Management IP or hostname of the remote array. Required when creating a new connection, computed for imported/passive-side connections.",
 			},
 			"connection_key": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
-				Description: "Connection key of the remote array. Write-only: set on creation only, not returned by GET. Changing this forces a new resource.",
+				Description: "Connection key of the remote array. Required when creating a new connection. Write-only: not returned by GET. Changing this forces a new resource.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -206,6 +207,16 @@ func (r *arrayConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
+
+	// Validate required fields for creating a new connection.
+	if data.ManagementAddress.IsNull() || data.ManagementAddress.IsUnknown() || data.ManagementAddress.ValueString() == "" {
+		resp.Diagnostics.AddError("Missing management_address", "management_address is required when creating a new array connection. For passive-side connections, use 'terraform import' instead.")
+		return
+	}
+	if data.ConnectionKey.IsNull() || data.ConnectionKey.IsUnknown() || data.ConnectionKey.ValueString() == "" {
+		resp.Diagnostics.AddError("Missing connection_key", "connection_key is required when creating a new array connection. For passive-side connections, use 'terraform import' instead.")
+		return
+	}
 
 	post := client.ArrayConnectionPost{
 		ManagementAddress: data.ManagementAddress.ValueString(),
