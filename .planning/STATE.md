@@ -122,9 +122,10 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260408-bif | Fix lifecycle rule int64 zero-value handling: use *int64 for duration fields | 2026-04-08 | bbd00d3 | [260408-bif-fix-lifecycle-rule-int64-zero-value-hand](./quick/260408-bif-fix-lifecycle-rule-int64-zero-value-hand/) |
+| 260408-kbr | Add flashblade_array_connection_key resource: POST/GET ephemeral key, Sensitive, no-op Delete | 2026-04-08 | 99e1512 | [260408-kbr-add-flashblade-array-connection-key-reso](./quick/260408-kbr-add-flashblade-array-connection-key-reso/) |
 
 ## Session Continuity
 
-Last session: 2026-04-08T12:17:46.824Z
-Stopped at: Completed 42-array-connections/42-02-PLAN.md
+Last session: 2026-04-08T12:51:25Z
+Stopped at: Completed quick/260408-kbr-PLAN.md
 Resume file: None
