@@ -44,7 +44,6 @@ type arrayConnectionModel struct {
 	ManagementAddress    types.String   `tfsdk:"management_address"`
 	ConnectionKey        types.String   `tfsdk:"connection_key"`
 	Encrypted            types.Bool     `tfsdk:"encrypted"`
-	CACertificateGroup   types.String   `tfsdk:"ca_certificate_group"`
 	ReplicationAddresses types.List     `tfsdk:"replication_addresses"`
 	Throttle             types.Object   `tfsdk:"throttle"`
 	Status               types.String   `tfsdk:"status"`
@@ -113,11 +112,6 @@ func (r *arrayConnectionResource) Schema(ctx context.Context, _ resource.SchemaR
 				Optional:    true,
 				Computed:    true,
 				Description: "Whether data is encrypted in transit.",
-			},
-			"ca_certificate_group": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the CA certificate group for TLS verification.",
 			},
 			"replication_addresses": schema.ListAttribute{
 				Optional:    true,
@@ -219,10 +213,6 @@ func (r *arrayConnectionResource) Create(ctx context.Context, req resource.Creat
 		Encrypted:         data.Encrypted.ValueBool(),
 	}
 
-	if !data.CACertificateGroup.IsNull() && !data.CACertificateGroup.IsUnknown() && data.CACertificateGroup.ValueString() != "" {
-		post.CACertificateGroup = &client.NamedReference{Name: data.CACertificateGroup.ValueString()}
-	}
-
 	if !data.ReplicationAddresses.IsNull() && !data.ReplicationAddresses.IsUnknown() {
 		addrs, d := listToStrings(ctx, data.ReplicationAddresses)
 		resp.Diagnostics.Append(d...)
@@ -308,19 +298,6 @@ func (r *arrayConnectionResource) Read(ctx context.Context, req resource.ReadReq
 		})
 	}
 
-	newCACertGroup := ""
-	if conn.CACertificateGroup != nil {
-		newCACertGroup = conn.CACertificateGroup.Name
-	}
-	if data.CACertificateGroup.ValueString() != newCACertGroup {
-		tflog.Debug(ctx, "array_connection field changed outside Terraform", map[string]any{
-			"resource": remoteName,
-			"field":    "ca_certificate_group",
-			"was":      data.CACertificateGroup.ValueString(),
-			"now":      newCACertGroup,
-		})
-	}
-
 	if data.Status.ValueString() != conn.Status {
 		tflog.Debug(ctx, "array_connection field changed outside Terraform", map[string]any{
 			"resource": remoteName,
@@ -399,19 +376,6 @@ func (r *arrayConnectionResource) Update(ctx context.Context, req resource.Updat
 	if !plan.Encrypted.Equal(state.Encrypted) {
 		v := plan.Encrypted.ValueBool()
 		patch.Encrypted = &v
-		hasChanges = true
-	}
-
-	if !plan.CACertificateGroup.Equal(state.CACertificateGroup) {
-		planVal := plan.CACertificateGroup.ValueString()
-		if planVal == "" || plan.CACertificateGroup.IsNull() {
-			// Clear: outer non-nil, inner nil.
-			var inner *client.NamedReference
-			patch.CACertificateGroup = &inner
-		} else {
-			ref := &client.NamedReference{Name: planVal}
-			patch.CACertificateGroup = &ref
-		}
 		hasChanges = true
 	}
 
@@ -537,12 +501,6 @@ func mapArrayConnectionToModel(ctx context.Context, conn *client.ArrayConnection
 	data.Type = types.StringValue(conn.Type)
 	data.OS = types.StringValue(conn.OS)
 	data.Version = types.StringValue(conn.Version)
-
-	if conn.CACertificateGroup != nil {
-		data.CACertificateGroup = types.StringValue(conn.CACertificateGroup.Name)
-	} else {
-		data.CACertificateGroup = types.StringNull()
-	}
 
 	// replication_addresses: map to empty list (not null) when API returns empty, to avoid perpetual drift.
 	if len(conn.ReplicationAddresses) == 0 {

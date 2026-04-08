@@ -128,10 +128,10 @@ type ArrayConnectionPost struct {
 	ManagementAddress    string                   `json:"management_address"`
 	ConnectionKey        string                   `json:"connection_key"`
 	Encrypted            bool                     `json:"encrypted,omitempty"`
-	CACertificateGroup   *NamedReference          `json:"ca_certificate_group,omitempty"`
 	ReplicationAddresses []string                 `json:"replication_addresses,omitempty"`
 	Throttle             *ArrayConnectionThrottle `json:"throttle,omitempty"`
 	Remote               *NamedReference          `json:"remote,omitempty"`
+	// ca_certificate_group is NOT accepted on POST — must be set via PATCH after creation.
 }
 
 // ArrayConnectionPatch contains pointer fields for PATCH /array-connections.
@@ -140,7 +140,6 @@ type ArrayConnectionPost struct {
 type ArrayConnectionPatch struct {
 	ManagementAddress    *string                  `json:"management_address,omitempty"`
 	Encrypted            *bool                    `json:"encrypted,omitempty"`
-	CACertificateGroup   **NamedReference         `json:"ca_certificate_group,omitempty"`
 	ReplicationAddresses *[]string                `json:"replication_addresses,omitempty"`
 	Throttle             *ArrayConnectionThrottle `json:"throttle,omitempty"`
 }

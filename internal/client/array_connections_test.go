@@ -146,32 +146,6 @@ func TestUnit_ArrayConnection_Patch_ManagementAddress(t *testing.T) {
 	}
 }
 
-func TestUnit_ArrayConnection_Patch_CACertificateGroup(t *testing.T) {
-	srv, facade := newArrayConnectionServer(t)
-	facade.store.Seed(&client.ArrayConnection{
-		ID:     "conn-patch-2",
-		Remote: client.NamedReference{Name: "cert-remote"},
-		Status: "connected",
-	})
-
-	c := newTestClient(t, srv)
-
-	// Set CACertificateGroup via **NamedReference (outer non-nil, inner non-nil = set value).
-	certGroup := &client.NamedReference{Name: "my-ca-group"}
-	got, err := c.PatchArrayConnection(context.Background(), "cert-remote", client.ArrayConnectionPatch{
-		CACertificateGroup: &certGroup,
-	})
-	if err != nil {
-		t.Fatalf("PatchArrayConnection set CACertGroup: %v", err)
-	}
-	if got.CACertificateGroup == nil {
-		t.Fatal("expected CACertificateGroup to be set, got nil")
-	}
-	if got.CACertificateGroup.Name != "my-ca-group" {
-		t.Errorf("expected CACertificateGroup.Name %q, got %q", "my-ca-group", got.CACertificateGroup.Name)
-	}
-}
-
 func TestUnit_ArrayConnection_Delete(t *testing.T) {
 	srv, facade := newArrayConnectionServer(t)
 	facade.store.Seed(&client.ArrayConnection{

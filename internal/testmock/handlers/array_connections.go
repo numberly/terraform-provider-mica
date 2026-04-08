@@ -120,10 +120,6 @@ func (s *arrayConnectionStore) handlePost(w http.ResponseWriter, r *http.Request
 		Status:               "connected",
 		Type:                 "async-replication",
 	}
-	if body.CACertificateGroup != nil {
-		conn.CACertificateGroup = body.CACertificateGroup
-	}
-
 	s.byName[remoteName] = conn
 
 	WriteJSONListResponse(w, http.StatusOK, []client.ArrayConnection{*conn})
@@ -161,11 +157,6 @@ func (s *arrayConnectionStore) handlePatch(w http.ResponseWriter, r *http.Reques
 	}
 	if body.Encrypted != nil {
 		conn.Encrypted = *body.Encrypted
-	}
-	// **NamedReference: outer ptr non-nil means field was sent.
-	// Inner ptr nil means set to null (clear); inner ptr non-nil means set to value.
-	if body.CACertificateGroup != nil {
-		conn.CACertificateGroup = *body.CACertificateGroup
 	}
 	if body.ReplicationAddresses != nil {
 		conn.ReplicationAddresses = *body.ReplicationAddresses
