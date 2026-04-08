@@ -141,10 +141,11 @@ func (r *lifecycleRuleResource) ValidateConfig(ctx context.Context, req resource
 	hasPrevFor := !data.KeepPreviousVersionFor.IsNull() && !data.KeepPreviousVersionFor.IsUnknown()
 
 	if !hasAbort && !hasCurFor && !hasCurUntil && !hasPrevFor {
-		resp.Diagnostics.AddError(
+		resp.Diagnostics.AddWarning(
 			"Missing lifecycle rule duration",
 			"At least one of keep_current_version_for, keep_current_version_until, "+
-				"keep_previous_version_for, or abort_incomplete_multipart_uploads_after must be set.",
+				"keep_previous_version_for, or abort_incomplete_multipart_uploads_after should be set. "+
+				"The FlashBlade API will reject creation of a lifecycle rule without any duration field.",
 		)
 	}
 }
