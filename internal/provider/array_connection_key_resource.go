@@ -17,10 +17,10 @@ import (
 )
 
 // Ensure arrayConnectionKeyResource satisfies the resource interfaces.
-// No ImportState (key is ephemeral, no stable import identifier).
-// No UpgradeState (schema version 0, no migrations).
 var _ resource.Resource = &arrayConnectionKeyResource{}
 var _ resource.ResourceWithConfigure = &arrayConnectionKeyResource{}
+var _ resource.ResourceWithImportState = &arrayConnectionKeyResource{}
+var _ resource.ResourceWithUpgradeState = &arrayConnectionKeyResource{}
 
 // arrayConnectionKeyResource implements the flashblade_array_connection_key resource.
 type arrayConnectionKeyResource struct {
@@ -58,7 +58,8 @@ func (r *arrayConnectionKeyResource) Schema(ctx context.Context, _ resource.Sche
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Synthetic identifier set to the generated connection key value.",
+				Sensitive:   true,
+				Description: "Synthetic identifier (connection key value). Marked sensitive.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -165,4 +166,12 @@ func (r *arrayConnectionKeyResource) Update(_ context.Context, _ resource.Update
 // Delete is a no-op. Keys expire automatically — no API call is needed.
 func (r *arrayConnectionKeyResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
 	// Key expires automatically. No API call needed.
+}
+
+// ImportState is not supported — connection keys are ephemeral with no stable identifier.
+func (r *arrayConnectionKeyResource) ImportState(_ context.Context, _ resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resp.Diagnostics.AddError(
+		"Import not supported",
+		"Connection keys are ephemeral and cannot be imported. Create a new key instead.",
+	)
 }

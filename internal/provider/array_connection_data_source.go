@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -158,7 +159,7 @@ func (d *arrayConnectionDataSource) Read(ctx context.Context, req datasource.Rea
 		}
 		config.ReplicationAddresses = replAddrs
 	} else {
-		config.ReplicationAddresses = types.ListNull(types.StringType)
+		config.ReplicationAddresses = types.ListValueMust(types.StringType, []attr.Value{})
 	}
 
 	if conn.CACertificateGroup != nil {

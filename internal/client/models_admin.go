@@ -127,7 +127,7 @@ type ArrayConnectionThrottle struct {
 type ArrayConnectionPost struct {
 	ManagementAddress    string                   `json:"management_address"`
 	ConnectionKey        string                   `json:"connection_key"`
-	Encrypted            bool                     `json:"encrypted,omitempty"`
+	Encrypted            bool                     `json:"encrypted"`
 	ReplicationAddresses []string                 `json:"replication_addresses,omitempty"`
 	Throttle             *ArrayConnectionThrottle `json:"throttle,omitempty"`
 	Remote               *NamedReference          `json:"remote,omitempty"`
