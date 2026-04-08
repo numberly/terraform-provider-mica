@@ -144,3 +144,11 @@ type ArrayConnectionPatch struct {
 	ReplicationAddresses *[]string                `json:"replication_addresses,omitempty"`
 	Throttle             *ArrayConnectionThrottle `json:"throttle,omitempty"`
 }
+
+// ArrayConnectionKey represents the response from GET/POST /array-connections/connection-key.
+// There is only one connection key per array at a time. All fields are read-only.
+type ArrayConnectionKey struct {
+	ConnectionKey string `json:"connection_key"`
+	Created       int64  `json:"created"`
+	Expires       int64  `json:"expires"`
+}
