@@ -46,6 +46,18 @@ func (c *FlashBladeClient) ListCertificateGroupMembers(ctx context.Context, grou
 	return all, nil
 }
 
+// GetCertificateGroupMember checks if a specific certificate is in a certificate group.
+// Filters by both group and certificate name. Returns true if the membership exists.
+func (c *FlashBladeClient) GetCertificateGroupMember(ctx context.Context, groupName string, certName string) (bool, error) {
+	path := "/certificate-groups/certificates?certificate_group_names=" + url.QueryEscape(groupName) +
+		"&certificate_names=" + url.QueryEscape(certName)
+	var resp ListResponse[CertificateGroupMember]
+	if err := c.get(ctx, path, &resp); err != nil {
+		return false, fmt.Errorf("GetCertificateGroupMember: %w", err)
+	}
+	return len(resp.Items) > 0, nil
+}
+
 // PostCertificateGroupMember adds a certificate to a certificate group.
 // Both names are passed as query parameters — no request body.
 func (c *FlashBladeClient) PostCertificateGroupMember(ctx context.Context, groupName string, certName string) (*CertificateGroupMember, error) {

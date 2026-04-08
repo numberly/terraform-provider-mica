@@ -142,31 +142,22 @@ func (r *certificateGroupMemberResource) Read(ctx context.Context, req resource.
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	members, err := r.client.ListCertificateGroupMembers(ctx, data.GroupName.ValueString())
+	exists, err := r.client.GetCertificateGroupMember(ctx, data.GroupName.ValueString(), data.CertName.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading certificate group members", err.Error())
+		resp.Diagnostics.AddError("Error reading certificate group member", err.Error())
 		return
 	}
 
-	var found *client.CertificateGroupMember
-	for i := range members {
-		if members[i].Certificate.Name == data.CertName.ValueString() {
-			found = &members[i]
-			break
-		}
-	}
-
-	if found == nil {
+	if !exists {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	data.GroupName = types.StringValue(found.Group.Name)
-	data.CertName = types.StringValue(found.Certificate.Name)
+	// Preserve state values — API membership response may not include names in NamedReference fields.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -215,21 +206,13 @@ func (r *certificateGroupMemberResource) ImportState(ctx context.Context, req re
 	groupName := parts[0]
 	certName := parts[1]
 
-	members, err := r.client.ListCertificateGroupMembers(ctx, groupName)
+	exists, err := r.client.GetCertificateGroupMember(ctx, groupName, certName)
 	if err != nil {
 		resp.Diagnostics.AddError("Error importing certificate group member", err.Error())
 		return
 	}
 
-	var found *client.CertificateGroupMember
-	for i := range members {
-		if members[i].Certificate.Name == certName {
-			found = &members[i]
-			break
-		}
-	}
-
-	if found == nil {
+	if !exists {
 		resp.Diagnostics.AddError(
 			"Certificate group member not found",
 			fmt.Sprintf("No certificate %q found in group %q.", certName, groupName),
@@ -246,7 +229,7 @@ func (r *certificateGroupMemberResource) ImportState(ctx context.Context, req re
 		}),
 	}
 
-	data.GroupName = types.StringValue(found.Group.Name)
-	data.CertName = types.StringValue(found.Certificate.Name)
+	data.GroupName = types.StringValue(groupName)
+	data.CertName = types.StringValue(certName)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

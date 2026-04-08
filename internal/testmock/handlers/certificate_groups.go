@@ -181,16 +181,25 @@ func (s *certificateGroupStore) handleMemberGet(w http.ResponseWriter, r *http.R
 
 	q := r.URL.Query()
 	groupNamesFilter := q.Get("certificate_group_names")
+	certNamesFilter := q.Get("certificate_names")
 
 	var items []client.CertificateGroupMember
 
 	if groupNamesFilter != "" {
 		if members, ok := s.members[groupNamesFilter]; ok {
-			items = append(items, members...)
+			for _, m := range members {
+				if certNamesFilter == "" || m.Certificate.Name == certNamesFilter {
+					items = append(items, m)
+				}
+			}
 		}
 	} else {
 		for _, members := range s.members {
-			items = append(items, members...)
+			for _, m := range members {
+				if certNamesFilter == "" || m.Certificate.Name == certNamesFilter {
+					items = append(items, m)
+				}
+			}
 		}
 	}
 
