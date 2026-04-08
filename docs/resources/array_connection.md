@@ -28,14 +28,13 @@ resource "flashblade_array_connection" "example" {
 
 ### Required
 
-- `connection_key` (String, Sensitive) Connection key of the remote array. Write-only: set on creation only, not returned by GET.
-- `management_address` (String) Management IP or hostname of the remote array.
 - `remote_name` (String) The name of the remote array. Used as the import identifier. Changing this forces a new resource.
 
 ### Optional
 
-- `ca_certificate_group` (String) Name of the CA certificate group for TLS verification.
+- `connection_key` (String, Sensitive) Connection key of the remote array. Required when creating a new connection. Write-only: not returned by GET. Changing this forces a new resource.
 - `encrypted` (Boolean) Whether data is encrypted in transit.
+- `management_address` (String) Management IP or hostname of the remote array. Required when creating a new connection, computed for imported/passive-side connections.
 - `replication_addresses` (List of String) Replication IP addresses or FQDNs.
 - `throttle` (Attributes) Bandwidth throttle configuration for the array connection. (see [below for nested schema](#nestedatt--throttle))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
