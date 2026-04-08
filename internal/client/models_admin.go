@@ -101,12 +101,46 @@ type SyslogServerPatch struct {
 
 // ArrayConnection represents a FlashBlade array connection from GET /array-connections.
 type ArrayConnection struct {
-	ID                   string         `json:"id"`
-	Status               string         `json:"status,omitempty"`
-	Remote               NamedReference `json:"remote"`
-	ManagementAddress    string         `json:"management_address,omitempty"`
-	ReplicationAddresses []string       `json:"replication_addresses,omitempty"`
-	Encrypted            bool           `json:"encrypted"`
-	Type                 string         `json:"type,omitempty"`
-	Version              string         `json:"version,omitempty"`
+	ID                   string                  `json:"id"`
+	Status               string                  `json:"status,omitempty"`
+	Remote               NamedReference          `json:"remote"`
+	ManagementAddress    string                  `json:"management_address,omitempty"`
+	ReplicationAddresses []string                `json:"replication_addresses,omitempty"`
+	Encrypted            bool                    `json:"encrypted"`
+	Type                 string                  `json:"type,omitempty"`
+	Version              string                  `json:"version,omitempty"`
+	OS                   string                  `json:"os,omitempty"`
+	CACertificateGroup   *NamedReference         `json:"ca_certificate_group,omitempty"`
+	Throttle             *ArrayConnectionThrottle `json:"throttle,omitempty"`
+}
+
+// ArrayConnectionThrottle configures bandwidth throttling for an array connection.
+type ArrayConnectionThrottle struct {
+	DefaultLimit *int64  `json:"default_limit,omitempty"`
+	WindowLimit  *int64  `json:"window_limit,omitempty"`
+	WindowStart  *string `json:"window_start,omitempty"`
+	WindowEnd    *string `json:"window_end,omitempty"`
+}
+
+// ArrayConnectionPost contains the fields for POST /array-connections.
+// The remote name is passed via ?remote_names= query parameter, not in the body.
+type ArrayConnectionPost struct {
+	ManagementAddress    string                   `json:"management_address"`
+	ConnectionKey        string                   `json:"connection_key"`
+	Encrypted            bool                     `json:"encrypted,omitempty"`
+	CACertificateGroup   *NamedReference          `json:"ca_certificate_group,omitempty"`
+	ReplicationAddresses []string                 `json:"replication_addresses,omitempty"`
+	Throttle             *ArrayConnectionThrottle `json:"throttle,omitempty"`
+	Remote               *NamedReference          `json:"remote,omitempty"`
+}
+
+// ArrayConnectionPatch contains pointer fields for PATCH /array-connections.
+// Nil outer pointer means omit the field. Non-nil outer + nil inner = set to null (for **NamedReference).
+// connection_key is absent — write-only on POST only.
+type ArrayConnectionPatch struct {
+	ManagementAddress    *string                  `json:"management_address,omitempty"`
+	Encrypted            *bool                    `json:"encrypted,omitempty"`
+	CACertificateGroup   **NamedReference         `json:"ca_certificate_group,omitempty"`
+	ReplicationAddresses *[]string                `json:"replication_addresses,omitempty"`
+	Throttle             *ArrayConnectionThrottle `json:"throttle,omitempty"`
 }

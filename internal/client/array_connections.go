@@ -33,3 +33,20 @@ func (c *FlashBladeClient) ListArrayConnections(ctx context.Context) ([]ArrayCon
 	}
 	return all, nil
 }
+
+// PostArrayConnection creates a new array connection.
+// The remote name is passed via ?remote_names= query parameter.
+func (c *FlashBladeClient) PostArrayConnection(ctx context.Context, remoteName string, body ArrayConnectionPost) (*ArrayConnection, error) {
+	return postOne[ArrayConnectionPost, ArrayConnection](c, ctx, "/array-connections?remote_names="+url.QueryEscape(remoteName), body, "PostArrayConnection")
+}
+
+// PatchArrayConnection updates an existing array connection identified by remote name.
+// Only non-nil pointer fields in body are sent (PATCH semantics).
+func (c *FlashBladeClient) PatchArrayConnection(ctx context.Context, remoteName string, body ArrayConnectionPatch) (*ArrayConnection, error) {
+	return patchOne[ArrayConnectionPatch, ArrayConnection](c, ctx, "/array-connections?remote_names="+url.QueryEscape(remoteName), body, "PatchArrayConnection")
+}
+
+// DeleteArrayConnection permanently removes an array connection by remote name.
+func (c *FlashBladeClient) DeleteArrayConnection(ctx context.Context, remoteName string) error {
+	return c.delete(ctx, "/array-connections?remote_names="+url.QueryEscape(remoteName))
+}
