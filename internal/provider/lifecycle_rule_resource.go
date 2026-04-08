@@ -22,6 +22,7 @@ var _ resource.Resource = &lifecycleRuleResource{}
 var _ resource.ResourceWithConfigure = &lifecycleRuleResource{}
 var _ resource.ResourceWithImportState = &lifecycleRuleResource{}
 var _ resource.ResourceWithUpgradeState = &lifecycleRuleResource{}
+var _ resource.ResourceWithValidateConfig = &lifecycleRuleResource{}
 
 // lifecycleRuleResource implements the flashblade_lifecycle_rule resource.
 type lifecycleRuleResource struct {
@@ -123,6 +124,28 @@ func (r *lifecycleRuleResource) Schema(ctx context.Context, _ resource.SchemaReq
 				Delete: true,
 			}),
 		},
+	}
+}
+
+// ValidateConfig checks that at least one duration field is set (API requirement).
+func (r *lifecycleRuleResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data lifecycleRuleModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	hasAbort := !data.AbortIncompleteMultipartUploadsAfter.IsNull() && !data.AbortIncompleteMultipartUploadsAfter.IsUnknown()
+	hasCurFor := !data.KeepCurrentVersionFor.IsNull() && !data.KeepCurrentVersionFor.IsUnknown()
+	hasCurUntil := !data.KeepCurrentVersionUntil.IsNull() && !data.KeepCurrentVersionUntil.IsUnknown()
+	hasPrevFor := !data.KeepPreviousVersionFor.IsNull() && !data.KeepPreviousVersionFor.IsUnknown()
+
+	if !hasAbort && !hasCurFor && !hasCurUntil && !hasPrevFor {
+		resp.Diagnostics.AddError(
+			"Missing lifecycle rule duration",
+			"At least one of keep_current_version_for, keep_current_version_until, "+
+				"keep_previous_version_for, or abort_incomplete_multipart_uploads_after must be set.",
+		)
 	}
 }
 
