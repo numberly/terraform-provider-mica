@@ -300,6 +300,8 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewCertificateResource,
 		NewTlsPolicyResource,
 		NewTlsPolicyMemberResource,
+		NewCertificateGroupResource,
+		NewCertificateGroupMemberResource,
 
 		// Quotas
 		NewQuotaUserResource,
@@ -358,6 +360,7 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		// Security & TLS
 		NewCertificateDataSource,
 		NewTlsPolicyDataSource,
+		NewCertificateGroupDataSource,
 
 		// Quotas
 		NewQuotaUserDataSource,

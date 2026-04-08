@@ -2,9 +2,9 @@
 
 FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-flashblade.
 
-**Last updated:** 2026-04-03
+**Last updated:** 2026-04-08
 **Provider version:** v2.2
-**Total API sections:** 84 | **Covered:** ~37 | **Coverage of IaC-relevant CRUD:** ~67%
+**Total API sections:** 84 | **Covered:** ~38 | **Coverage of IaC-relevant CRUD:** ~69%
 
 ## Coverage Legend
 
@@ -86,6 +86,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 |-------------|----------|:----------:|--------|-------|
 | Certificates | `flashblade_certificate` | Yes | Done | Import PEM + private key; drift detection; import→apply skips PATCH (state-only update) |
 | TLS Policies | `flashblade_tls_policy` | Yes | Done | Cipher suites, min version, mTLS; API-default handling; + `flashblade_tls_policy_member` for NI assignment |
+| Certificate Groups | `flashblade_certificate_group` | Yes | Done | CRD-only (no PATCH); realms volatile; + `flashblade_certificate_group_member` for cert association |
 
 ### Array Administration
 
@@ -124,7 +125,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 
 | API Section | Type | Endpoints | Use Case | Status |
 |-------------|------|-----------|----------|--------|
-| Certificate Groups | Resource | POST, DELETE + members | Certificate grouping and rotation | Candidate |
+| Certificate Groups | Resource | POST, DELETE + members | Certificate grouping and rotation | Done |
 | KMIP | Resource | Full CRUD | External encryption key management | Candidate |
 | SAML2 SSO | Resource | Full CRUD | SAML-based single sign-on for admin console | Candidate |
 | OIDC SSO | Resource | Full CRUD | OpenID Connect authentication | Candidate |
