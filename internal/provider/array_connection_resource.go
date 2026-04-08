@@ -208,50 +208,98 @@ func (r *arrayConnectionResource) Create(ctx context.Context, req resource.Creat
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	// Validate required fields for creating a new connection.
-	if data.ManagementAddress.IsNull() || data.ManagementAddress.IsUnknown() || data.ManagementAddress.ValueString() == "" {
-		resp.Diagnostics.AddError("Missing management_address", "management_address is required when creating a new array connection. For passive-side connections, use 'terraform import' instead.")
-		return
-	}
-	if data.ConnectionKey.IsNull() || data.ConnectionKey.IsUnknown() || data.ConnectionKey.ValueString() == "" {
-		resp.Diagnostics.AddError("Missing connection_key", "connection_key is required when creating a new array connection. For passive-side connections, use 'terraform import' instead.")
-		return
-	}
+	remoteName := data.RemoteName.ValueString()
+	hasConnectionKey := !data.ConnectionKey.IsNull() && !data.ConnectionKey.IsUnknown() && data.ConnectionKey.ValueString() != ""
 
-	post := client.ArrayConnectionPost{
-		ManagementAddress: data.ManagementAddress.ValueString(),
-		ConnectionKey:     data.ConnectionKey.ValueString(),
-		Encrypted:         data.Encrypted.ValueBool(),
-	}
+	var conn *client.ArrayConnection
 
-	if !data.ReplicationAddresses.IsNull() && !data.ReplicationAddresses.IsUnknown() {
-		addrs, d := listToStrings(ctx, data.ReplicationAddresses)
-		resp.Diagnostics.Append(d...)
-		if resp.Diagnostics.HasError() {
+	if hasConnectionKey {
+		// Active side: POST to create a new connection.
+		if data.ManagementAddress.IsNull() || data.ManagementAddress.IsUnknown() || data.ManagementAddress.ValueString() == "" {
+			resp.Diagnostics.AddError("Missing management_address", "management_address is required when creating a new array connection (active side with connection_key).")
 			return
 		}
-		if len(addrs) > 0 {
-			post.ReplicationAddresses = addrs
-		}
-	}
 
-	if !data.Throttle.IsNull() && !data.Throttle.IsUnknown() {
-		throttle, d := throttleFromObject(ctx, data.Throttle)
-		resp.Diagnostics.Append(d...)
-		if resp.Diagnostics.HasError() {
+		post := client.ArrayConnectionPost{
+			ManagementAddress: data.ManagementAddress.ValueString(),
+			ConnectionKey:     data.ConnectionKey.ValueString(),
+			Encrypted:         data.Encrypted.ValueBool(),
+		}
+
+		if !data.ReplicationAddresses.IsNull() && !data.ReplicationAddresses.IsUnknown() {
+			addrs, d := listToStrings(ctx, data.ReplicationAddresses)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			if len(addrs) > 0 {
+				post.ReplicationAddresses = addrs
+			}
+		}
+
+		if !data.Throttle.IsNull() && !data.Throttle.IsUnknown() {
+			throttle, d := throttleFromObject(ctx, data.Throttle)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			post.Throttle = throttle
+		}
+
+		var err error
+		conn, err = r.client.PostArrayConnection(ctx, remoteName, post)
+		if err != nil {
+			resp.Diagnostics.AddError("Error creating array connection", err.Error())
 			return
 		}
-		post.Throttle = throttle
+	} else {
+		// Passive side: adopt an existing connection created by the remote array.
+		// GET the auto-created connection, then PATCH mutable fields if needed.
+		var err error
+		conn, err = r.client.GetArrayConnection(ctx, remoteName)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error adopting passive-side array connection",
+				fmt.Sprintf("No connection_key provided — attempted to adopt existing connection %q, but: %s", remoteName, err),
+			)
+			return
+		}
+
+		// PATCH mutable fields if the user set them.
+		patch := client.ArrayConnectionPatch{}
+		hasChanges := false
+
+		if !data.ReplicationAddresses.IsNull() && !data.ReplicationAddresses.IsUnknown() {
+			addrs, d := listToStrings(ctx, data.ReplicationAddresses)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			patch.ReplicationAddresses = &addrs
+			hasChanges = true
+		}
+
+		if !data.Throttle.IsNull() && !data.Throttle.IsUnknown() {
+			throttle, d := throttleFromObject(ctx, data.Throttle)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			patch.Throttle = throttle
+			hasChanges = true
+		}
+
+		if hasChanges {
+			conn, err = r.client.PatchArrayConnection(ctx, remoteName, patch)
+			if err != nil {
+				resp.Diagnostics.AddError("Error patching passive-side array connection", err.Error())
+				return
+			}
+		}
 	}
 
 	// Preserve connection_key from plan — API never returns it.
 	planConnKey := data.ConnectionKey
-
-	conn, err := r.client.PostArrayConnection(ctx, data.RemoteName.ValueString(), post)
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating array connection", err.Error())
-		return
-	}
 
 	resp.Diagnostics.Append(mapArrayConnectionToModel(ctx, conn, &data)...)
 	if resp.Diagnostics.HasError() {
