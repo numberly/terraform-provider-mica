@@ -30,7 +30,7 @@ type arrayConnectionStoreFacade struct {
 	}
 }
 
-func TestUnit_ArrayConnection_Get_Found_Mock(t *testing.T) {
+func TestUnit_ArrayConnection_Get_Found(t *testing.T) {
 	srv, facade := newArrayConnectionServer(t)
 	facade.store.Seed(&client.ArrayConnection{
 		ID:                "conn-1",
@@ -68,7 +68,7 @@ func TestUnit_ArrayConnection_Get_Found_Mock(t *testing.T) {
 	}
 }
 
-func TestUnit_ArrayConnection_Get_NotFound_Mock(t *testing.T) {
+func TestUnit_ArrayConnection_Get_NotFound(t *testing.T) {
 	srv, _ := newArrayConnectionServer(t)
 	c := newTestClient(t, srv)
 

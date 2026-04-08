@@ -445,26 +445,4 @@ func TestUnit_ArrayConnection_Get(t *testing.T) {
 	}
 }
 
-func TestUnit_ArrayConnection_Get_NotFound(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.URL.Path == "/api/login":
-			w.Header().Set("x-auth-token", "tok")
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/array-connections":
-			writeJSON(w, http.StatusOK, listResponse([]client.ArrayConnection{}))
-		default:
-			http.NotFound(w, r)
-		}
-	}))
-	defer srv.Close()
-
-	c := newTestClient(t, srv)
-	_, err := c.GetArrayConnection(context.Background(), "nonexistent")
-	if err == nil {
-		t.Fatal("expected error for not found, got nil")
-	}
-	if !client.IsNotFound(err) {
-		t.Errorf("expected IsNotFound true, got false; err: %v", err)
-	}
-}
+// TestUnit_ArrayConnection_Get_NotFound moved to array_connections_test.go (uses full mock handler).
