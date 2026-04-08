@@ -88,12 +88,11 @@ func (s *serverStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/servers?create_ds={name}.
-// The server name comes from the ?create_ds= query parameter.
+// handlePost handles POST /api/2.22/servers?names={name}.
+// The server name comes from the ?names= query parameter.
 func (s *serverStore) handlePost(w http.ResponseWriter, r *http.Request) {
-	name := r.URL.Query().Get("create_ds")
-	if name == "" {
-		WriteJSONError(w, http.StatusBadRequest, "create_ds query parameter is required for POST")
+	name, ok := RequireQueryParam(w, r, "names")
+	if !ok {
 		return
 	}
 

@@ -78,10 +78,9 @@ func TestUnit_Server_Post(t *testing.T) {
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
 		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/servers":
-			// POST uses ?create_ds= query parameter
-			createDS := r.URL.Query().Get("create_ds")
-			if createDS == "" {
-				http.Error(w, "create_ds query param missing", http.StatusBadRequest)
+			name := r.URL.Query().Get("names")
+			if name == "" {
+				http.Error(w, "names query param missing", http.StatusBadRequest)
 				return
 			}
 			var body client.ServerPost
@@ -91,7 +90,7 @@ func TestUnit_Server_Post(t *testing.T) {
 			}
 			s := client.Server{
 				ID:   "srv-id-002",
-				Name: createDS,
+				Name: name,
 				DNS:  body.DNS,
 			}
 			writeJSON(w, http.StatusOK, listResponse([]client.Server{s}))
