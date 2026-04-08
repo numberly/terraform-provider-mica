@@ -780,7 +780,8 @@ Plans:
   4. `data.flashblade_array_connection` data source reads an existing connection by remote name and exposes all configuration and status attributes
   5. connection_key is marked Sensitive and never appears in plan output or logs; it is write-only (POST only, not returned by GET)
   6. Drift detection logs field-level changes via tflog when an array connection is modified outside Terraform
-**Plans**: 0 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 42 to break down)
+- [ ] 42-01-PLAN.md — Client layer: ArrayConnection models extended, Post/Patch/Delete client methods, full CRUD mock handler, 7 unit tests
+- [ ] 42-02-PLAN.md — Provider layer: flashblade_array_connection resource (full CRUD, import, sensitive connection_key), data source extended, registration, HCL examples, make docs
