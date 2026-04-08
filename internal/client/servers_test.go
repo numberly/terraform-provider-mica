@@ -83,6 +83,11 @@ func TestUnit_Server_Post(t *testing.T) {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
 				return
 			}
+			createDS := r.URL.Query().Get("create_ds")
+			if createDS == "" {
+				http.Error(w, "create_ds query param missing", http.StatusBadRequest)
+				return
+			}
 			var body client.ServerPost
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)

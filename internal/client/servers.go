@@ -12,9 +12,11 @@ func (c *FlashBladeClient) GetServer(ctx context.Context, name string) (*Server,
 	return getOneByName[Server](c, ctx, "/servers?names="+url.QueryEscape(name), "server", name)
 }
 
-// PostServer creates a new server. The name is passed via the ?names= query parameter.
+// PostServer creates a new server. The API requires both ?names= (server name)
+// and ?create_ds= (directory service name, conventionally name + "_nfs").
 func (c *FlashBladeClient) PostServer(ctx context.Context, name string, body ServerPost) (*Server, error) {
-	return postOne[ServerPost, Server](c, ctx, "/servers?names="+url.QueryEscape(name), body, "PostServer")
+	path := "/servers?names=" + url.QueryEscape(name) + "&create_ds=" + url.QueryEscape(name+"_nfs")
+	return postOne[ServerPost, Server](c, ctx, path, body, "PostServer")
 }
 
 // PatchServer updates an existing server identified by name.

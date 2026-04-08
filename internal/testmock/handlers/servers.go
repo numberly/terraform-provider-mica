@@ -88,9 +88,12 @@ func (s *serverStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/servers?names={name}.
-// The server name comes from the ?names= query parameter.
+// handlePost handles POST /api/2.22/servers?names={name}&create_ds={name}_nfs.
+// Both query parameters are required by the FlashBlade API.
 func (s *serverStore) handlePost(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names", "create_ds"}) {
+		return
+	}
 	name, ok := RequireQueryParam(w, r, "names")
 	if !ok {
 		return
