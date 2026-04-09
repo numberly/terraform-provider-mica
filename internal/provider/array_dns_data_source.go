@@ -30,6 +30,7 @@ func NewArrayDnsDataSource() datasource.DataSource {
 // arrayDnsDataSourceModel is the top-level model for the flashblade_array_dns data source.
 type arrayDnsDataSourceModel struct {
 	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
 	Domain      types.String `tfsdk:"domain"`
 	Nameservers types.List   `tfsdk:"nameservers"`
 	Services    types.List   `tfsdk:"services"`
@@ -46,11 +47,15 @@ func (d *arrayDnsDataSource) Metadata(_ context.Context, _ datasource.MetadataRe
 // Schema defines the data source schema.
 func (d *arrayDnsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Reads the current DNS configuration of a FlashBlade array.",
+		Description: "Reads a DNS configuration entry from a FlashBlade array by name.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The unique identifier of the DNS configuration.",
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the DNS configuration to look up.",
 			},
 			"domain": schema.StringAttribute{
 				Computed:    true,
@@ -91,7 +96,7 @@ func (d *arrayDnsDataSource) Configure(_ context.Context, req datasource.Configu
 	d.client = c
 }
 
-// Read fetches the DNS configuration and populates state.
+// Read fetches the DNS configuration by name and populates state.
 func (d *arrayDnsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var config arrayDnsDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -99,13 +104,19 @@ func (d *arrayDnsDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	dns, err := d.client.GetArrayDns(ctx)
+	name := config.Name.ValueString()
+	dns, err := d.client.GetArrayDns(ctx, name)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading array DNS configuration", err.Error())
+		if client.IsNotFound(err) {
+			resp.Diagnostics.AddError("DNS configuration not found", fmt.Sprintf("No DNS configuration named %q", name))
+		} else {
+			resp.Diagnostics.AddError("Error reading array DNS configuration", err.Error())
+		}
 		return
 	}
 
 	config.ID = types.StringValue(dns.ID)
+	config.Name = types.StringValue(dns.Name)
 	config.Domain = types.StringValue(dns.Domain)
 
 	if len(dns.Nameservers) > 0 {

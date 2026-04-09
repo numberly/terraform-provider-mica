@@ -23,7 +23,7 @@ var _ resource.ResourceWithConfigure = &arrayDnsResource{}
 var _ resource.ResourceWithImportState = &arrayDnsResource{}
 var _ resource.ResourceWithUpgradeState = &arrayDnsResource{}
 
-// arrayDnsResource implements the flashblade_array_dns singleton resource.
+// arrayDnsResource implements the flashblade_array_dns resource.
 type arrayDnsResource struct {
 	client *client.FlashBladeClient
 }
@@ -35,8 +35,19 @@ func NewArrayDnsResource() resource.Resource {
 
 // ---------- model structs ----------------------------------------------------
 
-// arrayDnsModel is the top-level model for the flashblade_array_dns resource.
+// arrayDnsModel is the top-level model for the flashblade_array_dns resource (v1).
 type arrayDnsModel struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Domain      types.String   `tfsdk:"domain"`
+	Nameservers types.List     `tfsdk:"nameservers"`
+	Services    types.List     `tfsdk:"services"`
+	Sources     types.List     `tfsdk:"sources"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
+}
+
+// arrayDnsV0Model is the v0 state model (no name attribute).
+type arrayDnsV0Model struct {
 	ID          types.String   `tfsdk:"id"`
 	Domain      types.String   `tfsdk:"domain"`
 	Nameservers types.List     `tfsdk:"nameservers"`
@@ -55,14 +66,21 @@ func (r *arrayDnsResource) Metadata(_ context.Context, _ resource.MetadataReques
 // Schema defines the resource schema.
 func (r *arrayDnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
-		Description: "Manages the DNS configuration of a FlashBlade array. This is a singleton resource — Create/Delete patches the existing configuration rather than creating or deleting a record.",
+		Version:     1,
+		Description: "Manages a DNS configuration entry on a FlashBlade array.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The unique identifier of the DNS configuration.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the DNS configuration. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"domain": schema.StringAttribute{
@@ -98,10 +116,66 @@ func (r *arrayDnsResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 	}
 }
 
-
 // UpgradeState returns state upgraders for schema migrations.
-func (r *arrayDnsResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *arrayDnsResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		// v0 -> v1: add name attribute.
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages the DNS configuration of a FlashBlade array. This is a singleton resource — Create/Delete patches the existing configuration rather than creating or deleting a record.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+					},
+					"domain": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"nameservers": schema.ListAttribute{
+						Optional:    true,
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"services": schema.ListAttribute{
+						Optional:    true,
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"sources": schema.ListAttribute{
+						Optional:    true,
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState arrayDnsV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				newState := arrayDnsModel{
+					ID:          oldState.ID,
+					Name:        types.StringValue("default"),
+					Domain:      oldState.Domain,
+					Nameservers: oldState.Nameservers,
+					Services:    oldState.Services,
+					Sources:     oldState.Sources,
+					Timeouts:    oldState.Timeouts,
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -122,7 +196,7 @@ func (r *arrayDnsResource) Configure(_ context.Context, req resource.ConfigureRe
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create implements the singleton create pattern: GET first, then POST if missing / PATCH if exists.
+// Create creates a new DNS configuration entry.
 func (r *arrayDnsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data arrayDnsModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -138,12 +212,7 @@ func (r *arrayDnsResource) Create(ctx context.Context, req resource.CreateReques
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	// Attempt GET to determine whether DNS config already exists.
-	existing, getErr := r.client.GetArrayDns(ctx)
-	if getErr != nil && !client.IsNotFound(getErr) {
-		resp.Diagnostics.AddError("Error reading array DNS configuration", getErr.Error())
-		return
-	}
+	name := data.Name.ValueString()
 
 	nameservers, d := listToStrings(ctx, data.Nameservers)
 	resp.Diagnostics.Append(d...)
@@ -161,35 +230,16 @@ func (r *arrayDnsResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	var result *client.ArrayDns
-	var err error
-	if existing == nil || client.IsNotFound(getErr) {
-		// POST — no existing DNS config.
-		post := client.ArrayDnsPost{
-			Domain:      data.Domain.ValueString(),
-			Nameservers: nameservers,
-			Services:    services,
-			Sources:     sources,
-		}
-		result, err = r.client.PostArrayDns(ctx, post)
-		if err != nil {
-			resp.Diagnostics.AddError("Error creating array DNS configuration", err.Error())
-			return
-		}
-	} else {
-		// PATCH — config already exists, apply desired values.
-		domain := data.Domain.ValueString()
-		patch := client.ArrayDnsPatch{
-			Domain:      &domain,
-			Nameservers: &nameservers,
-			Services:    &services,
-			Sources:     &sources,
-		}
-		result, err = r.client.PatchArrayDns(ctx, patch)
-		if err != nil {
-			resp.Diagnostics.AddError("Error updating array DNS configuration", err.Error())
-			return
-		}
+	post := client.ArrayDnsPost{
+		Domain:      data.Domain.ValueString(),
+		Nameservers: nameservers,
+		Services:    services,
+		Sources:     sources,
+	}
+	result, err := r.client.PostArrayDns(ctx, name, post)
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating array DNS configuration", err.Error())
+		return
 	}
 
 	resp.Diagnostics.Append(mapArrayDnsToModel(ctx, result, &data)...)
@@ -215,7 +265,8 @@ func (r *arrayDnsResource) Read(ctx context.Context, req resource.ReadRequest, r
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	dns, err := r.client.GetArrayDns(ctx)
+	name := data.Name.ValueString()
+	dns, err := r.client.GetArrayDns(ctx, name)
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -223,6 +274,24 @@ func (r *arrayDnsResource) Read(ctx context.Context, req resource.ReadRequest, r
 		}
 		resp.Diagnostics.AddError("Error reading array DNS configuration", err.Error())
 		return
+	}
+
+	// Drift detection
+	if data.Name.ValueString() != dns.Name {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "name",
+			"was":      data.Name.ValueString(),
+			"now":      dns.Name,
+		})
+	}
+	if data.Domain.ValueString() != dns.Domain {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "domain",
+			"was":      data.Domain.ValueString(),
+			"now":      dns.Domain,
+		})
 	}
 
 	resp.Diagnostics.Append(mapArrayDnsToModel(ctx, dns, &data)...)
@@ -248,6 +317,8 @@ func (r *arrayDnsResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
+
+	name := plan.Name.ValueString()
 
 	patch := client.ArrayDnsPatch{}
 	if !plan.Domain.Equal(state.Domain) {
@@ -279,7 +350,7 @@ func (r *arrayDnsResource) Update(ctx context.Context, req resource.UpdateReques
 		patch.Sources = &src
 	}
 
-	result, err := r.client.PatchArrayDns(ctx, patch)
+	result, err := r.client.PatchArrayDns(ctx, name, patch)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating array DNS configuration", err.Error())
 		return
@@ -292,7 +363,7 @@ func (r *arrayDnsResource) Update(ctx context.Context, req resource.UpdateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-// Delete resets the DNS configuration to defaults (singleton — PATCH to empty).
+// Delete removes the DNS configuration entry.
 func (r *arrayDnsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data arrayDnsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -300,7 +371,7 @@ func (r *arrayDnsResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	deleteTimeout, diags := data.Timeouts.Delete(ctx, 10*time.Minute)
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, 30*time.Minute)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -308,31 +379,27 @@ func (r *arrayDnsResource) Delete(ctx context.Context, req resource.DeleteReques
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	emptyDomain := ""
-	emptyList := []string{}
-	patch := client.ArrayDnsPatch{
-		Domain:      &emptyDomain,
-		Nameservers: &emptyList,
-	}
-	_, err := r.client.PatchArrayDns(ctx, patch)
-	if err != nil {
-		resp.Diagnostics.AddError("Error resetting array DNS configuration", err.Error())
+	name := data.Name.ValueString()
+	if err := r.client.DeleteArrayDns(ctx, name); err != nil {
+		resp.Diagnostics.AddError("Error deleting array DNS configuration", err.Error())
 		return
 	}
 
-	tflog.Info(ctx, "DNS config reset to defaults")
+	tflog.Info(ctx, "DNS configuration deleted", map[string]any{"name": name})
 }
 
-// ImportState imports the singleton DNS config using "default" as the import ID.
+// ImportState imports a DNS configuration entry by name.
 func (r *arrayDnsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data arrayDnsModel
-	data.Timeouts = nullTimeoutsValue()
+	name := req.ID
 
-	dns, err := r.client.GetArrayDns(ctx)
+	dns, err := r.client.GetArrayDns(ctx, name)
 	if err != nil {
 		resp.Diagnostics.AddError("Error importing array DNS configuration", err.Error())
 		return
 	}
+
+	var data arrayDnsModel
+	data.Timeouts = nullTimeoutsValue()
 
 	resp.Diagnostics.Append(mapArrayDnsToModel(ctx, dns, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -349,6 +416,7 @@ func mapArrayDnsToModel(ctx context.Context, dns *client.ArrayDns, data *arrayDn
 	var diags diag.Diagnostics
 
 	data.ID = types.StringValue(dns.ID)
+	data.Name = types.StringValue(dns.Name)
 	data.Domain = types.StringValue(dns.Domain)
 
 	if len(dns.Nameservers) > 0 {

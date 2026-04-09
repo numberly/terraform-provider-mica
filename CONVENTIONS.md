@@ -448,7 +448,7 @@ func nullXxxDSConfig() map[string]tftypes.Value
 
 ### Coverage rules
 
-- **Total test count MUST NOT decrease.** Current baseline: **752 tests**.
+- **Total test count MUST NOT decrease.** Current baseline: **753 tests**.
 - Every new resource adds at minimum **8 tests** (4 client + 3 resource + 1 data source).
 - Every state upgrader adds at minimum **1 test**.
 - Run `make test` and `make lint` before every commit. Both must be clean.
