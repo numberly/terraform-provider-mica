@@ -14,6 +14,7 @@ Manages a FlashBlade object store virtual host for virtual-hosted-style S3 endpo
 
 ```terraform
 resource "flashblade_object_store_virtual_host" "example" {
+  name     = "s3-vhost"
   hostname = "s3.example.com"
 }
 ```
@@ -24,6 +25,7 @@ resource "flashblade_object_store_virtual_host" "example" {
 ### Required
 
 - `hostname` (String) The hostname for the virtual-hosted-style S3 endpoint. This is the primary user-supplied field.
+- `name` (String) The user-specified name of the virtual host. Used as the resource identifier for all API operations.
 
 ### Optional
 
@@ -33,7 +35,6 @@ resource "flashblade_object_store_virtual_host" "example" {
 ### Read-Only
 
 - `id` (String) The unique identifier of the virtual host.
-- `name` (String) The server-assigned name of the virtual host. Used for import, PATCH, and DELETE operations.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

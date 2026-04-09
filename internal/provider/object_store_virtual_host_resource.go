@@ -46,6 +46,15 @@ type objectStoreVirtualHostModel struct {
 	Timeouts        timeouts.Value `tfsdk:"timeouts"`
 }
 
+// objectStoreVirtualHostV0Model is the v0 state model (name was Computed).
+type objectStoreVirtualHostV0Model struct {
+	ID              types.String   `tfsdk:"id"`
+	Name            types.String   `tfsdk:"name"`
+	Hostname        types.String   `tfsdk:"hostname"`
+	AttachedServers types.List     `tfsdk:"attached_servers"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
+}
+
 // ---------- resource interface methods --------------------------------------
 
 // Metadata sets the Terraform type name.
@@ -56,7 +65,7 @@ func (r *objectStoreVirtualHostResource) Metadata(_ context.Context, _ resource.
 // Schema defines the resource schema.
 func (r *objectStoreVirtualHostResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade object store virtual host for virtual-hosted-style S3 endpoints.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -67,10 +76,10 @@ func (r *objectStoreVirtualHostResource) Schema(ctx context.Context, _ resource.
 				},
 			},
 			"name": schema.StringAttribute{
-				Computed:    true,
-				Description: "The server-assigned name of the virtual host. Used for import, PATCH, and DELETE operations.",
+				Required:    true,
+				Description: "The user-specified name of the virtual host. Used as the resource identifier for all API operations.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"hostname": schema.StringAttribute{
@@ -98,8 +107,42 @@ func (r *objectStoreVirtualHostResource) Schema(ctx context.Context, _ resource.
 
 
 // UpgradeState returns state upgraders for schema migrations.
-func (r *objectStoreVirtualHostResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *objectStoreVirtualHostResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &schema.Schema{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+					"hostname": schema.StringAttribute{
+						Required: true,
+					},
+					"attached_servers": schema.ListAttribute{
+						Optional:    true,
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true, Read: true, Update: true, Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var old objectStoreVirtualHostV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &old)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				newState := objectStoreVirtualHostModel(old)
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -136,17 +179,17 @@ func (r *objectStoreVirtualHostResource) Create(ctx context.Context, req resourc
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	hostname := data.Hostname.ValueString()
+	name := data.Name.ValueString()
 
 	post := client.ObjectStoreVirtualHostPost{
-		Hostname:        hostname,
+		Hostname:        data.Hostname.ValueString(),
 		AttachedServers: modelServersToNamedRefs(ctx, &data, &resp.Diagnostics),
 	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	vh, err := r.client.PostObjectStoreVirtualHost(ctx, hostname, post)
+	vh, err := r.client.PostObjectStoreVirtualHost(ctx, name, post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating object store virtual host", err.Error())
 		return
@@ -187,14 +230,24 @@ func (r *objectStoreVirtualHostResource) Read(ctx context.Context, req resource.
 		return
 	}
 
+	// Drift detection on name.
+	if data.Name.ValueString() != vh.Name {
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name,
+			"field":    "name",
+			"was":      data.Name.ValueString(),
+			"now":      vh.Name,
+		})
+	}
+
 	// Drift detection on hostname.
 	if !data.Hostname.IsNull() && !data.Hostname.IsUnknown() {
 		if data.Hostname.ValueString() != vh.Hostname {
-			tflog.Info(ctx, "drift detected on object store virtual host", map[string]any{
-				"resource":    name,
-				"field":       "hostname",
-				"state_value": data.Hostname.ValueString(),
-				"api_value":   vh.Hostname,
+			tflog.Debug(ctx, "drift detected", map[string]any{
+				"resource": name,
+				"field":    "hostname",
+				"was":      data.Hostname.ValueString(),
+				"now":      vh.Hostname,
 			})
 		}
 	}

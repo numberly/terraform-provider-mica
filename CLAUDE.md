@@ -86,3 +86,4 @@ This ensures the roadmap stays accurate across sessions and contributors.
 - Use `context.Background()` in auth paths -- propagate caller context
 - Add `RetryBaseDelay` or similar heuristic duration fields -- use explicit `time.Duration`
 - Add `Co-Authored-By` trailers in commit messages -- never include any co-author line
+- Use git worktrees (`isolation: "worktree"`) for sub-agents -- causes rebase/merge issues, always work on the current branch directly

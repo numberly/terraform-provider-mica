@@ -52,9 +52,9 @@ func (c *FlashBladeClient) ListObjectStoreVirtualHosts(ctx context.Context, opts
 }
 
 // PostObjectStoreVirtualHost creates a new object store virtual host.
-// The hostname is passed as the ?names= query parameter; body contains hostname and attached_servers.
-func (c *FlashBladeClient) PostObjectStoreVirtualHost(ctx context.Context, hostname string, body ObjectStoreVirtualHostPost) (*ObjectStoreVirtualHost, error) {
-	return postOne[ObjectStoreVirtualHostPost, ObjectStoreVirtualHost](c, ctx, "/object-store-virtual-hosts?names="+url.QueryEscape(hostname), body, "PostObjectStoreVirtualHost")
+// The name is passed as the ?names= query parameter; body contains hostname and attached_servers.
+func (c *FlashBladeClient) PostObjectStoreVirtualHost(ctx context.Context, name string, body ObjectStoreVirtualHostPost) (*ObjectStoreVirtualHost, error) {
+	return postOne[ObjectStoreVirtualHostPost, ObjectStoreVirtualHost](c, ctx, "/object-store-virtual-hosts?names="+url.QueryEscape(name), body, "PostObjectStoreVirtualHost")
 }
 
 // PatchObjectStoreVirtualHost updates an existing object store virtual host identified by its server-assigned name.

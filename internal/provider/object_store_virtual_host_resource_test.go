@@ -72,11 +72,12 @@ func nullVirtualHostConfig() map[string]tftypes.Value {
 	}
 }
 
-// virtualHostPlanWithHostname returns a tfsdk.Plan with the given hostname and attached_servers.
-func virtualHostPlanWithHostname(t *testing.T, hostname string, servers []string) tfsdk.Plan {
+// virtualHostPlanWith returns a tfsdk.Plan with the given name, hostname, and attached_servers.
+func virtualHostPlanWith(t *testing.T, name, hostname string, servers []string) tfsdk.Plan {
 	t.Helper()
 	s := virtualHostResourceSchema(t).Schema
 	cfg := nullVirtualHostConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["hostname"] = tftypes.NewValue(tftypes.String, hostname)
 
 	if servers != nil {
@@ -109,7 +110,7 @@ func TestUnit_ObjectStoreVirtualHost_CreateReadUpdateDelete(t *testing.T) {
 	s := virtualHostResourceSchema(t).Schema
 
 	// --- Create ---
-	plan := virtualHostPlanWithHostname(t, "s3.example.com", []string{"server1"})
+	plan := virtualHostPlanWith(t, "s3.example.com", "s3.example.com", []string{"server1"})
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildVirtualHostType(), nil), Schema: s},
 	}
@@ -160,7 +161,7 @@ func TestUnit_ObjectStoreVirtualHost_CreateReadUpdateDelete(t *testing.T) {
 	}
 
 	// --- Update: change attached_servers to ["server1", "server2"] ---
-	updatePlan := virtualHostPlanWithHostname(t, "s3.example.com", []string{"server1", "server2"})
+	updatePlan := virtualHostPlanWith(t, "s3.example.com", "s3.example.com", []string{"server1", "server2"})
 	updateResp := &resource.UpdateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildVirtualHostType(), nil), Schema: s},
 	}
@@ -211,7 +212,7 @@ func TestUnit_ObjectStoreVirtualHost_Import(t *testing.T) {
 	s := virtualHostResourceSchema(t).Schema
 
 	// Create first.
-	plan := virtualHostPlanWithHostname(t, "s3.import.test", []string{"server1"})
+	plan := virtualHostPlanWith(t, "s3.import.test", "s3.import.test", []string{"server1"})
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildVirtualHostType(), nil), Schema: s},
 	}
@@ -274,7 +275,7 @@ func TestUnit_ObjectStoreVirtualHost_UpdateHostname(t *testing.T) {
 	s := virtualHostResourceSchema(t).Schema
 
 	// Create with initial hostname.
-	plan := virtualHostPlanWithHostname(t, "s3.example.com", nil)
+	plan := virtualHostPlanWith(t, "s3.example.com", "s3.example.com", nil)
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildVirtualHostType(), nil), Schema: s},
 	}
@@ -284,7 +285,7 @@ func TestUnit_ObjectStoreVirtualHost_UpdateHostname(t *testing.T) {
 	}
 
 	// Update hostname.
-	updatePlan := virtualHostPlanWithHostname(t, "s3-new.example.com", nil)
+	updatePlan := virtualHostPlanWith(t, "s3.example.com", "s3-new.example.com", nil)
 	updateResp := &resource.UpdateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildVirtualHostType(), nil), Schema: s},
 	}
@@ -317,7 +318,7 @@ func TestUnit_ObjectStoreVirtualHost_EmptyServers(t *testing.T) {
 	s := virtualHostResourceSchema(t).Schema
 
 	// Create with no attached_servers (empty list).
-	plan := virtualHostPlanWithHostname(t, "s3.empty.test", nil)
+	plan := virtualHostPlanWith(t, "s3.empty.test", "s3.empty.test", nil)
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildVirtualHostType(), nil), Schema: s},
 	}
@@ -373,7 +374,7 @@ func TestUnit_ObjectStoreVirtualHost_Idempotent(t *testing.T) {
 	r := newTestVirtualHostResource(t, ms)
 	s := virtualHostResourceSchema(t).Schema
 
-	plan := virtualHostPlanWithHostname(t, "s3.idempotent.test", []string{"server1"})
+	plan := virtualHostPlanWith(t, "s3.idempotent.test", "s3.idempotent.test", []string{"server1"})
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildVirtualHostType(), nil), Schema: s},
 	}
@@ -405,5 +406,84 @@ func TestUnit_ObjectStoreVirtualHost_Idempotent(t *testing.T) {
 	}
 	if beforeModel.Hostname.ValueString() != afterModel.Hostname.ValueString() {
 		t.Errorf("Hostname changed after Read: %s -> %s", beforeModel.Hostname.ValueString(), afterModel.Hostname.ValueString())
+	}
+}
+
+// TestUnit_ObjectStoreVirtualHostResource_StateUpgrade_V0toV1 verifies v0 state (name was Computed)
+// upgrades correctly to v1 state (name is Required).
+func TestUnit_ObjectStoreVirtualHostResource_StateUpgrade_V0toV1(t *testing.T) {
+	r := &objectStoreVirtualHostResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0→v1 state upgrader")
+	}
+
+	// Build v0 state with the prior schema.
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":       tftypes.String,
+		"name":     tftypes.String,
+		"hostname": tftypes.String,
+		"attached_servers": tftypes.List{ElementType: tftypes.String},
+		"timeouts": tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+			"create": tftypes.String,
+			"read":   tftypes.String,
+			"update": tftypes.String,
+			"delete": tftypes.String,
+		}},
+	}}
+
+	v0Values := map[string]tftypes.Value{
+		"id":       tftypes.NewValue(tftypes.String, "vh-id-001"),
+		"name":     tftypes.NewValue(tftypes.String, "s3.example.com"),
+		"hostname": tftypes.NewValue(tftypes.String, "s3.example.com"),
+		"attached_servers": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, []tftypes.Value{
+			tftypes.NewValue(tftypes.String, "server1"),
+		}),
+		"timeouts": tftypes.NewValue(tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+			"create": tftypes.String,
+			"read":   tftypes.String,
+			"update": tftypes.String,
+			"delete": tftypes.String,
+		}}, map[string]tftypes.Value{
+			"create": tftypes.NewValue(tftypes.String, nil),
+			"read":   tftypes.NewValue(tftypes.String, nil),
+			"update": tftypes.NewValue(tftypes.String, nil),
+			"delete": tftypes.NewValue(tftypes.String, nil),
+		}),
+	}
+
+	priorState := tfsdk.State{
+		Raw:    tftypes.NewValue(v0Type, v0Values),
+		Schema: *upgrader.PriorSchema,
+	}
+
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildVirtualHostType(), nil),
+			Schema: virtualHostResourceSchema(t).Schema,
+		},
+	}
+
+	upgrader.StateUpgrader(context.Background(), resource.UpgradeStateRequest{State: &priorState}, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model objectStoreVirtualHostModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.ID.ValueString() != "vh-id-001" {
+		t.Errorf("expected ID=vh-id-001, got %s", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "s3.example.com" {
+		t.Errorf("expected Name=s3.example.com, got %s", model.Name.ValueString())
+	}
+	if model.Hostname.ValueString() != "s3.example.com" {
+		t.Errorf("expected Hostname=s3.example.com, got %s", model.Hostname.ValueString())
 	}
 }

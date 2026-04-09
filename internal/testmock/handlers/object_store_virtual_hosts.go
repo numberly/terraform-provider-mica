@@ -76,10 +76,10 @@ func (s *objectStoreVirtualHostStore) handleGet(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/object-store-virtual-hosts?names={hostname}.
+// handlePost handles POST /api/2.22/object-store-virtual-hosts?names={name}.
 func (s *objectStoreVirtualHostStore) handlePost(w http.ResponseWriter, r *http.Request) {
-	hostname := r.URL.Query().Get("names")
-	if hostname == "" {
+	name := r.URL.Query().Get("names")
+	if name == "" {
 		WriteJSONError(w, http.StatusBadRequest, "names query parameter is required for POST")
 		return
 	}
@@ -93,8 +93,6 @@ func (s *objectStoreVirtualHostStore) handlePost(w http.ResponseWriter, r *http.
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Use hostname as the server-assigned name for mock testing.
-	name := hostname
 	if _, exists := s.hosts[name]; exists {
 		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("object store virtual host %q already exists", name))
 		return
@@ -103,7 +101,7 @@ func (s *objectStoreVirtualHostStore) handlePost(w http.ResponseWriter, r *http.
 	host := &client.ObjectStoreVirtualHost{
 		ID:              uuid.New().String(),
 		Name:            name,
-		Hostname:        hostname,
+		Hostname:        body.Hostname,
 		AttachedServers: body.AttachedServers,
 	}
 
