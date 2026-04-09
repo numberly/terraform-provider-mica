@@ -338,16 +338,38 @@ func (r *objectStoreVirtualHostResource) Delete(ctx context.Context, req resourc
 	}
 }
 
-// ImportState imports an existing object store virtual host by server-assigned name.
+// ImportState imports an existing object store virtual host by name or hostname.
+// Tries GET by ?names= first; if not found, lists all and matches by name or hostname.
 func (r *objectStoreVirtualHostResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	name := req.ID
+	importID := req.ID
+
+	// Try direct lookup by name first.
+	vh, err := r.client.GetObjectStoreVirtualHost(ctx, importID)
+	if err != nil {
+		// Direct lookup failed — list all and match by name or hostname.
+		hosts, listErr := r.client.ListObjectStoreVirtualHosts(ctx, client.ListObjectStoreVirtualHostsOpts{})
+		if listErr != nil {
+			resp.Diagnostics.AddError("Error listing object store virtual hosts for import", listErr.Error())
+			return
+		}
+		for i := range hosts {
+			if hosts[i].Name == importID || hosts[i].Hostname == importID {
+				vh = &hosts[i]
+				break
+			}
+		}
+		if vh == nil {
+			resp.Diagnostics.AddError(
+				"Object store virtual host not found",
+				fmt.Sprintf("No virtual host with name or hostname %q found on the FlashBlade array.", importID),
+			)
+			return
+		}
+	}
 
 	var data objectStoreVirtualHostModel
-	// Initialize timeouts with a null value so the framework can serialize it.
 	data.Timeouts = nullTimeoutsValue()
-	data.Name = types.StringValue(name)
-
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	mapVirtualHostToModel(ctx, vh, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
