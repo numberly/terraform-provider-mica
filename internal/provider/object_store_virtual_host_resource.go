@@ -77,17 +77,17 @@ func (r *objectStoreVirtualHostResource) Schema(ctx context.Context, _ resource.
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The user-specified name of the virtual host. Used as the resource identifier for all API operations.",
+				Description: "The user-specified name of the virtual host. Must contain only alphanumeric characters, hyphens, and underscores.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					HostnameNoDotValidator(),
 				},
 			},
 			"hostname": schema.StringAttribute{
 				Required:    true,
-				Description: "The hostname for the virtual-hosted-style S3 endpoint. This is the primary user-supplied field.",
-				Validators: []validator.String{
-					HostnameNoDotValidator(),
-				},
+				Description: "The hostname (FQDN) for the virtual-hosted-style S3 endpoint.",
 			},
 			"attached_servers": schema.ListAttribute{
 				Optional:    true,
