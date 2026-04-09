@@ -314,6 +314,11 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewArrayNtpResource,
 		NewArraySmtpResource,
 		NewSyslogServerResource,
+
+		// Audit
+		NewAuditObjectStorePolicyResource,
+		NewAuditObjectStorePolicyMemberResource,
+		NewLogTargetObjectStoreResource,
 	}
 }
 
@@ -373,5 +378,9 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewArrayNtpDataSource,
 		NewArraySmtpDataSource,
 		NewSyslogServerDataSource,
+
+		// Audit
+		NewAuditObjectStorePolicyDataSource,
+		NewLogTargetObjectStoreDataSource,
 	}
 }

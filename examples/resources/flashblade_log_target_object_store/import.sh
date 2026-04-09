@@ -1,0 +1,1 @@
+terraform import flashblade_log_target_object_store.example my-log-target

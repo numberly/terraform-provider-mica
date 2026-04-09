@@ -2,9 +2,9 @@
 
 FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-flashblade.
 
-**Last updated:** 2026-04-08
+**Last updated:** 2026-04-09
 **Provider version:** v2.2
-**Total API sections:** 84 | **Covered:** ~39 | **Coverage of IaC-relevant CRUD:** ~70%
+**Total API sections:** 84 | **Covered:** ~41 | **Coverage of IaC-relevant CRUD:** ~72%
 
 ## Coverage Legend
 
@@ -97,6 +97,14 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | SMTP | `flashblade_array_smtp` | Yes | Done | Singleton |
 | Syslog Servers | `flashblade_syslog_server` | Yes | Done | Full CRUD |
 
+### Audit
+
+| API Section | Resource | Data Source | Status | Notes |
+|-------------|----------|:----------:|--------|-------|
+| Audit Policies (Object Store) | `flashblade_audit_object_store_policy` | Yes | Done | Object store audit logging policies with log targets |
+| Audit Policies (Object Store) Members | `flashblade_audit_object_store_policy_member` | No | Done | Bucket-to-policy assignment (CRD) |
+| Log Targets (Object Store) | `flashblade_log_target_object_store` | Yes | Done | Audit log target to bucket with prefix + rotation |
+
 ### Quotas
 
 | API Section | Resource | Data Source | Status | Notes |
@@ -156,8 +164,8 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | SSH CA Policies | Resource | Full CRUD | SSH certificate authority management | Deferred |
 | Data Eviction Policies | Resource | Full CRUD + FS members | Automatic data eviction | Deferred |
 | Audit Policies (FS) | Resource | Full CRUD + members | File system audit logging policies | Deferred |
-| Audit Policies (Object Store) | Resource | Full CRUD + members | Object store audit logging policies | Deferred |
-| Log Targets | Resource | Full CRUD | Audit log target configuration | Deferred |
+| Audit Policies (FS) members | Resource | Members endpoint | File system audit policy-to-FS association | Deferred |
+| Log Targets (File Systems) | Resource | Full CRUD | File system audit log target configuration | Deferred |
 
 ### Not Applicable for Terraform
 

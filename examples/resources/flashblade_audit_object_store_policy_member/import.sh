@@ -1,0 +1,1 @@
+terraform import flashblade_audit_object_store_policy_member.example my-audit-policy/my-bucket
