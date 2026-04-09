@@ -11,7 +11,9 @@ type ArrayDns struct {
 }
 
 // ArrayDnsPost contains the fields accepted on POST /dns.
+// Name is passed via ?names= query parameter, excluded from body.
 type ArrayDnsPost struct {
+	Name        string   `json:"-"`
 	Domain      string   `json:"domain,omitempty"`
 	Nameservers []string `json:"nameservers,omitempty"`
 	Services    []string `json:"services,omitempty"`

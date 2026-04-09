@@ -10,10 +10,10 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-func TestUnit_ArrayDns_Get(t *testing.T) {
+func TestUnit_ArrayDns_Get_Found(t *testing.T) {
 	expected := client.ArrayDns{
 		ID:          "dns-id-001",
-		Name:        "pure01",
+		Name:        "dns-config",
 		Domain:      "example.com",
 		Nameservers: []string{"1.1.1.1", "8.8.8.8"},
 	}
@@ -24,6 +24,11 @@ func TestUnit_ArrayDns_Get(t *testing.T) {
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
 		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/dns":
+			name := r.URL.Query().Get("names")
+			if name != "dns-config" {
+				writeJSON(w, http.StatusOK, listResponse([]client.ArrayDns{}))
+				return
+			}
 			writeJSON(w, http.StatusOK, listResponse([]client.ArrayDns{expected}))
 		default:
 			http.NotFound(w, r)
@@ -32,12 +37,15 @@ func TestUnit_ArrayDns_Get(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	got, err := c.GetArrayDns(context.Background())
+	got, err := c.GetArrayDns(context.Background(), "dns-config")
 	if err != nil {
 		t.Fatalf("GetArrayDns: %v", err)
 	}
 	if got.ID != expected.ID {
 		t.Errorf("expected ID %q, got %q", expected.ID, got.ID)
+	}
+	if got.Name != expected.Name {
+		t.Errorf("expected Name %q, got %q", expected.Name, got.Name)
 	}
 	if got.Domain != expected.Domain {
 		t.Errorf("expected Domain %q, got %q", expected.Domain, got.Domain)
@@ -62,9 +70,58 @@ func TestUnit_ArrayDns_Get_NotFound(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	_, err := c.GetArrayDns(context.Background())
+	_, err := c.GetArrayDns(context.Background(), "nonexistent")
 	if err == nil {
 		t.Fatal("expected error for empty response, got nil")
+	}
+	if !client.IsNotFound(err) {
+		t.Errorf("expected IsNotFound error, got %v", err)
+	}
+}
+
+func TestUnit_ArrayDns_Post(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/dns":
+			name := r.URL.Query().Get("names")
+			if name == "" {
+				http.Error(w, "names required", http.StatusBadRequest)
+				return
+			}
+			var body client.ArrayDnsPost
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				http.Error(w, "bad body", http.StatusBadRequest)
+				return
+			}
+			result := client.ArrayDns{
+				ID:          "dns-new-001",
+				Name:        name,
+				Domain:      body.Domain,
+				Nameservers: body.Nameservers,
+			}
+			writeJSON(w, http.StatusOK, listResponse([]client.ArrayDns{result}))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	got, err := c.PostArrayDns(context.Background(), "my-dns", client.ArrayDnsPost{
+		Domain:      "test.example.com",
+		Nameservers: []string{"9.9.9.9"},
+	})
+	if err != nil {
+		t.Fatalf("PostArrayDns: %v", err)
+	}
+	if got.Name != "my-dns" {
+		t.Errorf("expected Name %q, got %q", "my-dns", got.Name)
+	}
+	if got.Domain != "test.example.com" {
+		t.Errorf("expected Domain %q, got %q", "test.example.com", got.Domain)
 	}
 }
 
@@ -77,6 +134,11 @@ func TestUnit_ArrayDns_Patch(t *testing.T) {
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
 		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/dns":
+			name := r.URL.Query().Get("names")
+			if name != "dns-config" {
+				http.Error(w, "unexpected name", http.StatusBadRequest)
+				return
+			}
 			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
 				return
@@ -84,6 +146,7 @@ func TestUnit_ArrayDns_Patch(t *testing.T) {
 			domain := "updated.example.com"
 			result := client.ArrayDns{
 				ID:     "dns-id-001",
+				Name:   name,
 				Domain: domain,
 			}
 			writeJSON(w, http.StatusOK, listResponse([]client.ArrayDns{result}))
@@ -95,7 +158,7 @@ func TestUnit_ArrayDns_Patch(t *testing.T) {
 
 	c := newTestClient(t, srv)
 	newDomain := "updated.example.com"
-	got, err := c.PatchArrayDns(context.Background(), client.ArrayDnsPatch{
+	got, err := c.PatchArrayDns(context.Background(), "dns-config", client.ArrayDnsPatch{
 		Domain: &newDomain,
 	})
 	if err != nil {
@@ -107,6 +170,37 @@ func TestUnit_ArrayDns_Patch(t *testing.T) {
 	// Verify PATCH semantics: Nameservers should be absent
 	if gotBody.Nameservers != nil {
 		t.Errorf("expected Nameservers absent in PATCH body")
+	}
+}
+
+func TestUnit_ArrayDns_Delete(t *testing.T) {
+	var deleteCalled bool
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/dns":
+			name := r.URL.Query().Get("names")
+			if name != "dns-config" {
+				http.Error(w, "unexpected name", http.StatusBadRequest)
+				return
+			}
+			deleteCalled = true
+			w.WriteHeader(http.StatusOK)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	if err := c.DeleteArrayDns(context.Background(), "dns-config"); err != nil {
+		t.Fatalf("DeleteArrayDns: %v", err)
+	}
+	if !deleteCalled {
+		t.Error("expected DELETE to be called")
 	}
 }
 

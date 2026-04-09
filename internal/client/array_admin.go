@@ -2,30 +2,35 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 )
 
-// GetArrayDns retrieves the DNS configuration of the array.
-// Returns the first item from the list response.
-func (c *FlashBladeClient) GetArrayDns(ctx context.Context) (*ArrayDns, error) {
-	var resp ListResponse[ArrayDns]
-	if err := c.get(ctx, "/dns", &resp); err != nil {
-		return nil, err
-	}
-	if len(resp.Items) == 0 {
-		return nil, &APIError{StatusCode: 404, Message: "DNS configuration not found"}
-	}
-	return &resp.Items[0], nil
+// GetArrayDns retrieves a DNS configuration entry by name.
+// Returns an IsNotFound error if the entry does not exist.
+func (c *FlashBladeClient) GetArrayDns(ctx context.Context, name string) (*ArrayDns, error) {
+	return getOneByName[ArrayDns](c, ctx, "/dns?names="+url.QueryEscape(name), "DNS", name)
 }
 
 // PostArrayDns creates a new DNS configuration entry.
-func (c *FlashBladeClient) PostArrayDns(ctx context.Context, body ArrayDnsPost) (*ArrayDns, error) {
-	return postOne[ArrayDnsPost, ArrayDns](c, ctx, "/dns", body, "PostArrayDns")
+// The name is passed via ?names= query parameter.
+func (c *FlashBladeClient) PostArrayDns(ctx context.Context, name string, body ArrayDnsPost) (*ArrayDns, error) {
+	return postOne[ArrayDnsPost, ArrayDns](c, ctx, "/dns?names="+url.QueryEscape(name), body, "PostArrayDns")
 }
 
-// PatchArrayDns updates the DNS configuration of the array.
-func (c *FlashBladeClient) PatchArrayDns(ctx context.Context, body ArrayDnsPatch) (*ArrayDns, error) {
-	return patchOne[ArrayDnsPatch, ArrayDns](c, ctx, "/dns", body, "PatchArrayDns")
+// PatchArrayDns updates a DNS configuration entry by name.
+// Only non-nil pointer fields in body are sent (PATCH semantics).
+func (c *FlashBladeClient) PatchArrayDns(ctx context.Context, name string, body ArrayDnsPatch) (*ArrayDns, error) {
+	return patchOne[ArrayDnsPatch, ArrayDns](c, ctx, "/dns?names="+url.QueryEscape(name), body, "PatchArrayDns")
+}
+
+// DeleteArrayDns deletes a DNS configuration entry by name.
+func (c *FlashBladeClient) DeleteArrayDns(ctx context.Context, name string) error {
+	path := "/dns?names=" + url.QueryEscape(name)
+	if err := c.delete(ctx, path); err != nil {
+		return fmt.Errorf("DeleteArrayDns: %w", err)
+	}
+	return nil
 }
 
 // GetArrayNtp retrieves the NTP servers configured on the array.

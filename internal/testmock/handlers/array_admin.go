@@ -10,23 +10,43 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
+// arrayDnsStore is a thread-safe in-memory store for DNS configuration entries.
+type arrayDnsStore struct {
+	mu     sync.Mutex
+	byName map[string]*client.ArrayDns
+	nextID int
+}
+
+// Seed adds a DNS entry to the store for test setup.
+func (s *arrayDnsStore) Seed(item *client.ArrayDns) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.byName[item.Name] = item
+}
+
 // arrayAdminStore is the thread-safe in-memory state for array admin handlers.
 type arrayAdminStore struct {
-	mu           sync.Mutex
-	dns          *client.ArrayDns
-	arrayInfo    *client.ArrayInfo
-	smtp         *client.SmtpServer
+	mu            sync.Mutex
+	DnsStore      *arrayDnsStore
+	arrayInfo     *client.ArrayInfo
+	smtp          *client.SmtpServer
 	alertWatchers map[string]*client.AlertWatcher // email -> watcher
 }
 
+// SeedDns is a convenience method that delegates to the embedded DNS store.
+func (s *arrayAdminStore) SeedDns(item *client.ArrayDns) {
+	s.DnsStore.Seed(item)
+}
+
 // RegisterArrayAdminHandlers registers CRUD handlers for DNS, NTP, SMTP, and alert watchers.
-// Pre-seeds singleton resources with empty defaults.
 func RegisterArrayAdminHandlers(mux *http.ServeMux) *arrayAdminStore {
+	dnsStore := &arrayDnsStore{
+		byName: make(map[string]*client.ArrayDns),
+		nextID: 1,
+	}
+
 	store := &arrayAdminStore{
-		dns: &client.ArrayDns{
-			ID:   uuid.New().String(),
-			Name: "dns",
-		},
+		DnsStore: dnsStore,
 		arrayInfo: &client.ArrayInfo{
 			ID:         uuid.New().String(),
 			Name:       "array0",
@@ -39,14 +59,17 @@ func RegisterArrayAdminHandlers(mux *http.ServeMux) *arrayAdminStore {
 		alertWatchers: make(map[string]*client.AlertWatcher),
 	}
 
-	mux.HandleFunc("/api/2.22/dns", store.handleDns)
+	mux.HandleFunc("/api/2.22/dns", dnsStore.handleDns)
 	mux.HandleFunc("/api/2.22/arrays", store.handleArrays)
 	mux.HandleFunc("/api/2.22/smtp-servers", store.handleSmtp)
 	mux.HandleFunc("/api/2.22/alert-watchers", store.handleAlertWatchers)
 	return store
 }
 
-func (s *arrayAdminStore) handleDns(w http.ResponseWriter, r *http.Request) {
+func (s *arrayDnsStore) handleDns(w http.ResponseWriter, r *http.Request) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
 	switch r.Method {
 	case http.MethodGet:
 		s.handleDnsGet(w, r)
@@ -54,9 +77,144 @@ func (s *arrayAdminStore) handleDns(w http.ResponseWriter, r *http.Request) {
 		s.handleDnsPost(w, r)
 	case http.MethodPatch:
 		s.handleDnsPatch(w, r)
+	case http.MethodDelete:
+		s.handleDnsDelete(w, r)
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (s *arrayDnsStore) handleDnsGet(w http.ResponseWriter, r *http.Request) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	namesFilter := r.URL.Query().Get("names")
+
+	var items []client.ArrayDns
+	if namesFilter != "" {
+		item, ok := s.byName[namesFilter]
+		if ok {
+			items = append(items, *item)
+		}
+	} else {
+		for _, item := range s.byName {
+			items = append(items, *item)
+		}
+	}
+	if items == nil {
+		items = []client.ArrayDns{}
+	}
+	WriteJSONListResponse(w, http.StatusOK, items)
+}
+
+func (s *arrayDnsStore) handleDnsPost(w http.ResponseWriter, r *http.Request) {
+	name, ok := RequireQueryParam(w, r, "names")
+	if !ok {
+		return
+	}
+
+	var body client.ArrayDnsPost
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, exists := s.byName[name]; exists {
+		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("DNS configuration %q already exists", name))
+		return
+	}
+
+	item := &client.ArrayDns{
+		ID:          fmt.Sprintf("dns-%d", s.nextID),
+		Name:        name,
+		Domain:      body.Domain,
+		Nameservers: body.Nameservers,
+		Services:    body.Services,
+		Sources:     body.Sources,
+	}
+	s.nextID++
+	if item.Nameservers == nil {
+		item.Nameservers = []string{}
+	}
+	if item.Services == nil {
+		item.Services = []string{}
+	}
+	if item.Sources == nil {
+		item.Sources = []string{}
+	}
+
+	s.byName[name] = item
+	WriteJSONListResponse(w, http.StatusOK, []client.ArrayDns{*item})
+}
+
+func (s *arrayDnsStore) handleDnsPatch(w http.ResponseWriter, r *http.Request) {
+	name, ok := RequireQueryParam(w, r, "names")
+	if !ok {
+		return
+	}
+
+	var rawPatch map[string]json.RawMessage
+	if err := json.NewDecoder(r.Body).Decode(&rawPatch); err != nil {
+		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	item, exists := s.byName[name]
+	if !exists {
+		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("DNS configuration %q not found", name))
+		return
+	}
+
+	if v, ok := rawPatch["domain"]; ok {
+		var domain string
+		if err := json.Unmarshal(v, &domain); err == nil {
+			item.Domain = domain
+		}
+	}
+	if v, ok := rawPatch["nameservers"]; ok {
+		var nameservers []string
+		if err := json.Unmarshal(v, &nameservers); err == nil {
+			item.Nameservers = nameservers
+		}
+	}
+	if v, ok := rawPatch["services"]; ok {
+		var services []string
+		if err := json.Unmarshal(v, &services); err == nil {
+			item.Services = services
+		}
+	}
+	if v, ok := rawPatch["sources"]; ok {
+		var sources []string
+		if err := json.Unmarshal(v, &sources); err == nil {
+			item.Sources = sources
+		}
+	}
+
+	WriteJSONListResponse(w, http.StatusOK, []client.ArrayDns{*item})
+}
+
+func (s *arrayDnsStore) handleDnsDelete(w http.ResponseWriter, r *http.Request) {
+	name, ok := RequireQueryParam(w, r, "names")
+	if !ok {
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, exists := s.byName[name]; !exists {
+		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("DNS configuration %q not found", name))
+		return
+	}
+
+	delete(s.byName, name)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *arrayAdminStore) handleArrays(w http.ResponseWriter, r *http.Request) {
@@ -94,76 +252,6 @@ func (s *arrayAdminStore) handleAlertWatchers(w http.ResponseWriter, r *http.Req
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
-}
-
-func (s *arrayAdminStore) handleDnsGet(w http.ResponseWriter, r *http.Request) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	WriteJSONListResponse(w, http.StatusOK, []client.ArrayDns{*s.dns})
-}
-
-func (s *arrayAdminStore) handleDnsPost(w http.ResponseWriter, r *http.Request) {
-	var body client.ArrayDnsPost
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if body.Domain != "" {
-		s.dns.Domain = body.Domain
-	}
-	if body.Nameservers != nil {
-		s.dns.Nameservers = body.Nameservers
-	}
-	if body.Services != nil {
-		s.dns.Services = body.Services
-	}
-	if body.Sources != nil {
-		s.dns.Sources = body.Sources
-	}
-
-	WriteJSONListResponse(w, http.StatusOK, []client.ArrayDns{*s.dns})
-}
-
-func (s *arrayAdminStore) handleDnsPatch(w http.ResponseWriter, r *http.Request) {
-	var rawPatch map[string]json.RawMessage
-	if err := json.NewDecoder(r.Body).Decode(&rawPatch); err != nil {
-		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
-		return
-	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if v, ok := rawPatch["domain"]; ok {
-		var domain string
-		if err := json.Unmarshal(v, &domain); err == nil {
-			s.dns.Domain = domain
-		}
-	}
-	if v, ok := rawPatch["nameservers"]; ok {
-		var nameservers []string
-		if err := json.Unmarshal(v, &nameservers); err == nil {
-			s.dns.Nameservers = nameservers
-		}
-	}
-	if v, ok := rawPatch["services"]; ok {
-		var services []string
-		if err := json.Unmarshal(v, &services); err == nil {
-			s.dns.Services = services
-		}
-	}
-	if v, ok := rawPatch["sources"]; ok {
-		var sources []string
-		if err := json.Unmarshal(v, &sources); err == nil {
-			s.dns.Sources = sources
-		}
-	}
-
-	WriteJSONListResponse(w, http.StatusOK, []client.ArrayDns{*s.dns})
 }
 
 func (s *arrayAdminStore) handleArraysGet(w http.ResponseWriter, r *http.Request) {
