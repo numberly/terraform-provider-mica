@@ -24,8 +24,8 @@ resource "flashblade_object_store_virtual_host" "example" {
 
 ### Required
 
-- `hostname` (String) The hostname for the virtual-hosted-style S3 endpoint. This is the primary user-supplied field.
-- `name` (String) The user-specified name of the virtual host. Used as the resource identifier for all API operations.
+- `hostname` (String) The hostname (FQDN) for the virtual-hosted-style S3 endpoint.
+- `name` (String) The user-specified name of the virtual host. Must contain only alphanumeric characters, hyphens, and underscores.
 
 ### Optional
 
