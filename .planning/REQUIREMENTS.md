@@ -21,8 +21,8 @@
 
 ### API Diffing
 
-- [ ] **DIFF-01**: Compare two swagger files and produce structured diff (new/removed/modified endpoints + schemas)
-- [ ] **DIFF-02**: Normalize paths (strip `/api/<version>/` prefix) before comparison
+- [x] **DIFF-01**: Compare two swagger files and produce structured diff (new/removed/modified endpoints + schemas)
+- [x] **DIFF-02**: Normalize paths (strip `/api/<version>/` prefix) before comparison
 - [ ] **DIFF-03**: Annotate diff items as `real_change` / `swagger_artifact` / `needs_verification` via known_discrepancies.md
 - [ ] **DIFF-04**: Generate migration plan cross-referenced with ROADMAP.md
 
@@ -73,8 +73,8 @@
 | BRWS-02 | Phase 45 | Complete |
 | BRWS-03 | Phase 45 | Complete |
 | BRWS-04 | Phase 45 | Complete |
-| DIFF-01 | Phase 46 | Pending |
-| DIFF-02 | Phase 46 | Pending |
+| DIFF-01 | Phase 46 | Complete |
+| DIFF-02 | Phase 46 | Complete |
 | DIFF-03 | Phase 46 | Pending |
 | DIFF-04 | Phase 46 | Pending |
 | UPGR-01 | Phase 47 | Pending |
