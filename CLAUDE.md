@@ -1,5 +1,26 @@
 # Project Instructions
 
+## Code Navigation — Serena MCP (MANDATORY)
+ALWAYS use Serena MCP tools when exploring, reviewing, or understanding
+existing code. Never use Grep, Glob, or Read for navigation purposes.
+
+Use cases where Serena is REQUIRED:
+- Code review of any file or module
+- Finding where a function/type/interface is used → get_references
+- Locating a symbol definition → find_symbol
+- Understanding inheritance → get_type_hierarchy
+- Finding implementations of an interface → get_implementations
+
+Only use Read when you need to edit the file content directly.
+
+## Workflow
+- Use GSD commands (/gsd-*) for all structured development work
+- Use gstack commands (/office-hours, /plan-*-review) before planning
+- Use /review before any commit on significant changes
+
+## Git
+All subagent commits MUST use --no-verify
+
 @CONVENTIONS.md
 
 ## Skills

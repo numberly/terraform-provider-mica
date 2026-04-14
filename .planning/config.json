@@ -4,11 +4,16 @@
   "parallelization": true,
   "commit_docs": true,
   "model_profile": "balanced",
+  "agent_skills": [
+    ".claude/skills/flashblade-resource-builder"
+  ],
   "workflow": {
     "research": false,
     "plan_check": true,
     "verifier": true,
     "nyquist_validation": true,
-    "_auto_chain_active": false
+    "_auto_chain_active": false,
+    "inject_project_claude_md": true,
+    "use_worktrees": false
   }
 }
