@@ -4,13 +4,31 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "--from", "git+https://github.com/oraios/serena",
-        "serena", "start-mcp-server",
-        "--context", "ide-assistant",
-        "--project", "."
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "."
       ],
       "env": {
         "ENABLE_TOOL_SEARCH": "true"
+      }
+    },
+    "gsd-workflow": {
+      "command": "/usr/bin/node",
+      "args": [
+        "/usr/lib/node_modules/gsd-pi/packages/mcp-server/dist/cli.js"
+      ],
+      "cwd": "/home/gule/Workspace/team-infrastructure/terraform-provider-flashblade",
+      "env": {
+        "GSD_CLI_PATH": "/usr/bin/gsd",
+        "GSD_WORKFLOW_EXECUTORS_MODULE": "/home/gule/.gsd/agent/extensions/gsd/tools/workflow-tool-executors.js",
+        "GSD_WORKFLOW_WRITE_GATE_MODULE": "/home/gule/.gsd/agent/extensions/gsd/bootstrap/write-gate.js",
+        "GSD_PERSIST_WRITE_GATE_STATE": "1",
+        "GSD_WORKFLOW_PROJECT_ROOT": "/home/gule/Workspace/team-infrastructure/terraform-provider-flashblade"
       }
     }
   }

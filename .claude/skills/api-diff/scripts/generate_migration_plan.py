@@ -77,6 +77,59 @@ def _parse_roadmap_not_implemented(roadmap_path: str) -> list[dict[str, str]]:
     return entries
 
 
+def _parse_roadmap_implemented(roadmap_path: str) -> list[dict[str, str]]:
+    """
+    Parse the '## Implemented' section of ROADMAP.md (all subsections until '## Not Implemented').
+
+    Returns a list of dicts with keys:
+      - api_section: raw name from column 1 (e.g. "File Systems")
+      - resource_name: Terraform resource name from column 2 (e.g. "flashblade_file_system")
+      - slug: normalized slug for matching
+    """
+    text = Path(roadmap_path).read_text(encoding="utf-8")
+
+    match = re.search(r"^## Implemented\b", text, re.MULTILINE)
+    if not match:
+        return []
+
+    section_start = match.end()
+    # Section ends at "## Not Implemented" or next non-subsection H2
+    next_h2 = re.search(r"^## (?!#)", text[section_start:], re.MULTILINE)
+    section_text = text[section_start: section_start + next_h2.start()] if next_h2 else text[section_start:]
+
+    entries: list[dict[str, str]] = []
+    for line in section_text.splitlines():
+        if not line.startswith("|"):
+            continue
+        if re.search(r"\|[-: ]+\|", line):
+            continue  # separator row
+
+        cols = [c.strip() for c in line.strip("|").split("|")]
+        if len(cols) < 4:
+            continue
+
+        api_section = cols[0].strip()
+        if not api_section or api_section.lower() in ("api section", "api_section"):
+            continue  # header row
+
+        # Extract resource name — strip backticks, handle "Yes + Yes" style entries
+        resource_raw = cols[1].strip().strip("`")
+        resource_name = resource_raw if resource_raw.startswith("flashblade_") else None
+
+        # Only include Done entries
+        status_col = cols[3].strip() if len(cols) > 3 else ""
+        if status_col != "Done":
+            continue
+
+        entries.append({
+            "api_section": api_section,
+            "resource_name": resource_name,
+            "slug": _make_slug(api_section),
+        })
+
+    return entries
+
+
 def _make_slug(name: str) -> str:
     """Lowercase slug: letters and digits only, spaces → hyphens."""
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
@@ -110,6 +163,78 @@ def _match_roadmap(normalized_path: str, roadmap_entries: list[dict[str, str]]) 
 # Migration plan builder
 # ---------------------------------------------------------------------------
 
+_SCHEMA_SUFFIXES = ("Post", "Patch", "Get")
+
+
+def _schema_base_name(schema_name: str) -> str:
+    """Strip Post/Patch/Get suffix to get the base resource schema name."""
+    for suffix in _SCHEMA_SUFFIXES:
+        if schema_name.endswith(suffix) and len(schema_name) > len(suffix):
+            return schema_name[: -len(suffix)]
+    return schema_name
+
+
+def _group_modified_schemas(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Group modified schemas by base name (FileSystem + FileSystemPost + FileSystemPatch → FileSystem).
+    Merge added/removed/changed fields (union, deduplicated).
+    """
+    groups: dict[str, dict[str, Any]] = {}
+    for item in items:
+        base = _schema_base_name(item["schema_name"])
+        details = item.get("details", {})
+        if base not in groups:
+            groups[base] = {
+                "schema_name": base,
+                "variants": [item["schema_name"]],
+                "added_fields": list(details.get("added_fields", [])),
+                "removed_fields": list(details.get("removed_fields", [])),
+                "changed_fields": list(details.get("changed_fields", [])),
+                "annotation": item.get("annotation", "needs_verification"),
+            }
+        else:
+            g = groups[base]
+            g["variants"].append(item["schema_name"])
+            for f in details.get("added_fields", []):
+                if f not in g["added_fields"]:
+                    g["added_fields"].append(f)
+            for f in details.get("removed_fields", []):
+                if f not in g["removed_fields"]:
+                    g["removed_fields"].append(f)
+            for f in details.get("changed_fields", []):
+                if f not in g["changed_fields"]:
+                    g["changed_fields"].append(f)
+            # Promote annotation: real_change > needs_verification > swagger_artifact
+            if item.get("annotation") == "real_change":
+                g["annotation"] = "real_change"
+    return list(groups.values())
+
+
+def _match_implemented(
+    schema_base: str,
+    implemented_entries: list[dict[str, str]],
+) -> dict[str, str] | None:
+    """
+    Match a schema base name (e.g. "FileSystem", "QosPolicy") against implemented
+    ROADMAP entries by converting both to slugs and checking for overlap.
+    """
+    # Convert CamelCase to slug: "FileSystem" → "file-system", "QosPolicy" → "qos-policy"
+    slug = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "-", schema_base).lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")
+
+    for entry in implemented_entries:
+        entry_slug = entry["slug"]
+        # Direct slug containment (both directions)
+        if slug in entry_slug or entry_slug in slug:
+            return entry
+        # Word overlap: ≥2 shared words
+        slug_words = set(slug.split("-"))
+        entry_words = set(entry_slug.split("-"))
+        if len(slug_words & entry_words) >= 2:
+            return entry
+    return None
+
+
 def _action_for_modified_schema(item: dict[str, Any]) -> str:
     details = item.get("details", {})
     added = details.get("added_fields", [])
@@ -136,30 +261,49 @@ def _action_for_new_resource(normalized_path: str) -> str:
 def build_migration_plan(
     diff: dict[str, Any],
     roadmap_entries: list[dict[str, str]],
+    implemented_entries: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     """
     Build a 4-category migration plan from a diff.json dict.
 
     Categories:
-      update_models  — modified_schemas where annotation != swagger_artifact
+      update_models  — modified_schemas grouped by base name, with implemented flag
       new_resources  — new_endpoints deduplicated by normalized_path (GET as anchor)
                        where annotation != swagger_artifact
       deprecated     — removed_endpoints + removed_schemas where annotation != swagger_artifact
       roadmap_gaps   — subset of new_resources matching a ROADMAP.md Candidate/Deferred entry
     """
-    # ---- update_models ----
+    if implemented_entries is None:
+        implemented_entries = []
+
+    # ---- update_models (grouped by base name, cross-referenced) ----
+    raw_modified = [
+        item for item in diff.get("modified_schemas", [])
+        if item.get("annotation") != "swagger_artifact"
+    ]
+    grouped = _group_modified_schemas(raw_modified)
+
     update_models: list[dict[str, Any]] = []
-    for item in diff.get("modified_schemas", []):
-        if item.get("annotation") == "swagger_artifact":
-            continue
-        details = item.get("details", {})
+    for g in grouped:
+        impl_match = _match_implemented(g["schema_name"], implemented_entries)
+        action = _action_for_modified_schema({
+            "schema_name": g["schema_name"],
+            "details": {
+                "added_fields": g["added_fields"],
+                "removed_fields": g["removed_fields"],
+                "changed_fields": g["changed_fields"],
+            },
+        })
         update_models.append({
-            "schema_name": item["schema_name"],
-            "added_fields": details.get("added_fields", []),
-            "removed_fields": details.get("removed_fields", []),
-            "changed_fields": details.get("changed_fields", []),
-            "annotation": item.get("annotation", "needs_verification"),
-            "action": _action_for_modified_schema(item),
+            "schema_name": g["schema_name"],
+            "variants": g["variants"],
+            "added_fields": g["added_fields"],
+            "removed_fields": g["removed_fields"],
+            "changed_fields": g["changed_fields"],
+            "annotation": g["annotation"],
+            "implemented": impl_match is not None,
+            "terraform_resource": impl_match["resource_name"] if impl_match else None,
+            "action": action,
         })
 
     # ---- new_resources (deduplicated by normalized_path) ----
@@ -223,6 +367,8 @@ def build_migration_plan(
             "action": f"Remove {item['schema_name']} struct and all usages",
         })
 
+    impl_count = sum(1 for m in update_models if m["implemented"])
+
     plan: dict[str, Any] = {
         "generated_from": {
             "old_version": diff.get("old_version", "unknown"),
@@ -230,6 +376,7 @@ def build_migration_plan(
         },
         "summary": {
             "update_models": len(update_models),
+            "update_models_implemented": impl_count,
             "new_resources": len(new_resources),
             "deprecated": len(deprecated),
             "roadmap_gaps": len(roadmap_gaps),
@@ -270,26 +417,28 @@ def render_markdown(plan: dict[str, Any]) -> str:
         "",
         "| Category | Count |",
         "| -------- | ----- |",
-        f"| Model updates | {s['update_models']} |",
+        f"| Model updates | {s['update_models']} ({s['update_models_implemented']} impact implemented resources) |",
         f"| New resources | {s['new_resources']} |",
         f"| Deprecated | {s['deprecated']} |",
         f"| Roadmap gaps | {s['roadmap_gaps']} |",
         "",
     ]
 
-    # update_models
+    # update_models — sorted: implemented first, then not implemented
+    sorted_models = sorted(plan["update_models"], key=lambda m: (not m.get("implemented", False), m["schema_name"]))
     lines += ["## Model Updates", ""]
     rows = [
         [
             item["schema_name"],
             ", ".join(item["added_fields"]) or "—",
             ", ".join(item["removed_fields"]) or "—",
-            item["annotation"],
+            "Yes" if item.get("implemented") else "No",
+            item.get("terraform_resource") or "—",
             item["action"],
         ]
-        for item in plan["update_models"]
+        for item in sorted_models
     ]
-    lines.append(_md_table(["Schema", "Added Fields", "Removed Fields", "Annotation", "Action"], rows))
+    lines.append(_md_table(["Schema", "Added Fields", "Removed Fields", "Implemented", "Resource", "Action"], rows))
 
     # new_resources
     lines += ["## New Resources", ""]
@@ -382,8 +531,9 @@ def main() -> int:
         diff = json.load(fh)
 
     roadmap_entries = _parse_roadmap_not_implemented(args.roadmap_md)
+    implemented_entries = _parse_roadmap_implemented(args.roadmap_md)
 
-    plan = build_migration_plan(diff, roadmap_entries)
+    plan = build_migration_plan(diff, roadmap_entries, implemented_entries)
 
     if args.format == "markdown":
         output = render_markdown(plan)
