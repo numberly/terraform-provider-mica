@@ -1,109 +1,93 @@
-# Requirements: Terraform Provider FlashBlade
+# Requirements: API Tooling Pipeline
 
-**Defined:** 2026-04-02
-**Core Value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
+**Defined:** 2026-04-14
+**Core Value:** Automate API reference generation, version comparison, and provider upgrade orchestration
 
-## v2.2 Requirements
+## tools-v1.0 Requirements
 
-Requirements for S3 Target Replication. Enables operators to replicate buckets to external S3-compatible endpoints through Terraform.
+### Swagger Conversion
 
-### Target Management
+- [ ] **CONV-01**: Convert an OpenAPI 3.0 swagger.json into AI-optimized markdown matching existing FLASHBLADE_API.md format
+- [ ] **CONV-02**: Recursively resolve allOf/$ref schemas (404/709 schemas use allOf in 2.22)
+- [ ] **CONV-03**: Ask user for API version before processing
+- [ ] **CONV-04**: Generate output to `api_references/<version>.md`
 
-- [x] **TGT-01**: Operator can create a target with name, address, and optional ca_certificate_group via `terraform apply` — `apply -> plan` shows 0 diff
-- [x] **TGT-02**: Operator can update mutable target fields (address, ca_certificate_group) and destroy a target via Terraform
-- [x] **TGT-03**: Operator can import an existing target into Terraform state and subsequent `plan` shows 0 diff
-- [x] **TGT-04**: Operator can read an existing target by name via `flashblade_target` data source and access its address, status, and status_details attributes
-- [x] **TGT-05**: Drift detection logs changes when a target is modified outside Terraform
+### API Browsing
 
-### Remote Credentials Enhancement
+- [ ] **BRWS-01**: Search endpoints by tag, HTTP method, or text pattern
+- [ ] **BRWS-02**: Display schema details (fields, types, readOnly annotations)
+- [ ] **BRWS-03**: Compare two schemas side-by-side (e.g., Post vs Patch)
+- [ ] **BRWS-04**: Display reference statistics (path count, schema count, method distribution)
 
-- [x] **RC-01**: Operator can create remote credentials referencing a target (not just an array connection) via the existing `flashblade_object_store_remote_credentials` resource
-- [x] **RC-02**: Existing remote credentials functionality for array connections is not broken by the enhancement
+### API Diffing
 
-### Replication Workflow
+- [ ] **DIFF-01**: Compare two swagger files and produce structured diff (new/removed/modified endpoints + schemas)
+- [ ] **DIFF-02**: Normalize paths (strip `/api/<version>/` prefix) before comparison
+- [ ] **DIFF-03**: Annotate diff items as `real_change` / `swagger_artifact` / `needs_verification` via known_discrepancies.md
+- [ ] **DIFF-04**: Generate migration plan cross-referenced with ROADMAP.md
 
-- [x] **BRL-01**: Operator can create a bucket replica link using remote credentials that reference a target — replication to external S3 endpoint works end-to-end
+### API Upgrade
 
-### Documentation
+- [ ] **UPGR-01**: Update `const APIVersion` in client.go, mock server versions, and mock handler paths automatically
+- [ ] **UPGR-02**: Dry-run by default, --apply to execute
+- [ ] **UPGR-03**: Orchestrate upgrade in 5 phases with review gates (infra → schemas → new resources → deprecations → docs)
 
-- [x] **DOC-01**: Import documentation (import.sh) exists for `flashblade_target` with correct syntax and realistic identifiers
-- [x] **DOC-02**: A workflow example in `examples/s3-target-replication/` demonstrates the full stack: target creation → remote credentials → bucket replica link to external S3
-- [x] **DOC-03**: `tfplugindocs generate` produces documentation for all new resources and data sources without errors
+### Shared Library
 
-## v2.1.3 Requirements (completed)
+- [ ] **SLIB-01**: Provide shared utilities (allOf resolver, path normalizer, schema flattener) in `.claude/skills/_shared/swagger_utils.py`
+- [ ] **SLIB-02**: Python 3.10+ stdlib only, no external dependencies
 
-### Code Correctness
+### Integration
 
-- [x] **CC-01**: FreezeLockgedObjects typo renamed to FreezeLockedObjects across all Go files
-- [x] **CC-02**: Dead schema attributes nfs_export_policy and smb_share_policy removed from filesystem resource
-- [x] **CC-03**: Diagnostic severity preserved when converting mapFSToModel results — warnings remain warnings, errors remain errors
-
-### Test Quality
-
-- [ ] **TQ-01**: Acceptance tests no longer use ExpectNonEmptyPlan: true — plan convergence is verified
-- [ ] **TQ-02**: Acceptance test coverage expanded to at least 3 additional high-risk resources
-
-### Client Hardening
-
-- [x] **CH-01**: OAuth2 token refresh uses caller context where possible instead of context.Background()
-- [x] **CH-02**: RetryBaseDelay duration heuristic removed — callers must use explicit time.Duration values
-- [x] **CH-03**: Unused ctx parameters removed from bucket extract functions
-
-### Code Cleanup
-
-- [x] **CL-01**: mustObjectValue passthrough helper removed — callers use types.ObjectValue directly
-- [x] **CL-02**: golangci-lint configuration expanded with gosec, bodyclose, noctx, and exhaustive linters
-
-### Object Store Users
-
-- [x] **OSU-01**: Operator can create a named S3 user under an account via Terraform
-- [x] **OSU-02**: Operator can delete an S3 user via Terraform destroy
-- [x] **OSU-03**: Operator can read an existing S3 user by name via data source
-- [x] **OSU-04**: Operator can import an existing S3 user into Terraform state with no drift
-- [x] **OSU-05**: Operator can associate one or more access policies to a user via a member resource
-- [x] **OSU-06**: Operator can remove a policy association from a user via Terraform destroy
-- [x] **OSU-07**: Drift detection logs changes when user or policy association is modified outside Terraform
+- [ ] **INTG-01**: Update CLAUDE.md with API tools and `api_references/` convention
+- [ ] **INTG-02**: Create 3 SKILL.md files following skill-creator format (YAML frontmatter, structured sections)
 
 ## Future Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+### Enhanced Tooling
 
-### Target Replication Monitoring
-
-- **MON-01**: Data source for target replication performance metrics (`/targets/performance/replication`)
+- **ETOOL-01**: Auto-detect swagger format (OpenAPI 3.0 vs Swagger 2.0) and handle both
+- **ETOOL-02**: Validate generated reference against original swagger (round-trip check)
+- **ETOOL-03**: Interactive discrepancy annotation workflow
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Array connection resource (create/delete) | Separate concern, deferred to future milestone |
-| File system replica links to targets | S3 bucket replication only for v2.2 |
-| Target certificate management | Handled by existing certificate + TLS policy resources |
-| Cascading replication (target -> target) | Not supported by FlashBlade API |
-| Realms | Not relevant for current usage |
-| Pulumi bridge | Deferred, provider structure compatible |
+| Automated code generation from swagger | Too error-prone, provider patterns require human judgment |
+| Acceptance test generation | Requires real FlashBlade array access |
+| CI/CD integration | Skills are dev-time tools, not pipeline components |
+| Swagger correction/patching | Not our swagger to fix — track discrepancies instead |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TGT-01 | Phase 36 | Complete |
-| TGT-02 | Phase 36 | Complete |
-| TGT-03 | Phase 36 | Complete |
-| TGT-04 | Phase 36 | Complete |
-| TGT-05 | Phase 36 | Complete |
-| RC-01 | Phase 37 | Complete |
-| RC-02 | Phase 37 | Complete |
-| BRL-01 | Phase 37 | Complete |
-| DOC-01 | Phase 38 | Complete |
-| DOC-02 | Phase 38 | Complete |
-| DOC-03 | Phase 38 | Complete |
+| SLIB-01 | — | Pending |
+| SLIB-02 | — | Pending |
+| CONV-01 | — | Pending |
+| CONV-02 | — | Pending |
+| CONV-03 | — | Pending |
+| CONV-04 | — | Pending |
+| BRWS-01 | — | Pending |
+| BRWS-02 | — | Pending |
+| BRWS-03 | — | Pending |
+| BRWS-04 | — | Pending |
+| DIFF-01 | — | Pending |
+| DIFF-02 | — | Pending |
+| DIFF-03 | — | Pending |
+| DIFF-04 | — | Pending |
+| UPGR-01 | — | Pending |
+| UPGR-02 | — | Pending |
+| UPGR-03 | — | Pending |
+| INTG-01 | — | Pending |
+| INTG-02 | — | Pending |
 
-**v2.2 Coverage:**
-- v2.2 requirements: 11 total
-- Mapped to phases: 11
-- Unmapped: 0
+**Coverage:**
+- tools-v1.0 requirements: 19 total
+- Mapped to phases: 0
+- Unmapped: 19
 
 ---
-*Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after v2.2 roadmap creation*
+*Requirements defined: 2026-04-14*
+*Last updated: 2026-04-14 after initial definition*
