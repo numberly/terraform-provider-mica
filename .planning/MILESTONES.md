@@ -148,3 +148,18 @@
 
 **Phases:** 36–42 (11+ plans)
 **Last phase number:** 42
+
+### tools-v1.0 — API Tooling Pipeline (completed 2026-04-14)
+
+**Goal:** Automate swagger-to-reference conversion, API version diffing, and provider upgrade orchestration through Claude Code skills with Python tooling.
+
+**Delivered:**
+- Shared Python library (swagger_utils.py) — allOf resolver, path normalizer, schema flattener, 15 tests
+- swagger-to-reference skill — parse_swagger.py (226 paths, 538 ops → 1734 lines), browse_api.py (6 subcommands)
+- api-diff skill — diff_swagger.py (structured endpoint/schema diff), generate_migration_plan.py (cross-ref ROADMAP.md), known_discrepancies.md
+- api-upgrade skill — upgrade_version.py (38 files, dry-run/apply), 5-phase orchestration SKILL.md with review gates
+- CLAUDE.md updated with API tools, api_references/ convention
+- Full E2E pipeline validated on swagger-2.22.json and swagger-2.23.json
+
+**Phases:** 43–48 (9 plans)
+**Last phase number:** 48

@@ -12,7 +12,7 @@
 - v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
 - v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- shipped 2026-04-02
 - v2.2 S3 Target Replication & TLS (Phases 36-42) -- shipped 2026-04-14
-- tools-v1.0 API Tooling Pipeline (Phases 43-48) -- in progress
+- tools-v1.0 API Tooling Pipeline (Phases 43-48) -- shipped 2026-04-14
 
 ## Phases
 
