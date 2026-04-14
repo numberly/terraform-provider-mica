@@ -603,7 +603,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 44. swagger-to-reference Skill | tools-v1.0 | 2/2 | Complete    | 2026-04-14 |
 | 45. API Browsing Tools | tools-v1.0 | 1/1 | Complete    | 2026-04-14 |
 | 46. api-diff Skill | tools-v1.0 | 3/3 | Complete    | 2026-04-14 |
-| 47. api-upgrade Skill | tools-v1.0 | 1/2 | In Progress|  |
+| 47. api-upgrade Skill | tools-v1.0 | 2/2 | Complete   | 2026-04-14 |
 | 48. Integration & Validation | tools-v1.0 | 0/1 | Not started | - |
 
 ---
@@ -814,7 +814,7 @@ Plans:
 - [x] **Phase 44: swagger-to-reference Skill** - `parse_swagger.py` + SKILL.md converting swagger.json to AI-optimized markdown (completed 2026-04-14)
 - [x] **Phase 45: API Browsing Tools** - `browse_api.py` with search, schema display, comparison, and statistics (completed 2026-04-14)
 - [x] **Phase 46: api-diff Skill** - `diff_swagger.py` + migration plan generator + SKILL.md (completed 2026-04-14)
-- [ ] **Phase 47: api-upgrade Skill** - `upgrade_version.py` + orchestration SKILL.md with review gates
+- [x] **Phase 47: api-upgrade Skill** - `upgrade_version.py` + orchestration SKILL.md with review gates (completed 2026-04-14)
 - [ ] **Phase 48: Integration & Validation** - CLAUDE.md update, SKILL.md finalization, end-to-end validation on swagger-2.22.json and swagger-2.23.json
 
 ### Phase 43: Shared Library
@@ -882,7 +882,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 47-01-PLAN.md — upgrade_version.py script with dry-run and apply modes
-- [ ] 47-02-PLAN.md — SKILL.md 5-phase workflow and upgrade_checklist.md
+- [x] 47-02-PLAN.md — SKILL.md 5-phase workflow and upgrade_checklist.md
 
 ### Phase 48: Integration & Validation
 **Goal**: All three skills are documented in CLAUDE.md, the `api_references/` convention is established, and the full pipeline is validated end-to-end on real swagger files

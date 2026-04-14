@@ -30,7 +30,7 @@
 
 - [x] **UPGR-01**: Update `const APIVersion` in client.go, mock server versions, and mock handler paths automatically
 - [x] **UPGR-02**: Dry-run by default, --apply to execute
-- [ ] **UPGR-03**: Orchestrate upgrade in 5 phases with review gates (infra → schemas → new resources → deprecations → docs)
+- [x] **UPGR-03**: Orchestrate upgrade in 5 phases with review gates (infra → schemas → new resources → deprecations → docs)
 
 ### Shared Library
 
@@ -79,7 +79,7 @@
 | DIFF-04 | Phase 46 | Complete |
 | UPGR-01 | Phase 47 | Complete |
 | UPGR-02 | Phase 47 | Complete |
-| UPGR-03 | Phase 47 | Pending |
+| UPGR-03 | Phase 47 | Complete |
 | INTG-01 | Phase 48 | Pending |
 | INTG-02 | Phase 44, 46, 47, 48 | Complete |
 
