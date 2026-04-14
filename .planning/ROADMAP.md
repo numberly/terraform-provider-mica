@@ -839,8 +839,12 @@ Plans:
   2. The skill prompts for the API version string before processing and uses it as the output filename
   3. The generated markdown format matches FLASHBLADE_API.md structure (headers, method grouping, schema tables) — a diff between the generated file and the original shows only cosmetic whitespace, not structural differences
   4. swagger-to-reference SKILL.md exists with valid YAML frontmatter and structured activation, steps, and output sections
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: no
+
+Plans:
+- [ ] 44-01-PLAN.md — parse_swagger.py converter (swagger.json to AI-optimized markdown)
+- [ ] 44-02-PLAN.md — swagger-to-reference SKILL.md with version-prompt workflow
 
 ### Phase 45: API Browsing Tools
 **Goal**: Claude can search, inspect, and compare API endpoints and schemas interactively from a generated reference file
@@ -851,7 +855,7 @@ Plans:
   2. `python3 browse_api.py --schema BucketPost` displays all fields with types, readOnly annotations, and required flags
   3. `python3 browse_api.py --compare BucketPost BucketPatch` shows a side-by-side diff table highlighting fields present in one but not the other, and type mismatches
   4. `python3 browse_api.py --stats` outputs path count, schema count, and method distribution (GET/POST/PATCH/DELETE counts)
-**Plans**: TBD
+**Plans**: 2 plans
 
 ### Phase 46: api-diff Skill
 **Goal**: Claude can produce a structured diff between two swagger versions, annotate discrepancies, and generate a migration plan cross-referenced with ROADMAP.md
@@ -862,7 +866,7 @@ Plans:
   2. Each diff item is annotated as `real_change`, `swagger_artifact`, or `needs_verification` based on `known_discrepancies.md` lookup
   3. The migration plan output cross-references ROADMAP.md entries — new endpoints that match a "Not Implemented" roadmap entry are flagged as candidates
   4. api-diff SKILL.md exists with valid YAML frontmatter and structured activation, steps, and output sections
-**Plans**: TBD
+**Plans**: 2 plans
 
 ### Phase 47: api-upgrade Skill
 **Goal**: Claude can mechanically update API version references across the codebase and orchestrate the provider upgrade sequence with explicit review gates
@@ -872,7 +876,7 @@ Plans:
   1. `python3 upgrade_version.py --from 2.22 --to 2.23 --dry-run` lists every file and line that would change (APIVersion const, mock server version strings, mock handler paths) without modifying any file
   2. `python3 upgrade_version.py --from 2.22 --to 2.23 --apply` applies all changes and `make build` passes with no compilation errors
   3. api-upgrade SKILL.md exists with 5 named phases (infra, schemas, new resources, deprecations, docs), each with explicit review gate instructions and acceptance criteria
-**Plans**: TBD
+**Plans**: 2 plans
 
 ### Phase 48: Integration & Validation
 **Goal**: All three skills are documented in CLAUDE.md, the `api_references/` convention is established, and the full pipeline is validated end-to-end on real swagger files
@@ -882,4 +886,4 @@ Plans:
   1. CLAUDE.md references the three skills (swagger-to-reference, api-diff, api-upgrade) with one-line descriptions and the `api_references/` output convention
   2. Running the full pipeline on swagger-2.22.json and swagger-2.23.json end-to-end (convert → browse → diff → migration plan) completes without errors and produces readable artifacts
   3. All three SKILL.md files pass YAML frontmatter validation and follow the skill-creator format consistently
-**Plans**: TBD
+**Plans**: 2 plans
