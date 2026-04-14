@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
-status: verifying
-stopped_at: Completed 44-02-PLAN.md
-last_updated: "2026-04-14T08:19:00.714Z"
+status: executing
+stopped_at: Completed 45-01-PLAN.md
+last_updated: "2026-04-14T08:26:14.668Z"
 last_activity: 2026-04-14
 progress:
-  total_phases: 43
-  completed_phases: 42
-  total_plans: 92
-  completed_plans: 90
+  total_phases: 44
+  completed_phases: 43
+  total_plans: 93
+  completed_plans: 91
   percent: 0
 ---
 
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 ## Current Position
 
-Phase: 44
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 45
+Plan: 1 of 1
+Status: In progress
 Last activity: 2026-04-14
 
 Progress: [░░░░░░░░░░] 0% (milestone tools-v1.0)
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0% (milestone tools-v1.0)
 - [Phase 43-shared-library]: resolve_all_of skips Response/GetResponse wrappers and _-prefixed private schemas from output; resolves inline when referenced
 - [Phase 44-swagger-to-reference-skill]: parse_swagger.py: all query params collected/deduped into Common Parameters table; 50-char description truncation; alphabetical tag sorting with kebab→Title Case conversion
 - [Phase 44-swagger-to-reference-skill]: Version confirmation step is mandatory before script execution — never infer from swagger info.version
+- [Phase 45-api-browsing-tools]: Continuation lines in schema parsing: strip leading '| ' before appending with explicit ' | ' separator to avoid parse collision
 
 ### Pending Todos
 
@@ -59,6 +60,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T08:18:27.122Z
-Stopped at: Completed 44-02-PLAN.md
+Last session: 2026-04-14T08:26:14.659Z
+Stopped at: Completed 45-01-PLAN.md
 Resume file: None

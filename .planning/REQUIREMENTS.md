@@ -14,10 +14,10 @@
 
 ### API Browsing
 
-- [ ] **BRWS-01**: Search endpoints by tag, HTTP method, or text pattern
-- [ ] **BRWS-02**: Display schema details (fields, types, readOnly annotations)
-- [ ] **BRWS-03**: Compare two schemas side-by-side (e.g., Post vs Patch)
-- [ ] **BRWS-04**: Display reference statistics (path count, schema count, method distribution)
+- [x] **BRWS-01**: Search endpoints by tag, HTTP method, or text pattern
+- [x] **BRWS-02**: Display schema details (fields, types, readOnly annotations)
+- [x] **BRWS-03**: Compare two schemas side-by-side (e.g., Post vs Patch)
+- [x] **BRWS-04**: Display reference statistics (path count, schema count, method distribution)
 
 ### API Diffing
 
@@ -69,10 +69,10 @@
 | CONV-02 | Phase 44 | Complete |
 | CONV-03 | Phase 44 | Complete |
 | CONV-04 | Phase 44 | Complete |
-| BRWS-01 | Phase 45 | Pending |
-| BRWS-02 | Phase 45 | Pending |
-| BRWS-03 | Phase 45 | Pending |
-| BRWS-04 | Phase 45 | Pending |
+| BRWS-01 | Phase 45 | Complete |
+| BRWS-02 | Phase 45 | Complete |
+| BRWS-03 | Phase 45 | Complete |
+| BRWS-04 | Phase 45 | Complete |
 | DIFF-01 | Phase 46 | Pending |
 | DIFF-02 | Phase 46 | Pending |
 | DIFF-03 | Phase 46 | Pending |

@@ -601,7 +601,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 42. Array Connections | v2.2 | 2/2 | Complete | 2026-04-14 |
 | 43. Shared Library | tools-v1.0 | 1/1 | Complete    | 2026-04-14 |
 | 44. swagger-to-reference Skill | tools-v1.0 | 2/2 | Complete    | 2026-04-14 |
-| 45. API Browsing Tools | tools-v1.0 | 0/1 | Not started | - |
+| 45. API Browsing Tools | tools-v1.0 | 1/1 | Complete   | 2026-04-14 |
 | 46. api-diff Skill | tools-v1.0 | 0/1 | Not started | - |
 | 47. api-upgrade Skill | tools-v1.0 | 0/1 | Not started | - |
 | 48. Integration & Validation | tools-v1.0 | 0/1 | Not started | - |
@@ -812,7 +812,7 @@ Plans:
 
 - [x] **Phase 43: Shared Library** - `_shared/swagger_utils.py` with allOf resolver, path normalizer, schema flattener (completed 2026-04-14)
 - [x] **Phase 44: swagger-to-reference Skill** - `parse_swagger.py` + SKILL.md converting swagger.json to AI-optimized markdown (completed 2026-04-14)
-- [ ] **Phase 45: API Browsing Tools** - `browse_api.py` with search, schema display, comparison, and statistics
+- [x] **Phase 45: API Browsing Tools** - `browse_api.py` with search, schema display, comparison, and statistics (completed 2026-04-14)
 - [ ] **Phase 46: api-diff Skill** - `diff_swagger.py` + migration plan generator + SKILL.md
 - [ ] **Phase 47: api-upgrade Skill** - `upgrade_version.py` + orchestration SKILL.md with review gates
 - [ ] **Phase 48: Integration & Validation** - CLAUDE.md update, SKILL.md finalization, end-to-end validation on swagger-2.22.json and swagger-2.23.json
@@ -858,7 +858,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 45-01-PLAN.md — browse_api.py CLI tool (markdown parser + subcommands: --tag, --schema, --compare, --stats, --method, --search)
+- [x] 45-01-PLAN.md — browse_api.py CLI tool (markdown parser + subcommands: --tag, --schema, --compare, --stats, --method, --search)
 
 ### Phase 46: api-diff Skill
 **Goal**: Claude can produce a structured diff between two swagger versions, annotate discrepancies, and generate a migration plan cross-referenced with ROADMAP.md
