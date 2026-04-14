@@ -10,8 +10,9 @@
 - v2.0.1 Quality & Hardening (Phases 18-22) -- shipped 2026-03-30
 - v2.1 Bucket Advanced Features (Phases 23-27) -- shipped 2026-03-30
 - v2.1.1 Network Interfaces (VIPs) (Phases 28-31) -- shipped 2026-03-31
-- v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- in progress
-- v2.2 S3 Target Replication & TLS (Phases 36-42) -- in progress
+- v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- shipped 2026-04-02
+- v2.2 S3 Target Replication & TLS (Phases 36-42) -- shipped 2026-04-14
+- tools-v1.0 API Tooling Pipeline (Phases 43-48) -- in progress
 
 ## Phases
 
@@ -552,7 +553,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33 -> 34 -> 35 -> 36 -> 37 -> 38
+Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32 -> 33 -> 34 -> 35 -> 36 -> 37 -> 38 -> 39 -> 40 -> 41 -> 42 -> 43 -> 44 -> 45 -> 46 -> 47 -> 48
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -591,9 +592,19 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 33. Client Hardening | v2.1.3 | 2/2 | Complete | 2026-03-31 |
 | 34. Test Quality | v2.1.3 | 0/1 | Not started | - |
 | 35. Object Store Users | v2.1.3 | 4/4 | Complete | 2026-04-01 |
-| 36. Target Resource | 2/2 | Complete    | 2026-04-02 | - |
-| 37. Remote Credentials & Replica Link Enhancement | 1/1 | Complete    | 2026-04-02 | - |
-| 38. Documentation & Workflow | 1/1 | Complete    | 2026-04-02 | - |
+| 36. Target Resource | v2.2 | 2/2 | Complete | 2026-04-02 |
+| 37. Remote Credentials & Replica Link Enhancement | v2.2 | 1/1 | Complete | 2026-04-02 |
+| 38. Documentation & Workflow | v2.2 | 1/1 | Complete | 2026-04-02 |
+| 39. Certificates | v2.2 | 2/2 | Complete | 2026-04-03 |
+| 40. TLS Policies | v2.2 | 2/2 | Complete | 2026-04-03 |
+| 41. Certificate Groups | v2.2 | 2/2 | Complete | 2026-04-14 |
+| 42. Array Connections | v2.2 | 2/2 | Complete | 2026-04-14 |
+| 43. Shared Library | tools-v1.0 | 0/1 | Not started | - |
+| 44. swagger-to-reference Skill | tools-v1.0 | 0/1 | Not started | - |
+| 45. API Browsing Tools | tools-v1.0 | 0/1 | Not started | - |
+| 46. api-diff Skill | tools-v1.0 | 0/1 | Not started | - |
+| 47. api-upgrade Skill | tools-v1.0 | 0/1 | Not started | - |
+| 48. Integration & Validation | tools-v1.0 | 0/1 | Not started | - |
 
 ---
 
@@ -669,6 +680,14 @@ Plans:
 ## v2.2 S3 Target Replication & TLS (Phases 36-42)
 
 **Milestone Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) and manage TLS certificates and policies for network interfaces through Terraform.
+
+- [x] **Phase 36: Target Resource** - New resource and data source for managing external S3 endpoint targets (completed 2026-04-02)
+- [x] **Phase 37: Remote Credentials & Replica Link Enhancement** - Extend existing resources for target references (completed 2026-04-02)
+- [x] **Phase 38: Documentation & Workflow** - Import docs, workflow example, tfplugindocs (completed 2026-04-02)
+- [x] **Phase 39: Certificates** - TLS certificate resource and data source with write-only sensitive fields (completed 2026-04-03)
+- [x] **Phase 40: TLS Policies** - TLS policy resource, data source, and member resource (completed 2026-04-03)
+- [x] **Phase 41: Certificate Groups** - Certificate group resource, data source, and member resource (completed 2026-04-14)
+- [x] **Phase 42: Array Connections** - Array connection resource and data source with sensitive connection_key (completed 2026-04-14)
 
 - [x] **Phase 36: Target Resource** - New resource and data source for managing external S3 endpoint targets (CRUD, import, drift detection) (completed 2026-04-02)
 - [x] **Phase 37: Remote Credentials & Replica Link Enhancement** - Extend existing resources to support target references, enabling end-to-end S3 target replication (completed 2026-04-02)
@@ -785,3 +804,79 @@ Plans:
 Plans:
 - [x] 42-01-PLAN.md — Client layer: ArrayConnection models extended, Post/Patch/Delete client methods, full CRUD mock handler, 7 unit tests
 - [x] 42-02-PLAN.md — Provider layer: flashblade_array_connection resource (full CRUD, import, sensitive connection_key), data source extended, registration, HCL examples, make docs
+
+
+## tools-v1.0 API Tooling Pipeline (Phases 43-48)
+
+**Milestone Goal:** Automate swagger-to-reference conversion, API version diffing, and provider upgrade orchestration through Claude Code skills with Python tooling.
+
+- [ ] **Phase 43: Shared Library** - `_shared/swagger_utils.py` with allOf resolver, path normalizer, schema flattener
+- [ ] **Phase 44: swagger-to-reference Skill** - `parse_swagger.py` + SKILL.md converting swagger.json to AI-optimized markdown
+- [ ] **Phase 45: API Browsing Tools** - `browse_api.py` with search, schema display, comparison, and statistics
+- [ ] **Phase 46: api-diff Skill** - `diff_swagger.py` + migration plan generator + SKILL.md
+- [ ] **Phase 47: api-upgrade Skill** - `upgrade_version.py` + orchestration SKILL.md with review gates
+- [ ] **Phase 48: Integration & Validation** - CLAUDE.md update, SKILL.md finalization, end-to-end validation on swagger-2.22.json and swagger-2.23.json
+
+### Phase 43: Shared Library
+**Goal**: All Python tooling shares a single, well-tested utility library that resolves allOf schemas, normalizes API paths, and flattens nested schemas
+**Depends on**: Phase 42 (v2.2 complete)
+**Requirements**: SLIB-01, SLIB-02
+**Success Criteria** (what must be TRUE):
+  1. `python3 -c "from _shared.swagger_utils import resolve_all_of, normalize_path, flatten_schema"` runs with no import errors using stdlib only
+  2. `resolve_all_of` correctly flattens allOf chains found in swagger-2.22.json (404/709 schemas use allOf) — output contains no unresolved `$ref` or `allOf` keys
+  3. `normalize_path("/api/2.22/buckets")` returns `"buckets"` — version prefix stripped deterministically
+**Plans**: TBD
+
+### Phase 44: swagger-to-reference Skill
+**Goal**: Claude can convert any FlashBlade swagger.json into the AI-optimized markdown format matching FLASHBLADE_API.md, with correct allOf resolution and versioned output
+**Depends on**: Phase 43 (shared library must exist)
+**Requirements**: CONV-01, CONV-02, CONV-03, CONV-04, INTG-02 (partial)
+**Success Criteria** (what must be TRUE):
+  1. Running the skill on swagger-2.22.json produces `api_references/2.22.md` with a path count matching FLASHBLADE_API.md (226 paths) and no unresolved `$ref` or `allOf` keys in the output
+  2. The skill prompts for the API version string before processing and uses it as the output filename
+  3. The generated markdown format matches FLASHBLADE_API.md structure (headers, method grouping, schema tables) — a diff between the generated file and the original shows only cosmetic whitespace, not structural differences
+  4. swagger-to-reference SKILL.md exists with valid YAML frontmatter and structured activation, steps, and output sections
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 45: API Browsing Tools
+**Goal**: Claude can search, inspect, and compare API endpoints and schemas interactively from a generated reference file
+**Depends on**: Phase 44 (reference file must exist to browse)
+**Requirements**: BRWS-01, BRWS-02, BRWS-03, BRWS-04
+**Success Criteria** (what must be TRUE):
+  1. `python3 browse_api.py --tag buckets` lists all endpoints tagged `buckets` with their HTTP methods and summary lines
+  2. `python3 browse_api.py --schema BucketPost` displays all fields with types, readOnly annotations, and required flags
+  3. `python3 browse_api.py --compare BucketPost BucketPatch` shows a side-by-side diff table highlighting fields present in one but not the other, and type mismatches
+  4. `python3 browse_api.py --stats` outputs path count, schema count, and method distribution (GET/POST/PATCH/DELETE counts)
+**Plans**: TBD
+
+### Phase 46: api-diff Skill
+**Goal**: Claude can produce a structured diff between two swagger versions, annotate discrepancies, and generate a migration plan cross-referenced with ROADMAP.md
+**Depends on**: Phase 43 (shared library for path normalization)
+**Requirements**: DIFF-01, DIFF-02, DIFF-03, DIFF-04, INTG-02 (partial)
+**Success Criteria** (what must be TRUE):
+  1. Running the skill on swagger-2.22.json and swagger-2.23.json produces a diff listing new endpoints, removed endpoints, and modified schemas — no duplicates caused by version prefix differences
+  2. Each diff item is annotated as `real_change`, `swagger_artifact`, or `needs_verification` based on `known_discrepancies.md` lookup
+  3. The migration plan output cross-references ROADMAP.md entries — new endpoints that match a "Not Implemented" roadmap entry are flagged as candidates
+  4. api-diff SKILL.md exists with valid YAML frontmatter and structured activation, steps, and output sections
+**Plans**: TBD
+
+### Phase 47: api-upgrade Skill
+**Goal**: Claude can mechanically update API version references across the codebase and orchestrate the provider upgrade sequence with explicit review gates
+**Depends on**: Phase 46 (diff output informs upgrade scope)
+**Requirements**: UPGR-01, UPGR-02, UPGR-03, INTG-02 (partial)
+**Success Criteria** (what must be TRUE):
+  1. `python3 upgrade_version.py --from 2.22 --to 2.23 --dry-run` lists every file and line that would change (APIVersion const, mock server version strings, mock handler paths) without modifying any file
+  2. `python3 upgrade_version.py --from 2.22 --to 2.23 --apply` applies all changes and `make build` passes with no compilation errors
+  3. api-upgrade SKILL.md exists with 5 named phases (infra, schemas, new resources, deprecations, docs), each with explicit review gate instructions and acceptance criteria
+**Plans**: TBD
+
+### Phase 48: Integration & Validation
+**Goal**: All three skills are documented in CLAUDE.md, the `api_references/` convention is established, and the full pipeline is validated end-to-end on real swagger files
+**Depends on**: Phase 47 (all skills must exist before integration)
+**Requirements**: INTG-01, INTG-02 (finalize)
+**Success Criteria** (what must be TRUE):
+  1. CLAUDE.md references the three skills (swagger-to-reference, api-diff, api-upgrade) with one-line descriptions and the `api_references/` output convention
+  2. Running the full pipeline on swagger-2.22.json and swagger-2.23.json end-to-end (convert → browse → diff → migration plan) completes without errors and produces readable artifacts
+  3. All three SKILL.md files pass YAML frontmatter validation and follow the skill-creator format consistently
+**Plans**: TBD

@@ -63,30 +63,30 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SLIB-01 | — | Pending |
-| SLIB-02 | — | Pending |
-| CONV-01 | — | Pending |
-| CONV-02 | — | Pending |
-| CONV-03 | — | Pending |
-| CONV-04 | — | Pending |
-| BRWS-01 | — | Pending |
-| BRWS-02 | — | Pending |
-| BRWS-03 | — | Pending |
-| BRWS-04 | — | Pending |
-| DIFF-01 | — | Pending |
-| DIFF-02 | — | Pending |
-| DIFF-03 | — | Pending |
-| DIFF-04 | — | Pending |
-| UPGR-01 | — | Pending |
-| UPGR-02 | — | Pending |
-| UPGR-03 | — | Pending |
-| INTG-01 | — | Pending |
-| INTG-02 | — | Pending |
+| SLIB-01 | Phase 43 | Pending |
+| SLIB-02 | Phase 43 | Pending |
+| CONV-01 | Phase 44 | Pending |
+| CONV-02 | Phase 44 | Pending |
+| CONV-03 | Phase 44 | Pending |
+| CONV-04 | Phase 44 | Pending |
+| BRWS-01 | Phase 45 | Pending |
+| BRWS-02 | Phase 45 | Pending |
+| BRWS-03 | Phase 45 | Pending |
+| BRWS-04 | Phase 45 | Pending |
+| DIFF-01 | Phase 46 | Pending |
+| DIFF-02 | Phase 46 | Pending |
+| DIFF-03 | Phase 46 | Pending |
+| DIFF-04 | Phase 46 | Pending |
+| UPGR-01 | Phase 47 | Pending |
+| UPGR-02 | Phase 47 | Pending |
+| UPGR-03 | Phase 47 | Pending |
+| INTG-01 | Phase 48 | Pending |
+| INTG-02 | Phase 44, 46, 47, 48 | Pending |
 
 **Coverage:**
 - tools-v1.0 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-14*
