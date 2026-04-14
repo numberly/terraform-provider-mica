@@ -880,6 +880,9 @@ Plans:
   2. `python3 upgrade_version.py --from 2.22 --to 2.23 --apply` applies all changes and `make build` passes with no compilation errors
   3. api-upgrade SKILL.md exists with 5 named phases (infra, schemas, new resources, deprecations, docs), each with explicit review gate instructions and acceptance criteria
 **Plans**: 2 plans
+Plans:
+- [ ] 47-01-PLAN.md — upgrade_version.py script with dry-run and apply modes
+- [ ] 47-02-PLAN.md — SKILL.md 5-phase workflow and upgrade_checklist.md
 
 ### Phase 48: Integration & Validation
 **Goal**: All three skills are documented in CLAUDE.md, the `api_references/` convention is established, and the full pipeline is validated end-to-end on real swagger files
