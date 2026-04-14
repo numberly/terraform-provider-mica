@@ -599,7 +599,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 40. TLS Policies | v2.2 | 2/2 | Complete | 2026-04-03 |
 | 41. Certificate Groups | v2.2 | 2/2 | Complete | 2026-04-14 |
 | 42. Array Connections | v2.2 | 2/2 | Complete | 2026-04-14 |
-| 43. Shared Library | tools-v1.0 | 0/1 | Not started | - |
+| 43. Shared Library | tools-v1.0 | 1/1 | Complete   | 2026-04-14 |
 | 44. swagger-to-reference Skill | tools-v1.0 | 0/1 | Not started | - |
 | 45. API Browsing Tools | tools-v1.0 | 0/1 | Not started | - |
 | 46. api-diff Skill | tools-v1.0 | 0/1 | Not started | - |
@@ -810,7 +810,7 @@ Plans:
 
 **Milestone Goal:** Automate swagger-to-reference conversion, API version diffing, and provider upgrade orchestration through Claude Code skills with Python tooling.
 
-- [ ] **Phase 43: Shared Library** - `_shared/swagger_utils.py` with allOf resolver, path normalizer, schema flattener
+- [x] **Phase 43: Shared Library** - `_shared/swagger_utils.py` with allOf resolver, path normalizer, schema flattener (completed 2026-04-14)
 - [ ] **Phase 44: swagger-to-reference Skill** - `parse_swagger.py` + SKILL.md converting swagger.json to AI-optimized markdown
 - [ ] **Phase 45: API Browsing Tools** - `browse_api.py` with search, schema display, comparison, and statistics
 - [ ] **Phase 46: api-diff Skill** - `diff_swagger.py` + migration plan generator + SKILL.md
@@ -828,7 +828,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 43-01-PLAN.md — swagger_utils.py implementation and test suite
+- [x] 43-01-PLAN.md — swagger_utils.py implementation and test suite
 
 ### Phase 44: swagger-to-reference Skill
 **Goal**: Claude can convert any FlashBlade swagger.json into the AI-optimized markdown format matching FLASHBLADE_API.md, with correct allOf resolution and versioned output

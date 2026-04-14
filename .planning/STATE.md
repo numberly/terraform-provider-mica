@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: tools-v1.0
-milestone_name: API Tooling Pipeline
-status: roadmapped
-stopped_at: null
-last_updated: "2026-04-14T09:00:00.000Z"
+milestone: v2.1
+milestone_name: Bucket Advanced Features
+status: verifying
+stopped_at: Completed 43-01-PLAN.md
+last_updated: "2026-04-14T08:02:01.867Z"
 last_activity: 2026-04-14
 progress:
-  total_phases: 6
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 42
+  completed_phases: 41
+  total_plans: 90
+  completed_plans: 88
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Automate API reference generation, version comparison, and provider upgrade orchestration through Claude Code skills with Python tooling
-**Current focus:** Phase 43 — Shared Library (_shared/swagger_utils.py)
+**Current focus:** Phase 43 — Shared Library
 
 ## Current Position
 
-Phase: 43 of 48 (Shared Library)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-04-14 — Roadmap created for milestone tools-v1.0 (Phases 43-48)
+Phase: 43 (Shared Library) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-04-14
 
 Progress: [░░░░░░░░░░] 0% (milestone tools-v1.0)
 
@@ -37,12 +37,15 @@ Progress: [░░░░░░░░░░] 0% (milestone tools-v1.0)
 ### Decisions
 
 (Carried from v2.2 — relevant to tooling)
+
 - Swagger files in project root: swagger-2.22.json (226 paths), swagger-2.23.json (233 paths)
 - FLASHBLADE_API.md is hand-curated AI reference (1361 lines), target format for swagger-to-reference output
 - Swagger is not always accurate vs real FlashBlade API — tooling must account for discrepancies
 - Python stdlib only for skill scripts (no external deps)
 - Shared Python lib in .claude/skills/_shared/ (not per-skill)
 - api-upgrade includes mechanical scripts (not pure orchestration)
+- [Phase 43-shared-library]: PYTHONPATH=.claude/skills required for standalone python3 -c imports; pytest.ini pythonpath handles pytest discovery automatically
+- [Phase 43-shared-library]: resolve_all_of skips Response/GetResponse wrappers and _-prefixed private schemas from output; resolves inline when referenced
 
 ### Pending Todos
 
@@ -54,6 +57,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14
-Stopped at: Roadmap written for tools-v1.0, ready to plan Phase 43
+Last session: 2026-04-14T08:02:01.859Z
+Stopped at: Completed 43-01-PLAN.md
 Resume file: None

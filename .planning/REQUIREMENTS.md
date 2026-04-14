@@ -34,8 +34,8 @@
 
 ### Shared Library
 
-- [ ] **SLIB-01**: Provide shared utilities (allOf resolver, path normalizer, schema flattener) in `.claude/skills/_shared/swagger_utils.py`
-- [ ] **SLIB-02**: Python 3.10+ stdlib only, no external dependencies
+- [x] **SLIB-01**: Provide shared utilities (allOf resolver, path normalizer, schema flattener) in `.claude/skills/_shared/swagger_utils.py`
+- [x] **SLIB-02**: Python 3.10+ stdlib only, no external dependencies
 
 ### Integration
 
@@ -63,8 +63,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SLIB-01 | Phase 43 | Pending |
-| SLIB-02 | Phase 43 | Pending |
+| SLIB-01 | Phase 43 | Complete |
+| SLIB-02 | Phase 43 | Complete |
 | CONV-01 | Phase 44 | Pending |
 | CONV-02 | Phase 44 | Pending |
 | CONV-03 | Phase 44 | Pending |
