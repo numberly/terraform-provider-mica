@@ -7,10 +7,10 @@
 
 ### Swagger Conversion
 
-- [ ] **CONV-01**: Convert an OpenAPI 3.0 swagger.json into AI-optimized markdown matching existing FLASHBLADE_API.md format
-- [ ] **CONV-02**: Recursively resolve allOf/$ref schemas (404/709 schemas use allOf in 2.22)
+- [x] **CONV-01**: Convert an OpenAPI 3.0 swagger.json into AI-optimized markdown matching existing FLASHBLADE_API.md format
+- [x] **CONV-02**: Recursively resolve allOf/$ref schemas (404/709 schemas use allOf in 2.22)
 - [ ] **CONV-03**: Ask user for API version before processing
-- [ ] **CONV-04**: Generate output to `api_references/<version>.md`
+- [x] **CONV-04**: Generate output to `api_references/<version>.md`
 
 ### API Browsing
 
@@ -65,10 +65,10 @@
 |-------------|-------|--------|
 | SLIB-01 | Phase 43 | Complete |
 | SLIB-02 | Phase 43 | Complete |
-| CONV-01 | Phase 44 | Pending |
-| CONV-02 | Phase 44 | Pending |
+| CONV-01 | Phase 44 | Complete |
+| CONV-02 | Phase 44 | Complete |
 | CONV-03 | Phase 44 | Pending |
-| CONV-04 | Phase 44 | Pending |
+| CONV-04 | Phase 44 | Complete |
 | BRWS-01 | Phase 45 | Pending |
 | BRWS-02 | Phase 45 | Pending |
 | BRWS-03 | Phase 45 | Pending |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: verifying
-stopped_at: Completed 43-01-PLAN.md
-last_updated: "2026-04-14T08:05:52.350Z"
+stopped_at: Completed 44-01-PLAN.md
+last_updated: "2026-04-14T08:16:22.714Z"
 last_activity: 2026-04-14
 progress:
-  total_phases: 42
+  total_phases: 43
   completed_phases: 41
-  total_plans: 90
-  completed_plans: 88
+  total_plans: 92
+  completed_plans: 89
   percent: 0
 ---
 
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0% (milestone tools-v1.0)
 - api-upgrade includes mechanical scripts (not pure orchestration)
 - [Phase 43-shared-library]: PYTHONPATH=.claude/skills required for standalone python3 -c imports; pytest.ini pythonpath handles pytest discovery automatically
 - [Phase 43-shared-library]: resolve_all_of skips Response/GetResponse wrappers and _-prefixed private schemas from output; resolves inline when referenced
+- [Phase 44-swagger-to-reference-skill]: parse_swagger.py: all query params collected/deduped into Common Parameters table; 50-char description truncation; alphabetical tag sorting with kebab→Title Case conversion
 
 ### Pending Todos
 
@@ -57,6 +58,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T08:02:01.859Z
-Stopped at: Completed 43-01-PLAN.md
+Last session: 2026-04-14T08:16:22.707Z
+Stopped at: Completed 44-01-PLAN.md
 Resume file: None

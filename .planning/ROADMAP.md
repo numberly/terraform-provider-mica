@@ -600,7 +600,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 41. Certificate Groups | v2.2 | 2/2 | Complete | 2026-04-14 |
 | 42. Array Connections | v2.2 | 2/2 | Complete | 2026-04-14 |
 | 43. Shared Library | tools-v1.0 | 1/1 | Complete    | 2026-04-14 |
-| 44. swagger-to-reference Skill | tools-v1.0 | 0/1 | Not started | - |
+| 44. swagger-to-reference Skill | tools-v1.0 | 1/2 | In Progress|  |
 | 45. API Browsing Tools | tools-v1.0 | 0/1 | Not started | - |
 | 46. api-diff Skill | tools-v1.0 | 0/1 | Not started | - |
 | 47. api-upgrade Skill | tools-v1.0 | 0/1 | Not started | - |
@@ -843,7 +843,7 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 44-01-PLAN.md — parse_swagger.py converter (swagger.json to AI-optimized markdown)
+- [x] 44-01-PLAN.md — parse_swagger.py converter (swagger.json to AI-optimized markdown)
 - [ ] 44-02-PLAN.md — swagger-to-reference SKILL.md with version-prompt workflow
 
 ### Phase 45: API Browsing Tools
