@@ -9,7 +9,7 @@
 
 - [x] **CONV-01**: Convert an OpenAPI 3.0 swagger.json into AI-optimized markdown matching existing FLASHBLADE_API.md format
 - [x] **CONV-02**: Recursively resolve allOf/$ref schemas (404/709 schemas use allOf in 2.22)
-- [ ] **CONV-03**: Ask user for API version before processing
+- [x] **CONV-03**: Ask user for API version before processing
 - [x] **CONV-04**: Generate output to `api_references/<version>.md`
 
 ### API Browsing
@@ -40,7 +40,7 @@
 ### Integration
 
 - [ ] **INTG-01**: Update CLAUDE.md with API tools and `api_references/` convention
-- [ ] **INTG-02**: Create 3 SKILL.md files following skill-creator format (YAML frontmatter, structured sections)
+- [x] **INTG-02**: Create 3 SKILL.md files following skill-creator format (YAML frontmatter, structured sections)
 
 ## Future Requirements
 
@@ -67,7 +67,7 @@
 | SLIB-02 | Phase 43 | Complete |
 | CONV-01 | Phase 44 | Complete |
 | CONV-02 | Phase 44 | Complete |
-| CONV-03 | Phase 44 | Pending |
+| CONV-03 | Phase 44 | Complete |
 | CONV-04 | Phase 44 | Complete |
 | BRWS-01 | Phase 45 | Pending |
 | BRWS-02 | Phase 45 | Pending |
@@ -81,7 +81,7 @@
 | UPGR-02 | Phase 47 | Pending |
 | UPGR-03 | Phase 47 | Pending |
 | INTG-01 | Phase 48 | Pending |
-| INTG-02 | Phase 44, 46, 47, 48 | Pending |
+| INTG-02 | Phase 44, 46, 47, 48 | Complete |
 
 **Coverage:**
 - tools-v1.0 requirements: 19 total
