@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Bucket Advanced Features
 status: executing
-stopped_at: Completed 46-03-PLAN.md
-last_updated: "2026-04-14T08:35:53.226Z"
+stopped_at: Completed 46-02-PLAN.md
+last_updated: "2026-04-14T08:38:18.085Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 45
-  completed_phases: 43
+  completed_phases: 44
   total_plans: 96
-  completed_plans: 93
+  completed_plans: 94
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0% (milestone tools-v1.0)
 - [Phase 45-api-browsing-tools]: Continuation lines in schema parsing: strip leading '| ' before appending with explicit ' | ' separator to avoid parse collision
 - [Phase 46-api-diff-skill]: HTTP_METHODS whitelist filters non-operation path item fields; schema comparison uses flatten_schema to resolve refs before field diffing; annotation defaults to needs_verification overrideable via --discrepancies
 - [Phase 46-api-diff-skill]: SKILL.md follows exact structure of swagger-to-reference/SKILL.md for consistency
+- [Phase 46-api-diff-skill]: Fuzzy ROADMAP.md cross-reference uses >=2 word match in normalized_path
 
 ### Pending Todos
 
@@ -62,6 +63,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T08:35:53.215Z
-Stopped at: Completed 46-03-PLAN.md
+Last session: 2026-04-14T08:38:18.077Z
+Stopped at: Completed 46-02-PLAN.md
 Resume file: None

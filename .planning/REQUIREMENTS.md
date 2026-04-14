@@ -23,8 +23,8 @@
 
 - [x] **DIFF-01**: Compare two swagger files and produce structured diff (new/removed/modified endpoints + schemas)
 - [x] **DIFF-02**: Normalize paths (strip `/api/<version>/` prefix) before comparison
-- [ ] **DIFF-03**: Annotate diff items as `real_change` / `swagger_artifact` / `needs_verification` via known_discrepancies.md
-- [ ] **DIFF-04**: Generate migration plan cross-referenced with ROADMAP.md
+- [x] **DIFF-03**: Annotate diff items as `real_change` / `swagger_artifact` / `needs_verification` via known_discrepancies.md
+- [x] **DIFF-04**: Generate migration plan cross-referenced with ROADMAP.md
 
 ### API Upgrade
 
@@ -75,8 +75,8 @@
 | BRWS-04 | Phase 45 | Complete |
 | DIFF-01 | Phase 46 | Complete |
 | DIFF-02 | Phase 46 | Complete |
-| DIFF-03 | Phase 46 | Pending |
-| DIFF-04 | Phase 46 | Pending |
+| DIFF-03 | Phase 46 | Complete |
+| DIFF-04 | Phase 46 | Complete |
 | UPGR-01 | Phase 47 | Pending |
 | UPGR-02 | Phase 47 | Pending |
 | UPGR-03 | Phase 47 | Pending |
