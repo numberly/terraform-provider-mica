@@ -599,7 +599,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 40. TLS Policies | v2.2 | 2/2 | Complete | 2026-04-03 |
 | 41. Certificate Groups | v2.2 | 2/2 | Complete | 2026-04-14 |
 | 42. Array Connections | v2.2 | 2/2 | Complete | 2026-04-14 |
-| 43. Shared Library | tools-v1.0 | 1/1 | Complete   | 2026-04-14 |
+| 43. Shared Library | tools-v1.0 | 1/1 | Complete    | 2026-04-14 |
 | 44. swagger-to-reference Skill | tools-v1.0 | 0/1 | Not started | - |
 | 45. API Browsing Tools | tools-v1.0 | 0/1 | Not started | - |
 | 46. api-diff Skill | tools-v1.0 | 0/1 | Not started | - |
