@@ -1,3 +1,4 @@
+<!-- Archived: 2026-04-14 — All requirements satisfied -->
 # Requirements: API Tooling Pipeline
 
 **Defined:** 2026-04-14
@@ -39,7 +40,7 @@
 
 ### Integration
 
-- [ ] **INTG-01**: Update CLAUDE.md with API tools and `api_references/` convention
+- [x] **INTG-01**: Update CLAUDE.md with API tools and `api_references/` convention
 - [x] **INTG-02**: Create 3 SKILL.md files following skill-creator format (YAML frontmatter, structured sections)
 
 ## Future Requirements

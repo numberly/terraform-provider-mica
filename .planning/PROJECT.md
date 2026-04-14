@@ -8,16 +8,9 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: tools-v1.0 — API Tooling Pipeline
+## Current Milestone: (none — planning next)
 
-**Goal:** Automate swagger-to-reference conversion, API version diffing, and provider upgrade orchestration through Claude Code skills with Python tooling.
-
-**Target features:**
-- Skill swagger-to-reference: swagger.json → AI-optimized markdown in api_references/ + Python browsing tools
-- Skill api-diff: structured diff between swagger versions, swagger inaccuracy handling, migration plan cross-ref ROADMAP.md
-- Skill api-upgrade: mechanical version update scripts + Claude orchestration with review gates
-- Shared Python lib (_shared/swagger_utils.py) for allOf resolution, path normalization, schema flattening
-- CLAUDE.md update with API tools reference and api_references/ convention
+**Last shipped:** tools-v1.0 — API Tooling Pipeline (2026-04-14)
 
 ## Requirements
 
