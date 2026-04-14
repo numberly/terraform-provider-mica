@@ -8,15 +8,16 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.2 — S3 Target Replication
+## Current Milestone: tools-v1.0 — API Tooling Pipeline
 
-**Goal:** Enable operators to replicate buckets to external S3-compatible endpoints (non-FlashBlade targets) through Terraform, complementing the existing FlashBlade-to-FlashBlade array replication.
+**Goal:** Automate swagger-to-reference conversion, API version diffing, and provider upgrade orchestration through Claude Code skills with Python tooling.
 
 **Target features:**
-- Target resource for managing external S3 endpoints (address, CA certificate group)
-- Remote credentials support for S3 targets (not just array connections)
-- Bucket replica links to external S3 targets
-- Workflow examples and documentation for S3 target replication
+- Skill swagger-to-reference: swagger.json → AI-optimized markdown in api_references/ + Python browsing tools
+- Skill api-diff: structured diff between swagger versions, swagger inaccuracy handling, migration plan cross-ref ROADMAP.md
+- Skill api-upgrade: mechanical version update scripts + Claude orchestration with review gates
+- Shared Python lib (_shared/swagger_utils.py) for allOf resolution, path normalization, schema flattening
+- CLAUDE.md update with API tools reference and api_references/ convention
 
 ## Requirements
 

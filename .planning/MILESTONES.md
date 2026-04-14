@@ -130,3 +130,21 @@
 
 **Phases:** 32–35 (7 plans)
 **Last phase number:** 35
+
+### v2.2 — S3 Target Replication & Security Infrastructure (completed 2026-04-14)
+
+**Goal:** Enable S3 target replication to external endpoints, certificate/TLS management, and array connections through Terraform.
+
+**Delivered:**
+- Target resource + data source (external S3 endpoints, CA cert groups)
+- Remote credentials enhancement + replica link with target support
+- Certificate resource + data source (PEM import, write-only passphrase/private_key)
+- TLS policy resource + data source + member resource
+- Certificate group resource + data source + member resource
+- Array connection resource + data source (connection_key sensitive, throttle, replication_addresses)
+- Array connection key ephemeral resource
+- Array DNS singleton → named resource transform
+- Documentation, import guides, workflow examples
+
+**Phases:** 36–42 (11+ plans)
+**Last phase number:** 42
