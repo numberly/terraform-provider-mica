@@ -825,7 +825,10 @@ Plans:
   1. `python3 -c "from _shared.swagger_utils import resolve_all_of, normalize_path, flatten_schema"` runs with no import errors using stdlib only
   2. `resolve_all_of` correctly flattens allOf chains found in swagger-2.22.json (404/709 schemas use allOf) — output contains no unresolved `$ref` or `allOf` keys
   3. `normalize_path("/api/2.22/buckets")` returns `"buckets"` — version prefix stripped deterministically
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 43-01-PLAN.md — swagger_utils.py implementation and test suite
 
 ### Phase 44: swagger-to-reference Skill
 **Goal**: Claude can convert any FlashBlade swagger.json into the AI-optimized markdown format matching FLASHBLADE_API.md, with correct allOf resolution and versioned output
