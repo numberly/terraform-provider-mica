@@ -265,7 +265,7 @@ func (r *auditObjectStorePolicyResource) Update(ctx context.Context, req resourc
 		for i, n := range names {
 			refs[i] = client.NamedReference{Name: n}
 		}
-		patch.LogTargets = refs
+		patch.LogTargets = &refs
 		needsPatch = true
 	}
 
@@ -359,29 +359,4 @@ func mapAuditObjectStorePolicyToModel(policy *client.AuditObjectStorePolicy, dat
 	} else {
 		data.LogTargets = types.ListValueMust(types.StringType, []attr.Value{})
 	}
-}
-
-// namedRefsToNames extracts the Name field from each NamedReference.
-func namedRefsToNames(refs []client.NamedReference) []string {
-	if len(refs) == 0 {
-		return []string{}
-	}
-	names := make([]string, len(refs))
-	for i, ref := range refs {
-		names[i] = ref.Name
-	}
-	return names
-}
-
-// stringSlicesEqual returns true if two string slices have the same elements in the same order.
-func stringSlicesEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }

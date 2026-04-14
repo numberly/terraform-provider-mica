@@ -172,3 +172,48 @@ func TestUnit_AuditObjectStorePolicyMemberResource_Import(t *testing.T) {
 		t.Errorf("expected member_name=imp-bucket, got %s", model.MemberName.ValueString())
 	}
 }
+
+// TestUnit_AuditObjectStorePolicyMemberResource_DriftDetection: create → remove member out-of-band → read → verify state removed.
+func TestUnit_AuditObjectStorePolicyMemberResource_DriftDetection(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	store := handlers.RegisterAuditObjectStorePolicyHandlers(ms.Mux)
+
+	store.Seed(&client.AuditObjectStorePolicy{
+		ID: "pol-drift", Name: "drift-policy", Enabled: true, IsLocal: true, PolicyType: "audit",
+	})
+
+	r := newTestAuditObjectStorePolicyMemberResource(t, ms)
+	s := auditObjectStorePolicyMemberResourceSchema(t).Schema
+	objType := buildAuditObjectStorePolicyMemberType()
+
+	// Create.
+	plan := auditObjectStorePolicyMemberPlanWith(t, "drift-policy", "drift-bucket")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(objType, nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create: %s", createResp.Diagnostics)
+	}
+
+	// Verify member exists via Read.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read after create: %s", readResp.Diagnostics)
+	}
+
+	// Simulate out-of-band deletion.
+	store.RemoveMember("drift-policy", "drift-bucket")
+
+	// Read again — state should be removed (resource no longer exists).
+	driftResp := &resource.ReadResponse{State: readResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: readResp.State}, driftResp)
+	if driftResp.Diagnostics.HasError() {
+		t.Fatalf("Read after drift: %s", driftResp.Diagnostics)
+	}
+	if !driftResp.State.Raw.IsNull() {
+		t.Error("expected state to be removed after out-of-band deletion, but state still exists")
+	}
+}

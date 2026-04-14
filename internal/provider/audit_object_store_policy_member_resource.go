@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -20,6 +19,7 @@ import (
 var _ resource.Resource = &auditObjectStorePolicyMemberResource{}
 var _ resource.ResourceWithConfigure = &auditObjectStorePolicyMemberResource{}
 var _ resource.ResourceWithImportState = &auditObjectStorePolicyMemberResource{}
+var _ resource.ResourceWithUpgradeState = &auditObjectStorePolicyMemberResource{}
 
 // auditObjectStorePolicyMemberResource implements the flashblade_audit_object_store_policy_member resource.
 type auditObjectStorePolicyMemberResource struct {
@@ -233,14 +233,13 @@ func (r *auditObjectStorePolicyMemberResource) ImportState(ctx context.Context, 
 	}
 
 	var data auditObjectStorePolicyMemberModel
-	data.Timeouts = timeouts.Value{
-		Object: types.ObjectNull(map[string]attr.Type{
-			"create": types.StringType,
-			"read":   types.StringType,
-			"delete": types.StringType,
-		}),
-	}
+	data.Timeouts = nullTimeoutsValueCRD()
 	data.PolicyName = types.StringValue(found.Policy.Name)
 	data.MemberName = types.StringValue(found.Member.Name)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// UpgradeState returns state upgraders for the audit object store policy member resource.
+func (r *auditObjectStorePolicyMemberResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }

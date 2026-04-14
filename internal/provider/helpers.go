@@ -108,6 +108,44 @@ func nullTimeoutsValue() timeouts.Value {
 	}
 }
 
+// nullTimeoutsValueCRD returns a timeouts.Value initialized with a null Object
+// containing only Create, Read, and Delete timeout attribute types. Use in ImportState
+// methods for CRD-only resources (no Update operation).
+func nullTimeoutsValueCRD() timeouts.Value {
+	return timeouts.Value{
+		Object: types.ObjectNull(map[string]attr.Type{
+			"create": types.StringType,
+			"read":   types.StringType,
+			"delete": types.StringType,
+		}),
+	}
+}
+
+// namedRefsToNames extracts the Name field from each NamedReference.
+func namedRefsToNames(refs []client.NamedReference) []string {
+	if len(refs) == 0 {
+		return []string{}
+	}
+	names := make([]string, len(refs))
+	for i, ref := range refs {
+		names[i] = ref.Name
+	}
+	return names
+}
+
+// stringSlicesEqual returns true if two string slices have the same elements in the same order.
+func stringSlicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // ---------- plan modifier helpers -------------------------------------------
 
 // int64UseStateForUnknown returns an Int64 plan modifier that preserves state value

@@ -45,6 +45,19 @@ func (s *auditObjectStorePolicyStore) SeedMember(policyName string, member clien
 	s.members[policyName] = append(s.members[policyName], member)
 }
 
+// RemoveMember removes a member from the store for test setup (simulates out-of-band deletion).
+func (s *auditObjectStorePolicyStore) RemoveMember(policyName, memberName string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	members := s.members[policyName]
+	for i, m := range members {
+		if m.Member.Name == memberName {
+			s.members[policyName] = append(members[:i], members[i+1:]...)
+			return
+		}
+	}
+}
+
 // handle dispatches audit object store policy requests by HTTP method.
 func (s *auditObjectStorePolicyStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

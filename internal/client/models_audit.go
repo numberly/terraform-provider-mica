@@ -5,11 +5,11 @@ type AuditObjectStorePolicy struct {
 	ID         string           `json:"id"`
 	Name       string           `json:"name"`
 	Enabled    bool             `json:"enabled"`
-	IsLocal    bool             `json:"is_local,omitempty"`
-	PolicyType string           `json:"policy_type,omitempty"`
+	IsLocal    bool             `json:"is_local"`
+	PolicyType string           `json:"policy_type"`
 	Location   *NamedReference  `json:"location,omitempty"`
 	Realms     []NamedReference `json:"realms,omitempty"`
-	LogTargets []NamedReference `json:"log_targets,omitempty"`
+	LogTargets []NamedReference `json:"log_targets"`
 }
 
 // AuditObjectStorePolicyMember represents a member of an audit object store policy from GET responses.
@@ -26,8 +26,8 @@ type AuditObjectStorePolicyPost struct {
 
 // AuditObjectStorePolicyPatch contains pointer fields for PATCH /audit-object-store-policies.
 type AuditObjectStorePolicyPatch struct {
-	Enabled    *bool            `json:"enabled,omitempty"`
-	LogTargets []NamedReference `json:"log_targets,omitempty"`
+	Enabled    *bool             `json:"enabled,omitempty"`
+	LogTargets *[]NamedReference `json:"log_targets,omitempty"`
 }
 
 // AuditLogNamePrefix holds the prefix string for audit log object names.
@@ -43,8 +43,8 @@ type AuditLogRotate struct {
 
 // LogTargetObjectStore represents a FlashBlade log target object store from GET responses.
 type LogTargetObjectStore struct {
-	ID            string             `json:"id,omitempty"`
-	Name          string             `json:"name,omitempty"`
+	ID            string             `json:"id"`
+	Name          string             `json:"name"`
 	Bucket        NamedReference     `json:"bucket"`
 	LogNamePrefix AuditLogNamePrefix `json:"log_name_prefix"`
 	LogRotate     AuditLogRotate     `json:"log_rotate"`
