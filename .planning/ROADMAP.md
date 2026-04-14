@@ -602,7 +602,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 43. Shared Library | tools-v1.0 | 1/1 | Complete    | 2026-04-14 |
 | 44. swagger-to-reference Skill | tools-v1.0 | 2/2 | Complete    | 2026-04-14 |
 | 45. API Browsing Tools | tools-v1.0 | 1/1 | Complete    | 2026-04-14 |
-| 46. api-diff Skill | tools-v1.0 | 1/3 | In Progress|  |
+| 46. api-diff Skill | tools-v1.0 | 2/3 | In Progress|  |
 | 47. api-upgrade Skill | tools-v1.0 | 0/1 | Not started | - |
 | 48. Integration & Validation | tools-v1.0 | 0/1 | Not started | - |
 
