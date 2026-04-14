@@ -855,7 +855,10 @@ Plans:
   2. `python3 browse_api.py --schema BucketPost` displays all fields with types, readOnly annotations, and required flags
   3. `python3 browse_api.py --compare BucketPost BucketPatch` shows a side-by-side diff table highlighting fields present in one but not the other, and type mismatches
   4. `python3 browse_api.py --stats` outputs path count, schema count, and method distribution (GET/POST/PATCH/DELETE counts)
-**Plans**: 2 plans
+**Plans**: 1 plan
+
+Plans:
+- [ ] 45-01-PLAN.md — browse_api.py CLI tool (markdown parser + subcommands: --tag, --schema, --compare, --stats, --method, --search)
 
 ### Phase 46: api-diff Skill
 **Goal**: Claude can produce a structured diff between two swagger versions, annotate discrepancies, and generate a migration plan cross-referenced with ROADMAP.md
