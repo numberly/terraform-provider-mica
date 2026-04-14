@@ -603,7 +603,7 @@ Phases execute in numeric order: 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 ->
 | 44. swagger-to-reference Skill | tools-v1.0 | 2/2 | Complete    | 2026-04-14 |
 | 45. API Browsing Tools | tools-v1.0 | 1/1 | Complete    | 2026-04-14 |
 | 46. api-diff Skill | tools-v1.0 | 3/3 | Complete    | 2026-04-14 |
-| 47. api-upgrade Skill | tools-v1.0 | 0/1 | Not started | - |
+| 47. api-upgrade Skill | tools-v1.0 | 1/2 | In Progress|  |
 | 48. Integration & Validation | tools-v1.0 | 0/1 | Not started | - |
 
 ---
@@ -881,7 +881,7 @@ Plans:
   3. api-upgrade SKILL.md exists with 5 named phases (infra, schemas, new resources, deprecations, docs), each with explicit review gate instructions and acceptance criteria
 **Plans**: 2 plans
 Plans:
-- [ ] 47-01-PLAN.md — upgrade_version.py script with dry-run and apply modes
+- [x] 47-01-PLAN.md — upgrade_version.py script with dry-run and apply modes
 - [ ] 47-02-PLAN.md — SKILL.md 5-phase workflow and upgrade_checklist.md
 
 ### Phase 48: Integration & Validation
