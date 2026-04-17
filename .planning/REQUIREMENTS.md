@@ -26,10 +26,10 @@ QA = Quality. Numbering restart per milestone.
   (nested under the `management` object in the PATCH body).
 - [x] **DSM-05** — User can enable or disable the management directory service
   via the `enabled` boolean.
-- [ ] **DSM-06** — User can import an existing configuration by name (always
+- [x] **DSM-06** — User can import an existing configuration by name (always
   `"management"`) with `terraform import`. Import initialises timeouts to null
   and leaves `bind_password` empty (write-once).
-- [ ] **DSM-07** — Terraform detects drift on every mutable/computed field
+- [x] **DSM-07** — Terraform detects drift on every mutable/computed field
   (`enabled`, `uris`, `base_dn`, `bind_user`, `ca_certificate.name`,
   `ca_certificate_group.name`, `user_login_attribute`, `user_object_class`,
   `ssh_public_key_attribute`, `services`) and logs via `tflog.Debug` with the
@@ -98,8 +98,8 @@ QA = Quality. Numbering restart per milestone.
 | DSM-03 | Phase 49 | Complete |
 | DSM-04 | Phase 49 | Complete |
 | DSM-05 | Phase 49 | Complete |
-| DSM-06 | Phase 49 | Pending |
-| DSM-07 | Phase 49 | Pending |
+| DSM-06 | Phase 49 | Complete |
+| DSM-07 | Phase 49 | Complete |
 | DSM-08 | Phase 49 | Complete |
 | DOC-01 | Phase 49 | Pending |
 | DOC-02 | Phase 49 | Pending |
