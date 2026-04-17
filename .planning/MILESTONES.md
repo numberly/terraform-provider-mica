@@ -180,3 +180,23 @@
 **Last phase number:** 49
 
 **Archives:** [milestones/v2.22.1-ROADMAP.md](milestones/v2.22.1-ROADMAP.md) · [v2.22.1-REQUIREMENTS.md](milestones/v2.22.1-REQUIREMENTS.md) · [v2.22.1-MILESTONE-AUDIT.md](milestones/v2.22.1-MILESTONE-AUDIT.md)
+
+### v2.22.2 — Directory Service Roles & Role Mappings (completed 2026-04-17)
+
+**Goal:** LDAP group ↔ FlashBlade role mapping through Terraform — map LDAP groups to built-in management roles and associate those roles with management access policies.
+
+**Delivered:**
+- `flashblade_directory_service_role` resource + data source (CRUD on LDAP group ↔ role mapping; drift on 4 fields; composite ID not needed; import by name)
+- `flashblade_management_access_policy_directory_service_role_membership` resource (additive policy↔role association; composite ID `<role_name>/<policy_name>` with `/` separator per D-05; Update returns error; destroy severs link only)
+- Schema v0→v1 upgrader on DSR (name moved from Computed to Required after 50.1 bugfix)
+- Mock handlers with `?policy_names=&member_names=` query contract (real-array contract: `member_names` not `role_names`)
+- HCL examples, auto-generated docs (3 new), ROADMAP + CONVENTIONS updated (baseline 818)
+- Live-array UAT on par5/pa7 confirming HTTP 200 on DSR create
+- Test baseline 798 → 818 (+20), 0 lint issues
+
+**Phases:** 50, 50.1 (8 plans total — 5 + 3 decimal insertion for defect fix)
+**Last phase number:** 50.1
+
+**Known gaps:** No VALIDATION.md (Nyquist) for either phase — tracked as backlog (same pattern as v2.22.1).
+
+**Archives:** [milestones/v2.22.2-ROADMAP.md](milestones/v2.22.2-ROADMAP.md) · [v2.22.2-REQUIREMENTS.md](milestones/v2.22.2-REQUIREMENTS.md) · [v2.22.2-MILESTONE-AUDIT.md](milestones/v2.22.2-MILESTONE-AUDIT.md)

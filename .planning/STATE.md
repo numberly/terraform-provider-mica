@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.22.2
-milestone_name: Directory Service Roles & Role Mappings
-status: verifying
-stopped_at: Completed 50.1-03-PLAN.md
-last_updated: "2026-04-17T12:12:07.372Z"
+milestone: null
+milestone_name: null
+status: idle
+stopped_at: "Milestone v2.22.2 archived"
+last_updated: "2026-04-17T15:40:00.000Z"
 last_activity: 2026-04-17
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -21,82 +21,31 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-17)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 50.1 — fix-directory-service-role-post-missing-names-query-param
+**Current focus:** Planning next milestone (v2.22.2 complete — run `/gsd:new-milestone`)
 
 ## Current Position
 
-Phase: 50.1
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-17
+Milestone: _none_ — last shipped: v2.22.2 (Directory Service Roles & Role Mappings)
+Phase: _none_
+Status: idle — ready for `/gsd:new-milestone`
 
-```
-Progress: [                    ] 0% (0/1 phases)
-```
+## Recent Milestones
+
+- ✅ **v2.22.2** — Directory Service Roles & Role Mappings (shipped 2026-04-17, 818 tests, [archive](milestones/v2.22.2-ROADMAP.md))
+- ✅ **v2.22.1** — Directory Service – Array Management (shipped 2026-04-17, 798 tests, [archive](milestones/v2.22.1-ROADMAP.md))
 
 ## Accumulated Context
 
-### Decisions
+### Key Decisions
 
-- Shared Python lib in .claude/skills/_shared/ (cross-skill)
-- PYTHONPATH=.claude/skills required for _shared imports
-- Python 3.10+ stdlib only, no external deps
-- Swagger inaccuracies tracked in known_discrepancies.md (living doc)
-- DSM resource: singleton PATCH-only (no POST, no DELETE), backed by /directory-services?names=management
-- DSM resource: bind_password is sensitive, write-only, never returned by API
-- DSM resource: ca_certificate and ca_certificate_group use NamedReference pattern
-- DSM resource: management sub-object holds user_login_attribute, user_object_class, ssh_public_key_attribute
-- DSM resource: Delete = PATCH reset (enabled=false, empty uris, nil references)
-- DSM resource: Import by name "management", nullTimeoutsValue(), bind_password left empty
-- [Phase 49-directory-service-management]: GET returns empty list HTTP 200 on filter miss — matches getOneByName[T] not-found detection contract
-- [Phase 49-directory-service-management]: PATCH **NamedReference: outer non-nil + inner nil = set to null (clear), both non-nil = set value
-- [Phase 49-directory-service-management]: No DirectoryServicePost struct: /directory-services endpoint supports only GET + PATCH
-- [Phase 49-directory-service-management]: DirectoryServicePatch uses **NamedReference for ca_certificate and ca_certificate_group (outer nil=omit, outer+nil inner=null, outer+non-nil inner=set)
-- [Phase 49-directory-service-management]: DSM data source: namedRefAttrTypes/namedRefObjectValue helpers in data source file, 2 interface assertions, no name/bind_password per D-06
-- [Phase 49-directory-service-management]: DSM resource: no name attribute in schema (D-01), hardcoded to 'management'
-- [Phase 49-directory-service-management]: DSM resource: Delete sends full-reset PATCH (D-02), bind_password omitted
-- [Phase 49-directory-service-management]: Import key is literal 'management' (singleton resource)
-- [Phase 49-directory-service-management]: resource.tf uses ldaps:// per enterprise expectation, bind_password via var
-- [Phase 50-roadmap]: DSR resource: full CRUD (POST/GET/PATCH/DELETE) — NOT singleton like DSM
-- [Phase 50-roadmap]: DSR resource: role attribute is NamedReference, triggers RequiresReplace on change
-- [Phase 50-roadmap]: DSR resource: management_access_policies is computed-only list (populated by API via membership associations)
-- [Phase 50-roadmap]: DSRM resource: composite ID format policy_name:role_name — follows qos_policy_member/tls_policy_member/certificate_group_member pattern
-- [Phase 50-roadmap]: DSRM resource: GET/POST/DELETE only — no PATCH, both fields trigger RequiresReplace
-- [Phase 50-roadmap]: DSRM resource: Read calls GET with policy_names= and role_names= query params; empty list → RemoveResource
-- [Phase 50-roadmap]: Test baseline: 798 (v2.22.1) → target ≥ 812 (14 new tests: 5 client + 6 resource + 1 data source + 2 margin)
-- [Phase 50-02]: DSRM POST idempotent (Q3 resolved): 200-always, create-or-return, Terraform replays never 409
-- [Phase 50-02]: DSR PATCH readonly guard: raw JSON decode first to detect management_access_policies before typed decode
-- [Phase 50 — INVALIDATED by Phase 50.1]: POST /directory-services/roles has no names query param — name is server-generated from management_access_policies. CORRECTION: swagger-2.22.json confirms Names param IS required on POST; Phase 50.1 fixed client + schema.
-- [Phase 50]: DirectoryServiceRolePatch omits ManagementAccessPolicies — readonly on PATCH per swagger
-- [Phase 50]: DSRM composite key: role_name/policy_name (role first, D-05) so SplitN works with colons/slashes in policy name
-- [Phase 50-directory-service-roles-role-mappings]: Composite ID puts role_name FIRST (role/policy) so SplitN correctly handles built-in policy names containing : and / like pure:policy/array_admin
-- [Phase 50-directory-service-roles-role-mappings]: Used nullTimeoutsValueCRD() in ImportState for CRD-only DSRM resource (no Update timeout)
-- [Phase 50-directory-service-roles-role-mappings]: D-02 confirmed: role attribute Computed-only, SC-3 replacement trigger on management_access_policies via listplanmodifier.RequiresReplace()
-- [Phase 50-directory-service-roles-role-mappings]: DSRM resource was already registered in provider.go by Plan 50-04 executor; only DSR resource + data source needed adding in Plan 50-05
-- [Phase 50-directory-service-roles-role-mappings]: errcheck lint violations fixed in client test files (w.Write -> _, _ = w.Write) — 6 instances across DSR + DSRM test files
-- [Phase 50.1]: [Phase 50.1-01]: PostDirectoryServiceRole now takes name as second arg and builds /directory-services/roles?names=<name> (matches PostTarget canonical pattern per D-01)
-- [Phase 50.1]: [Phase 50.1-01]: Mock DSR POST handler now requires ?names= via RequireQueryParam; no server-side name synthesis; store keyed by query-param value (per D-10)
-- [Phase 50.1]: [Phase 50.1-01]: D-02 confirmed — DirectoryServiceRolePost struct does NOT gain a Name field; name stays via query param only (FlashBlade convention)
-- [Phase 50.1]: [Phase 50.1-02]: DSR resource schema v0 -> v1 — name Computed+UseStateForUnknown -> Required+RequiresReplace (D-04); Create passes data.Name.ValueString() (D-08)
-- [Phase 50.1]: [Phase 50.1-02]: v0 PriorSchema mirrors broken schema verbatim (D-06) — upgrader copies API-populated name forward; directoryServiceRoleV0Model intermediate struct per D-07
-- [Phase 50.1]: [Phase 50.1-03]: make docs regenerated docs/resources/directory_service_role.md — name moved from Read-Only to Required section; HCL examples + import.sh now use user-supplied name (D-17/D-18/D-19)
-- [Phase 50.1]: [Phase 50.1-03]: Phase-50 audit trail preserved — STATE.md decision flagged INVALIDATED (not rewritten); CONTEXT.md Q1 gets in-place resolution note; VERIFICATION.md gets Known Defect section (D-20/D-21/D-22)
-- [Phase 50.1]: [Phase 50.1-03]: staticcheck S1016 fixed in v0->v1 upgrader — use type conversion directoryServiceRoleModel(old) since V0/V1 share identical field shapes; CONVENTIONS.md baseline bumped 814 -> 818
+Full project decision log in `.planning/PROJECT.md`. Highlights across recent milestones:
+- v2.22.2: DSR name is user-supplied via `?names=` (D-03 superseded post-50.1); composite ID for DSRM membership uses `/` not `:` (D-05) because role names can contain `:` (e.g. `pure:policy/array_admin`).
+- v2.22.1: Directory Service Management is a singleton resource; `bind_password` Sensitive write-only; Delete is full-reset PATCH (no DELETE endpoint).
 
-### Roadmap Evolution
+### Open Blockers
 
-- Phase 50.1 inserted after Phase 50: Fix directory_service_role POST missing names query param (URGENT) — runtime HTTP 400 "Names query parameter is missing" during terraform apply; invalidates Phase 50 decision line 70 ("name is server-generated") — swagger-2.22.json confirms Names param required on POST /directory-services/roles
+_(none)_
 
-### Pending Todos
+## Next Steps
 
-None.
-
-### Blockers/Concerns
-
-None.
-
-## Session Continuity
-
-Last session: 2026-04-17T12:04:02.901Z
-Stopped at: Completed 50.1-03-PLAN.md
-Resume file: None
+Run `/gsd:new-milestone` to start questioning → research → requirements → roadmap for the next cycle.

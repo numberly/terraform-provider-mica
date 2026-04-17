@@ -8,18 +8,11 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.22.2 Directory Service Roles & Role Mappings
+## Current Milestone: _none — planning next_
 
-**Goal:** Ajouter la gestion Terraform des role mappings LDAP ↔ FlashBlade via deux ressources suivant le pattern `_member` déjà établi dans le provider.
+**Last shipped:** v2.22.2 — Directory Service Roles & Role Mappings (2026-04-17, 818 tests, 0 lint issues) — [archive](milestones/v2.22.2-ROADMAP.md)
 
-**Target features:**
-- Ressource `flashblade_directory_service_role` — maps un groupe LDAP à un rôle FlashBlade (array_admin, storage_admin, etc.) via `/directory-services/roles`
-- Data source `flashblade_directory_service_role` — lecture d'un mapping existant par name
-- Ressource `flashblade_management_access_policy_directory_service_role_membership` — association séparée role ↔ management_access_policy (composite ID `policy_name:role_name`) via `/management-access-policies/directory-services/roles`
-- Suit le pattern des 5 ressources `_member` existantes (qos_policy_member, tls_policy_member, certificate_group_member, audit_object_store_policy_member, object_store_user_policy)
-- Examples HCL + import.sh + `make docs` régénéré
-
-**Last shipped:** v2.22.1 — Directory Service Management (2026-04-17, 798 tests, 0 lint issues) — [archive](milestones/v2.22.1-ROADMAP.md)
+Run `/gsd:new-milestone` to start the next cycle.
 
 ## Requirements
 
@@ -47,11 +40,11 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 
 ### Active
 
-_No active requirements. Milestone v2.22.2 + gap-closure 50.1 complete — ready for next milestone._
+_No active requirements. Milestone v2.22.2 complete — ready for next milestone (run `/gsd:new-milestone`)._
 
 ### Known Follow-up Defects
 
-- `flashblade_management_access_policy_directory_service_role_membership` returns `HTTP 400: Member identifier is required` on real-array apply (surfaced during 50.1 UAT 2026-04-17). Resource delivered by Phase 50; follow-up phase 50.2 candidate.
+_(none — `member_names` query-param fix landed in commit `05faac1`, certificate regression fixed in `d67484c`)_
 
 ### Out of Scope
 
@@ -60,7 +53,6 @@ _No active requirements. Milestone v2.22.2 + gap-closure 50.1 complete — ready
 - File system replica links — defer to v2.1
 - Cascading replication — defer to v2.1
 - Directory Service NFS/SMB variants — defer to future milestones
-- Directory Service roles / role mappings — defer (separate endpoint family)
 - Active Directory accounts — defer (separate endpoint family)
 
 ## Context
@@ -111,4 +103,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 after completing Phase 50.1 — DSR POST `?names=` defect resolved, validated end-to-end on real FlashBlades (par5, pa7)*
+*Last updated: 2026-04-17 after v2.22.2 milestone archival — Directory Service Roles & Role Mappings shipped, 818 tests, real-array UAT on par5/pa7*
