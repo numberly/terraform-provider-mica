@@ -787,4 +787,4 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 49. Directory Service Management | 5/5 | Complete   | 2026-04-17 |
+| 49. Directory Service Management | 5/5 | Complete    | 2026-04-17 |
