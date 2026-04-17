@@ -44,6 +44,18 @@ type directoryServiceRoleModel struct {
 	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 }
 
+// directoryServiceRoleV0Model is the v0 state model (name was Computed, not Required).
+// Fields match v1 structure — only the schema attribute modifiers changed between v0 and v1.
+type directoryServiceRoleV0Model struct {
+	ID                       types.String   `tfsdk:"id"`
+	Name                     types.String   `tfsdk:"name"`
+	Group                    types.String   `tfsdk:"group"`
+	GroupBase                types.String   `tfsdk:"group_base"`
+	ManagementAccessPolicies types.List     `tfsdk:"management_access_policies"`
+	Role                     types.Object   `tfsdk:"role"`
+	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
+}
+
 // roleAttrTypes is the attr.Type map for the deprecated computed role sub-object.
 func roleAttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{"name": types.StringType}
@@ -55,8 +67,8 @@ func (r *directoryServiceRoleResource) Metadata(_ context.Context, _ resource.Me
 
 func (r *directoryServiceRoleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
-		Description: "Maps an LDAP group to one or more FlashBlade management access policies. The role name is server-generated from the first associated policy; use the output `name` attribute downstream.",
+		Version:     1,
+		Description: "Maps an LDAP group to one or more FlashBlade management access policies, identified by a user-supplied name.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -64,9 +76,9 @@ func (r *directoryServiceRoleResource) Schema(ctx context.Context, _ resource.Sc
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"name": schema.StringAttribute{
-				Computed:    true,
-				Description: "Server-generated role name (derived from the first management_access_policies entry; see examples).",
-				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				Required:    true,
+				Description: "Unique name for the directory service role. Required on create. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"group": schema.StringAttribute{
 				Required:    true,
@@ -110,9 +122,67 @@ func (r *directoryServiceRoleResource) Configure(_ context.Context, req resource
 	r.client = c
 }
 
-// UpgradeState returns an empty map at SchemaVersion 0 — required to satisfy the 4th interface.
-func (r *directoryServiceRoleResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+// UpgradeState migrates v0 state (Computed name) to v1 (Required name).
+// The v0 PriorSchema is the EXACT broken schema — do not "fix" it here.
+// Existing v0 states already carry a name (populated by the API on create),
+// so the upgrader copies every field forward verbatim.
+func (r *directoryServiceRoleResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		// v0 → v1: name attribute changed from Computed to Required.
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Maps an LDAP group to one or more FlashBlade management access policies. The role name is server-generated from the first associated policy; use the output `name` attribute downstream.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:      true,
+						PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"name": schema.StringAttribute{
+						Computed:      true,
+						PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+					},
+					"group": schema.StringAttribute{
+						Required: true,
+					},
+					"group_base": schema.StringAttribute{
+						Required: true,
+					},
+					"management_access_policies": schema.ListAttribute{
+						Required:      true,
+						ElementType:   types.StringType,
+						PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
+						Validators:    []validator.List{listvalidator.SizeAtLeast(1)},
+					},
+					"role": schema.SingleNestedAttribute{
+						Computed: true,
+						Attributes: map[string]schema.Attribute{
+							"name": schema.StringAttribute{Computed: true},
+						},
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var old directoryServiceRoleV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &old)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+				// Carry all fields forward verbatim — name was already populated by API in v0 state.
+				newState := directoryServiceRoleModel{
+					ID:                       old.ID,
+					Name:                     old.Name,
+					Group:                    old.Group,
+					GroupBase:                old.GroupBase,
+					ManagementAccessPolicies: old.ManagementAccessPolicies,
+					Role:                     old.Role,
+					Timeouts:                 old.Timeouts,
+				}
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Create builds DirectoryServiceRolePost from the plan and posts it.
@@ -147,7 +217,7 @@ func (r *directoryServiceRoleResource) Create(ctx context.Context, req resource.
 		GroupBase:                data.GroupBase.ValueString(),
 		ManagementAccessPolicies: policies,
 	}
-	role, err := r.client.PostDirectoryServiceRole(ctx, body)
+	role, err := r.client.PostDirectoryServiceRole(ctx, data.Name.ValueString(), body)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating directory service role", err.Error())
 		return
