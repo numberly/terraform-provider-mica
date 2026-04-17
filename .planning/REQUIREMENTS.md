@@ -25,15 +25,15 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
   immutable on the FB side — validated via the API contract).
 - [x] **DSR-03** — User can destroy a role cleanly via
   `DELETE /directory-services/roles?names=<name>`. No soft-delete dance required.
-- [ ] **DSR-04** — User can import an existing role by name with
+- [x] **DSR-04** — User can import an existing role by name with
   `terraform import flashblade_directory_service_role.<alias> <role_name>`. Import
   initialises timeouts to null.
-- [ ] **DSR-05** — Terraform detects drift on every mutable/computed field
+- [x] **DSR-05** — Terraform detects drift on every mutable/computed field
   (`group`, `group_base`, `role.name`, `management_access_policies` list) and
   logs via `tflog.Debug` with the standard `{resource, field, was, now}` shape.
   `management_access_policies` is a computed-only list of policy references
   (populated by the API — membership resources manage the actual associations).
-- [ ] **DSR-06** — User can read an existing role through a
+- [x] **DSR-06** — User can read an existing role through a
   `flashblade_directory_service_role` data source (computed-only schema keyed
   by required `name` attribute).
 
@@ -85,13 +85,13 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 - [x] **QA-02** — ≥3 client unit tests named
   `TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_*` covering
   `GET` (exists + not-exists), `POST`, and `DELETE`.
-- [ ] **QA-03** — ≥3 resource unit tests for the role:
+- [x] **QA-03** — ≥3 resource unit tests for the role:
   `TestUnit_DirectoryServiceRoleResource_Lifecycle`, `_Import`, `_DriftDetection`.
 - [x] **QA-04** — ≥3 resource unit tests for the membership:
   `TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembershipResource_Lifecycle`,
   `_Import`, `_MissingAssociation` (the last validates the RemoveResource path
   from DSRM-05).
-- [ ] **QA-05** — ≥1 data source unit test:
+- [x] **QA-05** — ≥1 data source unit test:
   `TestUnit_DirectoryServiceRoleDataSource_Basic`.
 - [ ] **QA-06** — `make test` passes with total count ≥ 812 (baseline 798 from
   v2.22.1 + 14 new: 4+3 client + 3+3 resource + 1 data source).
@@ -135,9 +135,9 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 | DSR-01  | 50    | Complete |
 | DSR-02  | 50    | Complete |
 | DSR-03  | 50    | Complete |
-| DSR-04  | 50    | Pending |
-| DSR-05  | 50    | Pending |
-| DSR-06  | 50    | Pending |
+| DSR-04  | 50    | Complete |
+| DSR-05  | 50    | Complete |
+| DSR-06  | 50    | Complete |
 | DSRM-01 | 50    | Complete |
 | DSRM-02 | 50    | Complete |
 | DSRM-03 | 50    | Complete |
@@ -148,9 +148,9 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 | DOC-03  | 50    | Pending |
 | QA-01   | 50    | Complete |
 | QA-02   | 50    | Complete |
-| QA-03   | 50    | Pending |
+| QA-03   | 50    | Complete |
 | QA-04   | 50    | Complete |
-| QA-05   | 50    | Pending |
+| QA-05   | 50    | Complete |
 | QA-06   | 50    | Pending |
 | QA-07   | 50    | Complete |
 | QA-08   | 50    | Pending |
