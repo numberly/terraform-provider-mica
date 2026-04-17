@@ -2,17 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.22.2
 milestone_name: Directory Service Roles & Role Mappings
-status: active
-stopped_at: v2.22.1 archived; v2.22.2 (Phase 50) complete and ready for audit
-last_updated: "2026-04-17T12:15:00Z"
+status: executing
+stopped_at: Completed 50.1-01-PLAN.md
+last_updated: "2026-04-17T11:48:37.651Z"
 last_activity: 2026-04-17
-last_shipped_milestone: v2.22.1
 progress:
   total_phases: 1
   completed_phases: 1
   total_plans: 5
   completed_plans: 5
-  percent: 100
+  percent: 0
 ---
 
 # Project State
@@ -22,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-17)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 50 — directory-service-roles-role-mappings
+**Current focus:** Phase 50.1 — fix-directory-service-role-post-missing-names-query-param
 
 ## Current Position
 
-Phase: 50
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 50.1 (fix-directory-service-role-post-missing-names-query-param) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-17
 
 ```
@@ -75,6 +74,9 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 50-directory-service-roles-role-mappings]: D-02 confirmed: role attribute Computed-only, SC-3 replacement trigger on management_access_policies via listplanmodifier.RequiresReplace()
 - [Phase 50-directory-service-roles-role-mappings]: DSRM resource was already registered in provider.go by Plan 50-04 executor; only DSR resource + data source needed adding in Plan 50-05
 - [Phase 50-directory-service-roles-role-mappings]: errcheck lint violations fixed in client test files (w.Write -> _, _ = w.Write) — 6 instances across DSR + DSRM test files
+- [Phase 50.1]: [Phase 50.1-01]: PostDirectoryServiceRole now takes name as second arg and builds /directory-services/roles?names=<name> (matches PostTarget canonical pattern per D-01)
+- [Phase 50.1]: [Phase 50.1-01]: Mock DSR POST handler now requires ?names= via RequireQueryParam; no server-side name synthesis; store keyed by query-param value (per D-10)
+- [Phase 50.1]: [Phase 50.1-01]: D-02 confirmed — DirectoryServiceRolePost struct does NOT gain a Name field; name stays via query param only (FlashBlade convention)
 
 ### Roadmap Evolution
 
@@ -90,6 +92,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T09:44:30.396Z
-Stopped at: Completed 50-directory-service-roles-role-mappings-50-05-PLAN.md
+Last session: 2026-04-17T11:48:18.290Z
+Stopped at: Completed 50.1-01-PLAN.md
 Resume file: None
