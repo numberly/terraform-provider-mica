@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.22.2
-milestone_name: Directory Service Roles & Role Mappings
-status: active
-stopped_at: null
-last_updated: "2026-04-17T09:30:00.000Z"
-last_activity: 2026-04-17
+milestone: v2.22.1
+milestone_name: Directory Service – Array Management
+status: Roadmap created — ready for plan-phase
+stopped_at: Phase 50 context gathered (auto)
+last_updated: "2026-04-17T08:53:39.091Z"
+last_activity: 2026-04-17 — Roadmap created for milestone v2.22.2
 progress:
-  total_phases: 1
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 2
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 5
   percent: 0
 ---
 
@@ -75,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T09:30:00.000Z
-Stopped at: Roadmap created for milestone v2.22.2 (Phase 50 defined, plans TBD)
-Resume file: None
+Last session: 2026-04-17T08:53:39.085Z
+Stopped at: Phase 50 context gathered (auto)
+Resume file: .planning/phases/50-directory-service-roles-role-mappings/50-CONTEXT.md
