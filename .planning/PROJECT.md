@@ -8,7 +8,15 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: (none — planning next)
+## Current Milestone: v2.22.1 Directory Service – Array Management
+
+**Goal:** Ajouter la gestion du directory service LDAP `management` (authentification admin) via Terraform, en respectant le pattern singleton PATCH-only de l'API FlashBlade.
+
+**Target features:**
+- Ressource `flashblade_directory_service_management` — configuration LDAP/AD pour accès admin (URIs, base DN, bind user/password, CA certs, user attributes)
+- Data source `flashblade_directory_service_management` — lecture de la configuration existante
+- Examples HCL + documentation import
+- Drift detection sur tous les champs mutables + state upgrader v0
 
 **Last shipped:** tools-v1.0 — API Tooling Pipeline (2026-04-14)
 
@@ -27,14 +35,14 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ Bucket advanced features (lifecycle rules, access policies, audit filters, QoS) — v2.1
 - ✓ Network interfaces/VIPs, subnets, LAG data source — v2.1.1
 - ✓ Code review fixes, S3 users + user-policy associations, full_access fix — v2.1.3
+- ✓ S3 Target replication, certificates, TLS policies, array connections — v2.2
+- ✓ API tooling pipeline (swagger parser, diff, upgrade) — tools-v1.0
 
 ### Active
 
-- [ ] Target resource — CRUD for external S3 endpoints (TGT-01)
-- [ ] Target data source — read existing targets (TGT-02)
-- [ ] Remote credentials support for S3 targets (RC-01)
-- [ ] Bucket replica links to S3 targets (BRL-01)
-- [ ] Workflow examples and documentation (DOC-01)
+- [ ] Directory Service Management resource — LDAP admin auth configuration (DSM-01)
+- [ ] Directory Service Management data source — read current config (DSM-02)
+- [ ] HCL examples + import.sh (DOC-01)
 
 ### Out of Scope
 
@@ -42,6 +50,9 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - Array connection resource (create/delete) — defer to future
 - File system replica links — defer to v2.1
 - Cascading replication — defer to v2.1
+- Directory Service NFS/SMB variants — defer to future milestones
+- Directory Service roles / role mappings — defer (separate endpoint family)
+- Active Directory accounts — defer (separate endpoint family)
 
 ## Context
 
@@ -73,5 +84,22 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 | Drift detection with audit logging | Ops team needs visibility into what changed outside Terraform for compliance | — Pending |
 | Import support for all resources | Team has existing FlashBlade infra to adopt into Terraform state | — Pending |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-04-02 after starting milestone v2.2 (S3 Target Replication)*
+*Last updated: 2026-04-17 after starting milestone v2.22.1 (Directory Service – Array Management)*

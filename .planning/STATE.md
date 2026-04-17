@@ -1,36 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: tools-v1.0
-milestone_name: API Tooling Pipeline
-status: completed
+milestone: v2.22.1
+milestone_name: Directory Service – Array Management
+status: active
 stopped_at: null
-last_updated: "2026-04-14T11:00:00.000Z"
-last_activity: 2026-04-14
+last_updated: "2026-04-17T08:00:00.000Z"
+last_activity: 2026-04-17
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-14)
+See: .planning/PROJECT.md (updated 2026-04-17)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Planning next milestone
+**Current focus:** Directory Service – Array Management (v2.22.1)
 
 ## Current Position
 
-Phase: All phases complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Milestone tools-v1.0 completed 2026-04-14
-Last activity: 2026-04-14 — Milestone tools-v1.0 archived
-
-Progress: [██████████] 100% (milestone tools-v1.0)
+Status: Defining requirements
+Last activity: 2026-04-17 — Milestone v2.22.1 started
 
 ## Accumulated Context
 
@@ -51,6 +49,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14
-Stopped at: Milestone tools-v1.0 complete
+Last session: 2026-04-17
+Stopped at: Milestone v2.22.1 started, defining requirements
 Resume file: None
