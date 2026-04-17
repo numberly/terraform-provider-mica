@@ -40,12 +40,12 @@ QA = Quality. Numbering restart per milestone.
 
 ### Documentation (DOC)
 
-- [ ] **DOC-01** — Working HCL example at
+- [x] **DOC-01** — Working HCL example at
   `examples/resources/flashblade_directory_service_management/resource.tf` plus
   `import.sh` with the canonical `terraform import … management` command.
-- [ ] **DOC-02** — Working data source example at
+- [x] **DOC-02** — Working data source example at
   `examples/data-sources/flashblade_directory_service_management/data-source.tf`.
-- [ ] **DOC-03** — `make docs` regenerates
+- [x] **DOC-03** — `make docs` regenerates
   `docs/resources/directory_service_management.md` and the matching data
   source doc without manual edits.
 
@@ -57,11 +57,11 @@ QA = Quality. Numbering restart per milestone.
 - [x] **QA-02** — ≥3 resource unit tests: `Lifecycle`, `Import`,
   `DriftDetection` with `TestUnit_DirectoryServiceManagementResource_*` naming.
 - [x] **QA-03** — ≥1 data source unit test: `TestUnit_DirectoryServiceManagementDataSource_Basic`.
-- [ ] **QA-04** — `make test` passes with total count ≥ 787 (baseline 779 + 8 new).
+- [x] **QA-04** — `make test` passes with total count ≥ 787 (baseline 779 + 8 new).
 - [x] **QA-05** — `make lint` clean (0 issues). Resource declares all four
   interface assertions (`Resource`, `WithConfigure`, `WithImportState`,
   `WithUpgradeState`) and an empty `UpgradeState` map at schema version 0.
-- [ ] **QA-06** — `ROADMAP.md` updated in the same commit as the implementation:
+- [x] **QA-06** — `ROADMAP.md` updated in the same commit as the implementation:
   entry moved from "Not Implemented → High Priority" to "Implemented → Array
   Administration", header counters refreshed, `Last updated` date bumped.
 
@@ -101,14 +101,14 @@ QA = Quality. Numbering restart per milestone.
 | DSM-06 | Phase 49 | Complete |
 | DSM-07 | Phase 49 | Complete |
 | DSM-08 | Phase 49 | Complete |
-| DOC-01 | Phase 49 | Pending |
-| DOC-02 | Phase 49 | Pending |
-| DOC-03 | Phase 49 | Pending |
+| DOC-01 | Phase 49 | Complete |
+| DOC-02 | Phase 49 | Complete |
+| DOC-03 | Phase 49 | Complete |
 | QA-01  | Phase 49 | Complete |
 | QA-02  | Phase 49 | Complete |
 | QA-03  | Phase 49 | Complete |
-| QA-04  | Phase 49 | Pending |
+| QA-04  | Phase 49 | Complete |
 | QA-05  | Phase 49 | Complete |
-| QA-06  | Phase 49 | Pending |
+| QA-06  | Phase 49 | Complete |
 
 *Filled by gsd-roadmapper.*
