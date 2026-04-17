@@ -63,15 +63,15 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 
 ### Documentation (DOC)
 
-- [ ] **DOC-01** — Working HCL examples at
+- [x] **DOC-01** — Working HCL examples at
   `examples/resources/flashblade_directory_service_role/resource.tf` plus
   `import.sh` with a canonical import command, and
   `examples/data-sources/flashblade_directory_service_role/data-source.tf`.
-- [ ] **DOC-02** — Working HCL example at
+- [x] **DOC-02** — Working HCL example at
   `examples/resources/flashblade_management_access_policy_directory_service_role_membership/resource.tf`
   plus `import.sh` using the composite ID format
   `<policy_name>:<role_name>`.
-- [ ] **DOC-03** — `make docs` regenerates
+- [x] **DOC-03** — `make docs` regenerates
   `docs/resources/directory_service_role.md`,
   `docs/data-sources/directory_service_role.md`, and
   `docs/resources/management_access_policy_directory_service_role_membership.md`
@@ -93,13 +93,13 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
   from DSRM-05).
 - [x] **QA-05** — ≥1 data source unit test:
   `TestUnit_DirectoryServiceRoleDataSource_Basic`.
-- [ ] **QA-06** — `make test` passes with total count ≥ 812 (baseline 798 from
+- [x] **QA-06** — `make test` passes with total count ≥ 812 (baseline 798 from
   v2.22.1 + 14 new: 4+3 client + 3+3 resource + 1 data source).
 - [x] **QA-07** — `make lint` clean (0 issues). Both resources declare the
   four standard interface assertions (`Resource`, `WithConfigure`,
   `WithImportState`, `WithUpgradeState`) with empty `UpgradeState` map at
   schema version 0.
-- [ ] **QA-08** — `ROADMAP.md` (root-level API coverage) updated in the same
+- [x] **QA-08** — `ROADMAP.md` (root-level API coverage) updated in the same
   commit as the implementation: entries moved from "Not Implemented" to
   "Implemented → Array Administration", header counters refreshed,
   `Last updated` date bumped to the shipping date.
@@ -143,16 +143,16 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 | DSRM-03 | 50    | Complete |
 | DSRM-04 | 50    | Complete |
 | DSRM-05 | 50    | Complete |
-| DOC-01  | 50    | Pending |
-| DOC-02  | 50    | Pending |
-| DOC-03  | 50    | Pending |
+| DOC-01  | 50    | Complete |
+| DOC-02  | 50    | Complete |
+| DOC-03  | 50    | Complete |
 | QA-01   | 50    | Complete |
 | QA-02   | 50    | Complete |
 | QA-03   | 50    | Complete |
 | QA-04   | 50    | Complete |
 | QA-05   | 50    | Complete |
-| QA-06   | 50    | Pending |
+| QA-06   | 50    | Complete |
 | QA-07   | 50    | Complete |
-| QA-08   | 50    | Pending |
+| QA-08   | 50    | Complete |
 
 *Filled by gsd-roadmapper.*
