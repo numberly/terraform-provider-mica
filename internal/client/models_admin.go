@@ -200,3 +200,44 @@ type DirectoryServicePatch struct {
 	CACertificateGroup **NamedReference                 `json:"ca_certificate_group,omitempty"`
 	Management         *DirectoryServiceManagementPatch `json:"management,omitempty"`
 }
+
+// DirectoryServiceRole represents a FlashBlade directory-service role mapping
+// from GET /directory-services/roles. Reference: swagger schema DirectoryServiceRole.
+// NOTE: management_access_policies is readonly per swagger on PATCH; role is deprecated
+// but remains for backwards compatibility (surface it computed-only on the resource).
+type DirectoryServiceRole struct {
+	ID                       string           `json:"id"`
+	Name                     string           `json:"name"`
+	Group                    string           `json:"group"`
+	GroupBase                string           `json:"group_base"`
+	ManagementAccessPolicies []NamedReference `json:"management_access_policies"`
+	Role                     *NamedReference  `json:"role,omitempty"`
+}
+
+// DirectoryServiceRolePost is the POST /directory-services/roles body.
+// Name is server-generated (no names query param on POST per D-03 in 50-CONTEXT.md).
+// management_access_policies is writable on POST only (readonly on PATCH).
+type DirectoryServiceRolePost struct {
+	Group                    string           `json:"group"`
+	GroupBase                string           `json:"group_base"`
+	ManagementAccessPolicies []NamedReference `json:"management_access_policies"`
+	// Role is the deprecated field — omit unless explicitly set.
+	Role *NamedReference `json:"role,omitempty"`
+}
+
+// DirectoryServiceRolePatch is the PATCH /directory-services/roles?names=<n> body.
+// Every field is a pointer so nil = omit. management_access_policies is NOT present
+// (readonly on PATCH per api_references/2.22.md line 434).
+type DirectoryServiceRolePatch struct {
+	Group     *string          `json:"group,omitempty"`
+	GroupBase *string          `json:"group_base,omitempty"`
+	Role      **NamedReference `json:"role,omitempty"`
+}
+
+// ManagementAccessPolicyDirectoryServiceRoleMembership represents a single
+// association from GET /management-access-policies/directory-services/roles.
+// The endpoint returns items keyed by (policy, role) pairs — no standalone identity.
+type ManagementAccessPolicyDirectoryServiceRoleMembership struct {
+	Policy NamedReference `json:"policy"`
+	Role   NamedReference `json:"role"`
+}
