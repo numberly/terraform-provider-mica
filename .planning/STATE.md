@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.22.1
 milestone_name: Directory Service – Array Management
 status: executing
-stopped_at: Completed 50-02-PLAN.md (mock handlers)
-last_updated: "2026-04-17T09:26:32.084Z"
+stopped_at: Completed 50-01-PLAN.md
+last_updated: "2026-04-17T09:27:39.524Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 1
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-17)
 ## Current Position
 
 Phase: 50 (directory-service-roles-role-mappings) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-04-17
 
@@ -66,6 +66,9 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 50-roadmap]: Test baseline: 798 (v2.22.1) → target ≥ 812 (14 new tests: 5 client + 6 resource + 1 data source + 2 margin)
 - [Phase 50-02]: DSRM POST idempotent (Q3 resolved): 200-always, create-or-return, Terraform replays never 409
 - [Phase 50-02]: DSR PATCH readonly guard: raw JSON decode first to detect management_access_policies before typed decode
+- [Phase 50]: POST /directory-services/roles has no names query param — name is server-generated from management_access_policies
+- [Phase 50]: DirectoryServiceRolePatch omits ManagementAccessPolicies — readonly on PATCH per swagger
+- [Phase 50]: DSRM composite key: role_name/policy_name (role first, D-05) so SplitN works with colons/slashes in policy name
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T09:26:32.076Z
-Stopped at: Completed 50-02-PLAN.md (mock handlers)
+Last session: 2026-04-17T09:27:39.514Z
+Stopped at: Completed 50-01-PLAN.md
 Resume file: None

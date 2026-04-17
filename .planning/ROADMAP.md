@@ -813,10 +813,10 @@ Plans:
   3. Changing `group` or `group_base` on the role re-applies via PATCH without recreation; changing `role` forces resource replacement (`RequiresReplace`); drift on `management_access_policies` (computed list) is logged via `tflog.Debug` with `{resource, field, was, now}`.
   4. Destroying a membership resource removes only the policy↔role association — neither the underlying policy nor the role is deleted, verified by subsequent `terraform plan` on the role showing 0 diff.
   5. `make test` reports ≥ 812 tests, all passing; `make lint` exits clean with 0 issues.
-**Plans:** 1/5 plans executed
+**Plans:** 2/5 plans executed
 
 Plans:
-- [ ] 50-01-PLAN.md — Client layer: DirectoryServiceRole* + membership models, CRUD methods via getOneByName/postOne/patchOne, >=4 TestUnit_DirectoryServiceRole_* + >=3 TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_* client tests
+- [x] 50-01-PLAN.md — Client layer: DirectoryServiceRole* + membership models, CRUD methods via getOneByName/postOne/patchOne, >=4 TestUnit_DirectoryServiceRole_* + >=3 TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_* client tests
 - [x] 50-02-PLAN.md — Mock handlers: /directory-services/roles GET/POST/PATCH/DELETE with name-derivation (strip pure:policy/) + readonly-on-PATCH guard, and /management-access-policies/directory-services/roles GET/POST/DELETE as idempotent pair set
 - [ ] 50-03-PLAN.md — flashblade_directory_service_role resource (4 interface assertions, listplanmodifier.RequiresReplace on management_access_policies, Computed-only role nested object, drift on 4 fields) + data source + >=3 resource tests + >=1 data source test
 - [ ] 50-04-PLAN.md — flashblade_management_access_policy_directory_service_role_membership resource (4 interface assertions, composite ID role_name/policy_name per D-05, Update returns error, Read RemoveResource on IsNotFound) + >=3 resource tests
@@ -840,4 +840,4 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 50. Directory Service Roles & Role Mappings | 1/5 | In Progress|  |
+| 50. Directory Service Roles & Role Mappings | 2/5 | In Progress|  |

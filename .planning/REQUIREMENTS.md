@@ -79,10 +79,10 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 
 ### Quality (QA)
 
-- [ ] **QA-01** — ≥4 client unit tests named `TestUnit_DirectoryServiceRole_*`
+- [x] **QA-01** — ≥4 client unit tests named `TestUnit_DirectoryServiceRole_*`
   covering `GET` (found + not-found), `POST`, `PATCH` (group/group_base), and
   `DELETE` on the standalone role.
-- [ ] **QA-02** — ≥3 client unit tests named
+- [x] **QA-02** — ≥3 client unit tests named
   `TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_*` covering
   `GET` (exists + not-exists), `POST`, and `DELETE`.
 - [ ] **QA-03** — ≥3 resource unit tests for the role:
@@ -146,8 +146,8 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 | DOC-01  | 50    | Pending |
 | DOC-02  | 50    | Pending |
 | DOC-03  | 50    | Pending |
-| QA-01   | 50    | Pending |
-| QA-02   | 50    | Pending |
+| QA-01   | 50    | Complete |
+| QA-02   | 50    | Complete |
 | QA-03   | 50    | Pending |
 | QA-04   | 50    | Pending |
 | QA-05   | 50    | Pending |
