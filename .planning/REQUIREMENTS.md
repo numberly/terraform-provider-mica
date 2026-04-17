@@ -51,12 +51,12 @@ QA = Quality. Numbering restart per milestone.
 
 ### Quality (QA)
 
-- [ ] **QA-01** — ≥4 client unit tests named `TestUnit_DirectoryServiceManagement_*`
+- [x] **QA-01** — ≥4 client unit tests named `TestUnit_DirectoryServiceManagement_*`
   covering `GET` (found + not-found) and `PATCH` (at least one field variant +
   one reference variant).
-- [ ] **QA-02** — ≥3 resource unit tests: `Lifecycle`, `Import`,
+- [x] **QA-02** — ≥3 resource unit tests: `Lifecycle`, `Import`,
   `DriftDetection` with `TestUnit_DirectoryServiceManagementResource_*` naming.
-- [ ] **QA-03** — ≥1 data source unit test: `TestUnit_DirectoryServiceManagementDataSource_Basic`.
+- [x] **QA-03** — ≥1 data source unit test: `TestUnit_DirectoryServiceManagementDataSource_Basic`.
 - [ ] **QA-04** — `make test` passes with total count ≥ 787 (baseline 779 + 8 new).
 - [ ] **QA-05** — `make lint` clean (0 issues). Resource declares all four
   interface assertions (`Resource`, `WithConfigure`, `WithImportState`,
@@ -104,9 +104,9 @@ QA = Quality. Numbering restart per milestone.
 | DOC-01 | Phase 49 | Pending |
 | DOC-02 | Phase 49 | Pending |
 | DOC-03 | Phase 49 | Pending |
-| QA-01  | Phase 49 | Pending |
-| QA-02  | Phase 49 | Pending |
-| QA-03  | Phase 49 | Pending |
+| QA-01  | Phase 49 | Complete |
+| QA-02  | Phase 49 | Complete |
+| QA-03  | Phase 49 | Complete |
 | QA-04  | Phase 49 | Pending |
 | QA-05  | Phase 49 | Pending |
 | QA-06  | Phase 49 | Pending |

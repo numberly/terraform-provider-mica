@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.22.1
 milestone_name: Directory Service – Array Management
-status: Defining plan
-stopped_at: Phase 49 context gathered
-last_updated: "2026-04-17T07:31:12.137Z"
-last_activity: 2026-04-17 — Roadmap created for milestone v2.22.1
+status: executing
+stopped_at: Completed 49-02-PLAN.md
+last_updated: "2026-04-17T07:56:27.546Z"
+last_activity: 2026-04-17
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 5
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-17)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Directory Service – Array Management (v2.22.1)
+**Current focus:** Phase 49 — directory-service-management
 
 ## Current Position
 
-Phase: 49 — Directory Service Management
-Plan: — (defining plan)
-Status: Defining plan
-Last activity: 2026-04-17 — Roadmap created for milestone v2.22.1
+Phase: 49 (directory-service-management) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-04-17
 
 ```
 Progress: [                    ] 0% (0/1 phases)
@@ -48,6 +48,8 @@ Progress: [                    ] 0% (0/1 phases)
 - DSM resource: management sub-object holds user_login_attribute, user_object_class, ssh_public_key_attribute
 - DSM resource: Delete = PATCH reset (enabled=false, empty uris, nil references)
 - DSM resource: Import by name "management", nullTimeoutsValue(), bind_password left empty
+- [Phase 49-directory-service-management]: GET returns empty list HTTP 200 on filter miss — matches getOneByName[T] not-found detection contract
+- [Phase 49-directory-service-management]: PATCH **NamedReference: outer non-nil + inner nil = set to null (clear), both non-nil = set value
 
 ### Pending Todos
 
@@ -59,6 +61,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T07:31:12.131Z
-Stopped at: Phase 49 context gathered
-Resume file: .planning/phases/49-directory-service-management/49-CONTEXT.md
+Last session: 2026-04-17T07:56:27.538Z
+Stopped at: Completed 49-02-PLAN.md
+Resume file: None
