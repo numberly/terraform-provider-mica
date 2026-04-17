@@ -315,6 +315,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewArraySmtpResource,
 		NewSyslogServerResource,
 		NewDirectoryServiceManagementResource,
+		NewDirectoryServiceRoleResource,
 		NewManagementAccessPolicyDirectoryServiceRoleMembershipResource,
 
 		// Audit
@@ -381,6 +382,7 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewArraySmtpDataSource,
 		NewSyslogServerDataSource,
 		NewDirectoryServiceManagementDataSource,
+		NewDirectoryServiceRoleDataSource,
 
 		// Audit
 		NewAuditObjectStorePolicyDataSource,
