@@ -215,7 +215,7 @@ type DirectoryServiceRole struct {
 }
 
 // DirectoryServiceRolePost is the POST /directory-services/roles body.
-// Name is server-generated (no names query param on POST per D-03 in 50-CONTEXT.md).
+// Name is user-supplied via the ?names= query param (see PostDirectoryServiceRole).
 // management_access_policies is writable on POST only (readonly on PATCH).
 type DirectoryServiceRolePost struct {
 	Group                    string           `json:"group"`

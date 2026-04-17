@@ -513,7 +513,7 @@ Before considering a new resource complete, every item must be done:
 11. [ ] Registration in `provider.go` (Resources + DataSources)
 12. [ ] HCL examples (`resource.tf`, `import.sh`, `data-source.tf`)
 13. [ ] `make docs` regenerated
-14. [ ] `make test` passes, total count ≥ 716 baseline
+14. [ ] `make test` passes, total count ≥ 818 baseline
 15. [ ] `make lint` clean (0 issues)
 16. [ ] ROADMAP.md updated
 
