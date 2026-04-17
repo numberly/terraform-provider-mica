@@ -4,10 +4,10 @@ milestone: v2.22.1
 milestone_name: Directory Service – Array Management
 status: active
 stopped_at: null
-last_updated: "2026-04-17T08:00:00.000Z"
+last_updated: "2026-04-17T00:00:00.000Z"
 last_activity: 2026-04-17
 progress:
-  total_phases: 0
+  total_phases: 1
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,10 +25,14 @@ See: .planning/PROJECT.md (updated 2026-04-17)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-17 — Milestone v2.22.1 started
+Phase: 49 — Directory Service Management
+Plan: — (defining plan)
+Status: Defining plan
+Last activity: 2026-04-17 — Roadmap created for milestone v2.22.1
+
+```
+Progress: [                    ] 0% (0/1 phases)
+```
 
 ## Accumulated Context
 
@@ -38,6 +42,12 @@ Last activity: 2026-04-17 — Milestone v2.22.1 started
 - PYTHONPATH=.claude/skills required for _shared imports
 - Python 3.10+ stdlib only, no external deps
 - Swagger inaccuracies tracked in known_discrepancies.md (living doc)
+- DSM resource: singleton PATCH-only (no POST, no DELETE), backed by /directory-services?names=management
+- DSM resource: bind_password is sensitive, write-only, never returned by API
+- DSM resource: ca_certificate and ca_certificate_group use NamedReference pattern
+- DSM resource: management sub-object holds user_login_attribute, user_object_class, ssh_public_key_attribute
+- DSM resource: Delete = PATCH reset (enabled=false, empty uris, nil references)
+- DSM resource: Import by name "management", nullTimeoutsValue(), bind_password left empty
 
 ### Pending Todos
 
@@ -50,5 +60,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-17
-Stopped at: Milestone v2.22.1 started, defining requirements
+Stopped at: Phase 49 roadmap created, ready for /gsd:plan-phase 49
 Resume file: None

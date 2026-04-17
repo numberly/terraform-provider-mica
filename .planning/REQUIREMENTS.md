@@ -93,22 +93,22 @@ QA = Quality. Numbering restart per milestone.
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| DSM-01 | — | Pending |
-| DSM-02 | — | Pending |
-| DSM-03 | — | Pending |
-| DSM-04 | — | Pending |
-| DSM-05 | — | Pending |
-| DSM-06 | — | Pending |
-| DSM-07 | — | Pending |
-| DSM-08 | — | Pending |
-| DOC-01 | — | Pending |
-| DOC-02 | — | Pending |
-| DOC-03 | — | Pending |
-| QA-01  | — | Pending |
-| QA-02  | — | Pending |
-| QA-03  | — | Pending |
-| QA-04  | — | Pending |
-| QA-05  | — | Pending |
-| QA-06  | — | Pending |
+| DSM-01 | Phase 49 | Pending |
+| DSM-02 | Phase 49 | Pending |
+| DSM-03 | Phase 49 | Pending |
+| DSM-04 | Phase 49 | Pending |
+| DSM-05 | Phase 49 | Pending |
+| DSM-06 | Phase 49 | Pending |
+| DSM-07 | Phase 49 | Pending |
+| DSM-08 | Phase 49 | Pending |
+| DOC-01 | Phase 49 | Pending |
+| DOC-02 | Phase 49 | Pending |
+| DOC-03 | Phase 49 | Pending |
+| QA-01  | Phase 49 | Pending |
+| QA-02  | Phase 49 | Pending |
+| QA-03  | Phase 49 | Pending |
+| QA-04  | Phase 49 | Pending |
+| QA-05  | Phase 49 | Pending |
+| QA-06  | Phase 49 | Pending |
 
 *Filled by gsd-roadmapper.*
