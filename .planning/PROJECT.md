@@ -40,13 +40,12 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ API tooling pipeline (swagger parser, diff, upgrade) — tools-v1.0
 - ✓ Directory Service Management resource + data source (LDAP admin auth, singleton PATCH-only) — v2.22.1
 - ✓ 798 unit tests, LDAPURIValidator, `**NamedReference` Patch pattern validated — v2.22.1
+- ✓ Directory Service Role resource + data source + membership composite-ID resource — v2.22.2
+- ✓ 814 unit tests, role_name/policy_name composite ID (role FIRST per policy-contains-colon constraint) — v2.22.2
 
 ### Active
 
-- [ ] `flashblade_directory_service_role` resource — LDAP group → FB role mapping (DSR-01)
-- [ ] `flashblade_directory_service_role` data source — read existing mapping (DSR-02)
-- [ ] `flashblade_management_access_policy_directory_service_role_membership` — composite ID membership resource (DSRM-01)
-- [ ] HCL examples + import.sh for both resources (DOC-01, DOC-02)
+_No active requirements. Milestone v2.22.2 complete — ready for next milestone._
 
 ### Out of Scope
 
@@ -106,4 +105,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 after starting milestone v2.22.2 (Directory Service Roles & Role Mappings)*
+*Last updated: 2026-04-17 after completing Phase 50 — milestone v2.22.2 (Directory Service Roles & Role Mappings) shipped*
