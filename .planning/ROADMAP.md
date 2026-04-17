@@ -817,9 +817,9 @@ Plans:
 **Goal:** Fix PostDirectoryServiceRole ?names= bug: client signature, mock handler, resource schema v0→v1 upgrader, HCL examples, docs
 **Requirements**: TBD (defect fix — no requirement IDs)
 **Depends on:** Phase 50
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 50.1-01-PLAN.md — Fix PostDirectoryServiceRole + mock POST handler + client test
-- [ ] 50.1-02-PLAN.md — Schema name Required, SchemaVersion 0→1, upgrader, Create wiring, tests
+- [x] 50.1-02-PLAN.md — Schema name Required, SchemaVersion 0→1, upgrader, Create wiring, tests
 - [ ] 50.1-03-PLAN.md — HCL examples, make docs, make test/lint, planning artifact corrections
