@@ -108,6 +108,12 @@ Swagger inspection revealed deviations from the REQUIREMENTS.md assumptions — 
 These are not blockers — the planner should verify or pick the safer path:
 
 - **Q1:** Exact behavior of server-generated `name` on POST `/directory-services/roles`. Does the server always derive from the first policy? Is there a `names` query param hidden from the api_references summary? Verify against the swagger POST body + response.
+
+**PHASE 50.1 RESOLUTION (2026-04-17):** Q1 was answered wrong. The AI-generated
+api_references/2.22.md line 433 dropped the `$ref: Names` parameter from the summary.
+swagger-2.22.json is the source of truth and confirms Names IS required on POST
+/directory-services/roles. Phase 50.1 corrected: client signature, mock handler,
+resource schema (name: Computed→Required, SchemaVersion 0→1), and HCL examples.
 - **Q2:** Whether an empty `management_access_policies` list is a valid POST (edge case: user wants to create a "bare" role mapping then attach policies via DSRM only). If rejected, the resource must enforce at least one element via schema validator.
 - **Q3:** Whether the DSRM POST is idempotent when the association already exists (409 vs 200). Needed to decide Read-before-Create or catch-409 strategy in the resource.
 

@@ -66,7 +66,7 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 50-roadmap]: Test baseline: 798 (v2.22.1) → target ≥ 812 (14 new tests: 5 client + 6 resource + 1 data source + 2 margin)
 - [Phase 50-02]: DSRM POST idempotent (Q3 resolved): 200-always, create-or-return, Terraform replays never 409
 - [Phase 50-02]: DSR PATCH readonly guard: raw JSON decode first to detect management_access_policies before typed decode
-- [Phase 50]: POST /directory-services/roles has no names query param — name is server-generated from management_access_policies
+- [Phase 50 — INVALIDATED by Phase 50.1]: POST /directory-services/roles has no names query param — name is server-generated from management_access_policies. CORRECTION: swagger-2.22.json confirms Names param IS required on POST; Phase 50.1 fixed client + schema.
 - [Phase 50]: DirectoryServiceRolePatch omits ManagementAccessPolicies — readonly on PATCH per swagger
 - [Phase 50]: DSRM composite key: role_name/policy_name (role first, D-05) so SplitN works with colons/slashes in policy name
 - [Phase 50-directory-service-roles-role-mappings]: Composite ID puts role_name FIRST (role/policy) so SplitN correctly handles built-in policy names containing : and / like pure:policy/array_admin

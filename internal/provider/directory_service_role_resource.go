@@ -170,15 +170,9 @@ func (r *directoryServiceRoleResource) UpgradeState(ctx context.Context) map[int
 					return
 				}
 				// Carry all fields forward verbatim — name was already populated by API in v0 state.
-				newState := directoryServiceRoleModel{
-					ID:                       old.ID,
-					Name:                     old.Name,
-					Group:                    old.Group,
-					GroupBase:                old.GroupBase,
-					ManagementAccessPolicies: old.ManagementAccessPolicies,
-					Role:                     old.Role,
-					Timeouts:                 old.Timeouts,
-				}
+				// v0 and v1 models share identical Go field shapes (only schema flags differ),
+				// so a direct type conversion is sufficient.
+				newState := directoryServiceRoleModel(old)
 				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
 			},
 		},

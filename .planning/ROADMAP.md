@@ -814,12 +814,14 @@ Plans:
 
 ### Phase 50.1: Fix directory_service_role POST missing names query param (INSERTED)
 
-**Goal:** Fix PostDirectoryServiceRole ?names= bug: client signature, mock handler, resource schema v0→v1 upgrader, HCL examples, docs
+**Goal:** Fix PostDirectoryServiceRole ?names= bug: client, mock, schema v0→v1 upgrader, docs
 **Requirements**: TBD (defect fix — no requirement IDs)
 **Depends on:** Phase 50
-**Plans:** 2/3 plans executed
+**Plans:** 3 plans
 
 Plans:
-- [x] 50.1-01-PLAN.md — Fix PostDirectoryServiceRole + mock POST handler + client test
+- [x] 50.1-01-PLAN.md — Fix PostDirectoryServiceRole + mock handler + client test
 - [x] 50.1-02-PLAN.md — Schema name Required, SchemaVersion 0→1, upgrader, Create wiring, tests
-- [ ] 50.1-03-PLAN.md — HCL examples, make docs, make test/lint, planning artifact corrections
+- [x] 50.1-03-PLAN.md — HCL examples, make docs, make test/lint, planning artifact corrections
+
+_Last updated: 2026-04-17_

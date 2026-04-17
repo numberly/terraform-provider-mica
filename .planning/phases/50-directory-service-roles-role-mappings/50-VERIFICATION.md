@@ -183,3 +183,23 @@ No gaps. All 6 success criteria verified, all 22 requirements satisfied, all 25 
 
 _Verified: 2026-04-17_
 _Verifier: Claude (gsd-verifier)_
+
+---
+
+## Known Defect — Resolved in Phase 50.1
+
+**Defect:** `PostDirectoryServiceRole` omitted `?names=` query param; resource schema
+marked `name` as Computed instead of Required. Result: `terraform apply` failed with
+HTTP 400 "Names query parameter is missing".
+
+**Root cause:** AI-generated api_references/2.22.md line 433 silently dropped the
+`$ref: #/components/parameters/Names` reference; Phase 50 planner trusted the summary
+instead of swagger-2.22.json.
+
+**Resolution (Phase 50.1, 2026-04-17):**
+- `internal/client/directory_service_roles.go` — PostDirectoryServiceRole now sends `?names=`
+- `internal/testmock/handlers/directory_service_roles.go` — POST handler requires `?names=`
+- `internal/provider/directory_service_role_resource.go` — SchemaVersion 0→1, name Required + RequiresReplace, v0→v1 upgrader
+- `examples/resources/flashblade_directory_service_role/resource.tf` — name attribute added
+- Docs regenerated via `make docs`
+
