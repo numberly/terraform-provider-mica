@@ -1,114 +1,158 @@
-# Requirements — Milestone v2.22.1 Directory Service – Array Management
+# Requirements — Milestone v2.22.2 Directory Service Roles & Role Mappings
 
-**Milestone goal:** Ajouter la gestion Terraform du directory service LDAP `management`
-(authentification admin) via une ressource singleton PATCH-only, avec data source,
-drift detection, import, et documentation complète.
+**Milestone goal:** Ajouter la gestion Terraform des role mappings LDAP ↔ FlashBlade
+via deux ressources: `flashblade_directory_service_role` (role standalone + data source)
+et `flashblade_management_access_policy_directory_service_role_membership` (association
+composite role ↔ management_access_policy), suivant le pattern `_member` déjà établi
+dans le provider.
 
-**Numbering:** `CATEGORY-NN`. DSM = Directory Service Management, DOC = Documentation,
-QA = Quality. Numbering restart per milestone.
+**Numbering:** `CATEGORY-NN`. DSR = Directory Service Role, DSRM = Directory Service
+Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milestone.
 
 ---
 
-## Active (v2.22.1)
+## Active (v2.22.2)
 
-### Directory Service Management (DSM)
+### Directory Service Role (DSR)
 
-- [x] **DSM-01** — User can configure the LDAP `management` directory service
-  (`uris`, `base_dn`, `bind_user`) via a `flashblade_directory_service_management`
-  resource backed by `PATCH /directory-services?names=management`.
-- [x] **DSM-02** — User can provide a sensitive, write-only `bind_password` that
-  is never returned by the API nor surfaced in plan/state diffs.
-- [x] **DSM-03** — User can reference a `ca_certificate` and/or
-  `ca_certificate_group` by name (`NamedReference` pattern) for LDAPS TLS
-  validation, and clear either reference by omitting the attribute.
-- [x] **DSM-04** — User can set management-specific LDAP attributes:
-  `user_login_attribute`, `user_object_class`, `ssh_public_key_attribute`
-  (nested under the `management` object in the PATCH body).
-- [x] **DSM-05** — User can enable or disable the management directory service
-  via the `enabled` boolean.
-- [x] **DSM-06** — User can import an existing configuration by name (always
-  `"management"`) with `terraform import`. Import initialises timeouts to null
-  and leaves `bind_password` empty (write-once).
-- [x] **DSM-07** — Terraform detects drift on every mutable/computed field
-  (`enabled`, `uris`, `base_dn`, `bind_user`, `ca_certificate.name`,
-  `ca_certificate_group.name`, `user_login_attribute`, `user_object_class`,
-  `ssh_public_key_attribute`, `services`) and logs via `tflog.Debug` with the
-  standard `{resource, field, was, now}` shape.
-- [x] **DSM-08** — User can read the current management configuration through
-  a `flashblade_directory_service_management` data source (computed-only
-  schema, no `bind_password`).
+- [ ] **DSR-01** — User can create a directory service role via a
+  `flashblade_directory_service_role` resource, specifying `group` (CN of the LDAP
+  group), `group_base` (DN search base), and `role` (NamedReference to a built-in
+  FlashBlade role: `array_admin`, `storage_admin`, `ops_admin`, `readonly`). Backed
+  by `POST /directory-services/roles`.
+- [ ] **DSR-02** — User can update `group` and `group_base` via PATCH without
+  replacing the resource. Changing `role` triggers `RequiresReplace` (role is
+  immutable on the FB side — validated via the API contract).
+- [ ] **DSR-03** — User can destroy a role cleanly via
+  `DELETE /directory-services/roles?names=<name>`. No soft-delete dance required.
+- [ ] **DSR-04** — User can import an existing role by name with
+  `terraform import flashblade_directory_service_role.<alias> <role_name>`. Import
+  initialises timeouts to null.
+- [ ] **DSR-05** — Terraform detects drift on every mutable/computed field
+  (`group`, `group_base`, `role.name`, `management_access_policies` list) and
+  logs via `tflog.Debug` with the standard `{resource, field, was, now}` shape.
+  `management_access_policies` is a computed-only list of policy references
+  (populated by the API — membership resources manage the actual associations).
+- [ ] **DSR-06** — User can read an existing role through a
+  `flashblade_directory_service_role` data source (computed-only schema keyed
+  by required `name` attribute).
+
+### Directory Service Role Membership (DSRM)
+
+- [ ] **DSRM-01** — User can associate a management access policy with a
+  directory service role via a
+  `flashblade_management_access_policy_directory_service_role_membership` resource.
+  Required attributes: `policy` (NamedReference to the management access policy)
+  and `role` (NamedReference to the directory service role). Backed by
+  `POST /management-access-policies/directory-services/roles`.
+- [ ] **DSRM-02** — Destroying the membership calls
+  `DELETE /management-access-policies/directory-services/roles` with both
+  `policy_names` and `role_names` query params — association is removed but
+  neither the policy nor the role is deleted.
+- [ ] **DSRM-03** — User can import an existing membership with composite ID
+  `<policy_name>:<role_name>`, matching the pattern used by
+  `qos_policy_member_resource.go`, `tls_policy_member_resource.go`, and
+  `certificate_group_member_resource.go`.
+- [ ] **DSRM-04** — Both `policy` and `role` trigger `RequiresReplace` on
+  change (memberships are immutable — you create a new pair, not rename an
+  existing one).
+- [ ] **DSRM-05** — Read verifies the membership still exists via
+  `GET /management-access-policies/directory-services/roles?policy_names=<p>&role_names=<r>`.
+  If the list is empty (association removed outside Terraform), call
+  `resp.State.RemoveResource(ctx)`.
 
 ### Documentation (DOC)
 
-- [x] **DOC-01** — Working HCL example at
-  `examples/resources/flashblade_directory_service_management/resource.tf` plus
-  `import.sh` with the canonical `terraform import … management` command.
-- [x] **DOC-02** — Working data source example at
-  `examples/data-sources/flashblade_directory_service_management/data-source.tf`.
-- [x] **DOC-03** — `make docs` regenerates
-  `docs/resources/directory_service_management.md` and the matching data
-  source doc without manual edits.
+- [ ] **DOC-01** — Working HCL examples at
+  `examples/resources/flashblade_directory_service_role/resource.tf` plus
+  `import.sh` with a canonical import command, and
+  `examples/data-sources/flashblade_directory_service_role/data-source.tf`.
+- [ ] **DOC-02** — Working HCL example at
+  `examples/resources/flashblade_management_access_policy_directory_service_role_membership/resource.tf`
+  plus `import.sh` using the composite ID format
+  `<policy_name>:<role_name>`.
+- [ ] **DOC-03** — `make docs` regenerates
+  `docs/resources/directory_service_role.md`,
+  `docs/data-sources/directory_service_role.md`, and
+  `docs/resources/management_access_policy_directory_service_role_membership.md`
+  without manual edits.
 
 ### Quality (QA)
 
-- [x] **QA-01** — ≥4 client unit tests named `TestUnit_DirectoryServiceManagement_*`
-  covering `GET` (found + not-found) and `PATCH` (at least one field variant +
-  one reference variant).
-- [x] **QA-02** — ≥3 resource unit tests: `Lifecycle`, `Import`,
-  `DriftDetection` with `TestUnit_DirectoryServiceManagementResource_*` naming.
-- [x] **QA-03** — ≥1 data source unit test: `TestUnit_DirectoryServiceManagementDataSource_Basic`.
-- [x] **QA-04** — `make test` passes with total count ≥ 787 (baseline 779 + 8 new).
-- [x] **QA-05** — `make lint` clean (0 issues). Resource declares all four
-  interface assertions (`Resource`, `WithConfigure`, `WithImportState`,
-  `WithUpgradeState`) and an empty `UpgradeState` map at schema version 0.
-- [x] **QA-06** — `ROADMAP.md` updated in the same commit as the implementation:
-  entry moved from "Not Implemented → High Priority" to "Implemented → Array
-  Administration", header counters refreshed, `Last updated` date bumped.
+- [ ] **QA-01** — ≥4 client unit tests named `TestUnit_DirectoryServiceRole_*`
+  covering `GET` (found + not-found), `POST`, `PATCH` (group/group_base), and
+  `DELETE` on the standalone role.
+- [ ] **QA-02** — ≥3 client unit tests named
+  `TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_*` covering
+  `GET` (exists + not-exists), `POST`, and `DELETE`.
+- [ ] **QA-03** — ≥3 resource unit tests for the role:
+  `TestUnit_DirectoryServiceRoleResource_Lifecycle`, `_Import`, `_DriftDetection`.
+- [ ] **QA-04** — ≥3 resource unit tests for the membership:
+  `TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembershipResource_Lifecycle`,
+  `_Import`, `_MissingAssociation` (the last validates the RemoveResource path
+  from DSRM-05).
+- [ ] **QA-05** — ≥1 data source unit test:
+  `TestUnit_DirectoryServiceRoleDataSource_Basic`.
+- [ ] **QA-06** — `make test` passes with total count ≥ 812 (baseline 798 from
+  v2.22.1 + 14 new: 4+3 client + 3+3 resource + 1 data source).
+- [ ] **QA-07** — `make lint` clean (0 issues). Both resources declare the
+  four standard interface assertions (`Resource`, `WithConfigure`,
+  `WithImportState`, `WithUpgradeState`) with empty `UpgradeState` map at
+  schema version 0.
+- [ ] **QA-08** — `ROADMAP.md` (root-level API coverage) updated in the same
+  commit as the implementation: entries moved from "Not Implemented" to
+  "Implemented → Array Administration", header counters refreshed,
+  `Last updated` date bumped to the shipping date.
 
 ---
 
 ## Future Requirements (deferred)
 
-- Directory Service NFS variant (`flashblade_directory_service_nfs`) — same
-  endpoint, different nested object (`nis_domains`, `nis_servers`).
-- Directory Service roles / role mappings (`/directory-services/roles`) —
-  maps LDAP groups to FlashBlade roles.
+- `/directory-services/test` ephemeral resource — dry-run LDAP bind validation
+  for CI pipelines (pre-apply check). Different resource shape (ephemeral),
+  better handled in its own milestone.
+- Role scope/locality attributes — if the API later exposes multi-array role
+  propagation fields, revisit.
+- Bulk role import (HCL `for_each` from LDAP group list) — usability helper,
+  not a provider requirement.
+
+## Out of Scope (v2.22.2)
+
 - Active Directory accounts (`/active-directory`) — separate endpoint family
-  for Kerberos AD joins used by NFS/SMB.
-
-## Out of Scope (v2.22.1)
-
-- `flashblade_directory_service_smb` — the `smb` sub-object is DEPRECATED in
-  the v2.22 API, tracked only for completeness; no Terraform surface.
-- Directory service `test` endpoint (`/directory-services/test`) — ephemeral
-  validation action, not stateful, better suited as a future CLI helper than a
-  Terraform resource.
-- Multi-service singleton (`flashblade_directory_service` with `name` selector)
-  — rejected in favour of one resource per service to keep attribute sets
-  disjoint.
+  (Kerberos AD joins for NFS/SMB), unrelated to RBAC role mappings.
+- NFS directory service variant — separate milestone.
+- Management access policy resource itself (`/management-access-policies`) —
+  built-in policies ship with FlashBlade (`pure:policy/array_admin`, etc.)
+  and cannot be created or modified by customers; a read-only data source
+  could be useful but is not in this milestone's scope.
 
 ---
 
 ## Traceability
 
-| REQ-ID | Phase | Status |
-|--------|-------|--------|
-| DSM-01 | Phase 49 | Complete |
-| DSM-02 | Phase 49 | Complete |
-| DSM-03 | Phase 49 | Complete |
-| DSM-04 | Phase 49 | Complete |
-| DSM-05 | Phase 49 | Complete |
-| DSM-06 | Phase 49 | Complete |
-| DSM-07 | Phase 49 | Complete |
-| DSM-08 | Phase 49 | Complete |
-| DOC-01 | Phase 49 | Complete |
-| DOC-02 | Phase 49 | Complete |
-| DOC-03 | Phase 49 | Complete |
-| QA-01  | Phase 49 | Complete |
-| QA-02  | Phase 49 | Complete |
-| QA-03  | Phase 49 | Complete |
-| QA-04  | Phase 49 | Complete |
-| QA-05  | Phase 49 | Complete |
-| QA-06  | Phase 49 | Complete |
+| REQ-ID  | Phase | Status |
+|---------|-------|--------|
+| DSR-01  | TBD   | Pending |
+| DSR-02  | TBD   | Pending |
+| DSR-03  | TBD   | Pending |
+| DSR-04  | TBD   | Pending |
+| DSR-05  | TBD   | Pending |
+| DSR-06  | TBD   | Pending |
+| DSRM-01 | TBD   | Pending |
+| DSRM-02 | TBD   | Pending |
+| DSRM-03 | TBD   | Pending |
+| DSRM-04 | TBD   | Pending |
+| DSRM-05 | TBD   | Pending |
+| DOC-01  | TBD   | Pending |
+| DOC-02  | TBD   | Pending |
+| DOC-03  | TBD   | Pending |
+| QA-01   | TBD   | Pending |
+| QA-02   | TBD   | Pending |
+| QA-03   | TBD   | Pending |
+| QA-04   | TBD   | Pending |
+| QA-05   | TBD   | Pending |
+| QA-06   | TBD   | Pending |
+| QA-07   | TBD   | Pending |
+| QA-08   | TBD   | Pending |
 
 *Filled by gsd-roadmapper.*
