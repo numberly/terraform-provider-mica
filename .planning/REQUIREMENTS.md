@@ -34,7 +34,7 @@ QA = Quality. Numbering restart per milestone.
   `ca_certificate_group.name`, `user_login_attribute`, `user_object_class`,
   `ssh_public_key_attribute`, `services`) and logs via `tflog.Debug` with the
   standard `{resource, field, was, now}` shape.
-- [ ] **DSM-08** — User can read the current management configuration through
+- [x] **DSM-08** — User can read the current management configuration through
   a `flashblade_directory_service_management` data source (computed-only
   schema, no `bind_password`).
 
@@ -58,7 +58,7 @@ QA = Quality. Numbering restart per milestone.
   `DriftDetection` with `TestUnit_DirectoryServiceManagementResource_*` naming.
 - [x] **QA-03** — ≥1 data source unit test: `TestUnit_DirectoryServiceManagementDataSource_Basic`.
 - [ ] **QA-04** — `make test` passes with total count ≥ 787 (baseline 779 + 8 new).
-- [ ] **QA-05** — `make lint` clean (0 issues). Resource declares all four
+- [x] **QA-05** — `make lint` clean (0 issues). Resource declares all four
   interface assertions (`Resource`, `WithConfigure`, `WithImportState`,
   `WithUpgradeState`) and an empty `UpgradeState` map at schema version 0.
 - [ ] **QA-06** — `ROADMAP.md` updated in the same commit as the implementation:
@@ -100,7 +100,7 @@ QA = Quality. Numbering restart per milestone.
 | DSM-05 | Phase 49 | Complete |
 | DSM-06 | Phase 49 | Pending |
 | DSM-07 | Phase 49 | Pending |
-| DSM-08 | Phase 49 | Pending |
+| DSM-08 | Phase 49 | Complete |
 | DOC-01 | Phase 49 | Pending |
 | DOC-02 | Phase 49 | Pending |
 | DOC-03 | Phase 49 | Pending |
@@ -108,7 +108,7 @@ QA = Quality. Numbering restart per milestone.
 | QA-02  | Phase 49 | Complete |
 | QA-03  | Phase 49 | Complete |
 | QA-04  | Phase 49 | Pending |
-| QA-05  | Phase 49 | Pending |
+| QA-05  | Phase 49 | Complete |
 | QA-06  | Phase 49 | Pending |
 
 *Filled by gsd-roadmapper.*

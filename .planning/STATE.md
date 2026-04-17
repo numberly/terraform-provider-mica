@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.22.1
 milestone_name: Directory Service – Array Management
 status: executing
-stopped_at: Completed 49-directory-service-management-49-01-PLAN.md
-last_updated: "2026-04-17T07:59:39.581Z"
+stopped_at: Completed 49-directory-service-management-49-04-PLAN.md
+last_updated: "2026-04-17T08:04:35.380Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-17)
 ## Current Position
 
 Phase: 49 (directory-service-management) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-17
 
@@ -52,6 +52,7 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 49-directory-service-management]: PATCH **NamedReference: outer non-nil + inner nil = set to null (clear), both non-nil = set value
 - [Phase 49-directory-service-management]: No DirectoryServicePost struct: /directory-services endpoint supports only GET + PATCH
 - [Phase 49-directory-service-management]: DirectoryServicePatch uses **NamedReference for ca_certificate and ca_certificate_group (outer nil=omit, outer+nil inner=null, outer+non-nil inner=set)
+- [Phase 49-directory-service-management]: DSM data source: namedRefAttrTypes/namedRefObjectValue helpers in data source file, 2 interface assertions, no name/bind_password per D-06
 
 ### Pending Todos
 
@@ -63,6 +64,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T07:59:39.576Z
-Stopped at: Completed 49-directory-service-management-49-01-PLAN.md
+Last session: 2026-04-17T08:04:35.375Z
+Stopped at: Completed 49-directory-service-management-49-04-PLAN.md
 Resume file: None
