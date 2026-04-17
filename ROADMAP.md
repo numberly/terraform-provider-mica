@@ -3,8 +3,8 @@
 FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-flashblade.
 
 **Last updated:** 2026-04-17
-**Provider version:** v2.22.1
-**Total API sections:** 84 | **Covered:** ~42 | **Coverage of IaC-relevant CRUD:** ~73%
+**Provider version:** v2.22.2
+**Total API sections:** 84 | **Covered:** ~44 | **Coverage of IaC-relevant CRUD:** ~75%
 
 ## Coverage Legend
 
@@ -97,6 +97,8 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | SMTP | `flashblade_array_smtp` | Yes | Done | Singleton |
 | Syslog Servers | `flashblade_syslog_server` | Yes | Done | Full CRUD |
 | Directory Services (Management) | `flashblade_directory_service_management` | Yes | Done | Singleton; LDAP admin auth; write-only bind_password |
+| Directory Services (Roles) | `flashblade_directory_service_role` | Yes | Done | LDAP group → management access policy mapping; server-generated name; v2.22.2 |
+| Management Access Policy DS Role Membership | `flashblade_management_access_policy_directory_service_role_membership` | No | Done | Additive policy-to-role association; composite ID role_name/policy_name; v2.22.2 |
 
 ### Audit
 

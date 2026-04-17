@@ -52,7 +52,7 @@ func TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_Get_Exists(t 
 		}
 		assertDSRMQueryParams(t, r)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(dsrmListResponse(seed))
+		_, _ = w.Write(dsrmListResponse(seed))
 	})
 	srv := newDSRMServer(t, handler)
 	c := newTestClient(t, srv)
@@ -73,7 +73,7 @@ func TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_Get_NotExists
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// empty list + 200 matches real API behavior
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(dsrmListResponse())
+		_, _ = w.Write(dsrmListResponse())
 	})
 	srv := newDSRMServer(t, handler)
 	c := newTestClient(t, srv)
@@ -98,7 +98,7 @@ func TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembership_Post(t *testi
 			Role:   client.NamedReference{Name: "admin-role", ID: "dsr-1"},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(dsrmListResponse(resp))
+		_, _ = w.Write(dsrmListResponse(resp))
 	})
 	srv := newDSRMServer(t, handler)
 	c := newTestClient(t, srv)

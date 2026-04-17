@@ -49,7 +49,7 @@ func TestUnit_DirectoryServiceRole_Get_Found(t *testing.T) {
 			t.Errorf("expected names=admin-role, got %q", got)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(dsrListResponse(seed))
+		_, _ = w.Write(dsrListResponse(seed))
 	})
 	srv := newDSRServer(t, handler)
 	c := newTestClient(t, srv)
@@ -76,7 +76,7 @@ func TestUnit_DirectoryServiceRole_Get_NotFound(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		// empty list + 200 matches real API behavior
-		w.Write(dsrListResponse())
+		_, _ = w.Write(dsrListResponse())
 	})
 	srv := newDSRServer(t, handler)
 	c := newTestClient(t, srv)
@@ -129,7 +129,7 @@ func TestUnit_DirectoryServiceRole_Post(t *testing.T) {
 			},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(dsrListResponse(resp))
+		_, _ = w.Write(dsrListResponse(resp))
 	})
 	srv := newDSRServer(t, handler)
 	c := newTestClient(t, srv)
@@ -175,7 +175,7 @@ func TestUnit_DirectoryServiceRole_Patch_Group(t *testing.T) {
 			GroupBase: "ou=corp",
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(dsrListResponse(resp))
+		_, _ = w.Write(dsrListResponse(resp))
 	})
 	srv := newDSRServer(t, handler)
 	c := newTestClient(t, srv)
