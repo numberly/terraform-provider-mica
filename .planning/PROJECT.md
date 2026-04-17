@@ -37,12 +37,12 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ Code review fixes, S3 users + user-policy associations, full_access fix — v2.1.3
 - ✓ S3 Target replication, certificates, TLS policies, array connections — v2.2
 - ✓ API tooling pipeline (swagger parser, diff, upgrade) — tools-v1.0
+- ✓ Directory Service Management resource + data source (LDAP admin auth, singleton PATCH-only) — v2.22.1
+- ✓ 798 unit tests, LDAPURIValidator, `**NamedReference` Patch pattern validated — v2.22.1
 
 ### Active
 
-- [ ] Directory Service Management resource — LDAP admin auth configuration (DSM-01)
-- [ ] Directory Service Management data source — read current config (DSM-02)
-- [ ] HCL examples + import.sh (DOC-01)
+_No active requirements. Milestone v2.22.1 complete — ready for next milestone._
 
 ### Out of Scope
 
@@ -102,4 +102,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 after starting milestone v2.22.1 (Directory Service – Array Management)*
+*Last updated: 2026-04-17 after completing Phase 49 — milestone v2.22.1 (Directory Service – Array Management) shipped*
