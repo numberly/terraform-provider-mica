@@ -1,0 +1,1 @@
+terraform import flashblade_directory_service_management.example management
