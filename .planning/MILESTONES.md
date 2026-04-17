@@ -163,3 +163,20 @@
 
 **Phases:** 43–48 (9 plans)
 **Last phase number:** 48
+
+### v2.22.1 — Directory Service – Array Management (completed 2026-04-17)
+
+**Goal:** Manage the FlashBlade array management LDAP directory service through Terraform — URIs, bind credentials, CA certificate group, and user-attribute configuration.
+
+**Delivered:**
+- `flashblade_directory_service_management` resource (singleton; drift detection on 10 fields; Delete = full-reset PATCH; import by literal `management`; `bind_password` Sensitive write-only)
+- `flashblade_directory_service_management` data source (computed-only, nested `ca_certificate` / `ca_certificate_group` objects, no `bind_password`)
+- Reusable `LDAPURIValidator()` list validator (rejects non-`ldap://`/`ldaps://` URIs)
+- Mock handler with GET+PATCH-only contract and `**NamedReference` clear/set support
+- HCL examples (`resource.tf`, `import.sh`, `data-source.tf`), auto-generated docs, ROADMAP + CONVENTIONS updated
+- Test baseline 787 → 798 (+11), 0 lint issues
+
+**Phases:** 49 (5 plans)
+**Last phase number:** 49
+
+**Archives:** [milestones/v2.22.1-ROADMAP.md](milestones/v2.22.1-ROADMAP.md) · [v2.22.1-REQUIREMENTS.md](milestones/v2.22.1-REQUIREMENTS.md) · [v2.22.1-MILESTONE-AUDIT.md](milestones/v2.22.1-MILESTONE-AUDIT.md)

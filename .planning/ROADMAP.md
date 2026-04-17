@@ -13,7 +13,7 @@
 - v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- shipped 2026-04-02
 - v2.2 S3 Target Replication & TLS (Phases 36-42) -- shipped 2026-04-14
 - tools-v1.0 API Tooling Pipeline (Phases 43-48) -- shipped 2026-04-14
-- v2.22.1 Directory Service – Array Management (Phases 49-49) -- shipped 2026-04-17
+- ✅ v2.22.1 Directory Service – Array Management (Phases 49-49) -- shipped 2026-04-17 — [archive](milestones/v2.22.1-ROADMAP.md)
 - v2.22.2 Directory Service Roles & Role Mappings (Phases 50-50) -- active
 
 ## Phases
@@ -753,43 +753,13 @@ Plans:
 
 ---
 
-## v2.22.1 Directory Service – Array Management (Phases 49-49) — ACTIVE
+<details>
+<summary>✅ v2.22.1 Directory Service – Array Management (Phase 49) — SHIPPED 2026-04-17</summary>
 
-### Phases
+Full details archived at [milestones/v2.22.1-ROADMAP.md](milestones/v2.22.1-ROADMAP.md).
 
-- [x] **Phase 49: Directory Service Management** — Implement `flashblade_directory_service_management` resource + data source, client CRUD, mock handler, tests (≥787), HCL examples, and generated docs. (completed 2026-04-17)
-
----
-
-## Phase Details
-
-### Phase 49: Directory Service Management
-**Goal**: Users can manage the FlashBlade LDAP management directory service through Terraform — configure URIs, bind credentials, CA certificates, and management-specific LDAP attributes — with full drift detection, import support, and a read-only data source.
-**Depends on**: Phase 48 (tools-v1.0 complete)
-**Requirements**: DSM-01, DSM-02, DSM-03, DSM-04, DSM-05, DSM-06, DSM-07, DSM-08, DOC-01, DOC-02, DOC-03, QA-01, QA-02, QA-03, QA-04, QA-05, QA-06
-**Success Criteria** (what must be TRUE):
-  1. Applying the example HCL converges: `terraform apply` succeeds and a second `terraform plan` shows "No changes."
-  2. `terraform import flashblade_directory_service_management.example management` succeeds; `bind_password` does not appear in plan output or state diffs.
-  3. Changing `enabled`, `base_dn`, or `uris` in HCL and re-applying converges; Read logs `tflog.Debug` entries with `{resource, field, was, now}` for every changed field.
-  4. `make test` reports ≥ 787 tests, all passing.
-  5. `make lint` exits clean (0 issues).
-**Plans:** 5/5 plans complete
-
-Plans:
-- [x] 49-01-PLAN.md — Client layer: DirectoryService + DirectoryServicePatch model structs, Get/Patch client methods, ≥4 TestUnit_DirectoryServiceManagement_* unit tests
-- [x] 49-02-PLAN.md — Mock handler: /api/2.22/directory-services GET+PATCH store with Seed, empty-list-on-miss, **NamedReference clear/set support
-- [x] 49-03-PLAN.md — LDAPURIValidator + flashblade_directory_service_management resource (4 interface assertions, SchemaVersion 0, Create/Read/Update/Delete-as-reset-PATCH, drift on 10 fields, ImportState) + 3 TestUnit_* resource tests
-- [x] 49-04-PLAN.md — flashblade_directory_service_management data source (computed-only, nested ca_certificate/ca_certificate_group objects, no bind_password) + TestUnit_DirectoryServiceManagementDataSource_Basic
-- [x] 49-05-PLAN.md — Provider registration + examples (resource.tf, import.sh, data-source.tf) + make docs + ROADMAP.md/CONVENTIONS.md updates + make test (≥787) + make lint (clean)
-
----
-
-## Progress
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 49. Directory Service Management | 5/5 | Complete    | 2026-04-17 |
-
+- [x] Phase 49: Directory Service Management (5/5 plans) — completed 2026-04-17
+</details>
 
 ---
 

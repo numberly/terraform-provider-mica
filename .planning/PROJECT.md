@@ -19,7 +19,7 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - Suit le pattern des 5 ressources `_member` existantes (qos_policy_member, tls_policy_member, certificate_group_member, audit_object_store_policy_member, object_store_user_policy)
 - Examples HCL + import.sh + `make docs` régénéré
 
-**Last shipped:** v2.22.1 — Directory Service Management (2026-04-17, 798 tests, 0 lint issues)
+**Last shipped:** v2.22.1 — Directory Service Management (2026-04-17, 798 tests, 0 lint issues) — [archive](milestones/v2.22.1-ROADMAP.md)
 
 ## Requirements
 

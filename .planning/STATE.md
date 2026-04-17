@@ -1,17 +1,18 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.22.1
-milestone_name: Directory Service – Array Management
-status: verifying
-stopped_at: Completed 50-directory-service-roles-role-mappings-50-05-PLAN.md
-last_updated: "2026-04-17T09:52:06.767Z"
+milestone: v2.22.2
+milestone_name: Directory Service Roles & Role Mappings
+status: active
+stopped_at: v2.22.1 archived; v2.22.2 (Phase 50) complete and ready for audit
+last_updated: "2026-04-17T12:15:00Z"
 last_activity: 2026-04-17
+last_shipped_milestone: v2.22.1
 progress:
   total_phases: 1
   completed_phases: 1
   total_plans: 5
   completed_plans: 5
-  percent: 0
+  percent: 100
 ---
 
 # Project State
