@@ -13,18 +13,18 @@ QA = Quality. Numbering restart per milestone.
 
 ### Directory Service Management (DSM)
 
-- [ ] **DSM-01** — User can configure the LDAP `management` directory service
+- [x] **DSM-01** — User can configure the LDAP `management` directory service
   (`uris`, `base_dn`, `bind_user`) via a `flashblade_directory_service_management`
   resource backed by `PATCH /directory-services?names=management`.
-- [ ] **DSM-02** — User can provide a sensitive, write-only `bind_password` that
+- [x] **DSM-02** — User can provide a sensitive, write-only `bind_password` that
   is never returned by the API nor surfaced in plan/state diffs.
-- [ ] **DSM-03** — User can reference a `ca_certificate` and/or
+- [x] **DSM-03** — User can reference a `ca_certificate` and/or
   `ca_certificate_group` by name (`NamedReference` pattern) for LDAPS TLS
   validation, and clear either reference by omitting the attribute.
-- [ ] **DSM-04** — User can set management-specific LDAP attributes:
+- [x] **DSM-04** — User can set management-specific LDAP attributes:
   `user_login_attribute`, `user_object_class`, `ssh_public_key_attribute`
   (nested under the `management` object in the PATCH body).
-- [ ] **DSM-05** — User can enable or disable the management directory service
+- [x] **DSM-05** — User can enable or disable the management directory service
   via the `enabled` boolean.
 - [ ] **DSM-06** — User can import an existing configuration by name (always
   `"management"`) with `terraform import`. Import initialises timeouts to null
@@ -93,11 +93,11 @@ QA = Quality. Numbering restart per milestone.
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| DSM-01 | Phase 49 | Pending |
-| DSM-02 | Phase 49 | Pending |
-| DSM-03 | Phase 49 | Pending |
-| DSM-04 | Phase 49 | Pending |
-| DSM-05 | Phase 49 | Pending |
+| DSM-01 | Phase 49 | Complete |
+| DSM-02 | Phase 49 | Complete |
+| DSM-03 | Phase 49 | Complete |
+| DSM-04 | Phase 49 | Complete |
+| DSM-05 | Phase 49 | Complete |
 | DSM-06 | Phase 49 | Pending |
 | DSM-07 | Phase 49 | Pending |
 | DSM-08 | Phase 49 | Pending |
