@@ -801,7 +801,7 @@ Plans:
 
 ---
 
-## Phase Details (v2.22.2)
+## Phase Details
 
 ### Phase 50: Directory Service Roles & Role Mappings
 **Goal**: Users can map LDAP groups to FlashBlade roles through Terraform and attach those roles to management access policies — full CRUD on both resources, composite ID import for the membership, and drift detection on all mutable fields.
