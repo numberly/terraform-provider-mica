@@ -315,6 +315,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewArraySmtpResource,
 		NewSyslogServerResource,
 		NewDirectoryServiceManagementResource,
+		NewManagementAccessPolicyDirectoryServiceRoleMembershipResource,
 
 		// Audit
 		NewAuditObjectStorePolicyResource,
