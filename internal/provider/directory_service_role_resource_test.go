@@ -76,10 +76,11 @@ func nullDirectoryServiceRoleConfig() map[string]tftypes.Value {
 	}
 }
 
-func directoryServiceRolePlanWith(t *testing.T, group, groupBase string, policies []string) tfsdk.Plan {
+func directoryServiceRolePlanWith(t *testing.T, name, group, groupBase string, policies []string) tfsdk.Plan {
 	t.Helper()
 	s := directoryServiceRoleResourceSchema(t).Schema
 	cfg := nullDirectoryServiceRoleConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["group"] = tftypes.NewValue(tftypes.String, group)
 	cfg["group_base"] = tftypes.NewValue(tftypes.String, groupBase)
 
@@ -103,8 +104,8 @@ func TestUnit_DirectoryServiceRoleResource_Lifecycle(t *testing.T) {
 	r := newTestDirectoryServiceRoleResource(t, ms)
 	s := directoryServiceRoleResourceSchema(t).Schema
 
-	// Create
-	plan := directoryServiceRolePlanWith(t, "cn=admins,ou=groups,dc=corp", "ou=groups,dc=corp", []string{"pure:policy/array_admin"})
+	// Create — name is user-supplied per v1 schema (D-04/D-08).
+	plan := directoryServiceRolePlanWith(t, "infra-admins", "cn=admins,ou=groups,dc=corp", "ou=groups,dc=corp", []string{"pure:policy/array_admin"})
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildDirectoryServiceRoleType(), nil), Schema: s},
 	}
@@ -120,9 +121,9 @@ func TestUnit_DirectoryServiceRoleResource_Lifecycle(t *testing.T) {
 	if afterCreate.ID.IsNull() || afterCreate.ID.ValueString() == "" {
 		t.Error("expected non-empty id after Create")
 	}
-	// Mock derives name from policy: "pure:policy/array_admin" → "array_admin"
-	if afterCreate.Name.ValueString() != "array_admin" {
-		t.Errorf("expected name=array_admin, got %q", afterCreate.Name.ValueString())
+	// Name is user-supplied via plan (POST /directory-services/roles?names=infra-admins).
+	if afterCreate.Name.ValueString() != "infra-admins" {
+		t.Errorf("expected name=infra-admins, got %q", afterCreate.Name.ValueString())
 	}
 	if afterCreate.Group.ValueString() != "cn=admins,ou=groups,dc=corp" {
 		t.Errorf("expected group=cn=admins, got %q", afterCreate.Group.ValueString())
@@ -146,8 +147,8 @@ func TestUnit_DirectoryServiceRoleResource_Lifecycle(t *testing.T) {
 		t.Errorf("group drift on Read: create=%q read=%q", afterCreate.Group.ValueString(), afterRead.Group.ValueString())
 	}
 
-	// Update (change group)
-	updatePlan := directoryServiceRolePlanWith(t, "cn=new-admins,ou=groups,dc=corp", "ou=groups,dc=corp", []string{"pure:policy/array_admin"})
+	// Update (change group) — name unchanged (immutable, RequiresReplace).
+	updatePlan := directoryServiceRolePlanWith(t, "infra-admins", "cn=new-admins,ou=groups,dc=corp", "ou=groups,dc=corp", []string{"pure:policy/array_admin"})
 	updateResp := &resource.UpdateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildDirectoryServiceRoleType(), nil), Schema: s},
 	}
@@ -175,7 +176,7 @@ func TestUnit_DirectoryServiceRoleResource_Lifecycle(t *testing.T) {
 	}
 
 	// Confirm deletion
-	_, err := r.client.GetDirectoryServiceRole(context.Background(), "array_admin")
+	_, err := r.client.GetDirectoryServiceRole(context.Background(), "infra-admins")
 	if err == nil || !client.IsNotFound(err) {
 		t.Errorf("expected role to be deleted, got: %v", err)
 	}
@@ -250,7 +251,7 @@ func TestUnit_DirectoryServiceRoleResource_DriftDetection(t *testing.T) {
 	s := directoryServiceRoleResourceSchema(t).Schema
 
 	// Build initial state matching seed.
-	plan := directoryServiceRolePlanWith(t, "cn=original,ou=groups,dc=corp", "ou=groups,dc=corp", []string{"pure:policy/array_admin"})
+	plan := directoryServiceRolePlanWith(t, "array_admin", "cn=original,ou=groups,dc=corp", "ou=groups,dc=corp", []string{"pure:policy/array_admin"})
 	createResp := &resource.CreateResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(buildDirectoryServiceRoleType(), nil), Schema: s},
 	}
@@ -295,5 +296,106 @@ func TestUnit_DirectoryServiceRoleResource_DriftDetection(t *testing.T) {
 	}
 	if afterDrift.Group.ValueString() != "cn=mutated,ou=groups,dc=corp" {
 		t.Errorf("expected state to reflect drifted group=cn=mutated, got %q", afterDrift.Group.ValueString())
+	}
+}
+
+// TestUnit_DirectoryServiceRoleResource_StateUpgrade_V0toV1 verifies that a v0 state
+// (name was Computed, populated server-side) is correctly carried forward verbatim
+// into the v1 schema where name is Required.
+func TestUnit_DirectoryServiceRoleResource_StateUpgrade_V0toV1(t *testing.T) {
+	r := &directoryServiceRoleResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0->v1 upgrader at key 0")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema to be set for v0->v1 upgrader")
+	}
+
+	// Build a v0 state tftypes value using the same shape as the PriorSchema.
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	roleType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"name": tftypes.String,
+	}}
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                         tftypes.String,
+		"name":                       tftypes.String,
+		"group":                      tftypes.String,
+		"group_base":                 tftypes.String,
+		"management_access_policies": tftypes.List{ElementType: tftypes.String},
+		"role":                       roleType,
+		"timeouts":                   timeoutsType,
+	}}
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":         tftypes.NewValue(tftypes.String, "dsr-1"),
+		"name":       tftypes.NewValue(tftypes.String, "legacy-role"),
+		"group":      tftypes.NewValue(tftypes.String, "cn=admins,ou=groups,dc=corp"),
+		"group_base": tftypes.NewValue(tftypes.String, "ou=groups,dc=corp"),
+		"management_access_policies": tftypes.NewValue(
+			tftypes.List{ElementType: tftypes.String},
+			[]tftypes.Value{tftypes.NewValue(tftypes.String, "pure:policy/array_admin")},
+		),
+		"role": tftypes.NewValue(roleType, map[string]tftypes.Value{
+			"name": tftypes.NewValue(tftypes.String, "array_admin"),
+		}),
+		"timeouts": tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	req := resource.UpgradeStateRequest{State: &priorState}
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildDirectoryServiceRoleType(), nil),
+			Schema: directoryServiceRoleResourceSchema(t).Schema,
+		},
+	}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model directoryServiceRoleModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	// All fields must be carried forward verbatim.
+	if model.ID.ValueString() != "dsr-1" {
+		t.Errorf("id: want %q got %q", "dsr-1", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "legacy-role" {
+		t.Errorf("name: want %q got %q", "legacy-role", model.Name.ValueString())
+	}
+	if model.Group.ValueString() != "cn=admins,ou=groups,dc=corp" {
+		t.Errorf("group: want %q got %q", "cn=admins,ou=groups,dc=corp", model.Group.ValueString())
+	}
+	if model.GroupBase.ValueString() != "ou=groups,dc=corp" {
+		t.Errorf("group_base: want %q got %q", "ou=groups,dc=corp", model.GroupBase.ValueString())
+	}
+
+	var policies []string
+	if diags := model.ManagementAccessPolicies.ElementsAs(context.Background(), &policies, false); diags.HasError() {
+		t.Fatalf("ElementsAs policies: %s", diags)
+	}
+	if len(policies) != 1 || policies[0] != "pure:policy/array_admin" {
+		t.Errorf("management_access_policies: want [pure:policy/array_admin] got %v", policies)
+	}
+
+	// role nested object must be preserved.
+	if model.Role.IsNull() {
+		t.Error("expected role object to be preserved, got null")
 	}
 }
