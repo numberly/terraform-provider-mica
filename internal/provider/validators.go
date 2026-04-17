@@ -2,9 +2,12 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 
@@ -77,5 +80,47 @@ func (v hostnameNoDotStringValidator) ValidateString(ctx context.Context, req va
 			"Invalid Value",
 			"value must contain only alphanumeric characters, hyphens, and underscores (no dots)",
 		)
+	}
+}
+
+// ldapURIListValidator rejects any list element not starting with ldap:// or ldaps://.
+type ldapURIListValidator struct{}
+
+// LDAPURIValidator returns a list validator that ensures every string element
+// starts with "ldap://" or "ldaps://". Used on the `uris` attribute of
+// flashblade_directory_service_management.
+func LDAPURIValidator() validator.List {
+	return ldapURIListValidator{}
+}
+
+func (v ldapURIListValidator) Description(_ context.Context) string {
+	return "each element must start with ldap:// or ldaps://"
+}
+
+func (v ldapURIListValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v ldapURIListValidator) ValidateList(ctx context.Context, req validator.ListRequest, resp *validator.ListResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+	elems := req.ConfigValue.Elements()
+	for i, el := range elems {
+		sv, ok := el.(types.String)
+		if !ok {
+			continue
+		}
+		if sv.IsNull() || sv.IsUnknown() {
+			continue
+		}
+		val := sv.ValueString()
+		if !strings.HasPrefix(val, "ldap://") && !strings.HasPrefix(val, "ldaps://") {
+			resp.Diagnostics.AddAttributeError(
+				req.Path.AtListIndex(i),
+				"Invalid Value",
+				fmt.Sprintf("uris[%d] must start with ldap:// or ldaps://", i),
+			)
+		}
 	}
 }
