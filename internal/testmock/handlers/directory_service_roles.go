@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
@@ -82,16 +81,15 @@ func (s *directoryServiceRolesStore) handleGet(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/directory-services/roles.
-// No ?names= query param — server-generates the name.
-// Name derivation order:
-//  1. Strip "pure:policy/" prefix from ManagementAccessPolicies[0].Name
-//  2. Role.Name (deprecated field fallback)
-//  3. Sequential "role-<N>" fallback
-//
-// Returns 409 when the derived name collides with an existing role.
+// handlePost handles POST /api/2.22/directory-services/roles?names={name}.
+// Requires ?names= query param. Returns 409 when name already exists.
 func (s *directoryServiceRolesStore) handlePost(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{}) {
+	if !ValidateQueryParams(w, r, []string{"names"}) {
+		return
+	}
+
+	name, ok := RequireQueryParam(w, r, "names")
+	if !ok {
 		return
 	}
 
@@ -103,16 +101,6 @@ func (s *directoryServiceRolesStore) handlePost(w http.ResponseWriter, r *http.R
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	// Derive server-generated name from first policy, then role, then sequential fallback.
-	name := ""
-	if len(body.ManagementAccessPolicies) > 0 && body.ManagementAccessPolicies[0].Name != "" {
-		name = strings.TrimPrefix(body.ManagementAccessPolicies[0].Name, "pure:policy/")
-	} else if body.Role != nil && body.Role.Name != "" {
-		name = body.Role.Name
-	} else {
-		name = fmt.Sprintf("role-%d", s.nextID)
-	}
 
 	if _, exists := s.byName[name]; exists {
 		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("role %q already exists", name))
