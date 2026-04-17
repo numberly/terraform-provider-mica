@@ -4,7 +4,7 @@ milestone: v2.22.2
 milestone_name: Directory Service Roles & Role Mappings
 status: verifying
 stopped_at: Completed 50.1-03-PLAN.md
-last_updated: "2026-04-17T12:04:13.219Z"
+last_updated: "2026-04-17T12:12:07.372Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 1
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-04-17)
 
 ## Current Position
 
-Phase: 50.1 (fix-directory-service-role-post-missing-names-query-param) — EXECUTING
-Plan: 3 of 3
+Phase: 50.1
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-04-17
 
