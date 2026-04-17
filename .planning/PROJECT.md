@@ -42,10 +42,16 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ 798 unit tests, LDAPURIValidator, `**NamedReference` Patch pattern validated — v2.22.1
 - ✓ Directory Service Role resource + data source + membership composite-ID resource — v2.22.2
 - ✓ 814 unit tests, role_name/policy_name composite ID (role FIRST per policy-contains-colon constraint) — v2.22.2
+- ✓ Directory Service Role POST `?names=` bug fix + schema v1 (`name` Required + RequiresReplace) + upgrader — Phase 50.1
+- ✓ 818 unit tests, end-to-end validated against real FlashBlades (par5, pa7) — Phase 50.1
 
 ### Active
 
-_No active requirements. Milestone v2.22.2 complete — ready for next milestone._
+_No active requirements. Milestone v2.22.2 + gap-closure 50.1 complete — ready for next milestone._
+
+### Known Follow-up Defects
+
+- `flashblade_management_access_policy_directory_service_role_membership` returns `HTTP 400: Member identifier is required` on real-array apply (surfaced during 50.1 UAT 2026-04-17). Resource delivered by Phase 50; follow-up phase 50.2 candidate.
 
 ### Out of Scope
 
@@ -105,4 +111,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 after completing Phase 50 — milestone v2.22.2 (Directory Service Roles & Role Mappings) shipped*
+*Last updated: 2026-04-17 after completing Phase 50.1 — DSR POST `?names=` defect resolved, validated end-to-end on real FlashBlades (par5, pa7)*
