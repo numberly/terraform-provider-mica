@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.22.1
 milestone_name: Directory Service – Array Management
-status: active
-stopped_at: null
-last_updated: "2026-04-17T00:00:00.000Z"
-last_activity: 2026-04-17
+status: Defining plan
+stopped_at: Phase 49 context gathered
+last_updated: "2026-04-17T07:31:12.137Z"
+last_activity: 2026-04-17 — Roadmap created for milestone v2.22.1
 progress:
   total_phases: 1
   completed_phases: 0
@@ -59,6 +59,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17
-Stopped at: Phase 49 roadmap created, ready for /gsd:plan-phase 49
-Resume file: None
+Last session: 2026-04-17T07:31:12.131Z
+Stopped at: Phase 49 context gathered
+Resume file: .planning/phases/49-directory-service-management/49-CONTEXT.md
