@@ -2,9 +2,9 @@
 
 FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-flashblade.
 
-**Last updated:** 2026-04-09
-**Provider version:** v2.2
-**Total API sections:** 84 | **Covered:** ~41 | **Coverage of IaC-relevant CRUD:** ~72%
+**Last updated:** 2026-04-17
+**Provider version:** v2.22.1
+**Total API sections:** 84 | **Covered:** ~42 | **Coverage of IaC-relevant CRUD:** ~73%
 
 ## Coverage Legend
 
@@ -96,6 +96,7 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | NTP | `flashblade_array_ntp` | Yes | Done | Singleton |
 | SMTP | `flashblade_array_smtp` | Yes | Done | Singleton |
 | Syslog Servers | `flashblade_syslog_server` | Yes | Done | Full CRUD |
+| Directory Services (Management) | `flashblade_directory_service_management` | Yes | Done | Singleton; LDAP admin auth; write-only bind_password |
 
 ### Audit
 
@@ -126,7 +127,6 @@ FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provi
 | Snapshot Policy FS Members | Resource | POST, DELETE `/snapshot-policies/file-systems` | Link snapshot policies to filesystems | Candidate |
 | Object Store Roles | Resource | Full CRUD + trust policies | IAM-style roles for S3 fine-grained access | Candidate |
 | Active Directory | Resource | Full CRUD | AD integration for SMB/NFS authentication | Candidate |
-| Directory Services | Resource | GET, PATCH + roles | LDAP/NIS config for user/group resolution | Candidate |
 
 ### Medium Priority -- Admin and security
 
