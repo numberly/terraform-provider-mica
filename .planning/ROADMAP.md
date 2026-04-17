@@ -13,7 +13,8 @@
 - v2.1.3 Code Review Fixes & S3 Users (Phases 32-35) -- shipped 2026-04-02
 - v2.2 S3 Target Replication & TLS (Phases 36-42) -- shipped 2026-04-14
 - tools-v1.0 API Tooling Pipeline (Phases 43-48) -- shipped 2026-04-14
-- v2.22.1 Directory Service – Array Management (Phases 49-49) -- active
+- v2.22.1 Directory Service – Array Management (Phases 49-49) -- shipped 2026-04-17
+- v2.22.2 Directory Service Roles & Role Mappings (Phases 50-50) -- active
 
 ## Phases
 
@@ -788,3 +789,48 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 49. Directory Service Management | 5/5 | Complete    | 2026-04-17 |
+
+
+---
+
+## v2.22.2 Directory Service Roles & Role Mappings (Phases 50-50) — ACTIVE
+
+### Phases
+
+- [ ] **Phase 50: Directory Service Roles & Role Mappings** — Implement `flashblade_directory_service_role` resource + data source and `flashblade_management_access_policy_directory_service_role_membership` resource, client CRUD, mock handlers, tests (≥812), HCL examples, and generated docs.
+
+---
+
+## Phase Details (v2.22.2)
+
+### Phase 50: Directory Service Roles & Role Mappings
+**Goal**: Users can map LDAP groups to FlashBlade roles through Terraform and attach those roles to management access policies — full CRUD on both resources, composite ID import for the membership, and drift detection on all mutable fields.
+**Depends on**: Phase 49 (v2.22.1 complete — client patterns, mock infrastructure, provider registration patterns established)
+**Requirements**: DSR-01, DSR-02, DSR-03, DSR-04, DSR-05, DSR-06, DSRM-01, DSRM-02, DSRM-03, DSRM-04, DSRM-05, DOC-01, DOC-02, DOC-03, QA-01, QA-02, QA-03, QA-04, QA-05, QA-06, QA-07, QA-08
+**Success Criteria** (what must be TRUE):
+  1. `terraform apply` with HCL that creates a role + attaches two management access policies via two membership resources converges; second `terraform plan` shows "No changes."
+  2. `terraform import flashblade_directory_service_role.<alias> <name>` succeeds and subsequent plan shows 0 diff; `terraform import flashblade_management_access_policy_directory_service_role_membership.<alias> <policy_name>:<role_name>` succeeds and subsequent plan shows 0 diff.
+  3. Changing `group` or `group_base` on the role re-applies via PATCH without recreation; changing `role` forces resource replacement (`RequiresReplace`); drift on `management_access_policies` (computed list) is logged via `tflog.Debug` with `{resource, field, was, now}`.
+  4. Destroying a membership resource removes only the policy↔role association — neither the underlying policy nor the role is deleted, verified by subsequent `terraform plan` on the role showing 0 diff.
+  5. `make test` reports ≥ 812 tests, all passing; `make lint` exits clean with 0 issues.
+**Plans**: TBD
+**UI hint**: no
+
+**Canonical references:**
+- `.claude/skills/flashblade-resource-builder/SKILL.md` — full resource lifecycle checklist
+- `internal/provider/qos_policy_member_resource.go` — composite ID member pattern
+- `internal/provider/tls_policy_member_resource.go` — composite ID + NamedReference member
+- `internal/provider/certificate_group_member_resource.go` — member resource structure
+- `internal/provider/object_store_user_policy_resource.go` — user↔policy membership (closest analog to role↔policy)
+- `internal/provider/target_resource.go` — NamedReference resource pattern (for `role` attribute)
+- `internal/provider/array_dns_resource.go` — CRUD resource with named identity
+- `api_references/2.22.md` lines 432-434 (`/directory-services/roles`) and lines 720-722, 730-732 (`/management-access-policies/directory-services/roles`)
+- `CONVENTIONS.md` — mandatory conventions, test baseline 798 → 812
+
+---
+
+## Progress (v2.22.2)
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 50. Directory Service Roles & Role Mappings | 0/? | Not started | - |

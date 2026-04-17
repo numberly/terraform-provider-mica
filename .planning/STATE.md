@@ -4,10 +4,10 @@ milestone: v2.22.2
 milestone_name: Directory Service Roles & Role Mappings
 status: active
 stopped_at: null
-last_updated: "2026-04-17T09:00:00.000Z"
+last_updated: "2026-04-17T09:30:00.000Z"
 last_activity: 2026-04-17
 progress:
-  total_phases: 0
+  total_phases: 1
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,13 +25,13 @@ See: .planning/PROJECT.md (updated 2026-04-17)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 50 (defining plan)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-17 — Milestone v2.22.2 started
+Status: Roadmap created — ready for plan-phase
+Last activity: 2026-04-17 — Roadmap created for milestone v2.22.2
 
 ```
-Progress: [                    ] 0% (0/? phases)
+Progress: [                    ] 0% (0/1 phases)
 ```
 
 ## Accumulated Context
@@ -57,6 +57,13 @@ Progress: [                    ] 0% (0/? phases)
 - [Phase 49-directory-service-management]: DSM resource: Delete sends full-reset PATCH (D-02), bind_password omitted
 - [Phase 49-directory-service-management]: Import key is literal 'management' (singleton resource)
 - [Phase 49-directory-service-management]: resource.tf uses ldaps:// per enterprise expectation, bind_password via var
+- [Phase 50-roadmap]: DSR resource: full CRUD (POST/GET/PATCH/DELETE) — NOT singleton like DSM
+- [Phase 50-roadmap]: DSR resource: role attribute is NamedReference, triggers RequiresReplace on change
+- [Phase 50-roadmap]: DSR resource: management_access_policies is computed-only list (populated by API via membership associations)
+- [Phase 50-roadmap]: DSRM resource: composite ID format policy_name:role_name — follows qos_policy_member/tls_policy_member/certificate_group_member pattern
+- [Phase 50-roadmap]: DSRM resource: GET/POST/DELETE only — no PATCH, both fields trigger RequiresReplace
+- [Phase 50-roadmap]: DSRM resource: Read calls GET with policy_names= and role_names= query params; empty list → RemoveResource
+- [Phase 50-roadmap]: Test baseline: 798 (v2.22.1) → target ≥ 812 (14 new tests: 5 client + 6 resource + 1 data source + 2 margin)
 
 ### Pending Todos
 
@@ -68,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T08:17:35.708Z
-Stopped at: Completed 49-directory-service-management-49-05-PLAN.md
+Last session: 2026-04-17T09:30:00.000Z
+Stopped at: Roadmap created for milestone v2.22.2 (Phase 50 defined, plans TBD)
 Resume file: None

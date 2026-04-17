@@ -132,27 +132,27 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 
 | REQ-ID  | Phase | Status |
 |---------|-------|--------|
-| DSR-01  | TBD   | Pending |
-| DSR-02  | TBD   | Pending |
-| DSR-03  | TBD   | Pending |
-| DSR-04  | TBD   | Pending |
-| DSR-05  | TBD   | Pending |
-| DSR-06  | TBD   | Pending |
-| DSRM-01 | TBD   | Pending |
-| DSRM-02 | TBD   | Pending |
-| DSRM-03 | TBD   | Pending |
-| DSRM-04 | TBD   | Pending |
-| DSRM-05 | TBD   | Pending |
-| DOC-01  | TBD   | Pending |
-| DOC-02  | TBD   | Pending |
-| DOC-03  | TBD   | Pending |
-| QA-01   | TBD   | Pending |
-| QA-02   | TBD   | Pending |
-| QA-03   | TBD   | Pending |
-| QA-04   | TBD   | Pending |
-| QA-05   | TBD   | Pending |
-| QA-06   | TBD   | Pending |
-| QA-07   | TBD   | Pending |
-| QA-08   | TBD   | Pending |
+| DSR-01  | 50    | Pending |
+| DSR-02  | 50    | Pending |
+| DSR-03  | 50    | Pending |
+| DSR-04  | 50    | Pending |
+| DSR-05  | 50    | Pending |
+| DSR-06  | 50    | Pending |
+| DSRM-01 | 50    | Pending |
+| DSRM-02 | 50    | Pending |
+| DSRM-03 | 50    | Pending |
+| DSRM-04 | 50    | Pending |
+| DSRM-05 | 50    | Pending |
+| DOC-01  | 50    | Pending |
+| DOC-02  | 50    | Pending |
+| DOC-03  | 50    | Pending |
+| QA-01   | 50    | Pending |
+| QA-02   | 50    | Pending |
+| QA-03   | 50    | Pending |
+| QA-04   | 50    | Pending |
+| QA-05   | 50    | Pending |
+| QA-06   | 50    | Pending |
+| QA-07   | 50    | Pending |
+| QA-08   | 50    | Pending |
 
 *Filled by gsd-roadmapper.*
