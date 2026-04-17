@@ -772,7 +772,14 @@ Plans:
   3. Changing `enabled`, `base_dn`, or `uris` in HCL and re-applying converges; Read logs `tflog.Debug` entries with `{resource, field, was, now}` for every changed field.
   4. `make test` reports ≥ 787 tests, all passing.
   5. `make lint` exits clean (0 issues).
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 49-01-PLAN.md — Client layer: DirectoryService + DirectoryServicePatch model structs, Get/Patch client methods, ≥4 TestUnit_DirectoryServiceManagement_* unit tests
+- [ ] 49-02-PLAN.md — Mock handler: /api/2.22/directory-services GET+PATCH store with Seed, empty-list-on-miss, **NamedReference clear/set support
+- [ ] 49-03-PLAN.md — LDAPURIValidator + flashblade_directory_service_management resource (4 interface assertions, SchemaVersion 0, Create/Read/Update/Delete-as-reset-PATCH, drift on 10 fields, ImportState) + 3 TestUnit_* resource tests
+- [ ] 49-04-PLAN.md — flashblade_directory_service_management data source (computed-only, nested ca_certificate/ca_certificate_group objects, no bind_password) + TestUnit_DirectoryServiceManagementDataSource_Basic
+- [ ] 49-05-PLAN.md — Provider registration + examples (resource.tf, import.sh, data-source.tf) + make docs + ROADMAP.md/CONVENTIONS.md updates + make test (≥787) + make lint (clean)
 
 ---
 
