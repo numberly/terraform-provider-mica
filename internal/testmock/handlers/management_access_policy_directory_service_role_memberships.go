@@ -51,14 +51,14 @@ func (s *mapDsrMembershipsStore) handle(w http.ResponseWriter, r *http.Request) 
 }
 
 // handleGet returns the pair when found, or empty list + 200 on miss.
-// Both policy_names and role_names are optional individually; when both are provided,
+// Both policy_names and member_names are optional individually; when both are provided,
 // the response is filtered to that exact pair.
 func (s *mapDsrMembershipsStore) handleGet(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"policy_names", "role_names"}) {
+	if !ValidateQueryParams(w, r, []string{"policy_names", "member_names"}) {
 		return
 	}
 	pName := r.URL.Query().Get("policy_names")
-	rName := r.URL.Query().Get("role_names")
+	rName := r.URL.Query().Get("member_names")
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -79,14 +79,14 @@ func (s *mapDsrMembershipsStore) handleGet(w http.ResponseWriter, r *http.Reques
 // handlePost is idempotent: creates the pair if absent, returns 200 with the pair either way.
 // This resolves Q3 from 50-CONTEXT.md — Terraform replays never produce 409 conflicts.
 func (s *mapDsrMembershipsStore) handlePost(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"policy_names", "role_names"}) {
+	if !ValidateQueryParams(w, r, []string{"policy_names", "member_names"}) {
 		return
 	}
 	pName, okP := RequireQueryParam(w, r, "policy_names")
 	if !okP {
 		return
 	}
-	rName, okR := RequireQueryParam(w, r, "role_names")
+	rName, okR := RequireQueryParam(w, r, "member_names")
 	if !okR {
 		return
 	}
@@ -105,14 +105,14 @@ func (s *mapDsrMembershipsStore) handlePost(w http.ResponseWriter, r *http.Reque
 
 // handleDelete removes the pair from the set. Idempotent — missing pair is silently ignored.
 func (s *mapDsrMembershipsStore) handleDelete(w http.ResponseWriter, r *http.Request) {
-	if !ValidateQueryParams(w, r, []string{"policy_names", "role_names"}) {
+	if !ValidateQueryParams(w, r, []string{"policy_names", "member_names"}) {
 		return
 	}
 	pName, okP := RequireQueryParam(w, r, "policy_names")
 	if !okP {
 		return
 	}
-	rName, okR := RequireQueryParam(w, r, "role_names")
+	rName, okR := RequireQueryParam(w, r, "member_names")
 	if !okR {
 		return
 	}

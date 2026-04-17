@@ -36,8 +36,8 @@ func assertDSRMQueryParams(t *testing.T, r *http.Request) {
 	if got := r.URL.Query().Get("policy_names"); got != "pure:policy/array_admin" {
 		t.Errorf("expected policy_names=pure:policy/array_admin, got %q", got)
 	}
-	if got := r.URL.Query().Get("role_names"); got != "admin-role" {
-		t.Errorf("expected role_names=admin-role, got %q", got)
+	if got := r.URL.Query().Get("member_names"); got != "admin-role" {
+		t.Errorf("expected member_names=admin-role, got %q", got)
 	}
 }
 
