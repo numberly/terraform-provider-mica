@@ -49,11 +49,11 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
   `DELETE /management-access-policies/directory-services/roles` with both
   `policy_names` and `role_names` query params — association is removed but
   neither the policy nor the role is deleted.
-- [ ] **DSRM-03** — User can import an existing membership with composite ID
+- [x] **DSRM-03** — User can import an existing membership with composite ID
   `<policy_name>:<role_name>`, matching the pattern used by
   `qos_policy_member_resource.go`, `tls_policy_member_resource.go`, and
   `certificate_group_member_resource.go`.
-- [ ] **DSRM-04** — Both `policy` and `role` trigger `RequiresReplace` on
+- [x] **DSRM-04** — Both `policy` and `role` trigger `RequiresReplace` on
   change (memberships are immutable — you create a new pair, not rename an
   existing one).
 - [x] **DSRM-05** — Read verifies the membership still exists via
@@ -87,7 +87,7 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
   `GET` (exists + not-exists), `POST`, and `DELETE`.
 - [ ] **QA-03** — ≥3 resource unit tests for the role:
   `TestUnit_DirectoryServiceRoleResource_Lifecycle`, `_Import`, `_DriftDetection`.
-- [ ] **QA-04** — ≥3 resource unit tests for the membership:
+- [x] **QA-04** — ≥3 resource unit tests for the membership:
   `TestUnit_ManagementAccessPolicyDirectoryServiceRoleMembershipResource_Lifecycle`,
   `_Import`, `_MissingAssociation` (the last validates the RemoveResource path
   from DSRM-05).
@@ -95,7 +95,7 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
   `TestUnit_DirectoryServiceRoleDataSource_Basic`.
 - [ ] **QA-06** — `make test` passes with total count ≥ 812 (baseline 798 from
   v2.22.1 + 14 new: 4+3 client + 3+3 resource + 1 data source).
-- [ ] **QA-07** — `make lint` clean (0 issues). Both resources declare the
+- [x] **QA-07** — `make lint` clean (0 issues). Both resources declare the
   four standard interface assertions (`Resource`, `WithConfigure`,
   `WithImportState`, `WithUpgradeState`) with empty `UpgradeState` map at
   schema version 0.
@@ -140,8 +140,8 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 | DSR-06  | 50    | Pending |
 | DSRM-01 | 50    | Complete |
 | DSRM-02 | 50    | Complete |
-| DSRM-03 | 50    | Pending |
-| DSRM-04 | 50    | Pending |
+| DSRM-03 | 50    | Complete |
+| DSRM-04 | 50    | Complete |
 | DSRM-05 | 50    | Complete |
 | DOC-01  | 50    | Pending |
 | DOC-02  | 50    | Pending |
@@ -149,10 +149,10 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 | QA-01   | 50    | Complete |
 | QA-02   | 50    | Complete |
 | QA-03   | 50    | Pending |
-| QA-04   | 50    | Pending |
+| QA-04   | 50    | Complete |
 | QA-05   | 50    | Pending |
 | QA-06   | 50    | Pending |
-| QA-07   | 50    | Pending |
+| QA-07   | 50    | Complete |
 | QA-08   | 50    | Pending |
 
 *Filled by gsd-roadmapper.*

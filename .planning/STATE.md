@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.22.1
 milestone_name: Directory Service – Array Management
 status: executing
-stopped_at: Completed 50-01-PLAN.md
-last_updated: "2026-04-17T09:27:39.524Z"
+stopped_at: Completed 50-04-PLAN.md
+last_updated: "2026-04-17T09:33:08.876Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 1
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-17)
 ## Current Position
 
 Phase: 50 (directory-service-roles-role-mappings) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-17
 
@@ -69,6 +69,8 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 50]: POST /directory-services/roles has no names query param — name is server-generated from management_access_policies
 - [Phase 50]: DirectoryServiceRolePatch omits ManagementAccessPolicies — readonly on PATCH per swagger
 - [Phase 50]: DSRM composite key: role_name/policy_name (role first, D-05) so SplitN works with colons/slashes in policy name
+- [Phase 50-directory-service-roles-role-mappings]: Composite ID puts role_name FIRST (role/policy) so SplitN correctly handles built-in policy names containing : and / like pure:policy/array_admin
+- [Phase 50-directory-service-roles-role-mappings]: Used nullTimeoutsValueCRD() in ImportState for CRD-only DSRM resource (no Update timeout)
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T09:27:39.514Z
-Stopped at: Completed 50-01-PLAN.md
+Last session: 2026-04-17T09:33:08.870Z
+Stopped at: Completed 50-04-PLAN.md
 Resume file: None
