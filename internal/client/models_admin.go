@@ -153,3 +153,50 @@ type ArrayConnectionKey struct {
 	Created       int64  `json:"created"`
 	Expires       int64  `json:"expires"`
 }
+
+// DirectoryServiceManagement represents the nested management sub-object in a DirectoryService.
+// Holds LDAP attribute names used when authenticating FlashBlade admin users.
+type DirectoryServiceManagement struct {
+	UserLoginAttribute    string `json:"user_login_attribute,omitempty"`
+	UserObjectClass       string `json:"user_object_class,omitempty"`
+	SSHPublicKeyAttribute string `json:"ssh_public_key_attribute,omitempty"`
+}
+
+// DirectoryServiceManagementPatch contains pointer fields for the management sub-object of DirectoryServicePatch.
+// Nil field = omit; non-nil = send (empty string clears on the array).
+type DirectoryServiceManagementPatch struct {
+	UserLoginAttribute    *string `json:"user_login_attribute,omitempty"`
+	UserObjectClass       *string `json:"user_object_class,omitempty"`
+	SSHPublicKeyAttribute *string `json:"ssh_public_key_attribute,omitempty"`
+}
+
+// DirectoryService represents a FlashBlade directory service configuration from GET /directory-services.
+// The management singleton is identified by Name == "management".
+// NOTE: the `smb` sub-object is DEPRECATED in v2.22 and intentionally NOT modelled here.
+type DirectoryService struct {
+	ID                 string                     `json:"id,omitempty"`
+	Name               string                     `json:"name,omitempty"`
+	Enabled            bool                       `json:"enabled"`
+	URIs               []string                   `json:"uris,omitempty"`
+	BaseDN             string                     `json:"base_dn,omitempty"`
+	BindUser           string                     `json:"bind_user,omitempty"`
+	CACertificate      *NamedReference            `json:"ca_certificate,omitempty"`
+	CACertificateGroup *NamedReference            `json:"ca_certificate_group,omitempty"`
+	Management         DirectoryServiceManagement `json:"management"`
+	Services           []string                   `json:"services,omitempty"`
+}
+
+// DirectoryServicePatch contains pointer fields for PATCH /directory-services.
+// **NamedReference semantics: nil outer = omit; non-nil outer + nil inner = set null;
+// non-nil outer + non-nil inner = set to reference.
+// bind_password is write-only — API never returns it; only sent when operator supplies it.
+type DirectoryServicePatch struct {
+	Enabled            *bool                            `json:"enabled,omitempty"`
+	URIs               *[]string                        `json:"uris,omitempty"`
+	BaseDN             *string                          `json:"base_dn,omitempty"`
+	BindUser           *string                          `json:"bind_user,omitempty"`
+	BindPassword       *string                          `json:"bind_password,omitempty"`
+	CACertificate      **NamedReference                 `json:"ca_certificate,omitempty"`
+	CACertificateGroup **NamedReference                 `json:"ca_certificate_group,omitempty"`
+	Management         *DirectoryServiceManagementPatch `json:"management,omitempty"`
+}
