@@ -117,9 +117,11 @@ func (s *certificateStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	id := fmt.Sprintf("cert-%d", s.nextID)
 	s.nextID++
 
+	// Match real FlashBlade API: certificate_type defaults to "external" when
+	// omitted at creation time (see swagger _certificateBase.certificate_type).
 	certType := body.CertificateType
 	if certType == "" {
-		certType = "appliance"
+		certType = "external"
 	}
 
 	cert := &client.Certificate{

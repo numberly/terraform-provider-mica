@@ -96,7 +96,7 @@ func (r *certificateResource) Schema(ctx context.Context, _ resource.SchemaReque
 			"certificate_type": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The certificate type (e.g. appliance, external). Defaults to 'appliance' when not specified.",
+				Description: "The certificate type. Valid values: 'array' (FlashBlade identity, requires private_key) or 'external' (trusted external server such as AD). When unset, the provider infers 'array' if private_key is provided; otherwise the API defaults to 'external'. Immutable after creation.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -228,16 +228,28 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 	post := client.CertificatePost{
 		Certificate: data.Certificate.ValueString(),
 	}
-	if !data.CertificateType.IsNull() && !data.CertificateType.IsUnknown() {
+	privateKeySet := !data.PrivateKey.IsNull() && data.PrivateKey.ValueString() != ""
+	switch {
+	case !data.CertificateType.IsNull() && !data.CertificateType.IsUnknown():
 		post.CertificateType = data.CertificateType.ValueString()
+	case privateKeySet:
+		// The FlashBlade API defaults to "external" when certificate_type is
+		// omitted, and rejects private_key for external certificates. Infer
+		// "array" when a private key is supplied so the common case works
+		// without the user needing to set certificate_type explicitly.
+		// Note: the swagger description names this value "appliance", but the
+		// real API only accepts "array" (verified against the Pure-Storage
+		// Ansible FlashBlade collection and live array behavior).
+		post.CertificateType = "array"
 	}
-	if !data.IntermediateCertificate.IsNull() {
+	wasIntermediateNull := data.IntermediateCertificate.IsNull()
+	if !wasIntermediateNull {
 		post.IntermediateCertificate = data.IntermediateCertificate.ValueString()
 	}
 	if !data.Passphrase.IsNull() {
 		post.Passphrase = data.Passphrase.ValueString()
 	}
-	if !data.PrivateKey.IsNull() {
+	if privateKeySet {
 		post.PrivateKey = data.PrivateKey.ValueString()
 	}
 
@@ -252,6 +264,12 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 	passphrase := data.Passphrase
 
 	mapCertificateToModel(cert, &data)
+
+	// The API returns "" for fields that were never set; Terraform requires the
+	// state to stay null when the config was null (Optional, non-Computed).
+	if wasIntermediateNull && cert.IntermediateCertificate == "" {
+		data.IntermediateCertificate = types.StringNull()
+	}
 
 	data.PrivateKey = privateKey
 	data.Passphrase = passphrase
@@ -427,8 +445,13 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 	// Preserve write-only fields from prior state.
 	privateKey := data.PrivateKey
 	passphrase := data.Passphrase
+	wasIntermediateNull := data.IntermediateCertificate.IsNull()
 
 	mapCertificateToModel(cert, &data)
+
+	if wasIntermediateNull && cert.IntermediateCertificate == "" {
+		data.IntermediateCertificate = types.StringNull()
+	}
 
 	data.PrivateKey = privateKey
 	data.Passphrase = passphrase
@@ -490,8 +513,13 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		// Preserve write-only fields before mapping overwrites the model.
 		privateKey := plan.PrivateKey
 		passphrase := plan.Passphrase
+		wasIntermediateNull := plan.IntermediateCertificate.IsNull()
 
 		mapCertificateToModel(cert, &plan)
+
+		if wasIntermediateNull && cert.IntermediateCertificate == "" {
+			plan.IntermediateCertificate = types.StringNull()
+		}
 
 		plan.PrivateKey = privateKey
 		plan.Passphrase = passphrase
@@ -557,6 +585,12 @@ func (r *certificateResource) ImportState(ctx context.Context, req resource.Impo
 	data.Timeouts = nullTimeoutsValue()
 
 	mapCertificateToModel(cert, &data)
+
+	// intermediate_certificate is Optional (non-Computed): keep it null when the
+	// API reports no intermediate, so a follow-up plan doesn't show bogus drift.
+	if cert.IntermediateCertificate == "" {
+		data.IntermediateCertificate = types.StringNull()
+	}
 
 	// Write-only sensitive fields are not returned by the API — set to empty string after import.
 	data.PrivateKey = types.StringValue("")

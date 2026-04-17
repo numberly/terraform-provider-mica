@@ -100,7 +100,7 @@ func TestUnit_CertificateDataSource_Basic(t *testing.T) {
 		ID:                      "cert-ds-001",
 		Name:                    "ds-cert",
 		Certificate:             "-----BEGIN CERTIFICATE-----\nMIIBds\n-----END CERTIFICATE-----",
-		CertificateType:         "appliance",
+		CertificateType:         "array",
 		CommonName:              "flashblade.example.com",
 		Country:                 "US",
 		Email:                   "admin@example.com",
@@ -148,8 +148,8 @@ func TestUnit_CertificateDataSource_Basic(t *testing.T) {
 	if model.Name.ValueString() != "ds-cert" {
 		t.Errorf("expected name=ds-cert, got %s", model.Name.ValueString())
 	}
-	if model.CertificateType.ValueString() != "appliance" {
-		t.Errorf("expected certificate_type=appliance, got %s", model.CertificateType.ValueString())
+	if model.CertificateType.ValueString() != "array" {
+		t.Errorf("expected certificate_type=array, got %s", model.CertificateType.ValueString())
 	}
 	if model.CommonName.ValueString() != "flashblade.example.com" {
 		t.Errorf("expected common_name=flashblade.example.com, got %s", model.CommonName.ValueString())

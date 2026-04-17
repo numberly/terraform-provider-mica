@@ -228,6 +228,117 @@ func TestUnit_CertificateResource_Lifecycle(t *testing.T) {
 	}
 }
 
+// TestUnit_CertificateResource_Create_DefaultsToArrayWhenPrivateKey: verifies that
+// when certificate_type is unset but private_key is provided, the provider sends
+// "array" so the API accepts the request (API otherwise defaults to "external"
+// and rejects the private key).
+func TestUnit_CertificateResource_Create_DefaultsToArrayWhenPrivateKey(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterCertificateHandlers(ms.Mux)
+
+	r := newTestCertificateResource(t, ms)
+	s := certificateResourceSchema(t).Schema
+
+	const certPEM = "-----BEGIN CERTIFICATE-----\nMIIBarr\n-----END CERTIFICATE-----"
+	const privKey = "-----BEGIN PRIVATE KEY-----\nMIIEarr\n-----END PRIVATE KEY-----"
+
+	plan := certificatePlanWith(t, "arr-cert", certPEM, privKey, "")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildCertificateType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", createResp.Diagnostics)
+	}
+
+	var got certificateModel
+	if diags := createResp.State.Get(context.Background(), &got); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+	if got.CertificateType.ValueString() != "array" {
+		t.Errorf("expected certificate_type=array (inferred from private_key), got %q", got.CertificateType.ValueString())
+	}
+}
+
+// TestUnit_CertificateResource_Create_ExternalWhenNoPrivateKey: verifies that when
+// neither certificate_type nor private_key is provided, the provider lets the API
+// apply its default ("external").
+func TestUnit_CertificateResource_Create_ExternalWhenNoPrivateKey(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterCertificateHandlers(ms.Mux)
+
+	r := newTestCertificateResource(t, ms)
+	s := certificateResourceSchema(t).Schema
+
+	const certPEM = "-----BEGIN CERTIFICATE-----\nMIIBext\n-----END CERTIFICATE-----"
+
+	plan := certificatePlanWith(t, "ext-cert", certPEM, "", "")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildCertificateType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", createResp.Diagnostics)
+	}
+
+	var got certificateModel
+	if diags := createResp.State.Get(context.Background(), &got); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+	if got.CertificateType.ValueString() != "external" {
+		t.Errorf("expected certificate_type=external (API default), got %q", got.CertificateType.ValueString())
+	}
+}
+
+// TestUnit_CertificateResource_Create_PreservesNullIntermediate: verifies that when
+// intermediate_certificate is unset in config and the API returns "", the state
+// remains null rather than "" (avoids "provider produced inconsistent result").
+func TestUnit_CertificateResource_Create_PreservesNullIntermediate(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterCertificateHandlers(ms.Mux)
+
+	r := newTestCertificateResource(t, ms)
+	s := certificateResourceSchema(t).Schema
+
+	const certPEM = "-----BEGIN CERTIFICATE-----\nMIIBnoint\n-----END CERTIFICATE-----"
+
+	plan := certificatePlanWith(t, "noint-cert", certPEM, "", "external")
+	createResp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildCertificateType(), nil), Schema: s},
+	}
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", createResp.Diagnostics)
+	}
+
+	var got certificateModel
+	if diags := createResp.State.Get(context.Background(), &got); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+	if !got.IntermediateCertificate.IsNull() {
+		t.Errorf("expected intermediate_certificate to stay null, got %q (IsNull=%v)",
+			got.IntermediateCertificate.ValueString(), got.IntermediateCertificate.IsNull())
+	}
+
+	// Read path must also preserve null on empty API response.
+	readResp := &resource.ReadResponse{State: createResp.State}
+	r.Read(context.Background(), resource.ReadRequest{State: createResp.State}, readResp)
+	if readResp.Diagnostics.HasError() {
+		t.Fatalf("Read returned error: %s", readResp.Diagnostics)
+	}
+	var afterRead certificateModel
+	if diags := readResp.State.Get(context.Background(), &afterRead); diags.HasError() {
+		t.Fatalf("Get read state: %s", diags)
+	}
+	if !afterRead.IntermediateCertificate.IsNull() {
+		t.Errorf("expected intermediate_certificate null after Read, got %q",
+			afterRead.IntermediateCertificate.ValueString())
+	}
+}
+
 // TestUnit_CertificateResource_Import: seed cert in mock → import by name → verify state.
 func TestUnit_CertificateResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
@@ -242,7 +353,7 @@ func TestUnit_CertificateResource_Import(t *testing.T) {
 		ID:              "cert-import-001",
 		Name:            "import-cert",
 		Certificate:     "-----BEGIN CERTIFICATE-----\nMIIBseed\n-----END CERTIFICATE-----",
-		CertificateType: "appliance",
+		CertificateType: "array",
 		CommonName:      "flashblade.example.com",
 		IssuedBy:        "CN=Test CA",
 		IssuedTo:        "CN=flashblade.example.com",
@@ -273,8 +384,8 @@ func TestUnit_CertificateResource_Import(t *testing.T) {
 	if model.Name.ValueString() != "import-cert" {
 		t.Errorf("expected name=import-cert, got %s", model.Name.ValueString())
 	}
-	if model.CertificateType.ValueString() != "appliance" {
-		t.Errorf("expected certificate_type=appliance, got %s", model.CertificateType.ValueString())
+	if model.CertificateType.ValueString() != "array" {
+		t.Errorf("expected certificate_type=array, got %s", model.CertificateType.ValueString())
 	}
 	if model.CommonName.ValueString() != "flashblade.example.com" {
 		t.Errorf("expected common_name=flashblade.example.com, got %s", model.CommonName.ValueString())

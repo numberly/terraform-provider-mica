@@ -36,7 +36,7 @@ func TestUnit_Certificate_Get_Found(t *testing.T) {
 		ID:              "cert-seed-1",
 		Name:            "my-cert",
 		Certificate:     "-----BEGIN CERTIFICATE-----\nMIItest\n-----END CERTIFICATE-----",
-		CertificateType: "appliance",
+		CertificateType: "array",
 		CommonName:      "test-cert",
 		IssuedBy:        "CN=Test CA",
 		IssuedTo:        "CN=test-cert",
@@ -100,8 +100,9 @@ func TestUnit_Certificate_Post(t *testing.T) {
 
 	pem := "-----BEGIN CERTIFICATE-----\nMIItest\n-----END CERTIFICATE-----"
 	got, err := c.PostCertificate(context.Background(), "new-cert", client.CertificatePost{
-		Certificate: pem,
-		PrivateKey:  "-----BEGIN PRIVATE KEY-----\nMIIkey\n-----END PRIVATE KEY-----",
+		Certificate:     pem,
+		CertificateType: "array",
+		PrivateKey:      "-----BEGIN PRIVATE KEY-----\nMIIkey\n-----END PRIVATE KEY-----",
 	})
 	if err != nil {
 		t.Fatalf("PostCertificate: %v", err)
@@ -118,8 +119,8 @@ func TestUnit_Certificate_Post(t *testing.T) {
 	if got.Status != "imported" {
 		t.Errorf("expected Status %q, got %q", "imported", got.Status)
 	}
-	if got.CertificateType != "appliance" {
-		t.Errorf("expected CertificateType %q, got %q", "appliance", got.CertificateType)
+	if got.CertificateType != "array" {
+		t.Errorf("expected CertificateType %q, got %q", "array", got.CertificateType)
 	}
 	if got.IssuedBy != "CN=Test CA" {
 		t.Errorf("expected IssuedBy %q, got %q", "CN=Test CA", got.IssuedBy)

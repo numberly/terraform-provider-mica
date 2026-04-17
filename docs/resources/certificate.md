@@ -34,7 +34,7 @@ resource "flashblade_certificate" "example" {
 
 ### Optional
 
-- `certificate_type` (String) The certificate type (e.g. appliance, external). Defaults to 'appliance' when not specified.
+- `certificate_type` (String) The certificate type. Valid values: 'array' (FlashBlade identity, requires private_key) or 'external' (trusted external server such as AD). When unset, the provider infers 'array' if private_key is provided; otherwise the API defaults to 'external'. Immutable after creation.
 - `intermediate_certificate` (String) The PEM-encoded intermediate certificate chain.
 - `passphrase` (String, Sensitive) The passphrase protecting the private key. Not returned by the API after creation.
 - `private_key` (String, Sensitive) The PEM-encoded private key. Not returned by the API after creation.
