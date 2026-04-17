@@ -95,9 +95,9 @@ func TestUnit_DirectoryServiceRole_Post(t *testing.T) {
 		if r.Method != http.MethodPost {
 			t.Errorf("expected POST, got %s", r.Method)
 		}
-		// POST must NOT have names query param
-		if names := r.URL.Query().Get("names"); names != "" {
-			t.Errorf("expected no names query param on POST, got %q", names)
+		// POST must carry the name via ?names= query param (per D-01).
+		if got := r.URL.Query().Get("names"); got != "my-role" {
+			t.Errorf("expected names=my-role, got %q", got)
 		}
 		var body map[string]any
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -118,11 +118,10 @@ func TestUnit_DirectoryServiceRole_Post(t *testing.T) {
 				t.Errorf("policies[0].name: %v", first["name"])
 			}
 		}
-		// POST body must NOT contain management_access_policies as readonly — already checked above it's present in POST only
 		resp := client.DirectoryServiceRole{
-			ID:    "dsr-2",
-			Name:  "array_admin",
-			Group: "cn=admins",
+			ID:        "dsr-2",
+			Name:      "my-role",
+			Group:     "cn=admins",
 			GroupBase: "ou=corp",
 			ManagementAccessPolicies: []client.NamedReference{
 				{Name: "pure:policy/array_admin"},
@@ -134,7 +133,7 @@ func TestUnit_DirectoryServiceRole_Post(t *testing.T) {
 	srv := newDSRServer(t, handler)
 	c := newTestClient(t, srv)
 
-	got, err := c.PostDirectoryServiceRole(context.Background(), client.DirectoryServiceRolePost{
+	got, err := c.PostDirectoryServiceRole(context.Background(), "my-role", client.DirectoryServiceRolePost{
 		Group:     "cn=admins",
 		GroupBase: "ou=corp",
 		ManagementAccessPolicies: []client.NamedReference{
@@ -144,7 +143,7 @@ func TestUnit_DirectoryServiceRole_Post(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Post: %v", err)
 	}
-	if got.Name != "array_admin" {
+	if got.Name != "my-role" {
 		t.Errorf("name: %q", got.Name)
 	}
 }
