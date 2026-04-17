@@ -1,5 +1,6 @@
 # Map an LDAP group to the FlashBlade array_admin management access policy.
 resource "flashblade_directory_service_role" "admins" {
+  name                       = "infra-admins"
   group                      = "cn=fb-admins,ou=groups,dc=corp,dc=example,dc=com"
   group_base                 = "ou=groups,dc=corp,dc=example,dc=com"
   management_access_policies = ["pure:policy/array_admin"]

@@ -3,18 +3,19 @@
 page_title: "flashblade_directory_service_role Resource - flashblade"
 subcategory: ""
 description: |-
-  Maps an LDAP group to one or more FlashBlade management access policies. The role name is server-generated from the first associated policy; use the output name attribute downstream.
+  Maps an LDAP group to one or more FlashBlade management access policies, identified by a user-supplied name.
 ---
 
 # flashblade_directory_service_role (Resource)
 
-Maps an LDAP group to one or more FlashBlade management access policies. The role name is server-generated from the first associated policy; use the output `name` attribute downstream.
+Maps an LDAP group to one or more FlashBlade management access policies, identified by a user-supplied name.
 
 ## Example Usage
 
 ```terraform
 # Map an LDAP group to the FlashBlade array_admin management access policy.
 resource "flashblade_directory_service_role" "admins" {
+  name                       = "infra-admins"
   group                      = "cn=fb-admins,ou=groups,dc=corp,dc=example,dc=com"
   group_base                 = "ou=groups,dc=corp,dc=example,dc=com"
   management_access_policies = ["pure:policy/array_admin"]
@@ -37,6 +38,7 @@ resource "flashblade_management_access_policy_directory_service_role_membership"
 - `group` (String) CN of the LDAP group whose members receive the role. Mutable via PATCH.
 - `group_base` (String) DN search base where the LDAP group is located. Mutable via PATCH.
 - `management_access_policies` (List of String) List of management access policy names (e.g. pure:policy/array_admin). Writable on POST only — changing this forces a new resource.
+- `name` (String) Unique name for the directory service role. Required on create. Changing this forces a new resource.
 
 ### Optional
 
@@ -45,7 +47,6 @@ resource "flashblade_management_access_policy_directory_service_role_membership"
 ### Read-Only
 
 - `id` (String) Globally-unique role ID assigned by FlashBlade.
-- `name` (String) Server-generated role name (derived from the first management_access_policies entry; see examples).
 - `role` (Attributes) Deprecated legacy backfill. Populated by the API when the role maps to exactly one legacy-named policy; otherwise null. (see [below for nested schema](#nestedatt--role))
 
 <a id="nestedatt--timeouts"></a>
@@ -73,8 +74,6 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# Import an existing directory service role by its server-generated name.
-# The role name is derived from the first associated management access policy
-# (for example: pure:policy/array_admin -> role name "array_admin").
-terraform import flashblade_directory_service_role.admins array_admin
+# Import by role name (the value of the `name` attribute).
+terraform import flashblade_directory_service_role.admins infra-admins
 ```
