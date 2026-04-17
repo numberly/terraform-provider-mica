@@ -274,7 +274,7 @@ func TestUnit_DirectoryServiceManagementResource_Import(t *testing.T) {
 		t.Error("expected non-empty id after import")
 	}
 	// Timeouts should be null (nullTimeoutsValue).
-	if !data.Timeouts.Object.IsNull() {
+	if !data.Timeouts.IsNull() {
 		t.Logf("note: timeouts after import: %+v (expected null)", data.Timeouts)
 	}
 }
