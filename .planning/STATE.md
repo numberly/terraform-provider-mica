@@ -76,6 +76,10 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 50-directory-service-roles-role-mappings]: DSRM resource was already registered in provider.go by Plan 50-04 executor; only DSR resource + data source needed adding in Plan 50-05
 - [Phase 50-directory-service-roles-role-mappings]: errcheck lint violations fixed in client test files (w.Write -> _, _ = w.Write) — 6 instances across DSR + DSRM test files
 
+### Roadmap Evolution
+
+- Phase 50.1 inserted after Phase 50: Fix directory_service_role POST missing names query param (URGENT) — runtime HTTP 400 "Names query parameter is missing" during terraform apply; invalidates Phase 50 decision line 70 ("name is server-generated") — swagger-2.22.json confirms Names param required on POST /directory-services/roles
+
 ### Pending Todos
 
 None.
