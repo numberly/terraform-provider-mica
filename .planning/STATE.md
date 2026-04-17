@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.22.2
 milestone_name: Directory Service Roles & Role Mappings
-status: executing
-stopped_at: Completed 50.1-02-PLAN.md
-last_updated: "2026-04-17T11:56:19.290Z"
+status: verifying
+stopped_at: Completed 50.1-03-PLAN.md
+last_updated: "2026-04-17T12:04:13.219Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 1
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-17)
 
 Phase: 50.1 (fix-directory-service-role-post-missing-names-query-param) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-17
 
 ```
@@ -79,6 +79,9 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 50.1]: [Phase 50.1-01]: D-02 confirmed — DirectoryServiceRolePost struct does NOT gain a Name field; name stays via query param only (FlashBlade convention)
 - [Phase 50.1]: [Phase 50.1-02]: DSR resource schema v0 -> v1 — name Computed+UseStateForUnknown -> Required+RequiresReplace (D-04); Create passes data.Name.ValueString() (D-08)
 - [Phase 50.1]: [Phase 50.1-02]: v0 PriorSchema mirrors broken schema verbatim (D-06) — upgrader copies API-populated name forward; directoryServiceRoleV0Model intermediate struct per D-07
+- [Phase 50.1]: [Phase 50.1-03]: make docs regenerated docs/resources/directory_service_role.md — name moved from Read-Only to Required section; HCL examples + import.sh now use user-supplied name (D-17/D-18/D-19)
+- [Phase 50.1]: [Phase 50.1-03]: Phase-50 audit trail preserved — STATE.md decision flagged INVALIDATED (not rewritten); CONTEXT.md Q1 gets in-place resolution note; VERIFICATION.md gets Known Defect section (D-20/D-21/D-22)
+- [Phase 50.1]: [Phase 50.1-03]: staticcheck S1016 fixed in v0->v1 upgrader — use type conversion directoryServiceRoleModel(old) since V0/V1 share identical field shapes; CONVENTIONS.md baseline bumped 814 -> 818
 
 ### Roadmap Evolution
 
@@ -94,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T11:56:19.284Z
-Stopped at: Completed 50.1-02-PLAN.md
+Last session: 2026-04-17T12:04:02.901Z
+Stopped at: Completed 50.1-03-PLAN.md
 Resume file: None

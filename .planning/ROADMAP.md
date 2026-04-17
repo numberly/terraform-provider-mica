@@ -817,7 +817,7 @@ Plans:
 **Goal:** Fix PostDirectoryServiceRole ?names= bug: client, mock, schema v0→v1 upgrader, docs
 **Requirements**: TBD (defect fix — no requirement IDs)
 **Depends on:** Phase 50
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 50.1-01-PLAN.md — Fix PostDirectoryServiceRole + mock handler + client test
