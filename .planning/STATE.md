@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.22.1
-milestone_name: Directory Service – Array Management
-status: verifying
-stopped_at: Completed 49-directory-service-management-49-05-PLAN.md
-last_updated: "2026-04-17T08:25:11.971Z"
+milestone: v2.22.2
+milestone_name: Directory Service Roles & Role Mappings
+status: active
+stopped_at: null
+last_updated: "2026-04-17T09:00:00.000Z"
 last_activity: 2026-04-17
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -21,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-17)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Phase 49 — directory-service-management
+**Current focus:** Directory Service Roles & Role Mappings (v2.22.2)
 
 ## Current Position
 
-Phase: 49
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-17
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-17 — Milestone v2.22.2 started
 
 ```
-Progress: [                    ] 0% (0/1 phases)
+Progress: [                    ] 0% (0/? phases)
 ```
 
 ## Accumulated Context

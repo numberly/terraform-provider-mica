@@ -8,17 +8,18 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: v2.22.1 Directory Service – Array Management
+## Current Milestone: v2.22.2 Directory Service Roles & Role Mappings
 
-**Goal:** Ajouter la gestion du directory service LDAP `management` (authentification admin) via Terraform, en respectant le pattern singleton PATCH-only de l'API FlashBlade.
+**Goal:** Ajouter la gestion Terraform des role mappings LDAP ↔ FlashBlade via deux ressources suivant le pattern `_member` déjà établi dans le provider.
 
 **Target features:**
-- Ressource `flashblade_directory_service_management` — configuration LDAP/AD pour accès admin (URIs, base DN, bind user/password, CA certs, user attributes)
-- Data source `flashblade_directory_service_management` — lecture de la configuration existante
-- Examples HCL + documentation import
-- Drift detection sur tous les champs mutables + state upgrader v0
+- Ressource `flashblade_directory_service_role` — maps un groupe LDAP à un rôle FlashBlade (array_admin, storage_admin, etc.) via `/directory-services/roles`
+- Data source `flashblade_directory_service_role` — lecture d'un mapping existant par name
+- Ressource `flashblade_management_access_policy_directory_service_role_membership` — association séparée role ↔ management_access_policy (composite ID `policy_name:role_name`) via `/management-access-policies/directory-services/roles`
+- Suit le pattern des 5 ressources `_member` existantes (qos_policy_member, tls_policy_member, certificate_group_member, audit_object_store_policy_member, object_store_user_policy)
+- Examples HCL + import.sh + `make docs` régénéré
 
-**Last shipped:** tools-v1.0 — API Tooling Pipeline (2026-04-14)
+**Last shipped:** v2.22.1 — Directory Service Management (2026-04-17, 798 tests, 0 lint issues)
 
 ## Requirements
 
@@ -42,7 +43,10 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 
 ### Active
 
-_No active requirements. Milestone v2.22.1 complete — ready for next milestone._
+- [ ] `flashblade_directory_service_role` resource — LDAP group → FB role mapping (DSR-01)
+- [ ] `flashblade_directory_service_role` data source — read existing mapping (DSR-02)
+- [ ] `flashblade_management_access_policy_directory_service_role_membership` — composite ID membership resource (DSRM-01)
+- [ ] HCL examples + import.sh for both resources (DOC-01, DOC-02)
 
 ### Out of Scope
 
@@ -102,4 +106,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 after completing Phase 49 — milestone v2.22.1 (Directory Service – Array Management) shipped*
+*Last updated: 2026-04-17 after starting milestone v2.22.2 (Directory Service Roles & Role Mappings)*
