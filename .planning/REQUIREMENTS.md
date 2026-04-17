@@ -15,15 +15,15 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 
 ### Directory Service Role (DSR)
 
-- [ ] **DSR-01** — User can create a directory service role via a
+- [x] **DSR-01** — User can create a directory service role via a
   `flashblade_directory_service_role` resource, specifying `group` (CN of the LDAP
   group), `group_base` (DN search base), and `role` (NamedReference to a built-in
   FlashBlade role: `array_admin`, `storage_admin`, `ops_admin`, `readonly`). Backed
   by `POST /directory-services/roles`.
-- [ ] **DSR-02** — User can update `group` and `group_base` via PATCH without
+- [x] **DSR-02** — User can update `group` and `group_base` via PATCH without
   replacing the resource. Changing `role` triggers `RequiresReplace` (role is
   immutable on the FB side — validated via the API contract).
-- [ ] **DSR-03** — User can destroy a role cleanly via
+- [x] **DSR-03** — User can destroy a role cleanly via
   `DELETE /directory-services/roles?names=<name>`. No soft-delete dance required.
 - [ ] **DSR-04** — User can import an existing role by name with
   `terraform import flashblade_directory_service_role.<alias> <role_name>`. Import
@@ -39,13 +39,13 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 
 ### Directory Service Role Membership (DSRM)
 
-- [ ] **DSRM-01** — User can associate a management access policy with a
+- [x] **DSRM-01** — User can associate a management access policy with a
   directory service role via a
   `flashblade_management_access_policy_directory_service_role_membership` resource.
   Required attributes: `policy` (NamedReference to the management access policy)
   and `role` (NamedReference to the directory service role). Backed by
   `POST /management-access-policies/directory-services/roles`.
-- [ ] **DSRM-02** — Destroying the membership calls
+- [x] **DSRM-02** — Destroying the membership calls
   `DELETE /management-access-policies/directory-services/roles` with both
   `policy_names` and `role_names` query params — association is removed but
   neither the policy nor the role is deleted.
@@ -56,7 +56,7 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 - [ ] **DSRM-04** — Both `policy` and `role` trigger `RequiresReplace` on
   change (memberships are immutable — you create a new pair, not rename an
   existing one).
-- [ ] **DSRM-05** — Read verifies the membership still exists via
+- [x] **DSRM-05** — Read verifies the membership still exists via
   `GET /management-access-policies/directory-services/roles?policy_names=<p>&role_names=<r>`.
   If the list is empty (association removed outside Terraform), call
   `resp.State.RemoveResource(ctx)`.
@@ -132,17 +132,17 @@ Role Membership, DOC = Documentation, QA = Quality. Numbering restart per milest
 
 | REQ-ID  | Phase | Status |
 |---------|-------|--------|
-| DSR-01  | 50    | Pending |
-| DSR-02  | 50    | Pending |
-| DSR-03  | 50    | Pending |
+| DSR-01  | 50    | Complete |
+| DSR-02  | 50    | Complete |
+| DSR-03  | 50    | Complete |
 | DSR-04  | 50    | Pending |
 | DSR-05  | 50    | Pending |
 | DSR-06  | 50    | Pending |
-| DSRM-01 | 50    | Pending |
-| DSRM-02 | 50    | Pending |
+| DSRM-01 | 50    | Complete |
+| DSRM-02 | 50    | Complete |
 | DSRM-03 | 50    | Pending |
 | DSRM-04 | 50    | Pending |
-| DSRM-05 | 50    | Pending |
+| DSRM-05 | 50    | Complete |
 | DOC-01  | 50    | Pending |
 | DOC-02  | 50    | Pending |
 | DOC-03  | 50    | Pending |

@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.22.1
 milestone_name: Directory Service – Array Management
-status: Roadmap created — ready for plan-phase
-stopped_at: Phase 50 context gathered (auto)
-last_updated: "2026-04-17T08:53:39.091Z"
-last_activity: 2026-04-17 — Roadmap created for milestone v2.22.2
+status: executing
+stopped_at: Completed 50-02-PLAN.md (mock handlers)
+last_updated: "2026-04-17T09:26:32.084Z"
+last_activity: 2026-04-17
 progress:
-  total_phases: 2
+  total_phases: 1
   completed_phases: 1
   total_plans: 5
   completed_plans: 5
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-17)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Directory Service Roles & Role Mappings (v2.22.2)
+**Current focus:** Phase 50 — directory-service-roles-role-mappings
 
 ## Current Position
 
-Phase: 50 (defining plan)
-Plan: —
-Status: Roadmap created — ready for plan-phase
-Last activity: 2026-04-17 — Roadmap created for milestone v2.22.2
+Phase: 50 (directory-service-roles-role-mappings) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-04-17
 
 ```
 Progress: [                    ] 0% (0/1 phases)
@@ -64,6 +64,8 @@ Progress: [                    ] 0% (0/1 phases)
 - [Phase 50-roadmap]: DSRM resource: GET/POST/DELETE only — no PATCH, both fields trigger RequiresReplace
 - [Phase 50-roadmap]: DSRM resource: Read calls GET with policy_names= and role_names= query params; empty list → RemoveResource
 - [Phase 50-roadmap]: Test baseline: 798 (v2.22.1) → target ≥ 812 (14 new tests: 5 client + 6 resource + 1 data source + 2 margin)
+- [Phase 50-02]: DSRM POST idempotent (Q3 resolved): 200-always, create-or-return, Terraform replays never 409
+- [Phase 50-02]: DSR PATCH readonly guard: raw JSON decode first to detect management_access_policies before typed decode
 
 ### Pending Todos
 
@@ -75,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T08:53:39.085Z
-Stopped at: Phase 50 context gathered (auto)
-Resume file: .planning/phases/50-directory-service-roles-role-mappings/50-CONTEXT.md
+Last session: 2026-04-17T09:26:32.076Z
+Stopped at: Completed 50-02-PLAN.md (mock handlers)
+Resume file: None
