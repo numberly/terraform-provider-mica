@@ -840,4 +840,4 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 50. Directory Service Roles & Role Mappings | 5/5 | Complete   | 2026-04-17 |
+| 50. Directory Service Roles & Role Mappings | 5/5 | Complete    | 2026-04-17 |
