@@ -209,16 +209,19 @@ func (r *remoteCredentialsResource) Create(ctx context.Context, req resource.Cre
 		SecretAccessKey: data.SecretAccessKey.ValueString(),
 	}
 
-	// Route to ?target_names= or ?remote_names= based on which attribute is set.
-	remoteName := ""
-	targetName := ""
-	if !data.TargetName.IsNull() && !data.TargetName.IsUnknown() && data.TargetName.ValueString() != "" {
-		targetName = data.TargetName.ValueString()
-	} else if !data.RemoteName.IsNull() && !data.RemoteName.IsUnknown() {
-		remoteName = data.RemoteName.ValueString()
+	// Route to PostRemoteCredentialsForTarget or PostRemoteCredentialsForRemote
+	// based on which attribute is set.
+	var cred *client.ObjectStoreRemoteCredentials
+	var err error
+	switch {
+	case !data.TargetName.IsNull() && !data.TargetName.IsUnknown() && data.TargetName.ValueString() != "":
+		cred, err = r.client.PostRemoteCredentialsForTarget(ctx, data.Name.ValueString(), data.TargetName.ValueString(), post)
+	case !data.RemoteName.IsNull() && !data.RemoteName.IsUnknown() && data.RemoteName.ValueString() != "":
+		cred, err = r.client.PostRemoteCredentialsForRemote(ctx, data.Name.ValueString(), data.RemoteName.ValueString(), post)
+	default:
+		resp.Diagnostics.AddError("Error creating remote credentials", "either target_name or remote_name must be set")
+		return
 	}
-
-	cred, err := r.client.PostRemoteCredentials(ctx, data.Name.ValueString(), remoteName, targetName, post)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating remote credentials", err.Error())
 		return

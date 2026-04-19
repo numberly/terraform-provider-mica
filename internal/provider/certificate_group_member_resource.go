@@ -139,18 +139,13 @@ func (r *certificateGroupMemberResource) Read(ctx context.Context, req resource.
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	exists, err := r.client.GetCertificateGroupMember(ctx, data.GroupName.ValueString(), data.CertName.ValueString())
+	_, err := r.client.GetCertificateGroupMember(ctx, data.GroupName.ValueString(), data.CertName.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError("Error reading certificate group member", err.Error())
-		return
-	}
-
-	if !exists {
-		resp.State.RemoveResource(ctx)
 		return
 	}
 
@@ -203,17 +198,15 @@ func (r *certificateGroupMemberResource) ImportState(ctx context.Context, req re
 	groupName := parts[0]
 	certName := parts[1]
 
-	exists, err := r.client.GetCertificateGroupMember(ctx, groupName, certName)
-	if err != nil {
+	if _, err := r.client.GetCertificateGroupMember(ctx, groupName, certName); err != nil {
+		if client.IsNotFound(err) {
+			resp.Diagnostics.AddError(
+				"Certificate group member not found",
+				fmt.Sprintf("No certificate %q found in group %q.", certName, groupName),
+			)
+			return
+		}
 		resp.Diagnostics.AddError("Error importing certificate group member", err.Error())
-		return
-	}
-
-	if !exists {
-		resp.Diagnostics.AddError(
-			"Certificate group member not found",
-			fmt.Sprintf("No certificate %q found in group %q.", certName, groupName),
-		)
 		return
 	}
 

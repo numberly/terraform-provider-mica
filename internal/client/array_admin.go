@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -26,11 +25,7 @@ func (c *FlashBladeClient) PatchArrayDns(ctx context.Context, name string, body 
 
 // DeleteArrayDns deletes a DNS configuration entry by name.
 func (c *FlashBladeClient) DeleteArrayDns(ctx context.Context, name string) error {
-	path := "/dns?names=" + url.QueryEscape(name)
-	if err := c.delete(ctx, path); err != nil {
-		return fmt.Errorf("DeleteArrayDns: %w", err)
-	}
-	return nil
+	return c.delete(ctx, "/dns?names="+url.QueryEscape(name))
 }
 
 // GetArrayNtp retrieves the NTP servers configured on the array.

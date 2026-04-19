@@ -35,17 +35,20 @@ func (c *FlashBladeClient) ListRemoteCredentials(ctx context.Context) ([]ObjectS
 	return all, nil
 }
 
-// PostRemoteCredentials creates a new remote credentials entry.
-// The name is passed via ?names=. Either targetName or remoteName must be non-empty (not both).
-// When targetName is non-empty, routes to ?target_names=; otherwise routes to ?remote_names=.
-func (c *FlashBladeClient) PostRemoteCredentials(ctx context.Context, name string, remoteName string, targetName string, body ObjectStoreRemoteCredentialsPost) (*ObjectStoreRemoteCredentials, error) {
-	path := "/object-store-remote-credentials?names=" + url.QueryEscape(name)
-	if targetName != "" {
-		path += "&target_names=" + url.QueryEscape(targetName)
-	} else if remoteName != "" {
-		path += "&remote_names=" + url.QueryEscape(remoteName)
-	}
-	return postOne[ObjectStoreRemoteCredentialsPost, ObjectStoreRemoteCredentials](c, ctx, path, body, "PostRemoteCredentials")
+// PostRemoteCredentialsForTarget creates a new remote credentials entry scoped to a
+// replication target. The name is passed via ?names= and the target via ?target_names=.
+func (c *FlashBladeClient) PostRemoteCredentialsForTarget(ctx context.Context, name string, targetName string, body ObjectStoreRemoteCredentialsPost) (*ObjectStoreRemoteCredentials, error) {
+	path := "/object-store-remote-credentials?names=" + url.QueryEscape(name) +
+		"&target_names=" + url.QueryEscape(targetName)
+	return postOne[ObjectStoreRemoteCredentialsPost, ObjectStoreRemoteCredentials](c, ctx, path, body, "PostRemoteCredentialsForTarget")
+}
+
+// PostRemoteCredentialsForRemote creates a new remote credentials entry scoped to a
+// remote array. The name is passed via ?names= and the remote via ?remote_names=.
+func (c *FlashBladeClient) PostRemoteCredentialsForRemote(ctx context.Context, name string, remoteName string, body ObjectStoreRemoteCredentialsPost) (*ObjectStoreRemoteCredentials, error) {
+	path := "/object-store-remote-credentials?names=" + url.QueryEscape(name) +
+		"&remote_names=" + url.QueryEscape(remoteName)
+	return postOne[ObjectStoreRemoteCredentialsPost, ObjectStoreRemoteCredentials](c, ctx, path, body, "PostRemoteCredentialsForRemote")
 }
 
 // PatchRemoteCredentials updates an existing remote credentials entry identified by name.

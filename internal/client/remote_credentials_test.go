@@ -114,18 +114,17 @@ func TestUnit_RemoteCredentials_Post_WithRemote(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	got, err := c.PostRemoteCredentials(
+	got, err := c.PostRemoteCredentialsForRemote(
 		context.Background(),
 		"remote-array/new-creds",
 		"remote-array",
-		"",
 		client.ObjectStoreRemoteCredentialsPost{
 			AccessKeyID:     "AKIAIOSFODNN7EXAMPLE",
 			SecretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
 		},
 	)
 	if err != nil {
-		t.Fatalf("PostRemoteCredentials: %v", err)
+		t.Fatalf("PostRemoteCredentialsForRemote: %v", err)
 	}
 	if got.Name != "remote-array/new-creds" {
 		t.Errorf("expected Name remote-array/new-creds, got %q", got.Name)
@@ -175,10 +174,9 @@ func TestUnit_RemoteCredentials_Post_WithTarget(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	got, err := c.PostRemoteCredentials(
+	got, err := c.PostRemoteCredentialsForTarget(
 		context.Background(),
 		"target-creds",
-		"",
 		"my-target",
 		client.ObjectStoreRemoteCredentialsPost{
 			AccessKeyID:     "AKIAIOSFODNN7EXAMPLE",
@@ -186,7 +184,7 @@ func TestUnit_RemoteCredentials_Post_WithTarget(t *testing.T) {
 		},
 	)
 	if err != nil {
-		t.Fatalf("PostRemoteCredentials with target: %v", err)
+		t.Fatalf("PostRemoteCredentialsForTarget: %v", err)
 	}
 	if got.Name != "target-creds" {
 		t.Errorf("expected Name target-creds, got %q", got.Name)
@@ -196,43 +194,11 @@ func TestUnit_RemoteCredentials_Post_WithTarget(t *testing.T) {
 	}
 }
 
-func TestUnit_RemoteCredentials_Post_NeitherParam(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.URL.Path == "/api/login":
-			w.Header().Set("x-auth-token", "tok")
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-remote-credentials":
-			remoteName := r.URL.Query().Get("remote_names")
-			targetName := r.URL.Query().Get("target_names")
-			if remoteName == "" && targetName == "" {
-				http.Error(w, "remote_names or target_names is required", http.StatusBadRequest)
-				return
-			}
-			// Shouldn't reach here in this test.
-			w.WriteHeader(http.StatusOK)
-		default:
-			http.NotFound(w, r)
-		}
-	}))
-	defer srv.Close()
-
-	c := newTestClient(t, srv)
-	// Pass empty strings for both remoteName and targetName — server should reject.
-	_, err := c.PostRemoteCredentials(
-		context.Background(),
-		"creds-name",
-		"",
-		"",
-		client.ObjectStoreRemoteCredentialsPost{
-			AccessKeyID:     "AKIAIOSFODNN7EXAMPLE",
-			SecretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-		},
-	)
-	if err == nil {
-		t.Fatal("expected error when neither remote_names nor target_names provided, got nil")
-	}
-}
+// TestUnit_RemoteCredentials_Post_NeitherParam was removed when
+// PostRemoteCredentials was split into PostRemoteCredentialsForRemote and
+// PostRemoteCredentialsForTarget: the "neither param" path is no longer
+// reachable from the client because each function always sets its scoping
+// query parameter. Provider-level guards cover the equivalent caller error.
 
 func TestUnit_RemoteCredentials_Patch(t *testing.T) {
 	var gotBody client.ObjectStoreRemoteCredentialsPatch

@@ -67,6 +67,14 @@ func ParseAPIError(resp *http.Response) error {
 // The match is scoped to the first sub-error message (Errors[0].Message)
 // using HasSuffix to avoid false positives on validation errors that
 // contain "does not exist" mid-sentence (e.g., "parameter does not exist in schema").
+//
+// WARNING — message-shape coupling: the 400-path detection depends on the
+// FlashBlade API phrasing "does not exist[.]" for missing resources. If a
+// firmware revision changes that wording (for example to "resource not
+// found"), this function will silently return false and Read operations
+// will surface errors instead of removing resources from state. When
+// upgrading the targeted API version, add a fixture-based test covering the
+// new error shape (see errors_test.go) and extend the suffix list here.
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
