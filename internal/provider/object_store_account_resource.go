@@ -258,7 +258,7 @@ func (r *objectStoreAccountResource) Read(ctx context.Context, req resource.Read
 		}
 	}
 
-	resp.Diagnostics.Append(mapOSAToModel(acct, &data)...)
+	resp.Diagnostics.Append(mapObjectStoreAccountToModel(acct, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -413,15 +413,15 @@ func (r *objectStoreAccountResource) readIntoState(ctx context.Context, name str
 		diags.AddError("Error reading object store account after write", err.Error())
 		return
 	}
-	for _, d := range mapOSAToModel(acct, data) {
+	for _, d := range mapObjectStoreAccountToModel(acct, data) {
 		diags.AddError(d.Summary(), d.Detail())
 	}
 }
 
-// mapOSAToModel maps a client.ObjectStoreAccount to an objectStoreAccountModel.
+// mapObjectStoreAccountToModel maps a client.ObjectStoreAccount to an objectStoreAccountModel.
 // It preserves user-managed fields (Timeouts).
 // Returns diagnostics instead of panicking on object construction errors.
-func mapOSAToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountModel) diag.Diagnostics {
+func mapObjectStoreAccountToModel(acct *client.ObjectStoreAccount, data *objectStoreAccountModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data.ID = types.StringValue(acct.ID)

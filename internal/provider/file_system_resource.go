@@ -32,7 +32,7 @@ type filesystemResource struct {
 	client *client.FlashBladeClient
 }
 
-func NewFilesystemResource() resource.Resource {
+func NewFileSystemResource() resource.Resource {
 	return &filesystemResource{}
 }
 
@@ -430,7 +430,7 @@ func (r *filesystemResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Map API response to model.
-	resp.Diagnostics.Append(mapFSToModel(fs, &data)...)
+	resp.Diagnostics.Append(mapFileSystemToModel(fs, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -578,7 +578,7 @@ func (r *filesystemResource) ImportState(ctx context.Context, req resource.Impor
 	// Initialize timeouts with a proper null value so the framework can serialize it.
 	data.Timeouts = nullTimeoutsValue()
 
-	resp.Diagnostics.Append(mapFSToModel(fs, &data)...)
+	resp.Diagnostics.Append(mapFileSystemToModel(fs, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -645,7 +645,7 @@ func (r *filesystemResource) readIntoState(ctx context.Context, name string, dat
 		reporter.AddError("Error reading file system after write", err.Error())
 		return
 	}
-	for _, d := range mapFSToModel(fs, data) {
+	for _, d := range mapFileSystemToModel(fs, data) {
 		if d.Severity() == diag.SeverityWarning {
 			reporter.AddWarning(d.Summary(), d.Detail())
 		} else {
@@ -654,10 +654,10 @@ func (r *filesystemResource) readIntoState(ctx context.Context, name string, dat
 	}
 }
 
-// mapFSToModel maps a client.FileSystem to a filesystemModel.
+// mapFileSystemToModel maps a client.FileSystem to a filesystemModel.
 // It preserves user-managed fields (DestroyEradicateOnDelete, Timeouts, policy fields).
 // Returns diagnostics instead of panicking on object construction errors.
-func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics {
+func mapFileSystemToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data.ID = types.StringValue(fs.ID)

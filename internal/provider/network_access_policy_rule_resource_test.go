@@ -40,8 +40,8 @@ func napRuleResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildNAPRuleType returns the tftypes.Object for the NAP rule resource.
-func buildNAPRuleType() tftypes.Object {
+// buildNetworkAccessPolicyRuleType returns the tftypes.Object for the NAP rule resource.
+func buildNetworkAccessPolicyRuleType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -102,7 +102,7 @@ func napRulePlan(t *testing.T, policyName, clientStr, effect string, interfaces 
 		cfg["interfaces"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, ifaceVals)
 	}
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildNAPRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildNetworkAccessPolicyRuleType(), cfg),
 		Schema: s,
 	}
 }
@@ -121,7 +121,7 @@ func TestNetworkAccessPolicyRuleResource_Create(t *testing.T) {
 
 	plan := napRulePlan(t, "default", "*", "allow", []string{"nfs", "smb"})
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -175,7 +175,7 @@ func TestNetworkAccessPolicyRuleResource_Update(t *testing.T) {
 	// Create rule first.
 	createPlan := napRulePlan(t, "default", "*", "allow", nil)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -185,7 +185,7 @@ func TestNetworkAccessPolicyRuleResource_Update(t *testing.T) {
 	// Update client to "10.0.0.0/8".
 	updatePlan := napRulePlan(t, "default", "10.0.0.0/8", "allow", nil)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -217,7 +217,7 @@ func TestNetworkAccessPolicyRuleResource_Delete(t *testing.T) {
 	// Create rule first.
 	createPlan := napRulePlan(t, "default", "*", "deny", nil)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -256,7 +256,7 @@ func TestNetworkAccessPolicyRuleResource_Import(t *testing.T) {
 	// Create rule in the pre-seeded "default" policy.
 	createPlan := napRulePlan(t, "default", "*", "allow", nil)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -271,7 +271,7 @@ func TestNetworkAccessPolicyRuleResource_Import(t *testing.T) {
 
 	// Import using "policy_name/index" composite ID.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	importID := "default/" + index
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: importID}, importResp)
@@ -314,7 +314,7 @@ func TestUnit_NetworkAccessPolicyRule_Lifecycle(t *testing.T) {
 	// Step 1: Create (mock pre-seeds "default" policy).
 	createPlan := napRulePlan(t, "default", "*", "allow", []string{"nfs"})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -345,7 +345,7 @@ func TestUnit_NetworkAccessPolicyRule_Lifecycle(t *testing.T) {
 	// Step 3: Update client to specific subnet.
 	updatePlan := napRulePlan(t, "default", "10.0.0.0/8", "allow", []string{"nfs"})
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -396,7 +396,7 @@ func TestUnit_NetworkAccessPolicyRule_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := napRulePlan(t, "default", "*", "allow", []string{"nfs", "smb"})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -410,7 +410,7 @@ func TestUnit_NetworkAccessPolicyRule_ImportIdempotency(t *testing.T) {
 
 	// ImportState using composite ID "policy_name/index".
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default/" + index}, importResp)
 	if importResp.Diagnostics.HasError() {

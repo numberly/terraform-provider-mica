@@ -123,7 +123,7 @@ func (d *arraySmtpDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	watchers, err := d.client.GetAlertWatchers(ctx)
+	watchers, err := d.client.ListAlertWatchers(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading alert watchers", err.Error())
 		return

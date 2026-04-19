@@ -40,8 +40,8 @@ func osaResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildOSAType returns the tftypes.Object for the object store account resource schema.
-func buildOSAType() tftypes.Object {
+// buildObjectStoreAccountType returns the tftypes.Object for the object store account resource schema.
+func buildObjectStoreAccountType() tftypes.Object {
 	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"data_reduction":      tftypes.Number,
 		"snapshots":           tftypes.Number,
@@ -105,7 +105,7 @@ func osaPlanWithName(t *testing.T, name string) tfsdk.Plan {
 	cfg := nullOSAConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildOSAType(), cfg),
+		Raw:    tftypes.NewValue(buildObjectStoreAccountType(), cfg),
 		Schema: s,
 	}
 }
@@ -118,7 +118,7 @@ func osaPlanWithNameAndQuota(t *testing.T, name string, quotaLimit int64) tfsdk.
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["quota_limit"] = tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(quotaLimit))
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildOSAType(), cfg),
+		Raw:    tftypes.NewValue(buildObjectStoreAccountType(), cfg),
 		Schema: s,
 	}
 }
@@ -137,7 +137,7 @@ func TestUnit_ObjectStoreAccount_Create(t *testing.T) {
 	plan := osaPlanWithName(t, "test-account")
 	req := resource.CreateRequest{Plan: plan}
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), req, resp)
@@ -174,7 +174,7 @@ func TestUnit_ObjectStoreAccount_Update(t *testing.T) {
 	// Create first.
 	plan := osaPlanWithName(t, "update-account")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -184,7 +184,7 @@ func TestUnit_ObjectStoreAccount_Update(t *testing.T) {
 	// Update quota_limit.
 	newPlan := osaPlanWithNameAndQuota(t, "update-account", 10737418240)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  newPlan,
@@ -216,7 +216,7 @@ func TestUnit_ObjectStoreAccount_Delete(t *testing.T) {
 
 	plan := osaPlanWithName(t, "delete-account")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -249,7 +249,7 @@ func TestUnit_ObjectStoreAccount_Import(t *testing.T) {
 	// Create first.
 	plan := osaPlanWithName(t, "import-account")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -258,7 +258,7 @@ func TestUnit_ObjectStoreAccount_Import(t *testing.T) {
 
 	// Import by name.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-account"}, importResp)
 
@@ -312,7 +312,7 @@ func TestUnit_ObjectStoreAccount_Read_NotFound(t *testing.T) {
 	cfg := nullOSAConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, "does-not-exist")
 	cfg["id"] = tftypes.NewValue(tftypes.String, "non-existent-id")
-	state := tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), cfg), Schema: s}
 
 	readResp := &resource.ReadResponse{State: state}
 	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
@@ -338,7 +338,7 @@ func TestUnit_ObjectStoreAccount_Lifecycle(t *testing.T) {
 	// Step 1: Create.
 	createPlan := osaPlanWithName(t, "lifecycle-account")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -369,7 +369,7 @@ func TestUnit_ObjectStoreAccount_Lifecycle(t *testing.T) {
 	// Step 3: Update quota_limit.
 	updatePlan := osaPlanWithNameAndQuota(t, "lifecycle-account", 10737418240)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -424,7 +424,7 @@ func TestUnit_ObjectStoreAccount_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := osaPlanWithNameAndQuota(t, "idempotent-account", 5368709120)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -437,7 +437,7 @@ func TestUnit_ObjectStoreAccount_ImportIdempotency(t *testing.T) {
 
 	// ImportState.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSAType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-account"}, importResp)
 	if importResp.Diagnostics.HasError() {

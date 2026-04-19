@@ -261,9 +261,9 @@ func TestArraySmtpResource_Delete(t *testing.T) {
 	}
 
 	// Verify watchers removed.
-	watcherList, err := r.client.GetAlertWatchers(context.Background())
+	watcherList, err := r.client.ListAlertWatchers(context.Background())
 	if err != nil {
-		t.Fatalf("GetAlertWatchers after delete: %v", err)
+		t.Fatalf("ListAlertWatchers after delete: %v", err)
 	}
 	if len(watcherList) != 0 {
 		t.Errorf("expected alert watchers to be empty after delete, got %v", watcherList)
@@ -373,9 +373,9 @@ func TestArraySmtpResource_WatcherRemoval(t *testing.T) {
 	}
 
 	// Verify only one watcher remains via client.
-	watcherList, err := r.client.GetAlertWatchers(context.Background())
+	watcherList, err := r.client.ListAlertWatchers(context.Background())
 	if err != nil {
-		t.Fatalf("GetAlertWatchers: %v", err)
+		t.Fatalf("ListAlertWatchers: %v", err)
 	}
 	if len(watcherList) != 1 {
 		t.Errorf("expected 1 alert watcher after removal, got %d", len(watcherList))

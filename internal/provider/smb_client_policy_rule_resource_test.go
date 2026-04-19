@@ -39,8 +39,8 @@ func smbClientRuleResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildSMBClientRuleType returns the tftypes.Object for the SMB client policy rule resource.
-func buildSMBClientRuleType() tftypes.Object {
+// buildSmbClientPolicyRuleType returns the tftypes.Object for the SMB client policy rule resource.
+func buildSmbClientPolicyRuleType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -95,7 +95,7 @@ func smbClientRulePlan(t *testing.T, policyName, clientMatch, encryption, permis
 		cfg["permission"] = tftypes.NewValue(tftypes.String, permission)
 	}
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBClientRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildSmbClientPolicyRuleType(), cfg),
 		Schema: s,
 	}
 }
@@ -135,7 +135,7 @@ func TestUnit_SmbClientPolicyRule_CRUD(t *testing.T) {
 	// Step 1: Create with client="*", encryption="optional", permission="rw".
 	createPlan := smbClientRulePlan(t, "client-rule-test-policy", "*", "optional", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -175,11 +175,11 @@ func TestUnit_SmbClientPolicyRule_CRUD(t *testing.T) {
 	updateCfg["encryption"] = tftypes.NewValue(tftypes.String, "optional")
 	updateCfg["permission"] = tftypes.NewValue(tftypes.String, "rw")
 	updatePlan := tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBClientRuleType(), updateCfg),
+		Raw:    tftypes.NewValue(buildSmbClientPolicyRuleType(), updateCfg),
 		Schema: s,
 	}
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -218,7 +218,7 @@ func TestUnit_SmbClientPolicyRule_Import(t *testing.T) {
 	// Create first.
 	createPlan := smbClientRulePlan(t, "import-client-rule-policy", "*", "optional", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -232,7 +232,7 @@ func TestUnit_SmbClientPolicyRule_Import(t *testing.T) {
 	// Import by composite ID "policy_name/rule_name".
 	compositeID := "import-client-rule-policy/" + createdModel.Name.ValueString()
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: compositeID}, importResp)
 	if importResp.Diagnostics.HasError() {
@@ -323,7 +323,7 @@ func TestUnit_SmbClientPolicyRule_Idempotent(t *testing.T) {
 
 	plan := smbClientRulePlan(t, "idempotent-rule-policy", "*", "optional", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {

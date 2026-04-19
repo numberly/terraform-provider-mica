@@ -162,7 +162,7 @@ func (r *snapshotPolicyRuleResource) Create(ctx context.Context, req resource.Cr
 	policyName := data.PolicyName.ValueString()
 	rulePost := buildRulePost(&data)
 
-	updatedPolicy, err := r.client.AddSnapshotPolicyRule(ctx, policyName, rulePost)
+	updatedPolicy, err := r.client.PostSnapshotPolicyRule(ctx, policyName, rulePost)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating snapshot policy rule", err.Error())
 		return
@@ -228,7 +228,7 @@ func (r *snapshotPolicyRuleResource) Read(ctx context.Context, req resource.Read
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Update replaces the rule atomically via PATCH remove_rules + add_rules (ReplaceSnapshotPolicyRule).
+// Update replaces the rule atomically via PATCH remove_rules + add_rules (PatchSnapshotPolicyRule).
 func (r *snapshotPolicyRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan, state snapshotPolicyRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -249,7 +249,7 @@ func (r *snapshotPolicyRuleResource) Update(ctx context.Context, req resource.Up
 	oldRule := buildRuleRemove(&state)
 	newRulePost := buildRulePost(&plan)
 
-	updatedPolicy, err := r.client.ReplaceSnapshotPolicyRule(ctx, policyName, oldRule, newRulePost)
+	updatedPolicy, err := r.client.PatchSnapshotPolicyRule(ctx, policyName, oldRule, newRulePost)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating snapshot policy rule", err.Error())
 		return
@@ -289,7 +289,7 @@ func (r *snapshotPolicyRuleResource) Delete(ctx context.Context, req resource.De
 	policyName := data.PolicyName.ValueString()
 	rule := buildRuleRemove(&data)
 
-	_, err := r.client.RemoveSnapshotPolicyRule(ctx, policyName, rule)
+	_, err := r.client.DeleteSnapshotPolicyRule(ctx, policyName, rule)
 	if err != nil {
 		if client.IsNotFound(err) {
 			return

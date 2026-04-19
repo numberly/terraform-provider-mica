@@ -168,11 +168,11 @@ func bucketPlanWithNameAndAccount(t *testing.T, name, account string) tfsdk.Plan
 
 // setupBucketMockServer creates a mock server with account and bucket handlers,
 // pre-seeds an account, and returns the server, client, and bucket store.
-func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBladeClient, *handlers.BucketStore) {
+func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBladeClient, *handlers.BucketStoreFacade) {
 	t.Helper()
 	ms := testmock.NewMockServer()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
-	bucketStore := handlers.RegisterBucketHandlers(ms.Mux, accountStore)
+	bucketStore := handlers.NewBucketStoreFacade(handlers.RegisterBucketHandlers(ms.Mux, accountStore))
 
 	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),

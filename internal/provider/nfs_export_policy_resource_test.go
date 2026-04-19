@@ -41,8 +41,8 @@ func nfsPolicyResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildNFSPolicyType returns the tftypes.Object for the NFS export policy resource.
-func buildNFSPolicyType() tftypes.Object {
+// buildNfsExportPolicyType returns the tftypes.Object for the NFS export policy resource.
+func buildNfsExportPolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -86,7 +86,7 @@ func nfsPolicyPlanWithName(t *testing.T, name string) tfsdk.Plan {
 	cfg := nullNFSPolicyConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildNFSPolicyType(), cfg),
+		Raw:    tftypes.NewValue(buildNfsExportPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -99,7 +99,7 @@ func nfsPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tf
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, enabled)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildNFSPolicyType(), cfg),
+		Raw:    tftypes.NewValue(buildNfsExportPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -117,7 +117,7 @@ func TestNfsExportPolicyResource_Create(t *testing.T) {
 
 	plan := nfsPolicyPlanWithNameAndEnabled(t, "test-policy", true)
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -154,7 +154,7 @@ func TestNfsExportPolicyResource_Update(t *testing.T) {
 	// Create first.
 	createPlan := nfsPolicyPlanWithNameAndEnabled(t, "update-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -164,7 +164,7 @@ func TestNfsExportPolicyResource_Update(t *testing.T) {
 	// Update enabled=false.
 	newPlan := nfsPolicyPlanWithNameAndEnabled(t, "update-policy", false)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  newPlan,
@@ -186,7 +186,7 @@ func TestNfsExportPolicyResource_Update(t *testing.T) {
 	// Now rename the policy in-place.
 	renamePlan := nfsPolicyPlanWithNameAndEnabled(t, "update-policy-renamed", false)
 	renameResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  renamePlan,
@@ -220,7 +220,7 @@ func TestNfsExportPolicyResource_Delete(t *testing.T) {
 	// Create first.
 	plan := nfsPolicyPlanWithName(t, "delete-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -253,7 +253,7 @@ func TestNfsExportPolicyResource_Import(t *testing.T) {
 	// Create first.
 	plan := nfsPolicyPlanWithName(t, "import-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -262,7 +262,7 @@ func TestNfsExportPolicyResource_Import(t *testing.T) {
 
 	// Import by name.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-policy"}, importResp)
 
@@ -296,7 +296,7 @@ func TestUnit_NfsExportPolicy_Lifecycle(t *testing.T) {
 	// Step 1: Create.
 	createPlan := nfsPolicyPlanWithNameAndEnabled(t, "lifecycle-nfs-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -330,7 +330,7 @@ func TestUnit_NfsExportPolicy_Lifecycle(t *testing.T) {
 	// Step 3: Update enabled=false.
 	updatePlan := nfsPolicyPlanWithNameAndEnabled(t, "lifecycle-nfs-policy", false)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -385,7 +385,7 @@ func TestUnit_NfsExportPolicy_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := nfsPolicyPlanWithNameAndEnabled(t, "idempotent-nfs-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -398,7 +398,7 @@ func TestUnit_NfsExportPolicy_ImportIdempotency(t *testing.T) {
 
 	// ImportState.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-nfs-policy"}, importResp)
 	if importResp.Diagnostics.HasError() {
@@ -454,8 +454,8 @@ func nfsPolicyDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildNFSPolicyDSType returns the tftypes.Object for the NFS export policy data source.
-func buildNFSPolicyDSType() tftypes.Object {
+// buildNfsExportPolicyDSType returns the tftypes.Object for the NFS export policy data source.
+func buildNfsExportPolicyDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":          tftypes.String,
 		"name":        tftypes.String,
@@ -509,10 +509,10 @@ func TestNfsExportPolicyDataSource(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-test-policy")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyDSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildNFSPolicyDSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildNfsExportPolicyDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if readResp.Diagnostics.HasError() {
@@ -553,7 +553,7 @@ func TestUnit_NfsExportPolicy_Create_Conflict(t *testing.T) {
 
 	plan := nfsPolicyPlanWithName(t, "conflict-policy")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -578,7 +578,7 @@ func TestUnit_NfsExportPolicy_Read_NotFound(t *testing.T) {
 	cfg := nullNFSPolicyConfig()
 	cfg["id"] = tftypes.NewValue(tftypes.String, "nfs-gone-id")
 	cfg["name"] = tftypes.NewValue(tftypes.String, "gone-policy")
-	state := tfsdk.State{Raw: tftypes.NewValue(buildNFSPolicyType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyType(), cfg), Schema: s}
 
 	readResp := &resource.ReadResponse{State: state}
 	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)

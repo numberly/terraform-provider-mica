@@ -39,8 +39,8 @@ func smbRuleResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildSMBRuleType returns the tftypes.Object for the SMB share policy rule resource.
-func buildSMBRuleType() tftypes.Object {
+// buildSmbSharePolicyRuleType returns the tftypes.Object for the SMB share policy rule resource.
+func buildSmbSharePolicyRuleType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -98,7 +98,7 @@ func smbRulePlan(t *testing.T, policyName, principal, change, fullControl, readP
 		cfg["read"] = tftypes.NewValue(tftypes.String, readPerm)
 	}
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildSmbSharePolicyRuleType(), cfg),
 		Schema: s,
 	}
 }
@@ -137,7 +137,7 @@ func TestSmbSharePolicyRuleResource_Create(t *testing.T) {
 
 	plan := smbRulePlan(t, "rule-test-policy", "Everyone", "allow", "deny", "allow")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -188,7 +188,7 @@ func TestSmbSharePolicyRuleResource_Update(t *testing.T) {
 	// Create first.
 	createPlan := smbRulePlan(t, "update-rule-policy", "Everyone", "allow", "deny", "allow")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -203,12 +203,12 @@ func TestSmbSharePolicyRuleResource_Update(t *testing.T) {
 	updateCfg["full_control"] = tftypes.NewValue(tftypes.String, "deny")
 	updateCfg["read"] = tftypes.NewValue(tftypes.String, "allow")
 	updatePlan := tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBRuleType(), updateCfg),
+		Raw:    tftypes.NewValue(buildSmbSharePolicyRuleType(), updateCfg),
 		Schema: s,
 	}
 
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -243,7 +243,7 @@ func TestSmbSharePolicyRuleResource_Delete(t *testing.T) {
 	// Create first.
 	createPlan := smbRulePlan(t, "delete-rule-policy", "Everyone", "allow", "allow", "allow")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -284,7 +284,7 @@ func TestSmbSharePolicyRuleResource_Import(t *testing.T) {
 	// Create first.
 	createPlan := smbRulePlan(t, "import-rule-policy", "DOMAIN\\user", "allow", "deny", "allow")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -299,7 +299,7 @@ func TestSmbSharePolicyRuleResource_Import(t *testing.T) {
 	// Import by composite ID "policy_name/rule_name".
 	compositeID := "import-rule-policy/" + createdModel.Name.ValueString()
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: compositeID}, importResp)
 
@@ -340,7 +340,7 @@ func TestUnit_SmbSharePolicyRule_Lifecycle(t *testing.T) {
 	// Step 1: Create.
 	createPlan := smbRulePlan(t, "lifecycle-smb-rule-policy", "Everyone", "allow", "deny", "allow")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -375,9 +375,9 @@ func TestUnit_SmbSharePolicyRule_Lifecycle(t *testing.T) {
 	updateCfg["change"] = tftypes.NewValue(tftypes.String, "deny")
 	updateCfg["full_control"] = tftypes.NewValue(tftypes.String, "deny")
 	updateCfg["read"] = tftypes.NewValue(tftypes.String, "allow")
-	updatePlan := tfsdk.Plan{Raw: tftypes.NewValue(buildSMBRuleType(), updateCfg), Schema: s}
+	updatePlan := tfsdk.Plan{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), updateCfg), Schema: s}
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -430,7 +430,7 @@ func TestUnit_SmbSharePolicyRule_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := smbRulePlan(t, "idempotent-smb-rule-policy", "Everyone", "allow", "deny", "allow")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -444,7 +444,7 @@ func TestUnit_SmbSharePolicyRule_ImportIdempotency(t *testing.T) {
 	// ImportState using composite ID "policy_name/rule_name".
 	compositeID := "idempotent-smb-rule-policy/" + createModel.Name.ValueString()
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: compositeID}, importResp)
 	if importResp.Diagnostics.HasError() {

@@ -462,7 +462,7 @@ func (r *arraySmtpResource) readIntoState(ctx context.Context, data *arraySmtpMo
 		return diags
 	}
 
-	watchers, err := r.client.GetAlertWatchers(ctx)
+	watchers, err := r.client.ListAlertWatchers(ctx)
 	if err != nil {
 		diags.AddError("Error reading alert watchers", err.Error())
 		return diags

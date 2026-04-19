@@ -19,7 +19,7 @@ type objectStoreAccessKeyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-func NewAccessKeyDataSource() datasource.DataSource {
+func NewObjectStoreAccessKeyDataSource() datasource.DataSource {
 	return &objectStoreAccessKeyDataSource{}
 }
 

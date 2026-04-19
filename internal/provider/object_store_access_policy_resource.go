@@ -211,7 +211,7 @@ func (r *objectStoreAccessPolicyResource) Read(ctx context.Context, req resource
 		}
 	}
 
-	mapOAPToModel(policy, &data)
+	mapObjectStoreAccessPolicyToModel(policy, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -326,12 +326,12 @@ func (r *objectStoreAccessPolicyResource) readIntoState(ctx context.Context, nam
 		diags.AddError("Error reading object store access policy after write", err.Error())
 		return
 	}
-	mapOAPToModel(policy, data)
+	mapObjectStoreAccessPolicyToModel(policy, data)
 }
 
-// mapOAPToModel maps a client.ObjectStoreAccessPolicy to an objectStoreAccessPolicyModel.
+// mapObjectStoreAccessPolicyToModel maps a client.ObjectStoreAccessPolicy to an objectStoreAccessPolicyModel.
 // It preserves user-managed fields (Timeouts).
-func mapOAPToModel(policy *client.ObjectStoreAccessPolicy, data *objectStoreAccessPolicyModel) {
+func mapObjectStoreAccessPolicyToModel(policy *client.ObjectStoreAccessPolicy, data *objectStoreAccessPolicyModel) {
 	data.ID = types.StringValue(policy.ID)
 	data.Name = types.StringValue(policy.Name)
 	data.ARN = types.StringValue(policy.ARN)

@@ -41,8 +41,8 @@ func oapRuleResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildOAPRuleType returns the tftypes.Object for the OAP rule resource.
-func buildOAPRuleType() tftypes.Object {
+// buildObjectStoreAccessPolicyRuleType returns the tftypes.Object for the OAP rule resource.
+func buildObjectStoreAccessPolicyRuleType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -103,7 +103,7 @@ func oapRulePlan(t *testing.T, policyName, ruleName, effect string, actions, res
 	cfg["resources"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, resourceVals)
 
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildOAPRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), cfg),
 		Schema: s,
 	}
 }
@@ -131,7 +131,7 @@ func oapRulePlanWithConditions(t *testing.T, policyName, ruleName, effect string
 	cfg["resources"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, resourceVals)
 
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildOAPRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), cfg),
 		Schema: s,
 	}
 }
@@ -173,7 +173,7 @@ func TestObjectStoreAccessPolicyRuleResource_Create(t *testing.T) {
 		[]string{"arn:aws:s3:::my-bucket/*"},
 	)
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -227,7 +227,7 @@ func TestObjectStoreAccessPolicyRuleResource_Update(t *testing.T) {
 		[]string{"arn:aws:s3:::test-bucket/*"},
 	)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -240,7 +240,7 @@ func TestObjectStoreAccessPolicyRuleResource_Update(t *testing.T) {
 		[]string{"arn:aws:s3:::test-bucket/*"},
 	)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -280,7 +280,7 @@ func TestObjectStoreAccessPolicyRuleResource_Delete(t *testing.T) {
 		[]string{"arn:aws:s3:::protected/*"},
 	)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -327,7 +327,7 @@ func TestObjectStoreAccessPolicyRuleResource_Import(t *testing.T) {
 		[]string{"arn:aws:s3:::shared/*"},
 	)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -336,7 +336,7 @@ func TestObjectStoreAccessPolicyRuleResource_Import(t *testing.T) {
 
 	// Import by "policy_name/rule_name".
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "rule-import-policy/import-rule"}, importResp)
 
@@ -382,7 +382,7 @@ func TestObjectStoreAccessPolicyRuleResource_ConditionsRoundTrip(t *testing.T) {
 		conditions,
 	)
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -423,7 +423,7 @@ func TestUnit_OAPRule_Lifecycle(t *testing.T) {
 		[]string{"arn:aws:s3:::test-bucket/*"},
 	)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -457,7 +457,7 @@ func TestUnit_OAPRule_Lifecycle(t *testing.T) {
 		[]string{"arn:aws:s3:::test-bucket/*"},
 	)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -517,7 +517,7 @@ func TestUnit_OAPRule_ImportIdempotency(t *testing.T) {
 		[]string{"arn:aws:s3:::test-bucket/*"},
 	)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -530,7 +530,7 @@ func TestUnit_OAPRule_ImportIdempotency(t *testing.T) {
 
 	// ImportState using composite ID "policy_name/rule_name".
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-oap-rule-policy/idempotent-rule"}, importResp)
 	if importResp.Diagnostics.HasError() {

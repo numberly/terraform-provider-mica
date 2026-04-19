@@ -39,9 +39,9 @@ func dataSourceSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildDSType returns the tftypes.Object for the filesystem data source schema.
+// buildFileSystemDSType returns the tftypes.Object for the filesystem data source schema.
 // It mirrors the resource schema except all attributes are Computed (no timeouts block).
-func buildDSType() tftypes.Object {
+func buildFileSystemDSType() tftypes.Object {
 	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"data_reduction":      tftypes.Number,
 		"snapshots":           tftypes.Number,
@@ -188,10 +188,10 @@ func TestUnit_FileSystemDataSource(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-test-fs")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildDSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildDSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildFileSystemDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if readResp.Diagnostics.HasError() {
@@ -237,10 +237,10 @@ func TestUnit_FileSystemDataSource_NotFound(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "nonexistent-fs")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildDSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildDSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildFileSystemDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if !readResp.Diagnostics.HasError() {

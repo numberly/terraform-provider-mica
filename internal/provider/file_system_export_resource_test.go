@@ -38,8 +38,8 @@ func fsExportResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildFSExportType returns the tftypes.Object for the file system export resource schema.
-func buildFSExportType() tftypes.Object {
+// buildFileSystemExportType returns the tftypes.Object for the file system export resource schema.
+func buildFileSystemExportType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -93,7 +93,7 @@ func fsExportPlanWith(t *testing.T, fsName, serverName, policyName string) tfsdk
 	cfg["server_name"] = tftypes.NewValue(tftypes.String, serverName)
 	cfg["policy_name"] = tftypes.NewValue(tftypes.String, policyName)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildFSExportType(), cfg),
+		Raw:    tftypes.NewValue(buildFileSystemExportType(), cfg),
 		Schema: s,
 	}
 }
@@ -110,7 +110,7 @@ func fsExportPlanWithSharePolicy(t *testing.T, fsName, serverName, policyName, e
 	cfg["export_name"] = tftypes.NewValue(tftypes.String, exportName)
 	cfg["share_policy_name"] = tftypes.NewValue(tftypes.String, sharePolicyName)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildFSExportType(), cfg),
+		Raw:    tftypes.NewValue(buildFileSystemExportType(), cfg),
 		Schema: s,
 	}
 }
@@ -129,7 +129,7 @@ func TestUnit_FileSystemExport_Create(t *testing.T) {
 	plan := fsExportPlanWith(t, "test-fs", "server1", "nfs-policy")
 	req := resource.CreateRequest{Plan: plan}
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), req, resp)
@@ -184,7 +184,7 @@ func TestUnit_FileSystemExport_Read(t *testing.T) {
 	cfg["id"] = tftypes.NewValue(tftypes.String, seeded.ID)
 	cfg["name"] = tftypes.NewValue(tftypes.String, seeded.Name)
 	cfg["file_system_name"] = tftypes.NewValue(tftypes.String, "read-fs")
-	state := tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), cfg), Schema: s}
 
 	readResp := &resource.ReadResponse{State: state}
 	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
@@ -227,7 +227,7 @@ func TestUnit_FileSystemExport_Update(t *testing.T) {
 	// Create first.
 	createPlan := fsExportPlanWith(t, "update-fs", "server1", "nfs-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -237,7 +237,7 @@ func TestUnit_FileSystemExport_Update(t *testing.T) {
 	// Update share_policy_name. export_name must match state to avoid spurious PATCH.
 	updatePlan := fsExportPlanWithSharePolicy(t, "update-fs", "server1", "nfs-policy", "update-fs", "smb-share-policy")
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -270,7 +270,7 @@ func TestUnit_FileSystemExport_Delete(t *testing.T) {
 	// Create first.
 	createPlan := fsExportPlanWith(t, "delete-fs", "server1", "nfs-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -304,7 +304,7 @@ func TestUnit_FileSystemExport_Import(t *testing.T) {
 	s := fsExportResourceSchema(t).Schema
 
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-fs/import-fs"}, importResp)
 
@@ -347,7 +347,7 @@ func TestUnit_FileSystemExport_NotFound(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "does-not-exist/does-not-exist")
 	cfg["id"] = tftypes.NewValue(tftypes.String, "non-existent-id")
 	cfg["file_system_name"] = tftypes.NewValue(tftypes.String, "does-not-exist")
-	state := tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), cfg), Schema: s}
 
 	readResp := &resource.ReadResponse{State: state}
 	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
@@ -371,7 +371,7 @@ func TestUnit_FileSystemExport_Idempotent(t *testing.T) {
 
 	plan := fsExportPlanWith(t, "idempotent-fs", "server1", "nfs-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSExportType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemExportType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {

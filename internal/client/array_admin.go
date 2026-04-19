@@ -70,8 +70,8 @@ func (c *FlashBladeClient) PatchSmtpServer(ctx context.Context, body SmtpServerP
 	return patchOne[SmtpServerPatch, SmtpServer](c, ctx, "/smtp-servers", body, "PatchSmtpServer")
 }
 
-// GetAlertWatchers returns all configured alert watchers (email recipients).
-func (c *FlashBladeClient) GetAlertWatchers(ctx context.Context) ([]AlertWatcher, error) {
+// ListAlertWatchers returns all configured alert watchers (email recipients).
+func (c *FlashBladeClient) ListAlertWatchers(ctx context.Context) ([]AlertWatcher, error) {
 	var resp ListResponse[AlertWatcher]
 	if err := c.get(ctx, "/alert-watchers", &resp); err != nil {
 		return nil, err

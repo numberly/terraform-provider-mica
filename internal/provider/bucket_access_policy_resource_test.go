@@ -39,8 +39,8 @@ func bapResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildBAPType returns the tftypes.Object for the bucket access policy resource schema.
-func buildBAPType() tftypes.Object {
+// buildBucketAccessPolicyType returns the tftypes.Object for the bucket access policy resource schema.
+func buildBucketAccessPolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -76,7 +76,7 @@ func bapPlanWith(t *testing.T, bucketName string) tfsdk.Plan {
 	cfg := nullBAPConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, bucketName)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildBAPType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAccessPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -139,7 +139,7 @@ func TestBucketAccessPolicyResource_Create(t *testing.T) {
 
 	plan := bapPlanWith(t, "test-bucket")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -176,7 +176,7 @@ func TestBucketAccessPolicyResource_Read(t *testing.T) {
 	// Create first.
 	plan := bapPlanWith(t, "read-bucket")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -220,7 +220,7 @@ func TestBucketAccessPolicyResource_ReadNotFound(t *testing.T) {
 	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, true)
 
 	state := tfsdk.State{
-		Raw:    tftypes.NewValue(buildBAPType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAccessPolicyType(), cfg),
 		Schema: s,
 	}
 
@@ -249,7 +249,7 @@ func TestBucketAccessPolicyResource_Delete(t *testing.T) {
 	// Create.
 	plan := bapPlanWith(t, "del-bucket")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -291,7 +291,7 @@ func TestBucketAccessPolicyResource_ImportState(t *testing.T) {
 	s := bapResourceSchema(t).Schema
 
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "imp-bucket"}, importResp)
 

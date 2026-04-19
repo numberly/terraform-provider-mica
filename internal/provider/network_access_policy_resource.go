@@ -223,7 +223,7 @@ func (r *networkAccessPolicyResource) Read(ctx context.Context, req resource.Rea
 		}
 	}
 
-	mapNAPToModel(policy, &data)
+	mapNetworkAccessPolicyToModel(policy, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -336,12 +336,12 @@ func (r *networkAccessPolicyResource) readIntoState(ctx context.Context, name st
 		diags.AddError("Error reading network access policy after write", err.Error())
 		return
 	}
-	mapNAPToModel(policy, data)
+	mapNetworkAccessPolicyToModel(policy, data)
 }
 
-// mapNAPToModel maps a client.NetworkAccessPolicy to a networkAccessPolicyModel.
+// mapNetworkAccessPolicyToModel maps a client.NetworkAccessPolicy to a networkAccessPolicyModel.
 // Preserves user-managed fields (Timeouts).
-func mapNAPToModel(policy *client.NetworkAccessPolicy, data *networkAccessPolicyModel) {
+func mapNetworkAccessPolicyToModel(policy *client.NetworkAccessPolicy, data *networkAccessPolicyModel) {
 	data.ID = types.StringValue(policy.ID)
 	data.Name = types.StringValue(policy.Name)
 	data.Enabled = types.BoolValue(policy.Enabled)

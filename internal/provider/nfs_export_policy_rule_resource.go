@@ -306,7 +306,7 @@ func (r *nfsExportPolicyRuleResource) Read(ctx context.Context, req resource.Rea
 		}
 	}
 
-	mapDiags := mapNFSRuleToModel(ctx, rule, &data)
+	mapDiags := mapNfsExportPolicyRuleToModel(ctx, rule, &data)
 	resp.Diagnostics.Append(mapDiags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -481,12 +481,12 @@ func (r *nfsExportPolicyRuleResource) readIntoState(ctx context.Context, policyN
 		diags.AddError("Error reading NFS export policy rule after write", err.Error())
 		return diags
 	}
-	diags.Append(mapNFSRuleToModel(ctx, rule, data)...)
+	diags.Append(mapNfsExportPolicyRuleToModel(ctx, rule, data)...)
 	return diags
 }
 
-// mapNFSRuleToModel maps a client.NfsExportPolicyRule to an nfsExportPolicyRuleModel.
-func mapNFSRuleToModel(ctx context.Context, rule *client.NfsExportPolicyRule, data *nfsExportPolicyRuleModel) diag.Diagnostics {
+// mapNfsExportPolicyRuleToModel maps a client.NfsExportPolicyRule to an nfsExportPolicyRuleModel.
+func mapNfsExportPolicyRuleToModel(ctx context.Context, rule *client.NfsExportPolicyRule, data *nfsExportPolicyRuleModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data.ID = types.StringValue(rule.ID)

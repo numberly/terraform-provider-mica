@@ -40,8 +40,8 @@ func smbClientPolicyResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildSMBClientPolicyType returns the tftypes.Object for the SMB client policy resource.
-func buildSMBClientPolicyType() tftypes.Object {
+// buildSmbClientPolicyType returns the tftypes.Object for the SMB client policy resource.
+func buildSmbClientPolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -88,7 +88,7 @@ func smbClientPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bo
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, enabled)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBClientPolicyType(), cfg),
+		Raw:    tftypes.NewValue(buildSmbClientPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -108,7 +108,7 @@ func TestUnit_SmbClientPolicy_CRUD(t *testing.T) {
 	// Step 1: Create with enabled=true.
 	createPlan := smbClientPolicyPlanWithNameAndEnabled(t, "test-smb-client-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -140,11 +140,11 @@ func TestUnit_SmbClientPolicy_CRUD(t *testing.T) {
 	updateCfg["name"] = tftypes.NewValue(tftypes.String, "test-smb-client-policy-renamed")
 	updateCfg["enabled"] = tftypes.NewValue(tftypes.Bool, false)
 	updatePlan := tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBClientPolicyType(), updateCfg),
+		Raw:    tftypes.NewValue(buildSmbClientPolicyType(), updateCfg),
 		Schema: s,
 	}
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -188,7 +188,7 @@ func TestUnit_SmbClientPolicy_Import(t *testing.T) {
 	// Create first.
 	plan := smbClientPolicyPlanWithNameAndEnabled(t, "import-smb-client-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -201,7 +201,7 @@ func TestUnit_SmbClientPolicy_Import(t *testing.T) {
 
 	// Import by name.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-smb-client-policy"}, importResp)
 	if importResp.Diagnostics.HasError() {
@@ -260,8 +260,8 @@ func smbClientPolicyDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildSMBClientPolicyDSType returns the tftypes.Object for the SMB client policy data source.
-func buildSMBClientPolicyDSType() tftypes.Object {
+// buildSmbClientPolicyDSType returns the tftypes.Object for the SMB client policy data source.
+func buildSmbClientPolicyDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":                               tftypes.String,
 		"name":                             tftypes.String,
@@ -317,10 +317,10 @@ func TestUnit_SmbClientPolicy_DataSource(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-smb-client-test-policy")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyDSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildSMBClientPolicyDSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildSmbClientPolicyDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if readResp.Diagnostics.HasError() {
@@ -398,7 +398,7 @@ func TestUnit_SmbClientPolicy_Idempotent(t *testing.T) {
 
 	plan := smbClientPolicyPlanWithNameAndEnabled(t, "idempotent-smb-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -447,7 +447,7 @@ func TestUnit_SmbClientPolicy_Update(t *testing.T) {
 	// Create with enabled=true.
 	plan := smbClientPolicyPlanWithNameAndEnabled(t, "update-smb-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -459,11 +459,11 @@ func TestUnit_SmbClientPolicy_Update(t *testing.T) {
 	updateCfg["name"] = tftypes.NewValue(tftypes.String, "update-smb-policy")
 	updateCfg["enabled"] = tftypes.NewValue(tftypes.Bool, false)
 	updatePlan := tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBClientPolicyType(), updateCfg),
+		Raw:    tftypes.NewValue(buildSmbClientPolicyType(), updateCfg),
 		Schema: s,
 	}
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBClientPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbClientPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,

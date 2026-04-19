@@ -27,7 +27,7 @@ type objectStoreAccessKeyResource struct {
 	client *client.FlashBladeClient
 }
 
-func NewAccessKeyResource() resource.Resource {
+func NewObjectStoreAccessKeyResource() resource.Resource {
 	return &objectStoreAccessKeyResource{}
 }
 

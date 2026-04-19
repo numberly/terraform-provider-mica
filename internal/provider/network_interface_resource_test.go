@@ -40,8 +40,8 @@ func niResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildNIType returns the tftypes.Object for the network interface resource schema.
-func buildNIType() tftypes.Object {
+// buildNetworkInterfaceType returns the tftypes.Object for the network interface resource schema.
+func buildNetworkInterfaceType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -101,7 +101,7 @@ func niPlanWith(t *testing.T, fields map[string]tftypes.Value) tfsdk.Plan {
 		cfg[k] = v
 	}
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildNIType(), cfg),
+		Raw:    tftypes.NewValue(buildNetworkInterfaceType(), cfg),
 		Schema: s,
 	}
 }
@@ -136,7 +136,7 @@ func TestUnit_NetworkInterface_Create(t *testing.T) {
 	})
 
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNIType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
 
@@ -202,7 +202,7 @@ func TestUnit_NetworkInterface_Update(t *testing.T) {
 		"attached_servers": serverListValue("server1"),
 	})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNIType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -219,7 +219,7 @@ func TestUnit_NetworkInterface_Update(t *testing.T) {
 		"attached_servers": serverListValue("server1", "server2"),
 	})
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNIType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -266,7 +266,7 @@ func TestUnit_NetworkInterface_Delete(t *testing.T) {
 		"attached_servers": tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, nil),
 	})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNIType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -392,7 +392,7 @@ func TestUnit_NetworkInterface_ConfigValidator(t *testing.T) {
 			cfg["services"] = tftypes.NewValue(tftypes.String, tc.services)
 			cfg["attached_servers"] = serverVal
 			config := tfsdk.Config{
-				Raw:    tftypes.NewValue(buildNIType(), cfg),
+				Raw:    tftypes.NewValue(buildNetworkInterfaceType(), cfg),
 				Schema: s,
 			}
 
@@ -424,7 +424,7 @@ func TestUnit_NetworkInterface_Import(t *testing.T) {
 	s := niResourceSchema(t).Schema
 
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNIType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-vip"}, importResp)
 
@@ -473,7 +473,7 @@ func TestUnit_NetworkInterface_Drift(t *testing.T) {
 		"attached_servers": serverListValue("server1"),
 	})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNIType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -522,7 +522,7 @@ func TestUnit_NetworkInterface_NotFound(t *testing.T) {
 	cfg := nullNIConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, "nonexistent-vip")
 	cfg["id"] = tftypes.NewValue(tftypes.String, "some-id")
-	state := tfsdk.State{Raw: tftypes.NewValue(buildNIType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), cfg), Schema: s}
 
 	readResp := &resource.ReadResponse{State: state}
 	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
@@ -549,7 +549,7 @@ func TestUnit_NetworkInterface_AttachedServersEmptyList(t *testing.T) {
 	s := niResourceSchema(t).Schema
 
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNIType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkInterfaceType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "egress-vip"}, importResp)
 

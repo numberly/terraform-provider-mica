@@ -199,7 +199,7 @@ func (r *nfsExportPolicyResource) Read(ctx context.Context, req resource.ReadReq
 		}
 	}
 
-	mapNFSPolicyToModel(policy, &data)
+	mapNfsExportPolicyToModel(policy, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -317,12 +317,12 @@ func (r *nfsExportPolicyResource) readIntoState(ctx context.Context, name string
 		diags.AddError("Error reading NFS export policy after write", err.Error())
 		return
 	}
-	mapNFSPolicyToModel(policy, data)
+	mapNfsExportPolicyToModel(policy, data)
 }
 
-// mapNFSPolicyToModel maps a client.NfsExportPolicy to an nfsExportPolicyModel.
+// mapNfsExportPolicyToModel maps a client.NfsExportPolicy to an nfsExportPolicyModel.
 // It preserves user-managed fields (Timeouts).
-func mapNFSPolicyToModel(policy *client.NfsExportPolicy, data *nfsExportPolicyModel) {
+func mapNfsExportPolicyToModel(policy *client.NfsExportPolicy, data *nfsExportPolicyModel) {
 	data.ID = types.StringValue(policy.ID)
 	data.Name = types.StringValue(policy.Name)
 	data.Enabled = types.BoolValue(policy.Enabled)

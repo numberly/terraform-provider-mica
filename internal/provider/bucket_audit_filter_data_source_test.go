@@ -34,7 +34,7 @@ func bafDSSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-func buildBAFDSType() tftypes.Object {
+func buildBucketAuditFilterDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"bucket_name": tftypes.String,
 		"actions":     tftypes.Set{ElementType: tftypes.String},
@@ -63,7 +63,7 @@ func TestBucketAuditFilterDataSource_Read(t *testing.T) {
 
 	d := newTestBucketAuditFilterDataSource(t, ms)
 	s := bafDSSchema(t).Schema
-	objType := buildBAFDSType()
+	objType := buildBucketAuditFilterDSType()
 
 	cfg := nullBAFDSConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, "ds-bucket")
@@ -112,7 +112,7 @@ func TestBucketAuditFilterDataSource_Read_NotFound(t *testing.T) {
 
 	d := newTestBucketAuditFilterDataSource(t, ms)
 	s := bafDSSchema(t).Schema
-	objType := buildBAFDSType()
+	objType := buildBucketAuditFilterDSType()
 
 	cfg := nullBAFDSConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, "nope")

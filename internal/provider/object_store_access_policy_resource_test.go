@@ -41,8 +41,8 @@ func oapResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildOAPType returns the tftypes.Object for the OAP resource.
-func buildOAPType() tftypes.Object {
+// buildObjectStoreAccessPolicyType returns the tftypes.Object for the OAP resource.
+func buildObjectStoreAccessPolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -88,7 +88,7 @@ func oapPlanWithName(t *testing.T, name string) tfsdk.Plan {
 	cfg := nullOAPConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildOAPType(), cfg),
+		Raw:    tftypes.NewValue(buildObjectStoreAccessPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -101,7 +101,7 @@ func oapPlanWithNameAndDescription(t *testing.T, name, description string) tfsdk
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["description"] = tftypes.NewValue(tftypes.String, description)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildOAPType(), cfg),
+		Raw:    tftypes.NewValue(buildObjectStoreAccessPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -119,7 +119,7 @@ func TestObjectStoreAccessPolicyResource_Create(t *testing.T) {
 
 	plan := oapPlanWithNameAndDescription(t, "test-oap-policy", "test description")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -162,7 +162,7 @@ func TestObjectStoreAccessPolicyResource_Update(t *testing.T) {
 	// Create first.
 	createPlan := oapPlanWithName(t, "oap-rename-before")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -172,7 +172,7 @@ func TestObjectStoreAccessPolicyResource_Update(t *testing.T) {
 	// Rename the policy in-place via PATCH.
 	renamePlan := oapPlanWithName(t, "oap-rename-after")
 	renameResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  renamePlan,
@@ -207,7 +207,7 @@ func TestObjectStoreAccessPolicyResource_Delete(t *testing.T) {
 	// Create first.
 	plan := oapPlanWithName(t, "delete-oap-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -240,7 +240,7 @@ func TestObjectStoreAccessPolicyResource_Import(t *testing.T) {
 	// Create first.
 	plan := oapPlanWithName(t, "import-oap-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -249,7 +249,7 @@ func TestObjectStoreAccessPolicyResource_Import(t *testing.T) {
 
 	// Import by name.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-oap-policy"}, importResp)
 
@@ -296,8 +296,8 @@ func oapDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildOAPDSType returns the tftypes.Object for the OAP data source.
-func buildOAPDSType() tftypes.Object {
+// buildObjectStoreAccessPolicyDSType returns the tftypes.Object for the OAP data source.
+func buildObjectStoreAccessPolicyDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":          tftypes.String,
 		"name":        tftypes.String,
@@ -352,10 +352,10 @@ func TestObjectStoreAccessPolicyDataSource(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-oap-test")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPDSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildOAPDSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if readResp.Diagnostics.HasError() {
@@ -399,7 +399,7 @@ func TestUnit_OAP_Create_Conflict(t *testing.T) {
 
 	plan := oapPlanWithName(t, "conflict-oap")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -424,7 +424,7 @@ func TestUnit_OAP_Read_NotFound(t *testing.T) {
 	cfg := nullOAPConfig()
 	cfg["id"] = tftypes.NewValue(tftypes.String, "oap-gone-id")
 	cfg["name"] = tftypes.NewValue(tftypes.String, "gone-oap")
-	state := tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), cfg), Schema: s}
 
 	readResp := &resource.ReadResponse{State: state}
 	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
@@ -450,7 +450,7 @@ func TestUnit_ObjectStoreAccessPolicy_Lifecycle(t *testing.T) {
 	// Step 1: Create.
 	createPlan := oapPlanWithName(t, "lifecycle-oap-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -481,7 +481,7 @@ func TestUnit_ObjectStoreAccessPolicy_Lifecycle(t *testing.T) {
 	// Step 3: Update (rename policy — description is RequiresReplace, name is mutable).
 	updatePlan := oapPlanWithName(t, "lifecycle-oap-policy-renamed")
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -536,7 +536,7 @@ func TestUnit_ObjectStoreAccessPolicy_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := oapPlanWithName(t, "idempotent-oap-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -549,7 +549,7 @@ func TestUnit_ObjectStoreAccessPolicy_ImportIdempotency(t *testing.T) {
 
 	// ImportState.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccessPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-oap-policy"}, importResp)
 	if importResp.Diagnostics.HasError() {

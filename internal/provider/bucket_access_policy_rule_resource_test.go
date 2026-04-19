@@ -39,8 +39,8 @@ func bapRuleResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildBAPRuleType returns the tftypes.Object for the bucket access policy rule resource schema.
-func buildBAPRuleType() tftypes.Object {
+// buildBucketAccessPolicyRuleType returns the tftypes.Object for the bucket access policy rule resource schema.
+func buildBucketAccessPolicyRuleType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -100,7 +100,7 @@ func bapRulePlanWith(t *testing.T, bucketName string, actions, principals, resou
 	}
 	cfg["resources"] = tftypes.NewValue(tftypes.List{ElementType: tftypes.String}, resourceVals)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildBAPRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAccessPolicyRuleType(), cfg),
 		Schema: s,
 	}
 }
@@ -197,7 +197,7 @@ func TestBucketAccessPolicyRuleResource_Create(t *testing.T) {
 		[]string{"rule-test-bucket/*"},
 	)
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyRuleType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -252,7 +252,7 @@ func TestBucketAccessPolicyRuleResource_Read(t *testing.T) {
 		[]string{"read-rule-bucket/*"},
 	)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -305,7 +305,7 @@ func TestBucketAccessPolicyRuleResource_ReadNotFound(t *testing.T) {
 	})
 
 	state := tfsdk.State{
-		Raw:    tftypes.NewValue(buildBAPRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAccessPolicyRuleType(), cfg),
 		Schema: s,
 	}
 
@@ -340,7 +340,7 @@ func TestBucketAccessPolicyRuleResource_Delete(t *testing.T) {
 		[]string{"del-rule-bucket/*"},
 	)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -388,7 +388,7 @@ func TestBucketAccessPolicyRuleResource_ImportState(t *testing.T) {
 	s := bapRuleResourceSchema(t).Schema
 
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "imp-rule-bucket/imp-rule"}, importResp)
 

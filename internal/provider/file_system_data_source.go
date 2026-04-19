@@ -19,7 +19,7 @@ type filesystemDataSource struct {
 	client *client.FlashBladeClient
 }
 
-func NewFilesystemDataSource() datasource.DataSource {
+func NewFileSystemDataSource() datasource.DataSource {
 	return &filesystemDataSource{}
 }
 
@@ -262,7 +262,7 @@ func (d *filesystemDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	// Map API response to model via shared mapFSToModel to avoid duplicated mapping logic.
 	var tmp filesystemModel
-	fsDiags := mapFSToModel(fs, &tmp)
+	fsDiags := mapFileSystemToModel(fs, &tmp)
 	resp.Diagnostics.Append(fsDiags...)
 	if resp.Diagnostics.HasError() {
 		return

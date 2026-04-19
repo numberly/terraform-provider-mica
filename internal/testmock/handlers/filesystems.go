@@ -24,12 +24,38 @@ type fileSystemStore struct {
 // RegisterFileSystemHandlers registers CRUD handlers for /api/2.22/file-systems
 // against the provided ServeMux. The handlers share in-memory state and are
 // thread-safe.
-func RegisterFileSystemHandlers(mux *http.ServeMux) {
+func RegisterFileSystemHandlers(mux *http.ServeMux) *fileSystemStore {
 	store := &fileSystemStore{
 		byName: make(map[string]*client.FileSystem),
 		byID:   make(map[string]*client.FileSystem),
 	}
 	mux.HandleFunc("/api/2.22/file-systems", store.handle)
+	return store
+}
+
+// Seed adds a file system to the store.
+func (s *fileSystemStore) Seed(fs *client.FileSystem) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.byName[fs.Name] = fs
+	if fs.ID != "" {
+		s.byID[fs.ID] = fs
+	}
+}
+
+// FileSystemStoreFacade exposes Seed on the unexported store for cross-package tests.
+type FileSystemStoreFacade struct {
+	store *fileSystemStore
+}
+
+// NewFileSystemStoreFacade wraps the internal store so cross-package tests can call Seed.
+func NewFileSystemStoreFacade(store *fileSystemStore) *FileSystemStoreFacade {
+	return &FileSystemStoreFacade{store: store}
+}
+
+// Seed delegates to the underlying store's Seed.
+func (f *FileSystemStoreFacade) Seed(fs *client.FileSystem) {
+	f.store.Seed(fs)
 }
 
 func (s *fileSystemStore) handle(w http.ResponseWriter, r *http.Request) {

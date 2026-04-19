@@ -255,7 +255,7 @@ func (r *objectStoreAccessPolicyRuleResource) Read(ctx context.Context, req reso
 		}
 	}
 
-	mapDiags := mapOAPRuleToModel(ctx, rule, &data)
+	mapDiags := mapObjectStoreAccessPolicyRuleToModel(ctx, rule, &data)
 	resp.Diagnostics.Append(mapDiags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -398,13 +398,13 @@ func (r *objectStoreAccessPolicyRuleResource) readIntoState(ctx context.Context,
 		diags.AddError("Error reading object store access policy rule after write", err.Error())
 		return diags
 	}
-	diags.Append(mapOAPRuleToModel(ctx, rule, data)...)
+	diags.Append(mapObjectStoreAccessPolicyRuleToModel(ctx, rule, data)...)
 	return diags
 }
 
-// mapOAPRuleToModel maps a client.ObjectStoreAccessPolicyRule to an objectStoreAccessPolicyRuleModel.
+// mapObjectStoreAccessPolicyRuleToModel maps a client.ObjectStoreAccessPolicyRule to an objectStoreAccessPolicyRuleModel.
 // Handles conditions json.RawMessage to types.String conversion.
-func mapOAPRuleToModel(ctx context.Context, rule *client.ObjectStoreAccessPolicyRule, data *objectStoreAccessPolicyRuleModel) diag.Diagnostics {
+func mapObjectStoreAccessPolicyRuleToModel(ctx context.Context, rule *client.ObjectStoreAccessPolicyRule, data *objectStoreAccessPolicyRuleModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Synthetic ID: "policyName/ruleName"

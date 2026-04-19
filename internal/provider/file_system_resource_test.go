@@ -41,8 +41,8 @@ func resourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildFSType returns the tftypes.Object for filesystem_resource schema.
-func buildFSType() tftypes.Object {
+// buildFileSystemType returns the tftypes.Object for filesystem_resource schema.
+func buildFileSystemType() tftypes.Object {
 	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"data_reduction":      tftypes.Number,
 		"snapshots":           tftypes.Number,
@@ -180,7 +180,7 @@ func planWithName(t *testing.T, name string, provisioned int64) tfsdk.Plan {
 	cfg["provisioned"] = tftypes.NewValue(tftypes.Number, provisioned)
 	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, true)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildFSType(), cfg),
+		Raw:    tftypes.NewValue(buildFileSystemType(), cfg),
 		Schema: s,
 	}
 }
@@ -201,7 +201,7 @@ func TestUnit_FileSystem_Create(t *testing.T) {
 		Plan: plan,
 	}
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), req, resp)
@@ -259,9 +259,9 @@ func TestUnit_FileSystem_Create_WithNFS(t *testing.T) {
 		"transport":    tftypes.NewValue(tftypes.String, "tcp"),
 	})
 
-	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildFSType(), cfg), Schema: s}
+	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildFileSystemType(), cfg), Schema: s}
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -313,9 +313,9 @@ func TestUnit_FileSystem_Create_WithSMB(t *testing.T) {
 		"smb_encryption_enabled":           tftypes.NewValue(tftypes.Bool, false),
 	})
 
-	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildFSType(), cfg), Schema: s}
+	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildFileSystemType(), cfg), Schema: s}
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -352,7 +352,7 @@ func TestUnit_FileSystem_Read(t *testing.T) {
 	// First create a file system so Read can find it.
 	plan := planWithName(t, "read-fs", 2147483648)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -394,7 +394,7 @@ func TestUnit_FileSystem_Read_Destroyed(t *testing.T) {
 	// Create and then soft-delete.
 	plan := planWithName(t, "destroyed-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -446,7 +446,7 @@ func TestUnit_FileSystem_Read_NotFound(t *testing.T) {
 	cfg["id"] = tftypes.NewValue(tftypes.String, "non-existent-id")
 	cfg["provisioned"] = tftypes.NewValue(tftypes.Number, int64(0))
 	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, true)
-	state := tfsdk.State{Raw: tftypes.NewValue(buildFSType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), cfg), Schema: s}
 
 	readResp := &resource.ReadResponse{State: state}
 	r.Read(context.Background(), resource.ReadRequest{State: state}, readResp)
@@ -471,7 +471,7 @@ func TestUnit_FileSystem_Update(t *testing.T) {
 	// Create first.
 	plan := planWithName(t, "update-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -481,7 +481,7 @@ func TestUnit_FileSystem_Update(t *testing.T) {
 	// Update provisioned size.
 	newPlan := planWithName(t, "update-fs", 2147483648)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  newPlan,
@@ -512,7 +512,7 @@ func TestUnit_FileSystem_Update_Rename(t *testing.T) {
 
 	plan := planWithName(t, "rename-before", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -521,7 +521,7 @@ func TestUnit_FileSystem_Update_Rename(t *testing.T) {
 
 	newPlan := planWithName(t, "rename-after", 1073741824)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  newPlan,
@@ -552,7 +552,7 @@ func TestUnit_FileSystem_Destroy(t *testing.T) {
 
 	plan := planWithName(t, "destroy-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -588,9 +588,9 @@ func TestUnit_FileSystem_Destroy_SoftOnly(t *testing.T) {
 	cfg["provisioned"] = tftypes.NewValue(tftypes.Number, int64(1073741824))
 	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
 
-	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildFSType(), cfg), Schema: s}
+	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildFileSystemType(), cfg), Schema: s}
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -639,7 +639,7 @@ func TestUnit_FileSystem_Import(t *testing.T) {
 	// Create first.
 	plan := planWithName(t, "import-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -648,7 +648,7 @@ func TestUnit_FileSystem_Import(t *testing.T) {
 
 	// Import by name.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-fs"}, importResp)
 
@@ -681,7 +681,7 @@ func TestUnit_FileSystem_DriftLog(t *testing.T) {
 	// Create with provisioned=1GiB.
 	plan := planWithName(t, "drift-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -731,7 +731,7 @@ func TestUnit_FileSystem_Idempotent(t *testing.T) {
 
 	plan := planWithName(t, "idempotent-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -775,7 +775,7 @@ func TestUnit_FileSystem_Lifecycle(t *testing.T) {
 	// Step 1: Create.
 	createPlan := planWithName(t, "lifecycle-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -809,7 +809,7 @@ func TestUnit_FileSystem_Lifecycle(t *testing.T) {
 	// Step 3: Update provisioned to 2GiB.
 	updatePlan := planWithName(t, "lifecycle-fs", 2147483648)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -864,7 +864,7 @@ func TestUnit_FileSystem_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := planWithName(t, "idempotent-fs", 1073741824)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -877,7 +877,7 @@ func TestUnit_FileSystem_ImportIdempotency(t *testing.T) {
 
 	// ImportState.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildFSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-fs"}, importResp)
 	if importResp.Diagnostics.HasError() {
@@ -954,7 +954,7 @@ func TestUnit_FileSystem_Delete_Unprocessable(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "unprocessable-fs")
 	cfg["provisioned"] = tftypes.NewValue(tftypes.Number, int64(1073741824))
 	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, true)
-	state := tfsdk.State{Raw: tftypes.NewValue(buildFSType(), cfg), Schema: s}
+	state := tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), cfg), Schema: s}
 
 	deleteResp := &resource.DeleteResponse{}
 	r.Delete(context.Background(), resource.DeleteRequest{State: state}, deleteResp)

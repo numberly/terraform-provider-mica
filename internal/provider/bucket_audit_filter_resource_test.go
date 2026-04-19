@@ -41,8 +41,8 @@ func bafResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildBAFType returns the tftypes.Object for the bucket audit filter resource schema.
-func buildBAFType() tftypes.Object {
+// buildBucketAuditFilterType returns the tftypes.Object for the bucket audit filter resource schema.
+func buildBucketAuditFilterType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -98,7 +98,7 @@ func bafPlanWith(t *testing.T, bucketName string, actions []string, s3Prefixes [
 	cfg["s3_prefixes"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, pfxVals)
 
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildBAFType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAuditFilterType(), cfg),
 		Schema: s,
 	}
 }
@@ -116,7 +116,7 @@ func TestBucketAuditFilterResource_Create(t *testing.T) {
 
 	plan := bafPlanWith(t, "test-bucket", []string{"s3:GetObject", "s3:PutObject"}, []string{"logs/"})
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAuditFilterType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -166,7 +166,7 @@ func TestBucketAuditFilterResource_Read(t *testing.T) {
 	// Create first.
 	plan := bafPlanWith(t, "read-bucket", []string{"s3:GetObject"}, []string{})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAuditFilterType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -218,7 +218,7 @@ func TestBucketAuditFilterResource_Read_NotFound(t *testing.T) {
 	cfg["s3_prefixes"] = tftypes.NewValue(tftypes.Set{ElementType: tftypes.String}, []tftypes.Value{})
 
 	state := tfsdk.State{
-		Raw:    tftypes.NewValue(buildBAFType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAuditFilterType(), cfg),
 		Schema: s,
 	}
 
@@ -247,7 +247,7 @@ func TestBucketAuditFilterResource_Update(t *testing.T) {
 	// Create first.
 	createPlan := bafPlanWith(t, "upd-bucket", []string{"s3:GetObject"}, []string{"logs/"})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAuditFilterType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -264,7 +264,7 @@ func TestBucketAuditFilterResource_Update(t *testing.T) {
 	}
 
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAuditFilterType(), nil), Schema: s},
 	}
 
 	r.Update(context.Background(), resource.UpdateRequest{
@@ -311,7 +311,7 @@ func TestBucketAuditFilterResource_Delete(t *testing.T) {
 	// Create.
 	plan := bafPlanWith(t, "del-bucket", []string{"s3:GetObject"}, []string{})
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAuditFilterType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -351,7 +351,7 @@ func TestBucketAuditFilterResource_Import(t *testing.T) {
 	s := bafResourceSchema(t).Schema
 
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAFType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAuditFilterType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "baf-imp-1/imp-bucket"}, importResp)
 
