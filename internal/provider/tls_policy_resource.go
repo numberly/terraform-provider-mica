@@ -243,13 +243,17 @@ func (r *tlsPolicyResource) Create(ctx context.Context, req resource.CreateReque
 		post.ClientCertificatesRequired = data.ClientCertificatesRequired.ValueBool()
 	}
 	if !data.DisabledTlsCiphers.IsNull() && !data.DisabledTlsCiphers.IsUnknown() {
-		post.DisabledTlsCiphers = listToStringSlice(ctx, data.DisabledTlsCiphers)
+		v, d := listToStrings(ctx, data.DisabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
+		post.DisabledTlsCiphers = v
 	}
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		post.Enabled = data.Enabled.ValueBool()
 	}
 	if !data.EnabledTlsCiphers.IsNull() && !data.EnabledTlsCiphers.IsUnknown() {
-		post.EnabledTlsCiphers = listToStringSlice(ctx, data.EnabledTlsCiphers)
+		v, d := listToStrings(ctx, data.EnabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
+		post.EnabledTlsCiphers = v
 	}
 	if !data.MinTlsVersion.IsNull() && !data.MinTlsVersion.IsUnknown() {
 		post.MinTlsVersion = data.MinTlsVersion.ValueString()
@@ -321,7 +325,9 @@ func (r *tlsPolicyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		})
 	}
 
-	wasDisabled := strings.Join(listToStringSlice(ctx, data.DisabledTlsCiphers), ",")
+	wasDisabledList, dDisabled := listToStrings(ctx, data.DisabledTlsCiphers)
+	resp.Diagnostics.Append(dDisabled...)
+	wasDisabled := strings.Join(wasDisabledList, ",")
 	nowDisabled := strings.Join(policy.DisabledTlsCiphers, ",")
 	if wasDisabled != nowDisabled {
 		tflog.Debug(ctx, "drift detected", map[string]any{
@@ -341,7 +347,9 @@ func (r *tlsPolicyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		})
 	}
 
-	wasEnabled := strings.Join(listToStringSlice(ctx, data.EnabledTlsCiphers), ",")
+	wasEnabledList, dEnabled := listToStrings(ctx, data.EnabledTlsCiphers)
+	resp.Diagnostics.Append(dEnabled...)
+	wasEnabled := strings.Join(wasEnabledList, ",")
 	nowEnabled := strings.Join(policy.EnabledTlsCiphers, ",")
 	if wasEnabled != nowEnabled {
 		tflog.Debug(ctx, "drift detected", map[string]any{
@@ -441,7 +449,8 @@ func (r *tlsPolicyResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if !plan.DisabledTlsCiphers.Equal(state.DisabledTlsCiphers) {
-		v := listToStringSlice(ctx, plan.DisabledTlsCiphers)
+		v, d := listToStrings(ctx, plan.DisabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
 		patch.DisabledTlsCiphers = &v
 	}
 
@@ -451,7 +460,8 @@ func (r *tlsPolicyResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if !plan.EnabledTlsCiphers.Equal(state.EnabledTlsCiphers) {
-		v := listToStringSlice(ctx, plan.EnabledTlsCiphers)
+		v, d := listToStrings(ctx, plan.EnabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
 		patch.EnabledTlsCiphers = &v
 	}
 
@@ -577,13 +587,3 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	data.VerifyClientCertificateTrust = types.BoolValue(policy.VerifyClientCertificateTrust)
 }
 
-// listToStringSlice converts a types.List to a []string.
-// Returns an empty slice if the list is null or unknown.
-func listToStringSlice(ctx context.Context, list types.List) []string {
-	if list.IsNull() || list.IsUnknown() {
-		return []string{}
-	}
-	var elems []string
-	_ = list.ElementsAs(ctx, &elems, false)
-	return elems
-}

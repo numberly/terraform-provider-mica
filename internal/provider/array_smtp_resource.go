@@ -204,16 +204,29 @@ func (r *arraySmtpResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	for _, w := range watchers {
+		email := w.Email.ValueString()
 		severity := w.MinimumNotificationSeverity.ValueString()
-		_, err := r.client.PostAlertWatcher(ctx, w.Email.ValueString(), client.AlertWatcherPost{
+		_, err := r.client.PostAlertWatcher(ctx, email, client.AlertWatcherPost{
 			MinimumNotificationSeverity: severity,
 		})
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating alert watcher",
-				fmt.Sprintf("Failed to create alert watcher for %s: %s", w.Email.ValueString(), err),
+				fmt.Sprintf("Failed to create alert watcher for %s: %s", email, err),
 			)
 			return
+		}
+		// AlertWatcherPost has no enabled field; the API defaults to enabled=true.
+		// PATCH to apply the plan's enabled=false.
+		if !w.Enabled.IsNull() && !w.Enabled.IsUnknown() && !w.Enabled.ValueBool() {
+			disabled := false
+			if _, err := r.client.PatchAlertWatcher(ctx, email, client.AlertWatcherPatch{Enabled: &disabled}); err != nil {
+				resp.Diagnostics.AddError(
+					"Error disabling alert watcher",
+					fmt.Sprintf("Failed to set enabled=false on new alert watcher %s: %s", email, err),
+				)
+				return
+			}
 		}
 	}
 
@@ -319,6 +332,18 @@ func (r *arraySmtpResource) Update(ctx context.Context, req resource.UpdateReque
 					fmt.Sprintf("Failed to create alert watcher for %s: %s", email, err),
 				)
 				return
+			}
+			// AlertWatcherPost has no enabled field; the API defaults to enabled=true.
+			// PATCH to apply the plan's enabled=false.
+			if !w.Enabled.IsNull() && !w.Enabled.IsUnknown() && !w.Enabled.ValueBool() {
+				disabled := false
+				if _, err := r.client.PatchAlertWatcher(ctx, email, client.AlertWatcherPatch{Enabled: &disabled}); err != nil {
+					resp.Diagnostics.AddError(
+						"Error disabling alert watcher",
+						fmt.Sprintf("Failed to set enabled=false on new alert watcher %s: %s", email, err),
+					)
+					return
+				}
 			}
 		}
 	}

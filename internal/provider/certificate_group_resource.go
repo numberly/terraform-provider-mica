@@ -171,7 +171,9 @@ func (r *certificateGroupResource) Read(ctx context.Context, req resource.ReadRe
 		})
 	}
 
-	wasRealms := strings.Join(listToStringSlice(ctx, data.Realms), ",")
+	wasRealmsList, dRealms := listToStrings(ctx, data.Realms)
+	resp.Diagnostics.Append(dRealms...)
+	wasRealms := strings.Join(wasRealmsList, ",")
 	nowRealms := strings.Join(group.Realms, ",")
 	if wasRealms != nowRealms {
 		tflog.Debug(ctx, "drift detected", map[string]any{
