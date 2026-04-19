@@ -19,7 +19,7 @@ import (
 // resulting session token from the x-auth-token response header.
 func LoginWithAPIToken(ctx context.Context, httpClient *http.Client, endpoint, apiToken string) (string, error) {
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		return "", fmt.Errorf("login: httpClient must not be nil")
 	}
 
 	loginURL := strings.TrimRight(endpoint, "/") + "/api/login"
@@ -74,7 +74,7 @@ type FlashBladeTokenSource struct {
 // The provided ctx is stored and used for all token exchanges via Token().
 func NewFlashBladeTokenSource(ctx context.Context, endpoint, apiToken string, httpClient *http.Client) *FlashBladeTokenSource {
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		panic("NewFlashBladeTokenSource: httpClient must not be nil")
 	}
 	return &FlashBladeTokenSource{
 		ctx:        ctx,

@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure auditObjectStorePolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &auditObjectStorePolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &auditObjectStorePolicyDataSource{}
 
@@ -21,7 +20,6 @@ type auditObjectStorePolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewAuditObjectStorePolicyDataSource is the factory function registered in the provider.
 func NewAuditObjectStorePolicyDataSource() datasource.DataSource {
 	return &auditObjectStorePolicyDataSource{}
 }
@@ -40,7 +38,6 @@ type auditObjectStorePolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *auditObjectStorePolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_audit_object_store_policy"
 }

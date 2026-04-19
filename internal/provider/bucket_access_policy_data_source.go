@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure bucketAccessPolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &bucketAccessPolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &bucketAccessPolicyDataSource{}
 
@@ -20,7 +19,6 @@ type bucketAccessPolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewBucketAccessPolicyDataSource is the factory function registered in the provider.
 func NewBucketAccessPolicyDataSource() datasource.DataSource {
 	return &bucketAccessPolicyDataSource{}
 }
@@ -37,7 +35,6 @@ type bucketAccessPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *bucketAccessPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_bucket_access_policy"
 }

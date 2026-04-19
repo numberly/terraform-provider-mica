@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure tlsPolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &tlsPolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &tlsPolicyDataSource{}
 
@@ -21,7 +20,6 @@ type tlsPolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewTlsPolicyDataSource is the factory function registered in the provider.
 func NewTlsPolicyDataSource() datasource.DataSource {
 	return &tlsPolicyDataSource{}
 }
@@ -46,7 +44,6 @@ type tlsPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *tlsPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_tls_policy"
 }

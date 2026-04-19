@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arrayNtpResource satisfies the resource interfaces.
 var _ resource.Resource = &arrayNtpResource{}
 var _ resource.ResourceWithConfigure = &arrayNtpResource{}
 var _ resource.ResourceWithImportState = &arrayNtpResource{}
@@ -28,7 +27,6 @@ type arrayNtpResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArrayNtpResource is the factory function registered in the provider.
 func NewArrayNtpResource() resource.Resource {
 	return &arrayNtpResource{}
 }
@@ -44,7 +42,6 @@ type arrayNtpModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *arrayNtpResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_ntp"
 }
@@ -136,7 +133,6 @@ func (r *arrayNtpResource) Create(ctx context.Context, req resource.CreateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *arrayNtpResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data arrayNtpModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -165,7 +161,6 @@ func (r *arrayNtpResource) Read(ctx context.Context, req resource.ReadRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Update applies changes to the NTP server list.
 func (r *arrayNtpResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan arrayNtpModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)

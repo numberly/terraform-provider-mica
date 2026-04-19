@@ -19,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreVirtualHostResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreVirtualHostResource{}
 var _ resource.ResourceWithConfigure = &objectStoreVirtualHostResource{}
 var _ resource.ResourceWithImportState = &objectStoreVirtualHostResource{}
@@ -30,7 +29,6 @@ type objectStoreVirtualHostResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreVirtualHostResource is the factory function registered in the provider.
 func NewObjectStoreVirtualHostResource() resource.Resource {
 	return &objectStoreVirtualHostResource{}
 }
@@ -57,7 +55,6 @@ type objectStoreVirtualHostV0Model struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreVirtualHostResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_virtual_host"
 }
@@ -163,7 +160,6 @@ func (r *objectStoreVirtualHostResource) Configure(_ context.Context, req resour
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store virtual host.
 func (r *objectStoreVirtualHostResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreVirtualHostModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -203,7 +199,6 @@ func (r *objectStoreVirtualHostResource) Create(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreVirtualHostResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreVirtualHostModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

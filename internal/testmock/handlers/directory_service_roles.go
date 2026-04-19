@@ -39,7 +39,6 @@ func (s *directoryServiceRolesStore) Seed(role *client.DirectoryServiceRole) {
 	s.byName[role.Name] = role
 }
 
-// handle dispatches directory service role requests by HTTP method.
 func (s *directoryServiceRolesStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

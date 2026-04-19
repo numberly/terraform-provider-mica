@@ -39,7 +39,6 @@ type s3ExportPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *s3ExportPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_s3_export_policy"
 }

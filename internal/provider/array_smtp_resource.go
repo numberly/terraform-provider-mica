@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arraySmtpResource satisfies the resource interfaces.
 var _ resource.Resource = &arraySmtpResource{}
 var _ resource.ResourceWithConfigure = &arraySmtpResource{}
 var _ resource.ResourceWithImportState = &arraySmtpResource{}
@@ -34,7 +33,6 @@ type arraySmtpResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArraySmtpResource is the factory function registered in the provider.
 func NewArraySmtpResource() resource.Resource {
 	return &arraySmtpResource{}
 }
@@ -69,7 +67,6 @@ func alertWatcherAttrTypes() map[string]attr.Type {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *arraySmtpResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_smtp"
 }
@@ -237,7 +234,6 @@ func (r *arraySmtpResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *arraySmtpResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data arraySmtpModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

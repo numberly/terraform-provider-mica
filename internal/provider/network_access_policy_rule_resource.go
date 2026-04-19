@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure networkAccessPolicyRuleResource satisfies the resource interfaces.
 var _ resource.Resource = &networkAccessPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &networkAccessPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &networkAccessPolicyRuleResource{}
@@ -33,7 +32,6 @@ type networkAccessPolicyRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNetworkAccessPolicyRuleResource is the factory function registered in the provider.
 func NewNetworkAccessPolicyRuleResource() resource.Resource {
 	return &networkAccessPolicyRuleResource{}
 }
@@ -55,7 +53,6 @@ type networkAccessPolicyRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *networkAccessPolicyRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_network_access_policy_rule"
 }
@@ -149,7 +146,6 @@ func (r *networkAccessPolicyRuleResource) Configure(_ context.Context, req resou
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new rule in the network access policy.
 func (r *networkAccessPolicyRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data networkAccessPolicyRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -199,7 +195,6 @@ func (r *networkAccessPolicyRuleResource) Create(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *networkAccessPolicyRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data networkAccessPolicyRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -231,12 +226,12 @@ func (r *networkAccessPolicyRuleResource) Read(ctx context.Context, req resource
 	// Drift detection on mutable fields.
 	if !data.Client.IsNull() && !data.Client.IsUnknown() {
 		if data.Client.ValueString() != rule.Client {
-			tflog.Info(ctx, "drift detected on network access policy rule", map[string]any{
+			tflog.Debug(ctx, "drift detected on network access policy rule", map[string]any{
 				"policy":      policyName,
 				"rule":        ruleName,
 				"field":       "client",
-				"state_value": data.Client.ValueString(),
-				"api_value":   rule.Client,
+				"was":         data.Client.ValueString(),
+				"now":           rule.Client,
 			})
 		}
 	}

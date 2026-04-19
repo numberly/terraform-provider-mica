@@ -18,7 +18,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure networkAccessPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &networkAccessPolicyResource{}
 var _ resource.ResourceWithConfigure = &networkAccessPolicyResource{}
 var _ resource.ResourceWithImportState = &networkAccessPolicyResource{}
@@ -31,7 +30,6 @@ type networkAccessPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNetworkAccessPolicyResource is the factory function registered in the provider.
 func NewNetworkAccessPolicyResource() resource.Resource {
 	return &networkAccessPolicyResource{}
 }
@@ -51,7 +49,6 @@ type networkAccessPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *networkAccessPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_network_access_policy"
 }
@@ -188,7 +185,6 @@ func (r *networkAccessPolicyResource) Create(ctx context.Context, req resource.C
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *networkAccessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data networkAccessPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -218,11 +214,11 @@ func (r *networkAccessPolicyResource) Read(ctx context.Context, req resource.Rea
 	// Drift detection on enabled field.
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
-			tflog.Info(ctx, "drift detected on network access policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on network access policy", map[string]any{
 				"resource":    name,
 				"field":       "enabled",
-				"state_value": data.Enabled.ValueBool(),
-				"api_value":   policy.Enabled,
+				"was":         data.Enabled.ValueBool(),
+				"now":           policy.Enabled,
 			})
 		}
 	}
@@ -315,7 +311,6 @@ func (r *networkAccessPolicyResource) Delete(ctx context.Context, req resource.D
 	})
 }
 
-// ImportState imports a network access policy by name.
 func (r *networkAccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

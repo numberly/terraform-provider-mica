@@ -20,7 +20,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure quotaGroupResource satisfies the resource interfaces.
 var _ resource.Resource = &quotaGroupResource{}
 var _ resource.ResourceWithConfigure = &quotaGroupResource{}
 var _ resource.ResourceWithImportState = &quotaGroupResource{}
@@ -31,7 +30,6 @@ type quotaGroupResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQuotaGroupResource is the factory function registered in the provider.
 func NewQuotaGroupResource() resource.Resource {
 	return &quotaGroupResource{}
 }
@@ -50,7 +48,6 @@ type quotaGroupModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *quotaGroupResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_quota_group"
 }
@@ -130,7 +127,6 @@ func (r *quotaGroupResource) Configure(_ context.Context, req resource.Configure
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new group quota.
 func (r *quotaGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data quotaGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -179,7 +175,6 @@ func (r *quotaGroupResource) Create(ctx context.Context, req resource.CreateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *quotaGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data quotaGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -211,11 +206,11 @@ func (r *quotaGroupResource) Read(ctx context.Context, req resource.ReadRequest,
 	// Drift detection on quota.
 	if !data.Quota.IsNull() && !data.Quota.IsUnknown() {
 		if data.Quota.ValueInt64() != qg.Quota {
-			tflog.Info(ctx, "drift detected on group quota", map[string]any{
+			tflog.Debug(ctx, "drift detected on group quota", map[string]any{
 				"resource":    fsName + "/" + gid,
 				"field":       "quota",
-				"state_value": data.Quota.ValueInt64(),
-				"api_value":   qg.Quota,
+				"was":         data.Quota.ValueInt64(),
+				"now":           qg.Quota,
 			})
 		}
 	}

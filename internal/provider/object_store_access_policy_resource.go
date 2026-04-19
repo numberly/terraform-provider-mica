@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccessPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreAccessPolicyResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccessPolicyResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccessPolicyResource{}
@@ -28,7 +27,6 @@ type objectStoreAccessPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreAccessPolicyResource is the factory function registered in the provider.
 func NewObjectStoreAccessPolicyResource() resource.Resource {
 	return &objectStoreAccessPolicyResource{}
 }
@@ -49,7 +47,6 @@ type objectStoreAccessPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreAccessPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_access_policy"
 }
@@ -142,7 +139,6 @@ func (r *objectStoreAccessPolicyResource) Configure(_ context.Context, req resou
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store access policy.
 func (r *objectStoreAccessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreAccessPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -177,7 +173,6 @@ func (r *objectStoreAccessPolicyResource) Create(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreAccessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreAccessPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -207,11 +202,11 @@ func (r *objectStoreAccessPolicyResource) Read(ctx context.Context, req resource
 	// Drift detection on name field.
 	if !data.Name.IsNull() && !data.Name.IsUnknown() {
 		if data.Name.ValueString() != policy.Name {
-			tflog.Info(ctx, "drift detected on object store access policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on object store access policy", map[string]any{
 				"resource":    name,
 				"field":       "name",
-				"state_value": data.Name.ValueString(),
-				"api_value":   policy.Name,
+				"was":         data.Name.ValueString(),
+				"now":           policy.Name,
 			})
 		}
 	}
@@ -305,7 +300,6 @@ func (r *objectStoreAccessPolicyResource) Delete(ctx context.Context, req resour
 	}
 }
 
-// ImportState imports an existing object store access policy by name.
 func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

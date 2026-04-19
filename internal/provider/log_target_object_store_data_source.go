@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure logTargetObjectStoreDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &logTargetObjectStoreDataSource{}
 var _ datasource.DataSourceWithConfigure = &logTargetObjectStoreDataSource{}
 
@@ -20,7 +19,6 @@ type logTargetObjectStoreDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewLogTargetObjectStoreDataSource is the factory function registered in the provider.
 func NewLogTargetObjectStoreDataSource() datasource.DataSource {
 	return &logTargetObjectStoreDataSource{}
 }
@@ -38,7 +36,6 @@ type logTargetObjectStoreDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *logTargetObjectStoreDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_log_target_object_store"
 }

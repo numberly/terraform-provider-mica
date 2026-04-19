@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure subnetDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &subnetDataSource{}
 var _ datasource.DataSourceWithConfigure = &subnetDataSource{}
 
@@ -21,7 +20,6 @@ type subnetDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSubnetDataSource is the factory function registered in the provider.
 func NewSubnetDataSource() datasource.DataSource {
 	return &subnetDataSource{}
 }
@@ -44,7 +42,6 @@ type subnetDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *subnetDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_subnet"
 }

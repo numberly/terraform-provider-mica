@@ -18,7 +18,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure snapshotPolicyRuleResource satisfies the resource interfaces.
 var _ resource.Resource = &snapshotPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &snapshotPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &snapshotPolicyRuleResource{}
@@ -31,7 +30,6 @@ type snapshotPolicyRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSnapshotPolicyRuleResource is the factory function registered in the provider.
 func NewSnapshotPolicyRuleResource() resource.Resource {
 	return &snapshotPolicyRuleResource{}
 }
@@ -55,7 +53,6 @@ type snapshotPolicyRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *snapshotPolicyRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_snapshot_policy_rule"
 }
@@ -274,7 +271,6 @@ func (r *snapshotPolicyRuleResource) Update(ctx context.Context, req resource.Up
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-// Delete removes the rule from the snapshot policy via PATCH remove_rules.
 func (r *snapshotPolicyRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data snapshotPolicyRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

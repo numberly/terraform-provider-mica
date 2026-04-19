@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arrayDnsResource satisfies the resource interfaces.
 var _ resource.Resource = &arrayDnsResource{}
 var _ resource.ResourceWithConfigure = &arrayDnsResource{}
 var _ resource.ResourceWithImportState = &arrayDnsResource{}
@@ -28,7 +27,6 @@ type arrayDnsResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArrayDnsResource is the factory function registered in the provider.
 func NewArrayDnsResource() resource.Resource {
 	return &arrayDnsResource{}
 }
@@ -58,7 +56,6 @@ type arrayDnsV0Model struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *arrayDnsResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_dns"
 }
@@ -196,7 +193,6 @@ func (r *arrayDnsResource) Configure(_ context.Context, req resource.ConfigureRe
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new DNS configuration entry.
 func (r *arrayDnsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data arrayDnsModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -249,7 +245,6 @@ func (r *arrayDnsResource) Create(ctx context.Context, req resource.CreateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *arrayDnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data arrayDnsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -301,7 +296,6 @@ func (r *arrayDnsResource) Read(ctx context.Context, req resource.ReadRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Update applies changes to the DNS configuration.
 func (r *arrayDnsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan, state arrayDnsModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -363,7 +357,6 @@ func (r *arrayDnsResource) Update(ctx context.Context, req resource.UpdateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-// Delete removes the DNS configuration entry.
 func (r *arrayDnsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data arrayDnsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -388,7 +381,6 @@ func (r *arrayDnsResource) Delete(ctx context.Context, req resource.DeleteReques
 	tflog.Info(ctx, "DNS configuration deleted", map[string]any{"name": name})
 }
 
-// ImportState imports a DNS configuration entry by name.
 func (r *arrayDnsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

@@ -19,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure serverResource satisfies the resource interfaces.
 var _ resource.Resource = &serverResource{}
 var _ resource.ResourceWithConfigure = &serverResource{}
 var _ resource.ResourceWithImportState = &serverResource{}
@@ -30,7 +29,6 @@ type serverResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewServerResource is the factory function registered in the provider.
 func NewServerResource() resource.Resource {
 	return &serverResource{}
 }
@@ -73,7 +71,6 @@ type serverV1StateModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *serverResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_server"
 }
@@ -289,7 +286,6 @@ func (r *serverResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new server.
 func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data serverResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -326,7 +322,6 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data serverResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -432,7 +427,6 @@ func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-// ImportState imports an existing server by name.
 func (r *serverResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

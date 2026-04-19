@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure certificateResource satisfies the resource interfaces.
 var _ resource.Resource = &certificateResource{}
 var _ resource.ResourceWithConfigure = &certificateResource{}
 var _ resource.ResourceWithImportState = &certificateResource{}
@@ -28,7 +27,6 @@ type certificateResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewCertificateResource is the factory function registered in the provider.
 func NewCertificateResource() resource.Resource {
 	return &certificateResource{}
 }
@@ -64,7 +62,6 @@ type certificateModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *certificateResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_certificate"
 }
@@ -572,7 +569,6 @@ func (r *certificateResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-// ImportState imports an existing certificate by name.
 func (r *certificateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	cert, err := r.client.GetCertificate(ctx, name)

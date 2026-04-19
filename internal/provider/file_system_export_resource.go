@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure fileSystemExportResource satisfies the resource interfaces.
 var _ resource.Resource = &fileSystemExportResource{}
 var _ resource.ResourceWithConfigure = &fileSystemExportResource{}
 var _ resource.ResourceWithImportState = &fileSystemExportResource{}
@@ -27,7 +26,6 @@ type fileSystemExportResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewFileSystemExportResource is the factory function registered in the provider.
 func NewFileSystemExportResource() resource.Resource {
 	return &fileSystemExportResource{}
 }
@@ -51,7 +49,6 @@ type fileSystemExportModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *fileSystemExportResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_file_system_export"
 }
@@ -159,7 +156,6 @@ func (r *fileSystemExportResource) Configure(_ context.Context, req resource.Con
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new file system export.
 func (r *fileSystemExportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data fileSystemExportModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -197,7 +193,6 @@ func (r *fileSystemExportResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *fileSystemExportResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data fileSystemExportModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -227,11 +222,11 @@ func (r *fileSystemExportResource) Read(ctx context.Context, req resource.ReadRe
 	// Drift detection on user-configurable fields.
 	if !data.ExportName.IsNull() && !data.ExportName.IsUnknown() {
 		if data.ExportName.ValueString() != export.ExportName {
-			tflog.Info(ctx, "drift detected on file system export", map[string]any{
+			tflog.Debug(ctx, "drift detected on file system export", map[string]any{
 				"resource":    name,
 				"field":       "export_name",
-				"state_value": data.ExportName.ValueString(),
-				"api_value":   export.ExportName,
+				"was":         data.ExportName.ValueString(),
+				"now":           export.ExportName,
 			})
 		}
 	}
@@ -241,11 +236,11 @@ func (r *fileSystemExportResource) Read(ctx context.Context, req resource.ReadRe
 			apiSharePolicy = export.SharePolicy.Name
 		}
 		if data.SharePolicyName.ValueString() != apiSharePolicy {
-			tflog.Info(ctx, "drift detected on file system export", map[string]any{
+			tflog.Debug(ctx, "drift detected on file system export", map[string]any{
 				"resource":    name,
 				"field":       "share_policy_name",
-				"state_value": data.SharePolicyName.ValueString(),
-				"api_value":   apiSharePolicy,
+				"was":         data.SharePolicyName.ValueString(),
+				"now":           apiSharePolicy,
 			})
 		}
 	}

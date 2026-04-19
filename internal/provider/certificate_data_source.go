@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure certificateDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &certificateDataSource{}
 var _ datasource.DataSourceWithConfigure = &certificateDataSource{}
 
@@ -21,7 +20,6 @@ type certificateDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewCertificateDataSource is the factory function registered in the provider.
 func NewCertificateDataSource() datasource.DataSource {
 	return &certificateDataSource{}
 }
@@ -55,7 +53,6 @@ type certificateDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *certificateDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_certificate"
 }

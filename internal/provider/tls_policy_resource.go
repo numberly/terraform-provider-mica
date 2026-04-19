@@ -62,7 +62,6 @@ func (m useDefaultIfNullListModifier) PlanModifyList(_ context.Context, req plan
 	}
 }
 
-// Ensure tlsPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &tlsPolicyResource{}
 var _ resource.ResourceWithConfigure = &tlsPolicyResource{}
 var _ resource.ResourceWithImportState = &tlsPolicyResource{}
@@ -73,7 +72,6 @@ type tlsPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewTlsPolicyResource is the factory function registered in the provider.
 func NewTlsPolicyResource() resource.Resource {
 	return &tlsPolicyResource{}
 }
@@ -99,7 +97,6 @@ type tlsPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *tlsPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_tls_policy"
 }
@@ -218,7 +215,6 @@ func (r *tlsPolicyResource) Configure(_ context.Context, req resource.ConfigureR
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new TLS policy.
 func (r *tlsPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data tlsPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -521,7 +517,6 @@ func (r *tlsPolicyResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-// ImportState imports an existing TLS policy by name.
 func (r *tlsPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	policy, err := r.client.GetTlsPolicy(ctx, name)

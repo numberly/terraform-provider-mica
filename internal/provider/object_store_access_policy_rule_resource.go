@@ -23,7 +23,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccessPolicyRuleResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreAccessPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccessPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccessPolicyRuleResource{}
@@ -34,7 +33,6 @@ type objectStoreAccessPolicyRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreAccessPolicyRuleResource is the factory function registered in the provider.
 func NewObjectStoreAccessPolicyRuleResource() resource.Resource {
 	return &objectStoreAccessPolicyRuleResource{}
 }
@@ -55,7 +53,6 @@ type objectStoreAccessPolicyRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreAccessPolicyRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_access_policy_rule"
 }
@@ -155,7 +152,6 @@ func (r *objectStoreAccessPolicyRuleResource) Configure(_ context.Context, req r
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new rule in the object store access policy.
 func (r *objectStoreAccessPolicyRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreAccessPolicyRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -218,7 +214,6 @@ func (r *objectStoreAccessPolicyRuleResource) Create(ctx context.Context, req re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreAccessPolicyRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreAccessPolicyRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -252,7 +247,7 @@ func (r *objectStoreAccessPolicyRuleResource) Read(ctx context.Context, req reso
 		var stateActions []string
 		data.Actions.ElementsAs(ctx, &stateActions, false)
 		if len(stateActions) != len(rule.Actions) {
-			tflog.Info(ctx, "drift detected on object store access policy rule", map[string]any{
+			tflog.Debug(ctx, "drift detected on object store access policy rule", map[string]any{
 				"policy": policyName,
 				"rule":   ruleName,
 				"field":  "actions",

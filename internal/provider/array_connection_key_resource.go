@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arrayConnectionKeyResource satisfies the resource interfaces.
 var _ resource.Resource = &arrayConnectionKeyResource{}
 var _ resource.ResourceWithConfigure = &arrayConnectionKeyResource{}
 var _ resource.ResourceWithImportState = &arrayConnectionKeyResource{}
@@ -27,7 +26,6 @@ type arrayConnectionKeyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArrayConnectionKeyResource is the factory function registered in the provider.
 func NewArrayConnectionKeyResource() resource.Resource {
 	return &arrayConnectionKeyResource{}
 }
@@ -45,7 +43,6 @@ type arrayConnectionKeyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *arrayConnectionKeyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_connection_key"
 }

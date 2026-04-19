@@ -32,7 +32,6 @@ func RegisterFileSystemHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("/api/2.22/file-systems", store.handle)
 }
 
-// handle dispatches file system requests by HTTP method.
 func (s *fileSystemStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure nfsExportPolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &nfsExportPolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &nfsExportPolicyDataSource{}
 
@@ -20,7 +19,6 @@ type nfsExportPolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNfsExportPolicyDataSource is the factory function registered in the provider.
 func NewNfsExportPolicyDataSource() datasource.DataSource {
 	return &nfsExportPolicyDataSource{}
 }
@@ -39,7 +37,6 @@ type nfsExportPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *nfsExportPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_nfs_export_policy"
 }

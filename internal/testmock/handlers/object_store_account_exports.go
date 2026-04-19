@@ -68,7 +68,6 @@ func (s *objectStoreAccountExportStore) AddObjectStoreAccountExportWithName(acco
 	return export
 }
 
-// handle dispatches object store account export requests by HTTP method.
 func (s *objectStoreAccountExportStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

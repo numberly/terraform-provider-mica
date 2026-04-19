@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure quotaUserDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &quotaUserDataSource{}
 var _ datasource.DataSourceWithConfigure = &quotaUserDataSource{}
 
@@ -20,7 +19,6 @@ type quotaUserDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQuotaUserDataSource is the factory function registered in the provider.
 func NewQuotaUserDataSource() datasource.DataSource {
 	return &quotaUserDataSource{}
 }
@@ -38,7 +36,6 @@ type quotaUserDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *quotaUserDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_quota_user"
 }

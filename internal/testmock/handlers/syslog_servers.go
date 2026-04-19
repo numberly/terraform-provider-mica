@@ -25,7 +25,6 @@ func RegisterSyslogServerHandlers(mux *http.ServeMux) *syslogServerStore {
 	return store
 }
 
-// handle dispatches syslog server requests by HTTP method.
 func (s *syslogServerStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

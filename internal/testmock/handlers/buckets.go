@@ -33,7 +33,6 @@ func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStor
 	return store
 }
 
-// handle dispatches bucket requests by HTTP method.
 func (s *BucketStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

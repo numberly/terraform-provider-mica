@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccountResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreAccountResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccountResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccountResource{}
@@ -33,7 +32,6 @@ type objectStoreAccountResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreAccountResource is the factory function registered in the provider.
 func NewObjectStoreAccountResource() resource.Resource {
 	return &objectStoreAccountResource{}
 }
@@ -55,7 +53,6 @@ type objectStoreAccountModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreAccountResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_account"
 }
@@ -171,7 +168,6 @@ func (r *objectStoreAccountResource) Configure(_ context.Context, req resource.C
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store account.
 func (r *objectStoreAccountResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreAccountModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -214,7 +210,6 @@ func (r *objectStoreAccountResource) Create(ctx context.Context, req resource.Cr
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreAccountResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreAccountModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -244,21 +239,21 @@ func (r *objectStoreAccountResource) Read(ctx context.Context, req resource.Read
 	// Drift detection on mutable fields.
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
 		if data.QuotaLimit.ValueInt64() != acct.QuotaLimit {
-			tflog.Info(ctx, "drift detected on object store account", map[string]any{
+			tflog.Debug(ctx, "drift detected on object store account", map[string]any{
 				"resource":    name,
 				"field":       "quota_limit",
-				"state_value": data.QuotaLimit.ValueInt64(),
-				"api_value":   acct.QuotaLimit,
+				"was":         data.QuotaLimit.ValueInt64(),
+				"now":           acct.QuotaLimit,
 			})
 		}
 	}
 	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
 		if data.HardLimitEnabled.ValueBool() != acct.HardLimitEnabled {
-			tflog.Info(ctx, "drift detected on object store account", map[string]any{
+			tflog.Debug(ctx, "drift detected on object store account", map[string]any{
 				"resource":    name,
 				"field":       "hard_limit_enabled",
-				"state_value": data.HardLimitEnabled.ValueBool(),
-				"api_value":   acct.HardLimitEnabled,
+				"was":         data.HardLimitEnabled.ValueBool(),
+				"now":           acct.HardLimitEnabled,
 			})
 		}
 	}
@@ -392,7 +387,6 @@ func (r *objectStoreAccountResource) Delete(ctx context.Context, req resource.De
 	}
 }
 
-// ImportState imports an existing object store account by name.
 func (r *objectStoreAccountResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

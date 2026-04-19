@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure lifecycleRuleDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &lifecycleRuleDataSource{}
 var _ datasource.DataSourceWithConfigure = &lifecycleRuleDataSource{}
 
@@ -20,7 +19,6 @@ type lifecycleRuleDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewLifecycleRuleDataSource is the factory function registered in the provider.
 func NewLifecycleRuleDataSource() datasource.DataSource {
 	return &lifecycleRuleDataSource{}
 }
@@ -43,7 +41,6 @@ type lifecycleRuleDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *lifecycleRuleDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_lifecycle_rule"
 }

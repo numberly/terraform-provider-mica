@@ -34,7 +34,6 @@ func (s *lifecycleRuleStore) Seed(rule *client.LifecycleRule) {
 	s.rules[key] = rule
 }
 
-// handle dispatches lifecycle rule requests by HTTP method.
 func (s *lifecycleRuleStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

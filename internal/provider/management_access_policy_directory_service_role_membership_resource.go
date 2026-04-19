@@ -25,7 +25,6 @@ type mapDsrMembershipResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewManagementAccessPolicyDirectoryServiceRoleMembershipResource is the factory function registered in provider.go.
 func NewManagementAccessPolicyDirectoryServiceRoleMembershipResource() resource.Resource {
 	return &mapDsrMembershipResource{}
 }
@@ -170,7 +169,6 @@ func (r *mapDsrMembershipResource) Update(_ context.Context, _ resource.UpdateRe
 	)
 }
 
-// Delete removes the association between the policy and the role.
 func (r *mapDsrMembershipResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data mapDsrMembershipModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -221,7 +219,7 @@ func (r *mapDsrMembershipResource) ImportState(ctx context.Context, req resource
 		ID:       types.StringValue(compositeID(m.Role.Name, m.Policy.Name)),
 		Policy:   types.StringValue(m.Policy.Name),
 		Role:     types.StringValue(m.Role.Name),
-		Timeouts: nullTimeoutsValueCRD(),
+		Timeouts: nullTimeoutsValueNoUpdate(),
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

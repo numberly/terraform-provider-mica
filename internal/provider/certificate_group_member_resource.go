@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure certificateGroupMemberResource satisfies the resource interfaces.
 var _ resource.Resource = &certificateGroupMemberResource{}
 var _ resource.ResourceWithConfigure = &certificateGroupMemberResource{}
 var _ resource.ResourceWithImportState = &certificateGroupMemberResource{}
@@ -27,7 +26,6 @@ type certificateGroupMemberResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewCertificateGroupMemberResource is the factory function registered in the provider.
 func NewCertificateGroupMemberResource() resource.Resource {
 	return &certificateGroupMemberResource{}
 }
@@ -43,7 +41,6 @@ type certificateGroupMemberModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *certificateGroupMemberResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_certificate_group_member"
 }

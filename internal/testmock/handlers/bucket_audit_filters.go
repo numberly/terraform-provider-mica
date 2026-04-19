@@ -33,7 +33,6 @@ func (s *bucketAuditFilterStore) Seed(filter *client.BucketAuditFilter) {
 	s.filters[filter.Bucket.Name] = filter
 }
 
-// handle dispatches bucket audit filter requests by HTTP method.
 func (s *bucketAuditFilterStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

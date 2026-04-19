@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arraySmtpDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &arraySmtpDataSource{}
 var _ datasource.DataSourceWithConfigure = &arraySmtpDataSource{}
 
@@ -21,7 +20,6 @@ type arraySmtpDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArraySmtpDataSource is the factory function registered in the provider.
 func NewArraySmtpDataSource() datasource.DataSource {
 	return &arraySmtpDataSource{}
 }
@@ -46,7 +44,6 @@ type arraySmtpDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *arraySmtpDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_smtp"
 }

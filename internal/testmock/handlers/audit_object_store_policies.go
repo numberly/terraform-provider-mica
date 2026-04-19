@@ -58,7 +58,6 @@ func (s *auditObjectStorePolicyStore) RemoveMember(policyName, memberName string
 	}
 }
 
-// handle dispatches audit object store policy requests by HTTP method.
 func (s *auditObjectStorePolicyStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

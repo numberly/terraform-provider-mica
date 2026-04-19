@@ -20,7 +20,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure subnetResource satisfies the resource interfaces.
 var _ resource.Resource = &subnetResource{}
 var _ resource.ResourceWithConfigure = &subnetResource{}
 var _ resource.ResourceWithImportState = &subnetResource{}
@@ -30,7 +29,6 @@ type subnetResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSubnetResource is the factory function registered in the provider.
 func NewSubnetResource() resource.Resource {
 	return &subnetResource{}
 }
@@ -54,7 +52,6 @@ type subnetResourceModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *subnetResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_subnet"
 }
@@ -174,7 +171,6 @@ func (r *subnetResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new subnet.
 func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data subnetResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -216,7 +212,6 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data subnetResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -245,16 +240,22 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	// Log drift if key values differ from state.
 	if data.Prefix.ValueString() != subnet.Prefix {
-		tflog.Info(ctx, "subnet drift detected: prefix changed",
-			map[string]any{"name": name, "state": data.Prefix.ValueString(), "api": subnet.Prefix})
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name, "field": "prefix",
+			"was": data.Prefix.ValueString(), "now": subnet.Prefix,
+		})
 	}
 	if data.Gateway.ValueString() != subnet.Gateway {
-		tflog.Info(ctx, "subnet drift detected: gateway changed",
-			map[string]any{"name": name, "state": data.Gateway.ValueString(), "api": subnet.Gateway})
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name, "field": "gateway",
+			"was": data.Gateway.ValueString(), "now": subnet.Gateway,
+		})
 	}
 	if data.MTU.ValueInt64() != subnet.MTU {
-		tflog.Info(ctx, "subnet drift detected: mtu changed",
-			map[string]any{"name": name, "state": data.MTU.ValueInt64(), "api": subnet.MTU})
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name, "field": "mtu",
+			"was": data.MTU.ValueInt64(), "now": subnet.MTU,
+		})
 	}
 
 	mapSubnetToModel(ctx, subnet, &data, &resp.Diagnostics)
@@ -343,7 +344,6 @@ func (r *subnetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-// ImportState imports an existing subnet by name.
 func (r *subnetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

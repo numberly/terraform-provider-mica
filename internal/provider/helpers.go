@@ -107,10 +107,10 @@ func nullTimeoutsValue() timeouts.Value {
 	}
 }
 
-// nullTimeoutsValueCRD returns a timeouts.Value initialized with a null Object
+// nullTimeoutsValueNoUpdate returns a timeouts.Value initialized with a null Object
 // containing only Create, Read, and Delete timeout attribute types. Use in ImportState
 // methods for CRD-only resources (no Update operation).
-func nullTimeoutsValueCRD() timeouts.Value {
+func nullTimeoutsValueNoUpdate() timeouts.Value {
 	return timeouts.Value{
 		Object: types.ObjectNull(map[string]attr.Type{
 			"create": types.StringType,

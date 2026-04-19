@@ -51,7 +51,6 @@ func (s *fileSystemExportStore) AddFileSystemExport(fsName, policyName, serverNa
 	return export
 }
 
-// handle dispatches file system export requests by HTTP method.
 func (s *fileSystemExportStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

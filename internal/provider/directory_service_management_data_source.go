@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure directoryServiceManagementDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &directoryServiceManagementDataSource{}
 var _ datasource.DataSourceWithConfigure = &directoryServiceManagementDataSource{}
 
@@ -21,7 +20,6 @@ type directoryServiceManagementDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewDirectoryServiceManagementDataSource is the factory function registered in the provider.
 func NewDirectoryServiceManagementDataSource() datasource.DataSource {
 	return &directoryServiceManagementDataSource{}
 }
@@ -66,7 +64,6 @@ func namedRefObjectValue(ref *client.NamedReference) types.Object {
 
 // ---------- data source interface methods ------------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *directoryServiceManagementDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_directory_service_management"
 }

@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure nfsExportPolicyRuleResource satisfies the resource interfaces.
 var _ resource.Resource = &nfsExportPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &nfsExportPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &nfsExportPolicyRuleResource{}
@@ -33,7 +32,6 @@ type nfsExportPolicyRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNfsExportPolicyRuleResource is the factory function registered in the provider.
 func NewNfsExportPolicyRuleResource() resource.Resource {
 	return &nfsExportPolicyRuleResource{}
 }
@@ -62,7 +60,6 @@ type nfsExportPolicyRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *nfsExportPolicyRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_nfs_export_policy_rule"
 }
@@ -196,7 +193,6 @@ func (r *nfsExportPolicyRuleResource) Configure(_ context.Context, req resource.
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new rule in the NFS export policy.
 func (r *nfsExportPolicyRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data nfsExportPolicyRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -269,7 +265,6 @@ func (r *nfsExportPolicyRuleResource) Create(ctx context.Context, req resource.C
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *nfsExportPolicyRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data nfsExportPolicyRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -301,12 +296,12 @@ func (r *nfsExportPolicyRuleResource) Read(ctx context.Context, req resource.Rea
 	// Drift detection on mutable fields.
 	if !data.Client.IsNull() && !data.Client.IsUnknown() {
 		if data.Client.ValueString() != rule.Client {
-			tflog.Info(ctx, "drift detected on NFS export policy rule", map[string]any{
+			tflog.Debug(ctx, "drift detected on NFS export policy rule", map[string]any{
 				"policy":      policyName,
 				"rule":        ruleName,
 				"field":       "client",
-				"state_value": data.Client.ValueString(),
-				"api_value":   rule.Client,
+				"was":         data.Client.ValueString(),
+				"now":           rule.Client,
 			})
 		}
 	}

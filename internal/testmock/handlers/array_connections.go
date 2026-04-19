@@ -35,7 +35,6 @@ func (s *arrayConnectionStore) Seed(conn *client.ArrayConnection) {
 	s.byName[conn.Remote.Name] = conn
 }
 
-// handle dispatches array connection requests by HTTP method.
 func (s *arrayConnectionStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

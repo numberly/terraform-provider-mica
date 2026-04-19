@@ -55,7 +55,6 @@ func (s *subnetStore) AddSubnet(name string, prefix string, lagName string) *cli
 	return subnet
 }
 
-// handle dispatches subnet requests by HTTP method.
 func (s *subnetStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

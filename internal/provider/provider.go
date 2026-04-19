@@ -15,7 +15,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure FlashBladeProvider satisfies the provider.Provider interface.
 var _ provider.Provider = &FlashBladeProvider{}
 
 // FlashBladeProvider is the root provider struct.

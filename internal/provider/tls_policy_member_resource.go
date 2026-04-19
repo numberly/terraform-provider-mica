@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure tlsPolicyMemberResource satisfies the resource interfaces.
 var _ resource.Resource = &tlsPolicyMemberResource{}
 var _ resource.ResourceWithConfigure = &tlsPolicyMemberResource{}
 var _ resource.ResourceWithImportState = &tlsPolicyMemberResource{}
@@ -26,7 +25,6 @@ type tlsPolicyMemberResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewTlsPolicyMemberResource is the factory function registered in the provider.
 func NewTlsPolicyMemberResource() resource.Resource {
 	return &tlsPolicyMemberResource{}
 }
@@ -42,7 +40,6 @@ type tlsPolicyMemberModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *tlsPolicyMemberResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_tls_policy_member"
 }

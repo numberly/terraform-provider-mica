@@ -23,7 +23,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure bucketResource satisfies the resource interfaces.
 var _ resource.Resource = &bucketResource{}
 var _ resource.ResourceWithConfigure = &bucketResource{}
 var _ resource.ResourceWithImportState = &bucketResource{}
@@ -35,7 +34,6 @@ type bucketResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewBucketResource is the factory function registered in the provider.
 func NewBucketResource() resource.Resource {
 	return &bucketResource{}
 }
@@ -67,7 +65,6 @@ type bucketModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *bucketResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_bucket"
 }
@@ -309,7 +306,6 @@ func (r *bucketResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new bucket.
 func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data bucketModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -371,7 +367,6 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data bucketModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -401,31 +396,31 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 	// Drift detection on user-configurable fields.
 	if !data.Versioning.IsNull() && !data.Versioning.IsUnknown() {
 		if data.Versioning.ValueString() != bkt.Versioning {
-			tflog.Info(ctx, "drift detected on bucket", map[string]any{
+			tflog.Debug(ctx, "drift detected on bucket", map[string]any{
 				"resource":    name,
 				"field":       "versioning",
-				"state_value": data.Versioning.ValueString(),
-				"api_value":   bkt.Versioning,
+				"was":         data.Versioning.ValueString(),
+				"now":           bkt.Versioning,
 			})
 		}
 	}
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
 		if data.QuotaLimit.ValueInt64() != bkt.QuotaLimit {
-			tflog.Info(ctx, "drift detected on bucket", map[string]any{
+			tflog.Debug(ctx, "drift detected on bucket", map[string]any{
 				"resource":    name,
 				"field":       "quota_limit",
-				"state_value": data.QuotaLimit.ValueInt64(),
-				"api_value":   bkt.QuotaLimit,
+				"was":         data.QuotaLimit.ValueInt64(),
+				"now":           bkt.QuotaLimit,
 			})
 		}
 	}
 	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
 		if data.HardLimitEnabled.ValueBool() != bkt.HardLimitEnabled {
-			tflog.Info(ctx, "drift detected on bucket", map[string]any{
+			tflog.Debug(ctx, "drift detected on bucket", map[string]any{
 				"resource":    name,
 				"field":       "hard_limit_enabled",
-				"state_value": data.HardLimitEnabled.ValueBool(),
-				"api_value":   bkt.HardLimitEnabled,
+				"was":         data.HardLimitEnabled.ValueBool(),
+				"now":           bkt.HardLimitEnabled,
 			})
 		}
 	}
@@ -564,7 +559,6 @@ func (r *bucketResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-// ImportState imports an existing bucket by name.
 func (r *bucketResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	bkt, err := r.client.GetBucket(ctx, name)

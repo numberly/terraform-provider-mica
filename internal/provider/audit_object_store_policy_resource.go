@@ -19,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure auditObjectStorePolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &auditObjectStorePolicyResource{}
 var _ resource.ResourceWithConfigure = &auditObjectStorePolicyResource{}
 var _ resource.ResourceWithImportState = &auditObjectStorePolicyResource{}
@@ -30,7 +29,6 @@ type auditObjectStorePolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewAuditObjectStorePolicyResource is the factory function registered in the provider.
 func NewAuditObjectStorePolicyResource() resource.Resource {
 	return &auditObjectStorePolicyResource{}
 }
@@ -50,7 +48,6 @@ type auditObjectStorePolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *auditObjectStorePolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_audit_object_store_policy"
 }
@@ -134,7 +131,6 @@ func (r *auditObjectStorePolicyResource) Configure(_ context.Context, req resour
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new audit object store policy.
 func (r *auditObjectStorePolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data auditObjectStorePolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -177,7 +173,6 @@ func (r *auditObjectStorePolicyResource) Create(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *auditObjectStorePolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data auditObjectStorePolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -311,7 +306,6 @@ func (r *auditObjectStorePolicyResource) Delete(ctx context.Context, req resourc
 	}
 }
 
-// ImportState imports an existing audit object store policy by name.
 func (r *auditObjectStorePolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

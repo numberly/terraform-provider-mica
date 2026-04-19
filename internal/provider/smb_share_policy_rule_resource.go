@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure smbSharePolicyRuleResource satisfies the resource interfaces.
 var _ resource.Resource = &smbSharePolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &smbSharePolicyRuleResource{}
 var _ resource.ResourceWithImportState = &smbSharePolicyRuleResource{}
@@ -28,7 +27,6 @@ type smbSharePolicyRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSmbSharePolicyRuleResource is the factory function registered in the provider.
 func NewSmbSharePolicyRuleResource() resource.Resource {
 	return &smbSharePolicyRuleResource{}
 }
@@ -49,7 +47,6 @@ type smbSharePolicyRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *smbSharePolicyRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_smb_share_policy_rule"
 }
@@ -134,7 +131,6 @@ func (r *smbSharePolicyRuleResource) Configure(_ context.Context, req resource.C
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new rule in the SMB share policy.
 func (r *smbSharePolicyRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data smbSharePolicyRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -182,7 +178,6 @@ func (r *smbSharePolicyRuleResource) Create(ctx context.Context, req resource.Cr
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *smbSharePolicyRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data smbSharePolicyRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -214,12 +209,12 @@ func (r *smbSharePolicyRuleResource) Read(ctx context.Context, req resource.Read
 	// Drift detection on principal field.
 	if !data.Principal.IsNull() && !data.Principal.IsUnknown() {
 		if data.Principal.ValueString() != rule.Principal {
-			tflog.Info(ctx, "drift detected on SMB share policy rule", map[string]any{
+			tflog.Debug(ctx, "drift detected on SMB share policy rule", map[string]any{
 				"policy":      policyName,
 				"rule":        ruleName,
 				"field":       "principal",
-				"state_value": data.Principal.ValueString(),
-				"api_value":   rule.Principal,
+				"was":         data.Principal.ValueString(),
+				"now":           rule.Principal,
 			})
 		}
 	}

@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure networkInterfaceDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &networkInterfaceDataSource{}
 var _ datasource.DataSourceWithConfigure = &networkInterfaceDataSource{}
 
@@ -21,7 +20,6 @@ type networkInterfaceDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNetworkInterfaceDataSource is the factory function registered in the provider.
 func NewNetworkInterfaceDataSource() datasource.DataSource {
 	return &networkInterfaceDataSource{}
 }
@@ -47,7 +45,6 @@ type networkInterfaceDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *networkInterfaceDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_network_interface"
 }

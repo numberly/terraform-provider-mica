@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure networkInterfaceResource satisfies the resource interfaces.
 var _ resource.Resource = &networkInterfaceResource{}
 var _ resource.ResourceWithConfigure = &networkInterfaceResource{}
 var _ resource.ResourceWithImportState = &networkInterfaceResource{}
@@ -33,7 +32,6 @@ type networkInterfaceResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNetworkInterfaceResource is the factory function registered in the provider.
 func NewNetworkInterfaceResource() resource.Resource {
 	return &networkInterfaceResource{}
 }
@@ -60,7 +58,6 @@ type networkInterfaceResourceModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *networkInterfaceResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_network_interface"
 }
@@ -209,7 +206,6 @@ func (r *networkInterfaceResource) ConfigValidators(_ context.Context) []resourc
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new network interface.
 func (r *networkInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data networkInterfaceResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -250,7 +246,6 @@ func (r *networkInterfaceResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *networkInterfaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data networkInterfaceResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -279,16 +274,20 @@ func (r *networkInterfaceResource) Read(ctx context.Context, req resource.ReadRe
 
 	// Log drift on mutable fields.
 	if data.Address.ValueString() != ni.Address {
-		tflog.Info(ctx, "network interface drift detected: address changed",
-			map[string]any{"name": name, "state": data.Address.ValueString(), "api": ni.Address})
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name, "field": "address",
+			"was": data.Address.ValueString(), "now": ni.Address,
+		})
 	}
 	apiSvc := ""
 	if len(ni.Services) > 0 {
 		apiSvc = ni.Services[0]
 	}
 	if data.Services.ValueString() != apiSvc {
-		tflog.Info(ctx, "network interface drift detected: services changed",
-			map[string]any{"name": name, "state": data.Services.ValueString(), "api": apiSvc})
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name, "field": "services",
+			"was": data.Services.ValueString(), "now": apiSvc,
+		})
 	}
 
 	mapNetworkInterfaceToModel(ctx, ni, &data, &resp.Diagnostics)
@@ -370,7 +369,6 @@ func (r *networkInterfaceResource) Delete(ctx context.Context, req resource.Dele
 	}
 }
 
-// ImportState imports an existing network interface by name.
 func (r *networkInterfaceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 

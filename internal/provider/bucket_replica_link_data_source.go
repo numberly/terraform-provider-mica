@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure bucketReplicaLinkDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &bucketReplicaLinkDataSource{}
 var _ datasource.DataSourceWithConfigure = &bucketReplicaLinkDataSource{}
 
@@ -20,7 +19,6 @@ type bucketReplicaLinkDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewBucketReplicaLinkDataSource is the factory function registered in the provider.
 func NewBucketReplicaLinkDataSource() datasource.DataSource {
 	return &bucketReplicaLinkDataSource{}
 }
@@ -47,7 +45,6 @@ type bucketReplicaLinkDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *bucketReplicaLinkDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_bucket_replica_link"
 }

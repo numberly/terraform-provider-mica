@@ -15,7 +15,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure auditObjectStorePolicyMemberResource satisfies the resource interfaces.
 var _ resource.Resource = &auditObjectStorePolicyMemberResource{}
 var _ resource.ResourceWithConfigure = &auditObjectStorePolicyMemberResource{}
 var _ resource.ResourceWithImportState = &auditObjectStorePolicyMemberResource{}
@@ -26,7 +25,6 @@ type auditObjectStorePolicyMemberResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewAuditObjectStorePolicyMemberResource is the factory function registered in the provider.
 func NewAuditObjectStorePolicyMemberResource() resource.Resource {
 	return &auditObjectStorePolicyMemberResource{}
 }
@@ -42,7 +40,6 @@ type auditObjectStorePolicyMemberModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *auditObjectStorePolicyMemberResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_audit_object_store_policy_member"
 }
@@ -233,7 +230,7 @@ func (r *auditObjectStorePolicyMemberResource) ImportState(ctx context.Context, 
 	}
 
 	var data auditObjectStorePolicyMemberModel
-	data.Timeouts = nullTimeoutsValueCRD()
+	data.Timeouts = nullTimeoutsValueNoUpdate()
 	data.PolicyName = types.StringValue(found.Policy.Name)
 	data.MemberName = types.StringValue(found.Member.Name)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure filesystemResource satisfies the resource.Resource interface.
 var _ resource.Resource = &filesystemResource{}
 var _ resource.ResourceWithConfigure = &filesystemResource{}
 var _ resource.ResourceWithImportState = &filesystemResource{}
@@ -33,7 +32,6 @@ type filesystemResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewFilesystemResource is the factory function registered in the provider.
 func NewFilesystemResource() resource.Resource {
 	return &filesystemResource{}
 }
@@ -80,7 +78,6 @@ type filesystemModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *filesystemResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_file_system"
 }
@@ -332,7 +329,6 @@ func (r *filesystemResource) Configure(_ context.Context, req resource.Configure
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new file system.
 func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data filesystemModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -395,7 +391,6 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *filesystemResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data filesystemModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -425,11 +420,11 @@ func (r *filesystemResource) Read(ctx context.Context, req resource.ReadRequest,
 	// Drift detection: compare user-configurable fields against current state.
 	if !data.Provisioned.IsNull() && !data.Provisioned.IsUnknown() {
 		if data.Provisioned.ValueInt64() != fs.Provisioned {
-			tflog.Info(ctx, "drift detected on file system", map[string]any{
+			tflog.Debug(ctx, "drift detected on file system", map[string]any{
 				"resource":    name,
 				"field":       "provisioned",
-				"state_value": data.Provisioned.ValueInt64(),
-				"api_value":   fs.Provisioned,
+				"was":         data.Provisioned.ValueInt64(),
+				"now":           fs.Provisioned,
 			})
 		}
 	}
@@ -568,7 +563,6 @@ func (r *filesystemResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 }
 
-// ImportState imports an existing file system by name.
 func (r *filesystemResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	fs, err := r.client.GetFileSystem(ctx, name)

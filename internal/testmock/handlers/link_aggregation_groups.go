@@ -36,7 +36,6 @@ func (s *lagStore) Seed(lag *client.LinkAggregationGroup) {
 	s.lags[lag.Name] = lag
 }
 
-// handle dispatches LAG requests by HTTP method.
 // Only GET is supported; all other methods return 405.
 func (s *lagStore) handle(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {

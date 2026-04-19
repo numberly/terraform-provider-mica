@@ -15,7 +15,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure remoteCredentialsResource satisfies the resource interfaces.
 var _ resource.Resource = &remoteCredentialsResource{}
 var _ resource.ResourceWithConfigure = &remoteCredentialsResource{}
 var _ resource.ResourceWithImportState = &remoteCredentialsResource{}
@@ -26,7 +25,6 @@ type remoteCredentialsResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewRemoteCredentialsResource is the factory function registered in the provider.
 func NewRemoteCredentialsResource() resource.Resource {
 	return &remoteCredentialsResource{}
 }
@@ -56,7 +54,6 @@ type remoteCredentialsV0Model struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *remoteCredentialsResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_remote_credentials"
 }
@@ -240,7 +237,6 @@ func (r *remoteCredentialsResource) Create(ctx context.Context, req resource.Cre
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *remoteCredentialsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data remoteCredentialsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -358,7 +354,6 @@ func (r *remoteCredentialsResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-// ImportState imports existing remote credentials by name.
 func (r *remoteCredentialsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	cred, err := r.client.GetRemoteCredentials(ctx, name)

@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreUserDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &objectStoreUserDataSource{}
 var _ datasource.DataSourceWithConfigure = &objectStoreUserDataSource{}
 
@@ -20,7 +19,6 @@ type objectStoreUserDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreUserDataSource is the factory function registered in the provider.
 func NewObjectStoreUserDataSource() datasource.DataSource {
 	return &objectStoreUserDataSource{}
 }
@@ -36,7 +34,6 @@ type objectStoreUserDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *objectStoreUserDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_user"
 }

@@ -20,7 +20,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure quotaUserResource satisfies the resource interfaces.
 var _ resource.Resource = &quotaUserResource{}
 var _ resource.ResourceWithConfigure = &quotaUserResource{}
 var _ resource.ResourceWithImportState = &quotaUserResource{}
@@ -31,7 +30,6 @@ type quotaUserResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQuotaUserResource is the factory function registered in the provider.
 func NewQuotaUserResource() resource.Resource {
 	return &quotaUserResource{}
 }
@@ -50,7 +48,6 @@ type quotaUserModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *quotaUserResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_quota_user"
 }
@@ -130,7 +127,6 @@ func (r *quotaUserResource) Configure(_ context.Context, req resource.ConfigureR
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new user quota.
 func (r *quotaUserResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data quotaUserModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -179,7 +175,6 @@ func (r *quotaUserResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *quotaUserResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data quotaUserModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -211,11 +206,11 @@ func (r *quotaUserResource) Read(ctx context.Context, req resource.ReadRequest, 
 	// Drift detection on quota.
 	if !data.Quota.IsNull() && !data.Quota.IsUnknown() {
 		if data.Quota.ValueInt64() != qu.Quota {
-			tflog.Info(ctx, "drift detected on user quota", map[string]any{
+			tflog.Debug(ctx, "drift detected on user quota", map[string]any{
 				"resource":    fsName + "/" + uid,
 				"field":       "quota",
-				"state_value": data.Quota.ValueInt64(),
-				"api_value":   qu.Quota,
+				"was":         data.Quota.ValueInt64(),
+				"now":           qu.Quota,
 			})
 		}
 	}
