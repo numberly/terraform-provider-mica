@@ -238,7 +238,7 @@ func (r *networkInterfaceResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -290,7 +290,7 @@ func (r *networkInterfaceResource) Read(ctx context.Context, req resource.ReadRe
 		})
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -336,7 +336,7 @@ func (r *networkInterfaceResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -382,7 +382,7 @@ func (r *networkInterfaceResource) ImportState(ctx context.Context, req resource
 		return
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -393,7 +393,8 @@ func (r *networkInterfaceResource) ImportState(ctx context.Context, req resource
 // ---------- helpers ---------------------------------------------------------
 
 // mapNetworkInterfaceToModel maps a *client.NetworkInterface to a *networkInterfaceResourceModel.
-func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface, data *networkInterfaceResourceModel, diags *diag.Diagnostics) {
+func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface, data *networkInterfaceResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.ID = types.StringValue(ni.ID)
 	data.Name = types.StringValue(ni.Name)
 	data.Address = types.StringValue(ni.Address)
@@ -405,7 +406,6 @@ func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface
 	data.Netmask = stringOrNull(ni.Netmask)
 	data.SubnetName = refToSubnetName(ni.Subnet)
 
-	// Collapse []string services to a single string value.
 	if len(ni.Services) > 0 {
 		data.Services = types.StringValue(ni.Services[0])
 	} else {
@@ -413,37 +413,19 @@ func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface
 	}
 
 	// AttachedServers: always use a list (empty, not null) to prevent spurious drift.
-	if len(ni.AttachedServers) > 0 {
-		names := make([]string, 0, len(ni.AttachedServers))
-		for _, s := range ni.AttachedServers {
-			names = append(names, s.Name)
-		}
-		serverList, serverDiags := types.ListValueFrom(ctx, types.StringType, names)
-		diags.Append(serverDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.AttachedServers = serverList
-	} else {
-		emptyList, emptyDiags := types.ListValueFrom(ctx, types.StringType, []string{})
-		diags.Append(emptyDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.AttachedServers = emptyList
-	}
+	data.AttachedServers = namedRefsToListValue(ni.AttachedServers)
 
-	// Realms: null when absent, list otherwise.
 	if len(ni.Realms) > 0 {
 		realmList, realmDiags := types.ListValueFrom(ctx, types.StringType, ni.Realms)
 		diags.Append(realmDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.Realms = realmList
 	} else {
 		data.Realms = types.ListNull(types.StringType)
 	}
+	return diags
 }
 
 // refToSubnetName converts a *client.NamedReference to a flat types.String.

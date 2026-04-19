@@ -27,21 +27,7 @@ func (c *FlashBladeClient) GetLifecycleRule(ctx context.Context, bucketName stri
 func (c *FlashBladeClient) ListLifecycleRulesByBucket(ctx context.Context, bucketName string) ([]LifecycleRule, error) {
 	params := url.Values{}
 	params.Set("bucket_names", bucketName)
-	var all []LifecycleRule
-	for {
-		path := "/lifecycle-rules?" + params.Encode()
-
-		var resp ListResponse[LifecycleRule]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[LifecycleRule](c, ctx, "/lifecycle-rules", params)
 }
 
 // PostLifecycleRule creates a new lifecycle rule.

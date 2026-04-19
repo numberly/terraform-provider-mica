@@ -31,24 +31,7 @@ func (c *FlashBladeClient) ListObjectStoreAccounts(ctx context.Context, opts Lis
 		params.Set("filter", opts.Filter)
 	}
 
-	var all []ObjectStoreAccount
-	for {
-		path := "/object-store-accounts"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[ObjectStoreAccount]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[ObjectStoreAccount](c, ctx, "/object-store-accounts", params)
 }
 
 // PostObjectStoreAccount creates a new object store account.

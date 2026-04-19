@@ -21,24 +21,7 @@ func (c *FlashBladeClient) GetBucketReplicaLinkByID(ctx context.Context, id stri
 // It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListBucketReplicaLinks(ctx context.Context) ([]BucketReplicaLink, error) {
 	params := url.Values{}
-	var all []BucketReplicaLink
-	for {
-		path := "/bucket-replica-links"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[BucketReplicaLink]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[BucketReplicaLink](c, ctx, "/bucket-replica-links", params)
 }
 
 // PostBucketReplicaLink creates a new bucket replica link.

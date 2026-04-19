@@ -314,7 +314,8 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &data)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -348,7 +349,8 @@ func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &data)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -385,7 +387,8 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &plan)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &plan, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -448,7 +451,8 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &data)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -458,15 +462,17 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 
 // ---------- helpers ---------------------------------------------------------
 
-// mapServerToModel maps a client.Server to a serverResourceModel.
-// It calls ListNetworkInterfaces to enrich the model with attached VIP names.
-// It preserves user-managed fields (Timeouts, CascadeDelete).
-func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *client.Server, data *serverResourceModel, diags *diag.Diagnostics) {
+// mapServerToModel is a pure transformer: it maps a client.Server to a
+// serverResourceModel without performing any network I/O. Call
+// enrichServerNetworkInterfaces separately to populate NetworkInterfaces
+// from ListNetworkInterfaces. Preserves user-managed fields (Timeouts,
+// CascadeDelete).
+func mapServerToModel(ctx context.Context, srv *client.Server, data *serverResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.ID = types.StringValue(srv.ID)
 	data.Name = types.StringValue(srv.Name)
 	data.Created = types.Int64Value(srv.Created)
 
-	// Map DNS names (flat list of strings).
 	if len(srv.DNS) > 0 {
 		names := make([]string, len(srv.DNS))
 		for i, d := range srv.DNS {
@@ -475,14 +481,13 @@ func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *clie
 		dnsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
 		diags.Append(listDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.DNS = dnsList
 	} else {
 		data.DNS = types.ListNull(types.StringType)
 	}
 
-	// Map directory_services names (computed, read-only).
 	if len(srv.DirectoryServices) > 0 {
 		names := make([]string, len(srv.DirectoryServices))
 		for i, ds := range srv.DirectoryServices {
@@ -491,16 +496,13 @@ func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *clie
 		dsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
 		diags.Append(listDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.DirectoryServices = dsList
 	} else {
 		data.DirectoryServices = types.ListNull(types.StringType)
 	}
-
-	// Enrich network_interfaces by discovering attached VIPs.
-	// VIP enrichment is optional — errors are warnings only to avoid blocking CRUD.
-	enrichServerNetworkInterfaces(ctx, c, data, diags)
+	return diags
 }
 
 // enrichServerNetworkInterfaces calls ListNetworkInterfaces and filters by server name.

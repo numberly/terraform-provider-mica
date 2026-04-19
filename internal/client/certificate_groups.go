@@ -30,20 +30,7 @@ func (c *FlashBladeClient) DeleteCertificateGroup(ctx context.Context, name stri
 func (c *FlashBladeClient) ListCertificateGroupMembers(ctx context.Context, groupName string) ([]CertificateGroupMember, error) {
 	params := url.Values{}
 	params.Set("certificate_group_names", groupName)
-	var all []CertificateGroupMember
-	for {
-		path := "/certificate-groups/certificates?" + params.Encode()
-		var resp ListResponse[CertificateGroupMember]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, fmt.Errorf("ListCertificateGroupMembers: %w", err)
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[CertificateGroupMember](c, ctx, "/certificate-groups/certificates", params)
 }
 
 // GetCertificateGroupMember returns the membership entry for (groupName, certName).

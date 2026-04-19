@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -120,17 +119,7 @@ func (d *auditObjectStorePolicyDataSource) Read(ctx context.Context, req datasou
 	config.IsLocal = types.BoolValue(policy.IsLocal)
 	config.PolicyType = types.StringValue(policy.PolicyType)
 
-	// Map LogTargets.
-	names := namedRefsToNames(policy.LogTargets)
-	if len(names) > 0 {
-		vals := make([]attr.Value, len(names))
-		for i, n := range names {
-			vals[i] = types.StringValue(n)
-		}
-		config.LogTargets = types.ListValueMust(types.StringType, vals)
-	} else {
-		config.LogTargets = types.ListValueMust(types.StringType, []attr.Value{})
-	}
+	config.LogTargets = namedRefsToListValue(policy.LogTargets)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

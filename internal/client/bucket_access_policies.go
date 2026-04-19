@@ -27,21 +27,7 @@ func (c *FlashBladeClient) DeleteBucketAccessPolicy(ctx context.Context, bucketN
 func (c *FlashBladeClient) ListBucketAccessPolicyRules(ctx context.Context, bucketName string) ([]BucketAccessPolicyRule, error) {
 	params := url.Values{}
 	params.Set("bucket_names", bucketName)
-	var all []BucketAccessPolicyRule
-	for {
-		path := "/buckets/bucket-access-policies/rules?" + params.Encode()
-
-		var resp ListResponse[BucketAccessPolicyRule]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[BucketAccessPolicyRule](c, ctx, "/buckets/bucket-access-policies/rules", params)
 }
 
 // GetBucketAccessPolicyRule retrieves a specific rule by bucket name and rule name.

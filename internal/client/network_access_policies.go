@@ -17,24 +17,7 @@ func (c *FlashBladeClient) GetNetworkAccessPolicy(ctx context.Context, name stri
 func (c *FlashBladeClient) ListNetworkAccessPolicies(ctx context.Context) ([]NetworkAccessPolicy, error) {
 	params := url.Values{}
 
-	var all []NetworkAccessPolicy
-	for {
-		path := "/network-access-policies"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[NetworkAccessPolicy]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[NetworkAccessPolicy](c, ctx, "/network-access-policies", params)
 }
 
 // PatchNetworkAccessPolicy updates an existing network access policy identified by name.
@@ -49,20 +32,7 @@ func (c *FlashBladeClient) ListNetworkAccessPolicyRules(ctx context.Context, pol
 	params := url.Values{}
 	params.Set("policy_names", policyName)
 
-	var all []NetworkAccessPolicyRule
-	for {
-		path := "/network-access-policies/rules?" + params.Encode()
-		var resp ListResponse[NetworkAccessPolicyRule]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[NetworkAccessPolicyRule](c, ctx, "/network-access-policies/rules", params)
 }
 
 // GetNetworkAccessPolicyRuleByName retrieves a network access policy rule by name within a policy.

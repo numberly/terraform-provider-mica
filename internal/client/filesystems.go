@@ -51,24 +51,7 @@ func (c *FlashBladeClient) ListFileSystems(ctx context.Context, opts ListFileSys
 		params.Set("limit", fmt.Sprintf("%d", opts.Limit))
 	}
 
-	var all []FileSystem
-	for {
-		path := "/file-systems"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[FileSystem]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[FileSystem](c, ctx, "/file-systems", params)
 }
 
 // PostFileSystem creates a new file system.

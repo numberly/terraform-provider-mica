@@ -132,6 +132,22 @@ func namedRefsToNames(refs []client.NamedReference) []string {
 	return names
 }
 
+// namedRefsToListValue converts a slice of NamedReference to a types.List of
+// their Name values. Returns an empty list (not null) when refs is empty.
+func namedRefsToListValue(refs []client.NamedReference) types.List {
+	return stringsToListValue(namedRefsToNames(refs))
+}
+
+// stringsToListValue converts a []string to a types.List of string values.
+// Returns an empty list (not null) when the slice is empty.
+func stringsToListValue(values []string) types.List {
+	vals := make([]attr.Value, len(values))
+	for i, v := range values {
+		vals[i] = types.StringValue(v)
+	}
+	return types.ListValueMust(types.StringType, vals)
+}
+
 // stringSlicesEqual returns true if two string slices have the same elements in the same order.
 func stringSlicesEqual(a, b []string) bool {
 	if len(a) != len(b) {

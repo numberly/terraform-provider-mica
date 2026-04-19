@@ -15,24 +15,7 @@ func (c *FlashBladeClient) GetRemoteCredentials(ctx context.Context, name string
 // It automatically follows continuation_token pagination to collect all results.
 func (c *FlashBladeClient) ListRemoteCredentials(ctx context.Context) ([]ObjectStoreRemoteCredentials, error) {
 	params := url.Values{}
-	var all []ObjectStoreRemoteCredentials
-	for {
-		path := "/object-store-remote-credentials"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[ObjectStoreRemoteCredentials]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[ObjectStoreRemoteCredentials](c, ctx, "/object-store-remote-credentials", params)
 }
 
 // PostRemoteCredentialsForTarget creates a new remote credentials entry scoped to a

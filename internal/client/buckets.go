@@ -51,24 +51,7 @@ func (c *FlashBladeClient) ListBuckets(ctx context.Context, opts ListBucketsOpts
 		}
 	}
 
-	var all []Bucket
-	for {
-		path := "/buckets"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[Bucket]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[Bucket](c, ctx, "/buckets", params)
 }
 
 // GetBucket retrieves a bucket by name.

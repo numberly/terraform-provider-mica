@@ -320,6 +320,34 @@ func patchOne[TBody any, TResp any](c *FlashBladeClient, ctx context.Context, pa
 	return &resp.Items[0], nil
 }
 
+// listAll collects every page of a paginated list endpoint. basePath is the
+// endpoint without a leading "?"; params holds any static filters. The
+// continuation_token returned by the server is added to params on each iteration
+// until the server stops returning one.
+//
+// Example: listAll[Bucket](c, ctx, "/buckets", url.Values{"destroyed": []string{"false"}})
+func listAll[T any](c *FlashBladeClient, ctx context.Context, basePath string, params url.Values) ([]T, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	var all []T
+	for {
+		path := basePath
+		if encoded := params.Encode(); encoded != "" {
+			path = basePath + "?" + encoded
+		}
+		var resp ListResponse[T]
+		if err := c.get(ctx, path, &resp); err != nil {
+			return nil, err
+		}
+		all = append(all, resp.Items...)
+		if resp.ContinuationToken == "" {
+			return all, nil
+		}
+		params.Set("continuation_token", resp.ContinuationToken)
+	}
+}
+
 // pollUntilGone polls a FlashBlade list endpoint with ?destroyed=true until the item
 // disappears (empty items response), indicating eradication is complete.
 // basePath is the endpoint without query params (e.g., "/buckets").

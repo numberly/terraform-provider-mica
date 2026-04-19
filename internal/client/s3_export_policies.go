@@ -36,20 +36,7 @@ func (c *FlashBladeClient) ListS3ExportPolicyRules(ctx context.Context, policyNa
 	params := url.Values{}
 	params.Set("policy_names", policyName)
 
-	var all []S3ExportPolicyRule
-	for {
-		path := "/s3-export-policies/rules?" + params.Encode()
-		var resp ListResponse[S3ExportPolicyRule]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[S3ExportPolicyRule](c, ctx, "/s3-export-policies/rules", params)
 }
 
 // GetS3ExportPolicyRuleByIndex retrieves an S3 export policy rule by its index within the policy.

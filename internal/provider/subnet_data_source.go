@@ -135,7 +135,7 @@ func (d *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	mapSubnetToDataSourceModel(ctx, subnet, &config, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapSubnetToDataSourceModel(ctx, subnet, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -144,7 +144,8 @@ func (d *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 }
 
 // mapSubnetToDataSourceModel maps a client.Subnet to a subnetDataSourceModel.
-func mapSubnetToDataSourceModel(ctx context.Context, subnet *client.Subnet, data *subnetDataSourceModel, diags *diag.Diagnostics) {
+func mapSubnetToDataSourceModel(ctx context.Context, subnet *client.Subnet, data *subnetDataSourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.ID = types.StringValue(subnet.ID)
 	data.Name = types.StringValue(subnet.Name)
 	data.Prefix = types.StringValue(subnet.Prefix)
@@ -154,31 +155,21 @@ func mapSubnetToDataSourceModel(ctx context.Context, subnet *client.Subnet, data
 	data.Enabled = types.BoolValue(subnet.Enabled)
 	data.LagName = refToLagName(subnet.LinkAggregationGroup)
 
-	// Map services list.
 	if len(subnet.Services) > 0 {
 		svcList, svcDiags := types.ListValueFrom(ctx, types.StringType, subnet.Services)
 		diags.Append(svcDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.Services = svcList
 	} else {
 		data.Services = types.ListNull(types.StringType)
 	}
 
-	// Map interfaces list (extract .Name from each NamedReference).
-	if len(subnet.Interfaces) > 0 {
-		ifaceNames := make([]string, 0, len(subnet.Interfaces))
-		for _, iface := range subnet.Interfaces {
-			ifaceNames = append(ifaceNames, iface.Name)
-		}
-		ifaceList, ifaceDiags := types.ListValueFrom(ctx, types.StringType, ifaceNames)
-		diags.Append(ifaceDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.Interfaces = ifaceList
-	} else {
+	if len(subnet.Interfaces) == 0 {
 		data.Interfaces = types.ListNull(types.StringType)
+	} else {
+		data.Interfaces = namedRefsToListValue(subnet.Interfaces)
 	}
+	return diags
 }

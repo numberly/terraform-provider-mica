@@ -31,24 +31,7 @@ func (c *FlashBladeClient) ListObjectStoreVirtualHosts(ctx context.Context, opts
 		params.Set("filter", opts.Filter)
 	}
 
-	var all []ObjectStoreVirtualHost
-	for {
-		path := "/object-store-virtual-hosts"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[ObjectStoreVirtualHost]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[ObjectStoreVirtualHost](c, ctx, "/object-store-virtual-hosts", params)
 }
 
 // PostObjectStoreVirtualHost creates a new object store virtual host.

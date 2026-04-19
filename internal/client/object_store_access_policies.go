@@ -16,24 +16,7 @@ func (c *FlashBladeClient) GetObjectStoreAccessPolicy(ctx context.Context, name 
 func (c *FlashBladeClient) ListObjectStoreAccessPolicies(ctx context.Context) ([]ObjectStoreAccessPolicy, error) {
 	params := url.Values{}
 
-	var all []ObjectStoreAccessPolicy
-	for {
-		path := "/object-store-access-policies"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[ObjectStoreAccessPolicy]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[ObjectStoreAccessPolicy](c, ctx, "/object-store-access-policies", params)
 }
 
 // PostObjectStoreAccessPolicy creates a new object store access policy.

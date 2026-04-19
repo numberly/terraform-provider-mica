@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -153,27 +152,9 @@ func (d *tlsPolicyDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	config.ClientCertificatesRequired = types.BoolValue(policy.ClientCertificatesRequired)
 
-	if len(policy.DisabledTlsCiphers) == 0 {
-		config.DisabledTlsCiphers = types.ListValueMust(types.StringType, []attr.Value{})
-	} else {
-		elems := make([]attr.Value, len(policy.DisabledTlsCiphers))
-		for i, c := range policy.DisabledTlsCiphers {
-			elems[i] = types.StringValue(c)
-		}
-		config.DisabledTlsCiphers = types.ListValueMust(types.StringType, elems)
-	}
-
+	config.DisabledTlsCiphers = stringsToListValue(policy.DisabledTlsCiphers)
 	config.Enabled = types.BoolValue(policy.Enabled)
-
-	if len(policy.EnabledTlsCiphers) == 0 {
-		config.EnabledTlsCiphers = types.ListValueMust(types.StringType, []attr.Value{})
-	} else {
-		elems := make([]attr.Value, len(policy.EnabledTlsCiphers))
-		for i, c := range policy.EnabledTlsCiphers {
-			elems[i] = types.StringValue(c)
-		}
-		config.EnabledTlsCiphers = types.ListValueMust(types.StringType, elems)
-	}
+	config.EnabledTlsCiphers = stringsToListValue(policy.EnabledTlsCiphers)
 
 	config.IsLocal = types.BoolValue(policy.IsLocal)
 	config.MinTlsVersion = types.StringValue(policy.MinTlsVersion)
