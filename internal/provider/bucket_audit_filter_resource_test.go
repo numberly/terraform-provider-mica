@@ -106,7 +106,7 @@ func bafPlanWith(t *testing.T, bucketName string, actions []string, s3Prefixes [
 // ---- tests ------------------------------------------------------------------
 
 // TestBucketAuditFilterResource_Create verifies POST creates an audit filter.
-func TestBucketAuditFilterResource_Create(t *testing.T) {
+func TestUnit_BucketAuditFilterResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -155,7 +155,7 @@ func TestBucketAuditFilterResource_Create(t *testing.T) {
 }
 
 // TestBucketAuditFilterResource_Read verifies GET retrieves audit filter by bucket name.
-func TestBucketAuditFilterResource_Read(t *testing.T) {
+func TestUnit_BucketAuditFilterResource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -200,7 +200,7 @@ func TestBucketAuditFilterResource_Read(t *testing.T) {
 }
 
 // TestBucketAuditFilterResource_Read_NotFound verifies Read removes resource when not found.
-func TestBucketAuditFilterResource_Read_NotFound(t *testing.T) {
+func TestUnit_BucketAuditFilterResource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -236,7 +236,7 @@ func TestBucketAuditFilterResource_Read_NotFound(t *testing.T) {
 }
 
 // TestBucketAuditFilterResource_Update verifies PATCH sends only changed fields.
-func TestBucketAuditFilterResource_Update(t *testing.T) {
+func TestUnit_BucketAuditFilterResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -300,7 +300,7 @@ func TestBucketAuditFilterResource_Update(t *testing.T) {
 }
 
 // TestBucketAuditFilterResource_Delete verifies DELETE succeeds.
-func TestBucketAuditFilterResource_Delete(t *testing.T) {
+func TestUnit_BucketAuditFilterResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -334,7 +334,7 @@ func TestBucketAuditFilterResource_Delete(t *testing.T) {
 }
 
 // TestBucketAuditFilterResource_Import verifies import by bucket name.
-func TestBucketAuditFilterResource_Import(t *testing.T) {
+func TestUnit_BucketAuditFilterResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -389,7 +389,7 @@ func TestBucketAuditFilterResource_Import(t *testing.T) {
 }
 
 // TestBucketAuditFilterResource_Schema verifies schema properties.
-func TestBucketAuditFilterResource_Schema(t *testing.T) {
+func TestUnit_BucketAuditFilterResource_Schema(t *testing.T) {
 	s := bafResourceSchema(t).Schema
 
 	// bucket_name: Required + RequiresReplace.

@@ -126,7 +126,7 @@ func createTestBAPPolicy(t *testing.T, ms *testmock.MockServer, bucketName strin
 // ---- tests ------------------------------------------------------------------
 
 // TestBucketAccessPolicyRuleResource_Metadata verifies type name.
-func TestBucketAccessPolicyRuleResource_Metadata(t *testing.T) {
+func TestUnit_BucketAccessPolicyRuleResource_Metadata(t *testing.T) {
 	r := &bucketAccessPolicyRuleResource{}
 	var resp resource.MetadataResponse
 	r.Metadata(context.Background(), resource.MetadataRequest{}, &resp)
@@ -136,7 +136,7 @@ func TestBucketAccessPolicyRuleResource_Metadata(t *testing.T) {
 }
 
 // TestBucketAccessPolicyRuleResource_Schema verifies schema properties.
-func TestBucketAccessPolicyRuleResource_Schema(t *testing.T) {
+func TestUnit_BucketAccessPolicyRuleResource_Schema(t *testing.T) {
 	s := bapRuleResourceSchema(t).Schema
 
 	// bucket_name: Required + RequiresReplace.
@@ -180,7 +180,7 @@ func TestBucketAccessPolicyRuleResource_Schema(t *testing.T) {
 }
 
 // TestBucketAccessPolicyRuleResource_Create verifies POST creates a rule.
-func TestBucketAccessPolicyRuleResource_Create(t *testing.T) {
+func TestUnit_BucketAccessPolicyRuleResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -235,7 +235,7 @@ func TestBucketAccessPolicyRuleResource_Create(t *testing.T) {
 }
 
 // TestBucketAccessPolicyRuleResource_Read verifies GET retrieves rule.
-func TestBucketAccessPolicyRuleResource_Read(t *testing.T) {
+func TestUnit_BucketAccessPolicyRuleResource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -281,7 +281,7 @@ func TestBucketAccessPolicyRuleResource_Read(t *testing.T) {
 }
 
 // TestBucketAccessPolicyRuleResource_ReadNotFound verifies Read removes resource when not found.
-func TestBucketAccessPolicyRuleResource_ReadNotFound(t *testing.T) {
+func TestUnit_BucketAccessPolicyRuleResource_ReadNotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -323,7 +323,7 @@ func TestBucketAccessPolicyRuleResource_ReadNotFound(t *testing.T) {
 }
 
 // TestBucketAccessPolicyRuleResource_Delete verifies DELETE succeeds.
-func TestBucketAccessPolicyRuleResource_Delete(t *testing.T) {
+func TestUnit_BucketAccessPolicyRuleResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -357,7 +357,7 @@ func TestBucketAccessPolicyRuleResource_Delete(t *testing.T) {
 }
 
 // TestBucketAccessPolicyRuleResource_ImportState verifies import by "bucketName/ruleName".
-func TestBucketAccessPolicyRuleResource_ImportState(t *testing.T) {
+func TestUnit_BucketAccessPolicyRuleResource_ImportState(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)

@@ -108,7 +108,7 @@ func arraySmtpPlanWith(t *testing.T, relayHost, senderDomain string, watchers []
 // ---- resource tests ---------------------------------------------------------
 
 // TestArraySmtpResource_Create verifies that Create sets SMTP config and creates alert watcher.
-func TestArraySmtpResource_Create(t *testing.T) {
+func TestUnit_ArraySmtpResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -161,7 +161,7 @@ func TestArraySmtpResource_Create(t *testing.T) {
 }
 
 // TestArraySmtpResource_Update verifies adding a second watcher and changing relay_host.
-func TestArraySmtpResource_Update(t *testing.T) {
+func TestUnit_ArraySmtpResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -219,7 +219,7 @@ func TestArraySmtpResource_Update(t *testing.T) {
 }
 
 // TestArraySmtpResource_Delete verifies that Delete resets SMTP config and removes all watchers.
-func TestArraySmtpResource_Delete(t *testing.T) {
+func TestUnit_ArraySmtpResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -271,7 +271,7 @@ func TestArraySmtpResource_Delete(t *testing.T) {
 }
 
 // TestArraySmtpResource_Import verifies ImportState populates SMTP config and watchers.
-func TestArraySmtpResource_Import(t *testing.T) {
+func TestUnit_ArraySmtpResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -333,7 +333,7 @@ func TestArraySmtpResource_Import(t *testing.T) {
 }
 
 // TestArraySmtpResource_WatcherRemoval verifies that removing a watcher from the plan deletes it.
-func TestArraySmtpResource_WatcherRemoval(t *testing.T) {
+func TestUnit_ArraySmtpResource_WatcherRemoval(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -420,7 +420,7 @@ func buildArraySmtpDSType() tftypes.Object {
 }
 
 // TestArraySmtpDataSource verifies data source reads current SMTP config and watchers.
-func TestArraySmtpDataSource(t *testing.T) {
+func TestUnit_ArraySmtpDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -505,7 +505,7 @@ func TestArraySmtpDataSource(t *testing.T) {
 }
 
 // TestUnit_ArraySmtp_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_ArraySmtp_Lifecycle(t *testing.T) {
+func TestUnit_Unit_ArraySmtp_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -593,7 +593,7 @@ func TestUnit_ArraySmtp_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_ArraySmtp_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_ArraySmtp_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_ArraySmtp_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -649,7 +649,7 @@ func TestUnit_ArraySmtp_ImportIdempotency(t *testing.T) {
 
 // TestUnit_ArraySMTP_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the array_smtp resource schema.
-func TestUnit_ArraySMTP_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_ArraySMTP_PlanModifiers(t *testing.T) {
 	s := arraySmtpResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

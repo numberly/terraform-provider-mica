@@ -106,7 +106,7 @@ func snapshotPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled boo
 // ---- tests ------------------------------------------------------------------
 
 // TestSnapshotPolicyResource_Create verifies Create populates ID, name, and enabled.
-func TestSnapshotPolicyResource_Create(t *testing.T) {
+func TestUnit_SnapshotPolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -143,7 +143,7 @@ func TestSnapshotPolicyResource_Create(t *testing.T) {
 
 // TestSnapshotPolicyResource_Update verifies PATCH updates enabled flag in-place.
 // Name change is RequiresReplace so we only test enabled update here.
-func TestSnapshotPolicyResource_Update(t *testing.T) {
+func TestUnit_SnapshotPolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -188,7 +188,7 @@ func TestSnapshotPolicyResource_Update(t *testing.T) {
 }
 
 // TestSnapshotPolicyResource_Delete verifies DELETE removes the policy.
-func TestSnapshotPolicyResource_Delete(t *testing.T) {
+func TestUnit_SnapshotPolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -221,7 +221,7 @@ func TestSnapshotPolicyResource_Delete(t *testing.T) {
 }
 
 // TestSnapshotPolicyResource_Import verifies ImportState populates all attributes.
-func TestSnapshotPolicyResource_Import(t *testing.T) {
+func TestUnit_SnapshotPolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -313,7 +313,7 @@ func nullSnapshotPolicyDSConfig() map[string]tftypes.Value {
 }
 
 // TestSnapshotPolicyDataSource verifies data source reads policy by name and returns all attributes.
-func TestSnapshotPolicyDataSource(t *testing.T) {
+func TestUnit_SnapshotPolicyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -370,7 +370,7 @@ func TestSnapshotPolicyDataSource(t *testing.T) {
 }
 
 // TestUnit_SnapshotPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_SnapshotPolicy_Lifecycle(t *testing.T) {
+func TestUnit_Unit_SnapshotPolicy_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -456,7 +456,7 @@ func TestUnit_SnapshotPolicy_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_SnapshotPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_SnapshotPolicy_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_SnapshotPolicy_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -512,7 +512,7 @@ func TestUnit_SnapshotPolicy_ImportIdempotency(t *testing.T) {
 
 // TestUnit_SnapshotPolicy_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the snapshot_policy resource schema.
-func TestUnit_SnapshotPolicy_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_SnapshotPolicy_PlanModifiers(t *testing.T) {
 	s := snapshotPolicyResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

@@ -109,7 +109,7 @@ func oapPlanWithNameAndDescription(t *testing.T, name, description string) tfsdk
 // ---- tests ------------------------------------------------------------------
 
 // TestObjectStoreAccessPolicyResource_Create verifies Create populates ID, name, enabled, and description.
-func TestObjectStoreAccessPolicyResource_Create(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -151,7 +151,7 @@ func TestObjectStoreAccessPolicyResource_Create(t *testing.T) {
 }
 
 // TestObjectStoreAccessPolicyResource_Update verifies PATCH supports rename (name change).
-func TestObjectStoreAccessPolicyResource_Update(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -194,7 +194,7 @@ func TestObjectStoreAccessPolicyResource_Update(t *testing.T) {
 }
 
 // TestObjectStoreAccessPolicyResource_Delete verifies DELETE removes the policy.
-func TestObjectStoreAccessPolicyResource_Delete(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -229,7 +229,7 @@ func TestObjectStoreAccessPolicyResource_Delete(t *testing.T) {
 }
 
 // TestObjectStoreAccessPolicyResource_Import verifies ImportState populates all attributes.
-func TestObjectStoreAccessPolicyResource_Import(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -323,7 +323,7 @@ func nullOAPDSConfig() map[string]tftypes.Value {
 }
 
 // TestObjectStoreAccessPolicyDataSource verifies data source reads policy by name and returns all attributes.
-func TestObjectStoreAccessPolicyDataSource(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -383,7 +383,7 @@ func TestObjectStoreAccessPolicyDataSource(t *testing.T) {
 
 // TestUnit_OAP_Create_Conflict verifies that a 409 Conflict on POST produces
 // an error diagnostic.
-func TestUnit_OAP_Create_Conflict(t *testing.T) {
+func TestUnit_Unit_OAP_Create_Conflict(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	ms.RegisterHandler("/api/2.22/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
@@ -411,7 +411,7 @@ func TestUnit_OAP_Create_Conflict(t *testing.T) {
 
 // TestUnit_OAP_Read_NotFound verifies that a not-found response (empty items)
 // during Read removes the resource from Terraform state without an error diagnostic.
-func TestUnit_OAP_Read_NotFound(t *testing.T) {
+func TestUnit_Unit_OAP_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	ms.RegisterHandler("/api/2.22/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
@@ -438,7 +438,7 @@ func TestUnit_OAP_Read_NotFound(t *testing.T) {
 }
 
 // TestUnit_ObjectStoreAccessPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_ObjectStoreAccessPolicy_Lifecycle(t *testing.T) {
+func TestUnit_Unit_ObjectStoreAccessPolicy_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -525,7 +525,7 @@ func TestUnit_ObjectStoreAccessPolicy_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_ObjectStoreAccessPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_ObjectStoreAccessPolicy_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_ObjectStoreAccessPolicy_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -578,7 +578,7 @@ func TestUnit_ObjectStoreAccessPolicy_ImportIdempotency(t *testing.T) {
 
 // TestUnit_OAP_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the object_store_access_policy resource schema.
-func TestUnit_OAP_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_OAP_PlanModifiers(t *testing.T) {
 	s := oapResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

@@ -157,7 +157,7 @@ func createTestOAPPolicy(t *testing.T, ms *testmock.MockServer, policyName strin
 // ---- tests ------------------------------------------------------------------
 
 // TestObjectStoreAccessPolicyRuleResource_Create verifies Create populates ID, effect, actions, resources.
-func TestObjectStoreAccessPolicyRuleResource_Create(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyRuleResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -211,7 +211,7 @@ func TestObjectStoreAccessPolicyRuleResource_Create(t *testing.T) {
 }
 
 // TestObjectStoreAccessPolicyRuleResource_Update verifies PATCH updates actions list.
-func TestObjectStoreAccessPolicyRuleResource_Update(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyRuleResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -264,7 +264,7 @@ func TestObjectStoreAccessPolicyRuleResource_Update(t *testing.T) {
 }
 
 // TestObjectStoreAccessPolicyRuleResource_Delete verifies DELETE removes the rule.
-func TestObjectStoreAccessPolicyRuleResource_Delete(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyRuleResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -311,7 +311,7 @@ func TestObjectStoreAccessPolicyRuleResource_Delete(t *testing.T) {
 }
 
 // TestObjectStoreAccessPolicyRuleResource_Import verifies ImportState using composite "policy_name/rule_name".
-func TestObjectStoreAccessPolicyRuleResource_Import(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyRuleResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -364,7 +364,7 @@ func TestObjectStoreAccessPolicyRuleResource_Import(t *testing.T) {
 }
 
 // TestObjectStoreAccessPolicyRuleResource_ConditionsRoundTrip verifies conditions JSON round-trips correctly.
-func TestObjectStoreAccessPolicyRuleResource_ConditionsRoundTrip(t *testing.T) {
+func TestUnit_ObjectStoreAccessPolicyRuleResource_ConditionsRoundTrip(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -407,7 +407,7 @@ func TestObjectStoreAccessPolicyRuleResource_ConditionsRoundTrip(t *testing.T) {
 }
 
 // TestUnit_OAPRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_OAPRule_Lifecycle(t *testing.T) {
+func TestUnit_Unit_OAPRule_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -501,7 +501,7 @@ func TestUnit_OAPRule_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_OAPRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_OAPRule_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_OAPRule_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterObjectStoreAccessPolicyHandlers(ms.Mux)
@@ -562,7 +562,7 @@ func TestUnit_OAPRule_ImportIdempotency(t *testing.T) {
 
 // TestUnit_OAPRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the OAP rule resource schema.
-func TestUnit_OAPRule_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_OAPRule_PlanModifiers(t *testing.T) {
 	s := oapRuleResourceSchema(t).Schema
 
 	// id — UseStateForUnknown
@@ -604,7 +604,7 @@ func TestUnit_OAPRule_PlanModifiers(t *testing.T) {
 
 // TestUnit_OAPRule_EffectValidator verifies the effect field rejects invalid values
 // and accepts "allow" and "deny".
-func TestUnit_OAPRule_EffectValidator(t *testing.T) {
+func TestUnit_Unit_OAPRule_EffectValidator(t *testing.T) {
 	s := oapRuleResourceSchema(t).Schema
 
 	eAttr, ok := s.Attributes["effect"].(resschema.StringAttribute)

@@ -66,7 +66,7 @@ func nullLifecycleRuleDSConfig() map[string]tftypes.Value {
 	}
 }
 
-func TestLifecycleRuleDataSource_Read(t *testing.T) {
+func TestUnit_LifecycleRuleDataSource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -128,7 +128,7 @@ func TestLifecycleRuleDataSource_Read(t *testing.T) {
 	}
 }
 
-func TestLifecycleRuleDataSource_Read_NotFound(t *testing.T) {
+func TestUnit_LifecycleRuleDataSource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterLifecycleRuleHandlers(ms.Mux)

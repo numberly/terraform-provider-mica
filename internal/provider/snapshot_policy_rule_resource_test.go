@@ -112,7 +112,7 @@ func createTestSnapshotPolicy(t *testing.T, c *client.FlashBladeClient, name str
 // ---- tests ------------------------------------------------------------------
 
 // TestSnapshotPolicyRuleResource_Create verifies Create adds a rule via parent PATCH add_rules.
-func TestSnapshotPolicyRuleResource_Create(t *testing.T) {
+func TestUnit_SnapshotPolicyRuleResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -157,7 +157,7 @@ func TestSnapshotPolicyRuleResource_Create(t *testing.T) {
 }
 
 // TestSnapshotPolicyRuleResource_Update verifies Update replaces the rule via remove+add PATCH.
-func TestSnapshotPolicyRuleResource_Update(t *testing.T) {
+func TestUnit_SnapshotPolicyRuleResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -201,7 +201,7 @@ func TestSnapshotPolicyRuleResource_Update(t *testing.T) {
 }
 
 // TestSnapshotPolicyRuleResource_Delete verifies Delete removes the rule via remove_rules PATCH.
-func TestSnapshotPolicyRuleResource_Delete(t *testing.T) {
+func TestUnit_SnapshotPolicyRuleResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -239,7 +239,7 @@ func TestSnapshotPolicyRuleResource_Delete(t *testing.T) {
 }
 
 // TestSnapshotPolicyRuleResource_Import verifies ImportState with composite ID "policy_name/0".
-func TestSnapshotPolicyRuleResource_Import(t *testing.T) {
+func TestUnit_SnapshotPolicyRuleResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -289,7 +289,7 @@ func TestSnapshotPolicyRuleResource_Import(t *testing.T) {
 }
 
 // TestUnit_SnapshotPolicyRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_SnapshotPolicyRule_Lifecycle(t *testing.T) {
+func TestUnit_Unit_SnapshotPolicyRule_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -373,7 +373,7 @@ func TestUnit_SnapshotPolicyRule_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_SnapshotPolicyRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_SnapshotPolicyRule_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_SnapshotPolicyRule_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSnapshotPolicyHandlers(ms.Mux)
@@ -431,7 +431,7 @@ func TestUnit_SnapshotPolicyRule_ImportIdempotency(t *testing.T) {
 
 // TestUnit_SnapshotRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the snapshot_policy_rule resource schema.
-func TestUnit_SnapshotRule_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_SnapshotRule_PlanModifiers(t *testing.T) {
 	s := snapshotRuleResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

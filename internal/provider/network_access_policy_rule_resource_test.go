@@ -111,7 +111,7 @@ func napRulePlan(t *testing.T, policyName, clientStr, effect string, interfaces 
 
 // TestNetworkAccessPolicyRuleResource_Create verifies Create populates id, name, index, and rule fields.
 // The mock pre-seeds a "default" policy, so rules can be created in it directly.
-func TestNetworkAccessPolicyRuleResource_Create(t *testing.T) {
+func TestUnit_NetworkAccessPolicyRuleResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -164,7 +164,7 @@ func TestNetworkAccessPolicyRuleResource_Create(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyRuleResource_Update verifies PATCH updates the client field.
-func TestNetworkAccessPolicyRuleResource_Update(t *testing.T) {
+func TestUnit_NetworkAccessPolicyRuleResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -206,7 +206,7 @@ func TestNetworkAccessPolicyRuleResource_Update(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyRuleResource_Delete verifies DELETE removes the rule.
-func TestNetworkAccessPolicyRuleResource_Delete(t *testing.T) {
+func TestUnit_NetworkAccessPolicyRuleResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -245,7 +245,7 @@ func TestNetworkAccessPolicyRuleResource_Delete(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyRuleResource_Import verifies ImportState with composite ID "policy_name/index".
-func TestNetworkAccessPolicyRuleResource_Import(t *testing.T) {
+func TestUnit_NetworkAccessPolicyRuleResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -303,7 +303,7 @@ func TestNetworkAccessPolicyRuleResource_Import(t *testing.T) {
 }
 
 // TestUnit_NetworkAccessPolicyRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_NetworkAccessPolicyRule_Lifecycle(t *testing.T) {
+func TestUnit_Unit_NetworkAccessPolicyRule_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -385,7 +385,7 @@ func TestUnit_NetworkAccessPolicyRule_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_NetworkAccessPolicyRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_NetworkAccessPolicyRule_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_NetworkAccessPolicyRule_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -442,7 +442,7 @@ func TestUnit_NetworkAccessPolicyRule_ImportIdempotency(t *testing.T) {
 
 // TestUnit_NAPRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the network_access_policy_rule resource schema.
-func TestUnit_NAPRule_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_NAPRule_PlanModifiers(t *testing.T) {
 	s := napRuleResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

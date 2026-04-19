@@ -130,7 +130,7 @@ func createTestPolicy(t *testing.T, c *client.FlashBladeClient, name string) {
 // ---- tests ------------------------------------------------------------------
 
 // TestNfsExportPolicyRuleResource_Create verifies Create populates id, name, index, and rule fields.
-func TestNfsExportPolicyRuleResource_Create(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -180,7 +180,7 @@ func TestNfsExportPolicyRuleResource_Create(t *testing.T) {
 }
 
 // TestNfsExportPolicyRuleResource_Update verifies PATCH updates mutable rule fields.
-func TestNfsExportPolicyRuleResource_Update(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -224,7 +224,7 @@ func TestNfsExportPolicyRuleResource_Update(t *testing.T) {
 }
 
 // TestNfsExportPolicyRuleResource_Delete verifies DELETE removes the rule.
-func TestNfsExportPolicyRuleResource_Delete(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -265,7 +265,7 @@ func TestNfsExportPolicyRuleResource_Delete(t *testing.T) {
 }
 
 // TestNfsExportPolicyRuleResource_Import verifies ImportState with composite ID "policy_name/index".
-func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -322,7 +322,7 @@ func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
 }
 
 // TestUnit_NfsExportPolicyRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -406,7 +406,7 @@ func TestUnit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_NfsExportPolicyRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -465,7 +465,7 @@ func TestUnit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
 
 // TestUnit_NFSRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the nfs_export_policy_rule resource schema.
-func TestUnit_NFSRule_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_NFSRule_PlanModifiers(t *testing.T) {
 	s := nfsRuleResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

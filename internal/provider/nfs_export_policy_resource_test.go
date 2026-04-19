@@ -107,7 +107,7 @@ func nfsPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tf
 // ---- tests ------------------------------------------------------------------
 
 // TestNfsExportPolicyResource_Create verifies Create populates ID, name, and enabled.
-func TestNfsExportPolicyResource_Create(t *testing.T) {
+func TestUnit_NfsExportPolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -143,7 +143,7 @@ func TestNfsExportPolicyResource_Create(t *testing.T) {
 }
 
 // TestNfsExportPolicyResource_Update verifies PATCH updates enabled flag and supports rename.
-func TestNfsExportPolicyResource_Update(t *testing.T) {
+func TestUnit_NfsExportPolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -207,7 +207,7 @@ func TestNfsExportPolicyResource_Update(t *testing.T) {
 }
 
 // TestNfsExportPolicyResource_Delete verifies DELETE removes the policy.
-func TestNfsExportPolicyResource_Delete(t *testing.T) {
+func TestUnit_NfsExportPolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -242,7 +242,7 @@ func TestNfsExportPolicyResource_Delete(t *testing.T) {
 }
 
 // TestNfsExportPolicyResource_Import verifies ImportState populates all attributes.
-func TestNfsExportPolicyResource_Import(t *testing.T) {
+func TestUnit_NfsExportPolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -284,7 +284,7 @@ func TestNfsExportPolicyResource_Import(t *testing.T) {
 }
 
 // TestUnit_NfsExportPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_NfsExportPolicy_Lifecycle(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicy_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -374,7 +374,7 @@ func TestUnit_NfsExportPolicy_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_NfsExportPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_NfsExportPolicy_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicy_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -479,7 +479,7 @@ func nullNFSPolicyDSConfig() map[string]tftypes.Value {
 }
 
 // TestNfsExportPolicyDataSource verifies data source reads policy by name and returns all attributes.
-func TestNfsExportPolicyDataSource(t *testing.T) {
+func TestUnit_NfsExportPolicyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -537,7 +537,7 @@ func TestNfsExportPolicyDataSource(t *testing.T) {
 
 // TestUnit_NfsExportPolicy_Create_Conflict verifies that a 409 Conflict on POST
 // produces an error diagnostic with a meaningful message.
-func TestUnit_NfsExportPolicy_Create_Conflict(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicy_Create_Conflict(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	ms.RegisterHandler("/api/2.22/nfs-export-policies", func(w http.ResponseWriter, r *http.Request) {
@@ -565,7 +565,7 @@ func TestUnit_NfsExportPolicy_Create_Conflict(t *testing.T) {
 
 // TestUnit_NfsExportPolicy_Read_NotFound verifies that a not-found response (empty items)
 // during Read removes the resource from Terraform state without an error diagnostic.
-func TestUnit_NfsExportPolicy_Read_NotFound(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicy_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	ms.RegisterHandler("/api/2.22/nfs-export-policies", func(w http.ResponseWriter, r *http.Request) {
@@ -593,7 +593,7 @@ func TestUnit_NfsExportPolicy_Read_NotFound(t *testing.T) {
 
 // TestUnit_NFSPolicy_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the nfs_export_policy resource schema.
-func TestUnit_NFSPolicy_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_NFSPolicy_PlanModifiers(t *testing.T) {
 	s := nfsPolicyResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

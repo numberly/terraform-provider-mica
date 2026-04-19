@@ -101,7 +101,7 @@ func qosPolicyPlanWith(t *testing.T, name string, enabled bool, maxBytes int64, 
 // ---- tests ------------------------------------------------------------------
 
 // TestQosPolicyResource_Create verifies POST creates a policy, state populated with all fields.
-func TestQosPolicyResource_Create(t *testing.T) {
+func TestUnit_QosPolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -150,7 +150,7 @@ func TestQosPolicyResource_Create(t *testing.T) {
 }
 
 // TestQosPolicyResource_Read verifies GET retrieves policy by name.
-func TestQosPolicyResource_Read(t *testing.T) {
+func TestUnit_QosPolicyResource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -190,7 +190,7 @@ func TestQosPolicyResource_Read(t *testing.T) {
 }
 
 // TestQosPolicyResource_Read_NotFound verifies GET returns 404, resource removed from state.
-func TestQosPolicyResource_Read_NotFound(t *testing.T) {
+func TestUnit_QosPolicyResource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -221,7 +221,7 @@ func TestQosPolicyResource_Read_NotFound(t *testing.T) {
 }
 
 // TestQosPolicyResource_Update verifies PATCH sends only changed fields.
-func TestQosPolicyResource_Update(t *testing.T) {
+func TestUnit_QosPolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -267,7 +267,7 @@ func TestQosPolicyResource_Update(t *testing.T) {
 }
 
 // TestQosPolicyResource_Delete verifies DELETE by name succeeds.
-func TestQosPolicyResource_Delete(t *testing.T) {
+func TestUnit_QosPolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -301,7 +301,7 @@ func TestQosPolicyResource_Delete(t *testing.T) {
 }
 
 // TestQosPolicyResource_Import verifies Import by name populates all state fields.
-func TestQosPolicyResource_Import(t *testing.T) {
+func TestUnit_QosPolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -358,7 +358,7 @@ func TestQosPolicyResource_Import(t *testing.T) {
 }
 
 // TestQosPolicyResource_Schema verifies schema properties.
-func TestQosPolicyResource_Schema(t *testing.T) {
+func TestUnit_QosPolicyResource_Schema(t *testing.T) {
 	s := qosPolicyResourceSchema(t).Schema
 
 	// name: Required + RequiresReplace.

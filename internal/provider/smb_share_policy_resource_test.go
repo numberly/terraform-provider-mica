@@ -104,7 +104,7 @@ func smbPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tf
 // ---- tests ------------------------------------------------------------------
 
 // TestSmbSharePolicyResource_Create verifies Create populates ID, name, and enabled.
-func TestSmbSharePolicyResource_Create(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -140,7 +140,7 @@ func TestSmbSharePolicyResource_Create(t *testing.T) {
 }
 
 // TestSmbSharePolicyResource_Update verifies PATCH updates enabled flag and supports rename.
-func TestSmbSharePolicyResource_Update(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -204,7 +204,7 @@ func TestSmbSharePolicyResource_Update(t *testing.T) {
 }
 
 // TestSmbSharePolicyResource_Delete verifies DELETE removes the policy.
-func TestSmbSharePolicyResource_Delete(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -239,7 +239,7 @@ func TestSmbSharePolicyResource_Delete(t *testing.T) {
 }
 
 // TestSmbSharePolicyResource_Import verifies ImportState populates all attributes.
-func TestSmbSharePolicyResource_Import(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -329,7 +329,7 @@ func nullSMBPolicyDSConfig() map[string]tftypes.Value {
 }
 
 // TestSmbSharePolicyDataSource verifies data source reads policy by name and returns all attributes.
-func TestSmbSharePolicyDataSource(t *testing.T) {
+func TestUnit_SmbSharePolicyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -386,7 +386,7 @@ func TestSmbSharePolicyDataSource(t *testing.T) {
 }
 
 // TestUnit_SmbSharePolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_SmbSharePolicy_Lifecycle(t *testing.T) {
+func TestUnit_Unit_SmbSharePolicy_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -473,7 +473,7 @@ func TestUnit_SmbSharePolicy_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_SmbSharePolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -529,7 +529,7 @@ func TestUnit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
 
 // TestUnit_SMBPolicy_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the smb_share_policy resource schema.
-func TestUnit_SMBPolicy_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_SMBPolicy_PlanModifiers(t *testing.T) {
 	s := smbPolicyResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

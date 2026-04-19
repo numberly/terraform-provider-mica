@@ -52,7 +52,7 @@ func nullBAPDSConfig() map[string]tftypes.Value {
 	}
 }
 
-func TestBucketAccessPolicyDataSource_Read(t *testing.T) {
+func TestUnit_BucketAccessPolicyDataSource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -99,7 +99,7 @@ func TestBucketAccessPolicyDataSource_Read(t *testing.T) {
 	}
 }
 
-func TestBucketAccessPolicyDataSource_Read_NotFound(t *testing.T) {
+func TestUnit_BucketAccessPolicyDataSource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)

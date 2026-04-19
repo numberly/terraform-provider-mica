@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestCompositeID(t *testing.T) {
+func TestUnit_CompositeID(t *testing.T) {
 	tests := []struct {
 		name  string
 		parts []string
@@ -26,7 +26,7 @@ func TestCompositeID(t *testing.T) {
 	}
 }
 
-func TestParseCompositeID(t *testing.T) {
+func TestUnit_ParseCompositeID(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      string
@@ -61,7 +61,7 @@ func TestParseCompositeID(t *testing.T) {
 	}
 }
 
-func TestStringOrNull(t *testing.T) {
+func TestUnit_StringOrNull(t *testing.T) {
 	tests := []struct {
 		name string
 		s    string

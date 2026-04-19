@@ -58,7 +58,7 @@ func nullQosPolicyDSConfig() map[string]tftypes.Value {
 	}
 }
 
-func TestQosPolicyDataSource_Read(t *testing.T) {
+func TestUnit_QosPolicyDataSource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -118,7 +118,7 @@ func TestQosPolicyDataSource_Read(t *testing.T) {
 	}
 }
 
-func TestQosPolicyDataSource_Read_NotFound(t *testing.T) {
+func TestUnit_QosPolicyDataSource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQosPolicyHandlers(ms.Mux)

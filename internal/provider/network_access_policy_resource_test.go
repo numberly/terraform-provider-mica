@@ -106,7 +106,7 @@ func napPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tfsdk.Pl
 // ---- tests ------------------------------------------------------------------
 
 // TestNetworkAccessPolicyResource_Create verifies Create (GET+PATCH) populates state from the pre-seeded "default" singleton.
-func TestNetworkAccessPolicyResource_Create(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -143,7 +143,7 @@ func TestNetworkAccessPolicyResource_Create(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyResource_Create_NotFound verifies Create fails with a clear error for non-existent policies.
-func TestNetworkAccessPolicyResource_Create_NotFound(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Create_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -165,7 +165,7 @@ func TestNetworkAccessPolicyResource_Create_NotFound(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyResource_Update verifies PATCH updates enabled flag.
-func TestNetworkAccessPolicyResource_Update(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -208,7 +208,7 @@ func TestNetworkAccessPolicyResource_Update(t *testing.T) {
 
 // TestNetworkAccessPolicyResource_Delete verifies Delete resets singleton to disabled=false via PATCH.
 // The policy should still exist on the array (it is a singleton).
-func TestNetworkAccessPolicyResource_Delete(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -246,7 +246,7 @@ func TestNetworkAccessPolicyResource_Delete(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyResource_Import verifies ImportState populates all attributes.
-func TestNetworkAccessPolicyResource_Import(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -328,7 +328,7 @@ func nullNAPDSConfig() map[string]tftypes.Value {
 }
 
 // TestNetworkAccessPolicyDataSource verifies data source reads the pre-seeded "default" policy by name.
-func TestNetworkAccessPolicyDataSource(t *testing.T) {
+func TestUnit_NetworkAccessPolicyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -369,7 +369,7 @@ func TestNetworkAccessPolicyDataSource(t *testing.T) {
 
 // TestUnit_NetworkAccessPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
 // NAP is a singleton (GET+PATCH). Create adopts the existing "default" policy.
-func TestUnit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
+func TestUnit_Unit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -454,7 +454,7 @@ func TestUnit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_NetworkAccessPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -510,7 +510,7 @@ func TestUnit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
 
 // TestUnit_NAP_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the network_access_policy resource schema.
-func TestUnit_NAP_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_NAP_PlanModifiers(t *testing.T) {
 	s := napResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

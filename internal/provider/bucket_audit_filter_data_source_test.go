@@ -50,7 +50,7 @@ func nullBAFDSConfig() map[string]tftypes.Value {
 	}
 }
 
-func TestBucketAuditFilterDataSource_Read(t *testing.T) {
+func TestUnit_BucketAuditFilterDataSource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -105,7 +105,7 @@ func TestBucketAuditFilterDataSource_Read(t *testing.T) {
 	}
 }
 
-func TestBucketAuditFilterDataSource_Read_NotFound(t *testing.T) {
+func TestUnit_BucketAuditFilterDataSource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAuditFilterHandlers(ms.Mux)

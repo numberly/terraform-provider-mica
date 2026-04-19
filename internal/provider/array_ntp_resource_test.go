@@ -85,7 +85,7 @@ func arrayNtpPlanWith(t *testing.T, servers []string) tfsdk.Plan {
 // ---- resource tests ---------------------------------------------------------
 
 // TestArrayNtpResource_Create verifies that Create sets ntp_servers.
-func TestArrayNtpResource_Create(t *testing.T) {
+func TestUnit_ArrayNtpResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -123,7 +123,7 @@ func TestArrayNtpResource_Create(t *testing.T) {
 }
 
 // TestArrayNtpResource_Update verifies that Update adds an NTP server via PATCH.
-func TestArrayNtpResource_Update(t *testing.T) {
+func TestUnit_ArrayNtpResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -170,7 +170,7 @@ func TestArrayNtpResource_Update(t *testing.T) {
 }
 
 // TestArrayNtpResource_Delete verifies that Delete clears ntp_servers.
-func TestArrayNtpResource_Delete(t *testing.T) {
+func TestUnit_ArrayNtpResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -207,7 +207,7 @@ func TestArrayNtpResource_Delete(t *testing.T) {
 }
 
 // TestArrayNtpResource_Import verifies ImportState populates all attributes.
-func TestArrayNtpResource_Import(t *testing.T) {
+func TestUnit_ArrayNtpResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -282,7 +282,7 @@ func buildArrayNtpDSType() tftypes.Object {
 }
 
 // TestArrayNtpDataSource verifies data source reads current NTP config.
-func TestArrayNtpDataSource(t *testing.T) {
+func TestUnit_ArrayNtpDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -346,7 +346,7 @@ func TestArrayNtpDataSource(t *testing.T) {
 }
 
 // TestUnit_ArrayNtp_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_ArrayNtp_Lifecycle(t *testing.T) {
+func TestUnit_Unit_ArrayNtp_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -434,7 +434,7 @@ func TestUnit_ArrayNtp_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_ArrayNtp_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_ArrayNtp_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_ArrayNtp_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterArrayAdminHandlers(ms.Mux)
@@ -490,7 +490,7 @@ func TestUnit_ArrayNtp_ImportIdempotency(t *testing.T) {
 
 // TestUnit_ArrayNTP_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the array_ntp resource schema.
-func TestUnit_ArrayNTP_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_ArrayNTP_PlanModifiers(t *testing.T) {
 	s := arrayNtpResourceSchema(t).Schema
 
 	// id — UseStateForUnknown
