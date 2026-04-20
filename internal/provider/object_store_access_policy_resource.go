@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -165,7 +166,7 @@ func (r *objectStoreAccessPolicyResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -250,7 +251,7 @@ func (r *objectStoreAccessPolicyResource) Update(ctx context.Context, req resour
 
 	// After rename the policy is known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -309,7 +310,7 @@ func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req r
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -320,14 +321,18 @@ func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req r
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreAccessPolicy and maps the result into the provided model.
-func (r *objectStoreAccessPolicyResource) readIntoState(ctx context.Context, name string, data *objectStoreAccessPolicyModel, diags DiagnosticReporter) {
+func (r *objectStoreAccessPolicyResource) readIntoState(ctx context.Context, name string, data *objectStoreAccessPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetObjectStoreAccessPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store access policy after write", err.Error())
-		return
+		return diags
 	}
 	mapObjectStoreAccessPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapObjectStoreAccessPolicyToModel maps a client.ObjectStoreAccessPolicy to an objectStoreAccessPolicyModel.
 // It preserves user-managed fields (Timeouts).

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -153,7 +154,7 @@ func (r *nfsExportPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -241,7 +242,7 @@ func (r *nfsExportPolicyResource) Update(ctx context.Context, req resource.Updat
 
 	// After rename the policy is now known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -300,7 +301,7 @@ func (r *nfsExportPolicyResource) ImportState(ctx context.Context, req resource.
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -311,14 +312,18 @@ func (r *nfsExportPolicyResource) ImportState(ctx context.Context, req resource.
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetNfsExportPolicy and maps the result into the provided model.
-func (r *nfsExportPolicyResource) readIntoState(ctx context.Context, name string, data *nfsExportPolicyModel, diags DiagnosticReporter) {
+func (r *nfsExportPolicyResource) readIntoState(ctx context.Context, name string, data *nfsExportPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetNfsExportPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading NFS export policy after write", err.Error())
-		return
+		return diags
 	}
 	mapNfsExportPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapNfsExportPolicyToModel maps a client.NfsExportPolicy to an nfsExportPolicyModel.
 // It preserves user-managed fields (Timeouts).

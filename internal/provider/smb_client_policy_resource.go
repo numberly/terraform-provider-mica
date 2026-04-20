@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -167,7 +168,7 @@ func (r *smbClientPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -271,7 +272,7 @@ func (r *smbClientPolicyResource) Update(ctx context.Context, req resource.Updat
 
 	// After rename the policy is now known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -330,7 +331,7 @@ func (r *smbClientPolicyResource) ImportState(ctx context.Context, req resource.
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -341,14 +342,18 @@ func (r *smbClientPolicyResource) ImportState(ctx context.Context, req resource.
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSmbClientPolicy and maps the result into the provided model.
-func (r *smbClientPolicyResource) readIntoState(ctx context.Context, name string, data *smbClientPolicyModel, diags DiagnosticReporter) {
+func (r *smbClientPolicyResource) readIntoState(ctx context.Context, name string, data *smbClientPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetSmbClientPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading SMB client policy after write", err.Error())
-		return
+		return diags
 	}
 	mapSMBClientPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapSMBClientPolicyToModel maps a client.SmbClientPolicy to an smbClientPolicyModel.
 // It preserves user-managed fields (Timeouts).

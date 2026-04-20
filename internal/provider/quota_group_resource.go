@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -167,7 +168,7 @@ func (r *quotaGroupResource) Create(ctx context.Context, req resource.CreateRequ
 		}
 	}
 
-	r.readIntoState(ctx, fsName, gid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, gid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -251,7 +252,7 @@ func (r *quotaGroupResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	r.readIntoState(ctx, fsName, gid, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, gid, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -306,7 +307,7 @@ func (r *quotaGroupResource) ImportState(ctx context.Context, req resource.Impor
 	data.FileSystemName = types.StringValue(fsName)
 	data.GID = types.StringValue(gid)
 
-	r.readIntoState(ctx, fsName, gid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, gid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -317,14 +318,18 @@ func (r *quotaGroupResource) ImportState(ctx context.Context, req resource.Impor
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetQuotaGroup and maps the result into the provided model.
-func (r *quotaGroupResource) readIntoState(ctx context.Context, fsName, gid string, data *quotaGroupModel, diags DiagnosticReporter) {
+func (r *quotaGroupResource) readIntoState(ctx context.Context, fsName, gid string, data *quotaGroupModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	qg, err := r.client.GetQuotaGroup(ctx, fsName, gid)
 	if err != nil {
 		diags.AddError("Error reading group quota after write", err.Error())
-		return
+		return diags
 	}
 	mapQuotaGroupToModel(fsName, gid, qg, data)
+	return diags
 }
+
 
 // mapQuotaGroupToModel maps a client.QuotaGroup to a quotaGroupModel.
 // Preserves user-managed fields (Timeouts).

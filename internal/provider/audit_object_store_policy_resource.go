@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -272,7 +273,7 @@ func (r *auditObjectStorePolicyResource) Update(ctx context.Context, req resourc
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -313,7 +314,7 @@ func (r *auditObjectStorePolicyResource) ImportState(ctx context.Context, req re
 	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -324,14 +325,18 @@ func (r *auditObjectStorePolicyResource) ImportState(ctx context.Context, req re
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetAuditObjectStorePolicy and maps the result into the provided model.
-func (r *auditObjectStorePolicyResource) readIntoState(ctx context.Context, name string, data *auditObjectStorePolicyModel, diags DiagnosticReporter) {
+func (r *auditObjectStorePolicyResource) readIntoState(ctx context.Context, name string, data *auditObjectStorePolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetAuditObjectStorePolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading audit object store policy after write", err.Error())
-		return
+		return diags
 	}
 	mapAuditObjectStorePolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapAuditObjectStorePolicyToModel converts a client.AuditObjectStorePolicy to the Terraform model.
 // It preserves user-managed fields (Timeouts).

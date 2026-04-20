@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
@@ -265,7 +266,7 @@ func (r *logTargetObjectStoreResource) Update(ctx context.Context, req resource.
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -306,7 +307,7 @@ func (r *logTargetObjectStoreResource) ImportState(ctx context.Context, req reso
 	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -317,14 +318,18 @@ func (r *logTargetObjectStoreResource) ImportState(ctx context.Context, req reso
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetLogTargetObjectStore and maps the result into the provided model.
-func (r *logTargetObjectStoreResource) readIntoState(ctx context.Context, name string, data *logTargetObjectStoreModel, diags DiagnosticReporter) {
+func (r *logTargetObjectStoreResource) readIntoState(ctx context.Context, name string, data *logTargetObjectStoreModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	item, err := r.client.GetLogTargetObjectStore(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading log target object store after write", err.Error())
-		return
+		return diags
 	}
 	mapLogTargetObjectStoreToModel(item, data)
+	return diags
 }
+
 
 // mapLogTargetObjectStoreToModel converts a client.LogTargetObjectStore to the Terraform model.
 // It preserves user-managed fields (Timeouts).

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -243,7 +244,7 @@ func (r *syslogServerResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -285,7 +286,7 @@ func (r *syslogServerResource) ImportState(ctx context.Context, req resource.Imp
 	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -296,13 +297,15 @@ func (r *syslogServerResource) ImportState(ctx context.Context, req resource.Imp
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSyslogServer and maps the result into the provided model.
-func (r *syslogServerResource) readIntoState(ctx context.Context, name string, data *syslogServerModel, diags DiagnosticReporter) {
+func (r *syslogServerResource) readIntoState(ctx context.Context, name string, data *syslogServerModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	srv, err := r.client.GetSyslogServer(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading syslog server after write", err.Error())
-		return
+		return diags
 	}
 	mapSyslogServerToModel(srv, data)
+	return diags
 }
 
 // mapSyslogServerToModel converts a client.SyslogServer to the Terraform model.

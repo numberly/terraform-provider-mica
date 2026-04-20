@@ -58,15 +58,6 @@ func stringOrNull(s string) types.String {
 
 // ---------- shared helpers (DUP-01 through DUP-05) -------------------------
 
-// DiagnosticReporter is the minimal interface for appending diagnostics.
-// It replaces the inline interface { AddError(string, string); HasError() bool }
-// used by readIntoState methods across resource files.
-type DiagnosticReporter interface {
-	AddError(string, string)
-	AddWarning(string, string)
-	HasError() bool
-}
-
 // spaceAttrTypes returns the attribute type map for the shared "space" nested object
 // used by filesystem, bucket, and object store account resources.
 func spaceAttrTypes() map[string]attr.Type {

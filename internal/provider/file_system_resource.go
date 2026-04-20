@@ -383,7 +383,7 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -508,7 +508,7 @@ func (r *filesystemResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Use the new name for read-at-end-of-write (in case of rename).
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -534,32 +534,10 @@ func (r *filesystemResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
-
-	// Phase 1: Soft-delete.
-	destroyed := true
-	_, err := r.client.PatchFileSystem(ctx, id, client.FileSystemPatch{Destroyed: &destroyed})
-	if err != nil {
-		if client.IsNotFound(err) {
-			// Already gone — no error.
-			return
-		}
-		resp.Diagnostics.AddError("Error soft-deleting file system", err.Error())
-		return
-	}
-
-	// Phase 2 + 3: Eradicate only if destroy_eradicate_on_delete is true (or null/default).
 	eradicate := data.DestroyEradicateOnDelete.IsNull() || data.DestroyEradicateOnDelete.ValueBool()
-	if eradicate {
-		if err := r.client.DeleteFileSystem(ctx, id); err != nil {
-			if !client.IsNotFound(err) {
-				resp.Diagnostics.AddError("Error eradicating file system", err.Error())
-				return
-			}
-		}
-		if err := r.client.PollUntilEradicated(ctx, name); err != nil {
-			resp.Diagnostics.AddError("Error waiting for file system eradication", err.Error())
-			return
-		}
+	if err := r.client.DestroyAndEradicateFileSystem(ctx, id, name, eradicate); err != nil {
+		resp.Diagnostics.AddError("Error deleting file system", err.Error())
+		return
 	}
 }
 
@@ -639,19 +617,15 @@ func fsSourceAttrTypes() map[string]attr.Type {
 
 // readIntoState calls GetFileSystem and maps the result into the provided model.
 // This is the Read-at-end-of-write pattern ensuring state reflects true API state.
-func (r *filesystemResource) readIntoState(ctx context.Context, name string, data *filesystemModel, reporter DiagnosticReporter) {
+func (r *filesystemResource) readIntoState(ctx context.Context, name string, data *filesystemModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	fs, err := r.client.GetFileSystem(ctx, name)
 	if err != nil {
-		reporter.AddError("Error reading file system after write", err.Error())
-		return
+		diags.AddError("Error reading file system after write", err.Error())
+		return diags
 	}
-	for _, d := range mapFileSystemToModel(fs, data) {
-		if d.Severity() == diag.SeverityWarning {
-			reporter.AddWarning(d.Summary(), d.Detail())
-		} else {
-			reporter.AddError(d.Summary(), d.Detail())
-		}
-	}
+	diags.Append(mapFileSystemToModel(fs, data)...)
+	return diags
 }
 
 // mapFileSystemToModel maps a client.FileSystem to a filesystemModel.

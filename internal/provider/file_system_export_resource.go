@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -283,7 +284,7 @@ func (r *fileSystemExportResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	r.readIntoState(ctx, state.Name.ValueString(), &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, state.Name.ValueString(), &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -342,14 +343,18 @@ func (r *fileSystemExportResource) ImportState(ctx context.Context, req resource
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetFileSystemExport and maps the result into the provided model.
-func (r *fileSystemExportResource) readIntoState(ctx context.Context, name string, data *fileSystemExportModel, diags DiagnosticReporter) {
+func (r *fileSystemExportResource) readIntoState(ctx context.Context, name string, data *fileSystemExportModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	export, err := r.client.GetFileSystemExport(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading file system export after write", err.Error())
-		return
+		return diags
 	}
 	mapFileSystemExportToModel(export, data)
+	return diags
 }
+
 
 // mapFileSystemExportToModel maps a client.FileSystemExport to a fileSystemExportModel.
 // It preserves user-managed fields (Timeouts).

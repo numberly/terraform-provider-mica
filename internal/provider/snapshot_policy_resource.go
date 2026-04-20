@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -160,7 +161,7 @@ func (r *snapshotPolicyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -243,7 +244,7 @@ func (r *snapshotPolicyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -302,7 +303,7 @@ func (r *snapshotPolicyResource) ImportState(ctx context.Context, req resource.I
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -313,14 +314,18 @@ func (r *snapshotPolicyResource) ImportState(ctx context.Context, req resource.I
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSnapshotPolicy and maps the result into the provided model.
-func (r *snapshotPolicyResource) readIntoState(ctx context.Context, name string, data *snapshotPolicyModel, diags DiagnosticReporter) {
+func (r *snapshotPolicyResource) readIntoState(ctx context.Context, name string, data *snapshotPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetSnapshotPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading snapshot policy after write", err.Error())
-		return
+		return diags
 	}
 	mapSnapshotPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapSnapshotPolicyToModel maps a client.SnapshotPolicy to a snapshotPolicyModel.
 // It preserves user-managed fields (Timeouts).

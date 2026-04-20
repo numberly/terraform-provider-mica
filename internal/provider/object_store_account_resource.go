@@ -202,7 +202,7 @@ func (r *objectStoreAccountResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -299,7 +299,7 @@ func (r *objectStoreAccountResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	r.readIntoState(ctx, plan.Name.ValueString(), &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, plan.Name.ValueString(), &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -396,7 +396,7 @@ func (r *objectStoreAccountResource) ImportState(ctx context.Context, req resour
 	// Set Name so Read can look up the account.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -407,16 +407,20 @@ func (r *objectStoreAccountResource) ImportState(ctx context.Context, req resour
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreAccount and maps the result into the provided model.
-func (r *objectStoreAccountResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountModel, diags DiagnosticReporter) {
+func (r *objectStoreAccountResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	acct, err := r.client.GetObjectStoreAccount(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store account after write", err.Error())
-		return
+		return diags
 	}
 	for _, d := range mapObjectStoreAccountToModel(acct, data) {
 		diags.AddError(d.Summary(), d.Detail())
 	}
+	return diags
 }
+
 
 // mapObjectStoreAccountToModel maps a client.ObjectStoreAccount to an objectStoreAccountModel.
 // It preserves user-managed fields (Timeouts).

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -167,7 +168,7 @@ func (r *quotaUserResource) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 
-	r.readIntoState(ctx, fsName, uid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, uid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -251,7 +252,7 @@ func (r *quotaUserResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	r.readIntoState(ctx, fsName, uid, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, uid, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -306,7 +307,7 @@ func (r *quotaUserResource) ImportState(ctx context.Context, req resource.Import
 	data.FileSystemName = types.StringValue(fsName)
 	data.UID = types.StringValue(uid)
 
-	r.readIntoState(ctx, fsName, uid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, uid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -317,14 +318,18 @@ func (r *quotaUserResource) ImportState(ctx context.Context, req resource.Import
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetQuotaUser and maps the result into the provided model.
-func (r *quotaUserResource) readIntoState(ctx context.Context, fsName, uid string, data *quotaUserModel, diags DiagnosticReporter) {
+func (r *quotaUserResource) readIntoState(ctx context.Context, fsName, uid string, data *quotaUserModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	qu, err := r.client.GetQuotaUser(ctx, fsName, uid)
 	if err != nil {
 		diags.AddError("Error reading user quota after write", err.Error())
-		return
+		return diags
 	}
 	mapQuotaUserToModel(fsName, uid, qu, data)
+	return diags
 }
+
 
 // mapQuotaUserToModel maps a client.QuotaUser to a quotaUserModel.
 // Preserves user-managed fields (Timeouts).

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -177,7 +178,7 @@ func (r *networkAccessPolicyResource) Create(ctx context.Context, req resource.C
 	}
 
 	// Step 3: Read back full state.
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -265,7 +266,7 @@ func (r *networkAccessPolicyResource) Update(ctx context.Context, req resource.U
 
 	// After rename, the policy is known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -319,7 +320,7 @@ func (r *networkAccessPolicyResource) ImportState(ctx context.Context, req resou
 	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -330,14 +331,18 @@ func (r *networkAccessPolicyResource) ImportState(ctx context.Context, req resou
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetNetworkAccessPolicy and maps the result into the provided model.
-func (r *networkAccessPolicyResource) readIntoState(ctx context.Context, name string, data *networkAccessPolicyModel, diags DiagnosticReporter) {
+func (r *networkAccessPolicyResource) readIntoState(ctx context.Context, name string, data *networkAccessPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetNetworkAccessPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading network access policy after write", err.Error())
-		return
+		return diags
 	}
 	mapNetworkAccessPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapNetworkAccessPolicyToModel maps a client.NetworkAccessPolicy to a networkAccessPolicyModel.
 // Preserves user-managed fields (Timeouts).

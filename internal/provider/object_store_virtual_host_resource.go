@@ -299,7 +299,7 @@ func (r *objectStoreVirtualHostResource) Update(ctx context.Context, req resourc
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -375,17 +375,15 @@ func (r *objectStoreVirtualHostResource) ImportState(ctx context.Context, req re
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreVirtualHost and maps the result into the provided model.
-func (r *objectStoreVirtualHostResource) readIntoState(ctx context.Context, name string, data *objectStoreVirtualHostModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-	Append(...diag.Diagnostic)
-}) {
+func (r *objectStoreVirtualHostResource) readIntoState(ctx context.Context, name string, data *objectStoreVirtualHostModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	vh, err := r.client.GetObjectStoreVirtualHost(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store virtual host after write", err.Error())
-		return
+		return diags
 	}
-	mapVirtualHostToModel(ctx, vh, data, diags)
+	mapVirtualHostToModel(ctx, vh, data, &diags)
+	return diags
 }
 
 // mapVirtualHostToModel converts a client.ObjectStoreVirtualHost to the Terraform model.
