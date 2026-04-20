@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-20T15:48:45Z"
-last_activity: 2026-04-20 — Completed 53-01-PLAN.md (R-011, +3 tests → 835, commit 97a603e)
+last_updated: "2026-04-20T15:15:44.197Z"
+last_activity: 2026-04-20 — Completed 53-02-PLAN.md (R-012, 0 tests added, commit f153ee2)
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 ## Current Position
 
 Milestone: v2.22.3 convention-compliance
-Phase: 53-cosmetic-hygiene (1/2 plans complete)
-Plan: 53-02 (next) — R-012 mock handler hygiene (byName + nextID pattern)
-Status: In Progress
-Last activity: 2026-04-20 — Completed 53-01-PLAN.md (R-011, +3 tests → 835, commit 97a603e)
+Phase: 53-cosmetic-hygiene (2/2 plans complete)
+Plan: — (all plans in milestone complete)
+Status: Complete
+Last activity: 2026-04-20 — Completed 53-02-PLAN.md (R-012, 0 tests added, commit f153ee2)
 
 ## Recent Milestones
 
@@ -46,6 +46,7 @@ Full project decision log in `.planning/PROJECT.md`. Highlights across recent mi
 - D-52-01 (2026-04-20): `QosPolicyPost.MaxTotal*` migrated to `*int64` + `Name` → `json:"-"`; QoS resource schema v0→v1 with identity upgrader (R-006 closed, commit 4b83e27).
 - D-52-04 (2026-04-20): `NfsExportPolicyRulePatch.Security` migrated `[]string` → `*[]string`; nfs_export_policy_rule schema v0→v1 with identity upgrader; `terraform apply` can now clear the security flavors list (R-009 closed, commit 6804f59).
 - D-53-01/02 (2026-04-20): `ObjectStoreAccessPolicyRulePatch`, `S3ExportPolicyRulePatch`, `NetworkAccessPolicyRulePatch` list fields migrated to `*[]string`; `NetworkInterfacePatch.Services`/`.AttachedServers` kept as plain slices and formalized as "always send" carve-out in CONVENTIONS.md §Pointer rules (R-011 closed, commit 97a603e).
+- D-53-03/04 (2026-04-20): mock handler hygiene — `qosPolicyStore.policies` renamed to `byName`; `subnetStore`/`networkInterfaceStore` use `nextID` counter (`subnet-N`/`nic-N`) instead of `uuid.New()`; `google/uuid` dropped from both files; `byID` retained for internal iteration/deletion (R-012 closed, commit f153ee2).
 
 ### Open Blockers
 

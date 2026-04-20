@@ -158,6 +158,7 @@
 ## Validated Requirements
 
 - **R-011** (Phase 53-01, commit `97a603e`, 2026-04-20): 3 policy-rule PATCH structs migrated to `*[]string`; NetworkInterfacePatch documented as formal "always send" carve-out in CONVENTIONS.md §Pointer rules. +3 tests → 835 total.
+- **R-012** (Phase 53-02, commit `f153ee2`, 2026-04-20): mock handler hygiene — `qosPolicyStore.policies` → `byName`; `subnetStore`/`networkInterfaceStore` use `nextID` counter (`subnet-N`/`nic-N`) instead of `uuid.New()`; `google/uuid` dropped from both files; `byID` retained for internal iteration/deletion. +0 tests.
 
 ## Invalidated Requirements
 
