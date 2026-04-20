@@ -19,6 +19,7 @@ import (
 var _ resource.Resource = &qosPolicyResource{}
 var _ resource.ResourceWithConfigure = &qosPolicyResource{}
 var _ resource.ResourceWithImportState = &qosPolicyResource{}
+var _ resource.ResourceWithUpgradeState = &qosPolicyResource{}
 
 // qosPolicyResource implements the flashblade_qos_policy resource.
 type qosPolicyResource struct {
@@ -52,7 +53,7 @@ func (r *qosPolicyResource) Metadata(_ context.Context, _ resource.MetadataReque
 // Schema defines the resource schema.
 func (r *qosPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade QoS policy for enforcing bandwidth and IOPS limits on buckets and file systems.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -104,6 +105,80 @@ func (r *qosPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest
 	}
 }
 
+// qosPolicyV0Model mirrors the resource state at schema Version 0. The shape is
+// identical to the current model since the v0→v1 migration only changes wire
+// semantics in QosPolicyPost (MaxTotal* int64 → *int64) — no Terraform attribute
+// was added, removed, or retyped. See D-52-01.
+type qosPolicyV0Model struct {
+	ID                  types.String   `tfsdk:"id"`
+	Name                types.String   `tfsdk:"name"`
+	Enabled             types.Bool     `tfsdk:"enabled"`
+	MaxTotalBytesPerSec types.Int64    `tfsdk:"max_total_bytes_per_sec"`
+	MaxTotalOpsPerSec   types.Int64    `tfsdk:"max_total_ops_per_sec"`
+	IsLocal             types.Bool     `tfsdk:"is_local"`
+	PolicyType          types.String   `tfsdk:"policy_type"`
+	Timeouts            timeouts.Value `tfsdk:"timeouts"`
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+// v0→v1: no-op identity — the Terraform attribute set is unchanged. The bump exists
+// because wire-format semantics changed (QosPolicyPost.MaxTotal* int64 → *int64 so
+// the 0=unlimited value is preserved through POST). See R-006 / D-52-01.
+func (r *qosPolicyResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade QoS policy for enforcing bandwidth and IOPS limits on buckets and file systems.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						Required: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"enabled": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+						Default:  booldefault.StaticBool(true),
+					},
+					"max_total_bytes_per_sec": schema.Int64Attribute{Optional: true},
+					"max_total_ops_per_sec":   schema.Int64Attribute{Optional: true},
+					"is_local":                schema.BoolAttribute{Computed: true},
+					"policy_type": schema.StringAttribute{
+						Computed: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState qosPolicyV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+				// Identity copy — no attribute shape change.
+				newState := qosPolicyModel(oldState)
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
+}
+
 // Configure injects the FlashBladeClient into the resource.
 func (r *qosPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
@@ -146,10 +221,12 @@ func (r *qosPolicyResource) Create(ctx context.Context, req resource.CreateReque
 		body.Enabled = &v
 	}
 	if !data.MaxTotalBytesPerSec.IsNull() && !data.MaxTotalBytesPerSec.IsUnknown() {
-		body.MaxTotalBytesPerSec = data.MaxTotalBytesPerSec.ValueInt64()
+		v := data.MaxTotalBytesPerSec.ValueInt64()
+		body.MaxTotalBytesPerSec = &v
 	}
 	if !data.MaxTotalOpsPerSec.IsNull() && !data.MaxTotalOpsPerSec.IsUnknown() {
-		body.MaxTotalOpsPerSec = data.MaxTotalOpsPerSec.ValueInt64()
+		v := data.MaxTotalOpsPerSec.ValueInt64()
+		body.MaxTotalOpsPerSec = &v
 	}
 
 	policy, err := r.client.PostQosPolicy(ctx, data.Name.ValueString(), body)

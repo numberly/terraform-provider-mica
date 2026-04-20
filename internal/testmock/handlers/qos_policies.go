@@ -98,22 +98,23 @@ func (s *qosPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Name arrives via ?names= query param (QosPolicyPost has json:"-" on Name).
+	name, ok := RequireQueryParam(w, r, "names")
+	if !ok {
+		return
+	}
+
 	var body client.QosPolicyPost
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
 		return
 	}
 
-	if body.Name == "" {
-		WriteJSONError(w, http.StatusBadRequest, "name is required")
-		return
-	}
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.policies[body.Name]; exists {
-		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("QoS policy %q already exists", body.Name))
+	if _, exists := s.policies[name]; exists {
+		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("QoS policy %q already exists", name))
 		return
 	}
 
@@ -127,17 +128,26 @@ func (s *qosPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request
 
 	policy := &client.QosPolicy{
 		ID:                  id,
-		Name:                body.Name,
+		Name:                name,
 		Enabled:             enabled,
 		IsLocal:             true,
-		MaxTotalBytesPerSec: body.MaxTotalBytesPerSec,
-		MaxTotalOpsPerSec:   body.MaxTotalOpsPerSec,
+		MaxTotalBytesPerSec: derefInt64(body.MaxTotalBytesPerSec),
+		MaxTotalOpsPerSec:   derefInt64(body.MaxTotalOpsPerSec),
 		PolicyType:          "bandwidth-limit",
 	}
 
-	s.policies[body.Name] = policy
+	s.policies[name] = policy
 
 	WriteJSONListResponse(w, http.StatusOK, []client.QosPolicy{*policy})
+}
+
+// derefInt64 returns 0 when p is nil, else *p. Used by handlers that decode POST
+// bodies carrying optional *int64 fields (e.g. QosPolicyPost per D-52-01).
+func derefInt64(p *int64) int64 {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
 
 // handlePolicyPatch handles PATCH /api/2.22/qos-policies.

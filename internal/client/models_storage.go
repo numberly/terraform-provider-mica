@@ -355,11 +355,14 @@ type QosPolicy struct {
 }
 
 // QosPolicyPost contains the fields for POST /qos-policies.
+// Name is sent via the ?names= query param (json:"-"). MaxTotal* are *int64 so that
+// the semantic zero value (0 = unlimited) survives JSON encoding instead of being
+// dropped by omitempty. See R-006 / D-52-01.
 type QosPolicyPost struct {
-	Name                string `json:"name"`
+	Name                string `json:"-"`
 	Enabled             *bool  `json:"enabled,omitempty"`
-	MaxTotalBytesPerSec int64  `json:"max_total_bytes_per_sec,omitempty"`
-	MaxTotalOpsPerSec   int64  `json:"max_total_ops_per_sec,omitempty"`
+	MaxTotalBytesPerSec *int64 `json:"max_total_bytes_per_sec,omitempty"`
+	MaxTotalOpsPerSec   *int64 `json:"max_total_ops_per_sec,omitempty"`
 }
 
 // QosPolicyPatch contains pointer fields for PATCH /qos-policies.

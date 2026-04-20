@@ -357,6 +357,98 @@ func TestUnit_QosPolicyResource_Import(t *testing.T) {
 	}
 }
 
+// TestUnit_QosPolicyResource_StateUpgrade_V0toV1 verifies that the v0->v1 upgrader
+// is a no-op identity: every attribute present in v0 state lands in v1 state
+// unchanged (the migration is POST-only, no Terraform attribute shape change).
+func TestUnit_QosPolicyResource_StateUpgrade_V0toV1(t *testing.T) {
+	r := &qosPolicyResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0->v1 upgrader at key 0")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema to be set for v0->v1 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                      tftypes.String,
+		"name":                    tftypes.String,
+		"enabled":                 tftypes.Bool,
+		"max_total_bytes_per_sec": tftypes.Number,
+		"max_total_ops_per_sec":   tftypes.Number,
+		"is_local":                tftypes.Bool,
+		"policy_type":             tftypes.String,
+		"timeouts":                timeoutsType,
+	}}
+
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":                      tftypes.NewValue(tftypes.String, "qos-v0-1"),
+		"name":                    tftypes.NewValue(tftypes.String, "my-qos"),
+		"enabled":                 tftypes.NewValue(tftypes.Bool, true),
+		"max_total_bytes_per_sec": tftypes.NewValue(tftypes.Number, 0), // 0 = unlimited — must survive
+		"max_total_ops_per_sec":   tftypes.NewValue(tftypes.Number, 5000),
+		"is_local":                tftypes.NewValue(tftypes.Bool, true),
+		"policy_type":             tftypes.NewValue(tftypes.String, "bandwidth-limit"),
+		"timeouts":                tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	currentSchema := qosPolicyResourceSchema(t).Schema
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildQosPolicyType(), nil),
+			Schema: currentSchema,
+		},
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model qosPolicyModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.ID.ValueString() != "qos-v0-1" {
+		t.Errorf("expected id=qos-v0-1, got %s", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "my-qos" {
+		t.Errorf("expected name=my-qos, got %s", model.Name.ValueString())
+	}
+	if !model.Enabled.ValueBool() {
+		t.Error("expected enabled=true")
+	}
+	if model.MaxTotalBytesPerSec.ValueInt64() != 0 {
+		t.Errorf("expected max_total_bytes_per_sec=0 (unlimited preserved), got %d", model.MaxTotalBytesPerSec.ValueInt64())
+	}
+	if model.MaxTotalOpsPerSec.ValueInt64() != 5000 {
+		t.Errorf("expected max_total_ops_per_sec=5000, got %d", model.MaxTotalOpsPerSec.ValueInt64())
+	}
+	if !model.IsLocal.ValueBool() {
+		t.Error("expected is_local=true")
+	}
+	if model.PolicyType.ValueString() != "bandwidth-limit" {
+		t.Errorf("expected policy_type=bandwidth-limit, got %s", model.PolicyType.ValueString())
+	}
+}
+
 // TestQosPolicyResource_Schema verifies schema properties.
 func TestUnit_QosPolicyResource_Schema(t *testing.T) {
 	s := qosPolicyResourceSchema(t).Schema

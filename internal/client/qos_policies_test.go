@@ -5,10 +5,53 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
+
+// TestUnit_QosPolicyPost_JSONEncoding verifies that QosPolicyPost marshalling:
+//   - omits the "name" key (name goes via ?names= query param, json:"-")
+//   - preserves MaxTotalBytesPerSec=0 (unlimited) when pointer is non-nil
+//   - omits MaxTotal* fields when pointer is nil
+func TestUnit_QosPolicyPost_JSONEncoding(t *testing.T) {
+	// Case 1: name must NOT appear, zero pointer values must serialize.
+	zero := int64(0)
+	body := client.QosPolicyPost{
+		Name:                "should-not-appear",
+		MaxTotalBytesPerSec: &zero,
+		MaxTotalOpsPerSec:   &zero,
+	}
+	buf, err := json.Marshal(body)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	s := string(buf)
+	if strings.Contains(s, `"name"`) {
+		t.Errorf("expected no \"name\" key in QosPolicyPost JSON, got: %s", s)
+	}
+	if !strings.Contains(s, `"max_total_bytes_per_sec":0`) {
+		t.Errorf("expected max_total_bytes_per_sec:0 preserved, got: %s", s)
+	}
+	if !strings.Contains(s, `"max_total_ops_per_sec":0`) {
+		t.Errorf("expected max_total_ops_per_sec:0 preserved, got: %s", s)
+	}
+
+	// Case 2: nil pointers must omit fields entirely.
+	body2 := client.QosPolicyPost{Name: "x"}
+	buf2, err := json.Marshal(body2)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	s2 := string(buf2)
+	if strings.Contains(s2, "max_total_bytes_per_sec") {
+		t.Errorf("expected max_total_bytes_per_sec omitted when nil, got: %s", s2)
+	}
+	if strings.Contains(s2, "max_total_ops_per_sec") {
+		t.Errorf("expected max_total_ops_per_sec omitted when nil, got: %s", s2)
+	}
+}
 
 func TestUnit_QosPolicy_Get(t *testing.T) {
 	expected := client.QosPolicy{
@@ -97,12 +140,19 @@ func TestUnit_QosPolicy_Post(t *testing.T) {
 			if body.Enabled != nil {
 				enabled = *body.Enabled
 			}
+			var maxBytes, maxOps int64
+			if body.MaxTotalBytesPerSec != nil {
+				maxBytes = *body.MaxTotalBytesPerSec
+			}
+			if body.MaxTotalOpsPerSec != nil {
+				maxOps = *body.MaxTotalOpsPerSec
+			}
 			result := client.QosPolicy{
 				ID:                  "qos-id-002",
 				Name:                name,
 				Enabled:             enabled,
-				MaxTotalBytesPerSec: body.MaxTotalBytesPerSec,
-				MaxTotalOpsPerSec:   body.MaxTotalOpsPerSec,
+				MaxTotalBytesPerSec: maxBytes,
+				MaxTotalOpsPerSec:   maxOps,
 			}
 			writeJSON(w, http.StatusOK, listResponse([]client.QosPolicy{result}))
 		default:
@@ -113,10 +163,12 @@ func TestUnit_QosPolicy_Post(t *testing.T) {
 
 	c := newTestClient(t, srv)
 	enabled := true
+	maxBytes := int64(536870912) // 512 MiB/s
+	maxOps := int64(5000)
 	got, err := c.PostQosPolicy(context.Background(), "new-policy", client.QosPolicyPost{
 		Enabled:             &enabled,
-		MaxTotalBytesPerSec: 536870912, // 512 MiB/s
-		MaxTotalOpsPerSec:   5000,
+		MaxTotalBytesPerSec: &maxBytes,
+		MaxTotalOpsPerSec:   &maxOps,
 	})
 	if err != nil {
 		t.Fatalf("PostQosPolicy: %v", err)
