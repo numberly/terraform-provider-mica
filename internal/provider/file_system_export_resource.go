@@ -48,6 +48,22 @@ type fileSystemExportModel struct {
 	Timeouts        timeouts.Value `tfsdk:"timeouts"`
 }
 
+// fileSystemExportV0Model is the v0 state model. Identical attribute set to the current model —
+// the v0→v1 bump is defensive per D-51-04 (only wire-format semantics changed on PATCH).
+type fileSystemExportV0Model struct {
+	ID              types.String   `tfsdk:"id"`
+	Name            types.String   `tfsdk:"name"`
+	ExportName      types.String   `tfsdk:"export_name"`
+	FileSystemName  types.String   `tfsdk:"file_system_name"`
+	ServerName      types.String   `tfsdk:"server_name"`
+	PolicyName      types.String   `tfsdk:"policy_name"`
+	SharePolicyName types.String   `tfsdk:"share_policy_name"`
+	Enabled         types.Bool     `tfsdk:"enabled"`
+	PolicyType      types.String   `tfsdk:"policy_type"`
+	Status          types.String   `tfsdk:"status"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
+}
+
 // ---------- resource interface methods --------------------------------------
 
 func (r *fileSystemExportResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -57,7 +73,7 @@ func (r *fileSystemExportResource) Metadata(_ context.Context, _ resource.Metada
 // Schema defines the resource schema.
 func (r *fileSystemExportResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade file system export.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -135,8 +151,46 @@ func (r *fileSystemExportResource) Schema(ctx context.Context, _ resource.Schema
 
 
 // UpgradeState returns state upgraders for schema migrations.
-func (r *fileSystemExportResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+// v0→v1: no-op identity. The Terraform attribute set is unchanged; the bump exists because
+// wire-format semantics changed for Server and SharePolicy (**NamedReference in PATCH).
+// See D-51-03 and D-51-04.
+func (r *fileSystemExportResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade file system export.",
+				Attributes: map[string]schema.Attribute{
+					"id":                schema.StringAttribute{Computed: true},
+					"name":              schema.StringAttribute{Computed: true},
+					"export_name":       schema.StringAttribute{Optional: true, Computed: true},
+					"file_system_name":  schema.StringAttribute{Required: true},
+					"server_name":       schema.StringAttribute{Required: true},
+					"policy_name":       schema.StringAttribute{Required: true},
+					"share_policy_name": schema.StringAttribute{Optional: true, Computed: true},
+					"enabled":           schema.BoolAttribute{Computed: true},
+					"policy_type":       schema.StringAttribute{Computed: true},
+					"status":            schema.StringAttribute{Computed: true},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState fileSystemExportV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				newState := fileSystemExportModel(oldState)
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -273,10 +327,12 @@ func (r *fileSystemExportResource) Update(ctx context.Context, req resource.Upda
 		v := plan.ExportName.ValueString()
 		patch.ExportName = &v
 	}
-	if !plan.SharePolicyName.Equal(state.SharePolicyName) {
-		v := plan.SharePolicyName.ValueString()
-		patch.SharePolicy = &client.NamedReference{Name: v}
-	}
+	// Use doublePointerRefForPatch so that:
+	//   - unchanged share_policy_name       → omit (nil outer)
+	//   - share_policy_name set → null     → CLEAR (non-nil outer, nil inner)
+	//   - share_policy_name changed / set   → SET
+	// R-003, D-51-01.
+	patch.SharePolicy = doublePointerRefForPatch(state.SharePolicyName, plan.SharePolicyName)
 
 	_, err := r.client.PatchFileSystemExport(ctx, state.ID.ValueString(), patch)
 	if err != nil {

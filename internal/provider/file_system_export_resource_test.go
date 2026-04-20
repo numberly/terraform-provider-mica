@@ -2,10 +2,12 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
@@ -404,5 +406,115 @@ func TestUnit_FileSystemExport_Idempotent(t *testing.T) {
 	}
 	if beforeModel.Enabled.ValueBool() != afterModel.Enabled.ValueBool() {
 		t.Errorf("Enabled changed after Read: %v -> %v", beforeModel.Enabled.ValueBool(), afterModel.Enabled.ValueBool())
+	}
+}
+
+// TestUnit_FileSystemExport_StateUpgrade_V0toV1 verifies the v0->v1 upgrader
+// preserves every attribute (identity / no-op).
+func TestUnit_FileSystemExport_StateUpgrade_V0toV1(t *testing.T) {
+	r := &fileSystemExportResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0->v1 upgrader at key 0")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema to be set for v0->v1 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                tftypes.String,
+		"name":              tftypes.String,
+		"export_name":       tftypes.String,
+		"file_system_name":  tftypes.String,
+		"server_name":       tftypes.String,
+		"policy_name":       tftypes.String,
+		"share_policy_name": tftypes.String,
+		"enabled":           tftypes.Bool,
+		"policy_type":       tftypes.String,
+		"status":            tftypes.String,
+		"timeouts":          timeoutsType,
+	}}
+
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":                tftypes.NewValue(tftypes.String, "fse-001"),
+		"name":              tftypes.NewValue(tftypes.String, "fs1/export1"),
+		"export_name":       tftypes.NewValue(tftypes.String, "export1"),
+		"file_system_name":  tftypes.NewValue(tftypes.String, "fs1"),
+		"server_name":       tftypes.NewValue(tftypes.String, "server1"),
+		"policy_name":       tftypes.NewValue(tftypes.String, "policy1"),
+		"share_policy_name": tftypes.NewValue(tftypes.String, "sp1"),
+		"enabled":           tftypes.NewValue(tftypes.Bool, true),
+		"policy_type":       tftypes.NewValue(tftypes.String, "nfs"),
+		"status":            tftypes.NewValue(tftypes.String, "ok"),
+		"timeouts":          tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildFileSystemExportType(), nil),
+			Schema: fsExportResourceSchema(t).Schema,
+		},
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model fileSystemExportModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.Name.ValueString() != "fs1/export1" {
+		t.Errorf("expected name=fs1/export1, got %s", model.Name.ValueString())
+	}
+	if model.SharePolicyName.ValueString() != "sp1" {
+		t.Errorf("expected share_policy_name=sp1, got %s", model.SharePolicyName.ValueString())
+	}
+	if model.PolicyName.ValueString() != "policy1" {
+		t.Errorf("expected policy_name=policy1, got %s", model.PolicyName.ValueString())
+	}
+}
+
+// TestUnit_FileSystemExport_Patch_ClearSharePolicy verifies that when
+// share_policy_name transitions from set to null, the PATCH body contains
+// "share_policy":null. Regression guard for R-003.
+func TestUnit_FileSystemExport_Patch_ClearSharePolicy(t *testing.T) {
+	state := types.StringValue("sp1")
+	plan := types.StringNull()
+
+	patch := client.FileSystemExportPatch{}
+	patch.SharePolicy = doublePointerRefForPatch(state, plan)
+
+	raw, err := json.Marshal(patch)
+	if err != nil {
+		t.Fatalf("marshal patch: %v", err)
+	}
+
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &body); err != nil {
+		t.Fatalf("decode patch: %v", err)
+	}
+	v, ok := body["share_policy"]
+	if !ok {
+		t.Fatalf("expected 'share_policy' key in PATCH body, got %s", string(raw))
+	}
+	if string(v) != "null" {
+		t.Errorf("expected share_policy=null in PATCH body, got %s", string(v))
 	}
 }

@@ -43,10 +43,14 @@ type FileSystemExportPost struct {
 }
 
 // FileSystemExportPatch contains pointer fields for PATCH /file-system-exports.
+// Server and SharePolicy are **NamedReference (CONVENTIONS.md §Pointer rules, PATCH struct):
+//   - nil outer                    → omit
+//   - non-nil outer, nil inner     → clear (send JSON null)
+//   - non-nil outer, non-nil inner → set value
 type FileSystemExportPatch struct {
-	ExportName  *string         `json:"export_name,omitempty"`
-	Server      *NamedReference `json:"server,omitempty"`
-	SharePolicy *NamedReference `json:"share_policy,omitempty"`
+	ExportName  *string          `json:"export_name,omitempty"`
+	Server      **NamedReference `json:"server,omitempty"`
+	SharePolicy **NamedReference `json:"share_policy,omitempty"`
 }
 
 // ObjectStoreAccountExport represents a FlashBlade object store account export from GET responses.

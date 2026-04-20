@@ -183,21 +183,29 @@ func (s *fileSystemExportStore) handlePatch(w http.ResponseWriter, r *http.Reque
 	}
 
 	if v, ok := rawPatch["server"]; ok {
-		var ref client.NamedReference
-		if err := json.Unmarshal(v, &ref); err != nil {
-			WriteJSONError(w, http.StatusBadRequest, "invalid server field")
-			return
+		if string(v) == "null" {
+			export.Server = nil
+		} else {
+			var ref client.NamedReference
+			if err := json.Unmarshal(v, &ref); err != nil {
+				WriteJSONError(w, http.StatusBadRequest, "invalid server field")
+				return
+			}
+			export.Server = &ref
 		}
-		export.Server = &ref
 	}
 
 	if v, ok := rawPatch["share_policy"]; ok {
-		var ref client.NamedReference
-		if err := json.Unmarshal(v, &ref); err != nil {
-			WriteJSONError(w, http.StatusBadRequest, "invalid share_policy field")
-			return
+		if string(v) == "null" {
+			export.SharePolicy = nil
+		} else {
+			var ref client.NamedReference
+			if err := json.Unmarshal(v, &ref); err != nil {
+				WriteJSONError(w, http.StatusBadRequest, "invalid share_policy field")
+				return
+			}
+			export.SharePolicy = &ref
 		}
-		export.SharePolicy = &ref
 	}
 
 	WriteJSONListResponse(w, http.StatusOK, []client.FileSystemExport{*export})
