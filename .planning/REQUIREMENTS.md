@@ -105,7 +105,7 @@
 
 ---
 
-### R-009 — NfsExportPolicyRulePatch.Security must use `*[]string` (Important)
+### R-009 — NfsExportPolicyRulePatch.Security must use `*[]string` (Important) ✅ DONE
 
 **Why:** Convention §PATCH struct: every field is a pointer. Plain `[]string + omitempty` cannot distinguish "don't touch" from "clear to empty list".
 
