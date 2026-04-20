@@ -22,6 +22,15 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      # terraform-plugin-testing's resource.UnitTest auto-downloads Terraform
+      # from releases.hashicorp.com and verifies the signature. As of 2026-04
+      # HashiCorp's release signing key expired, breaking the auto-install.
+      # Pre-install Terraform via the official action instead.
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
       - name: Run unit tests with coverage
         run: go test -coverpkg=github.com/numberly/opentofu-provider-flashblade/internal/... -coverprofile=coverage.out ./internal/... -count=1 -timeout 5m
 
