@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: idle
-stopped_at: "Milestone v2.22.2 archived"
-last_updated: "2026-04-17T15:40:00.000Z"
-last_activity: 2026-04-17
+milestone: v2.22.3
+milestone_name: convention-compliance
+status: defining-requirements
+stopped_at: null
+last_updated: "2026-04-20T00:00:00.000Z"
+last_activity: 2026-04-20
 progress:
   total_phases: 0
   completed_phases: 0
@@ -18,16 +18,18 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-17)
+See: .planning/PROJECT.md (updated 2026-04-20)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Planning next milestone (v2.22.2 complete — run `/gsd:new-milestone`)
+**Current focus:** Milestone v2.22.3 convention-compliance — defining requirements
 
 ## Current Position
 
-Milestone: _none_ — last shipped: v2.22.2 (Directory Service Roles & Role Mappings)
-Phase: _none_
-Status: idle — ready for `/gsd:new-milestone`
+Milestone: v2.22.3 convention-compliance
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-20 — Milestone v2.22.3 started
 
 ## Recent Milestones
 
@@ -41,6 +43,7 @@ Status: idle — ready for `/gsd:new-milestone`
 Full project decision log in `.planning/PROJECT.md`. Highlights across recent milestones:
 - v2.22.2: DSR name is user-supplied via `?names=` (D-03 superseded post-50.1); composite ID for DSRM membership uses `/` not `:` (D-05) because role names can contain `:` (e.g. `pure:policy/array_admin`).
 - v2.22.1: Directory Service Management is a singleton resource; `bind_password` Sensitive write-only; Delete is full-reset PATCH (no DELETE endpoint).
+- v2.22.3 (2026-04-20): CONVENTIONS.md §Pointer rules clarified — `*bool` allowed in POST when API default is non-zero (e.g., policy `Enabled` defaults to `true`); `*int64`/`*string` allowed when zero is a semantic user choice (e.g., `VLAN=0` means untagged); pointers on nested structs and optional refs are the correct Go idiom for `omitempty`.
 
 ### Open Blockers
 
@@ -48,4 +51,4 @@ _(none)_
 
 ## Next Steps
 
-Run `/gsd:new-milestone` to start questioning → research → requirements → roadmap for the next cycle.
+Draft `.planning/REQUIREMENTS.md` for v2.22.3 (27 violations grouped in Critical/Important/Cosmetic phases), then `/gsd:plan-phase 51` to start execution.

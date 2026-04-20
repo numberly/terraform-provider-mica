@@ -35,10 +35,15 @@ Three structs per resource in `internal/client/models_<domain>.go`:
 ### Pointer rules
 
 - **GET struct**: No pointers on scalars. Use `NamedReference` for refs, `*NamedReference` for optional refs.
-- **POST struct**: No pointers. Name goes via query param, not body.
+- **POST struct**: No pointers on scalars, with two narrow exceptions:
+  - `*bool` is REQUIRED when the API default is `true` (or any non-zero value). Example: `Enabled *bool` on policy POST bodies — the swagger documents `"If not specified, defaults to true"`. A plain `bool` with `omitempty` would drop `false` from the JSON body, so the API would silently keep the default. Check the swagger `description` for the default before choosing.
+  - `*int64` / `*string` are REQUIRED when the zero value is a semantically valid user choice that must be transmitted (e.g. `VLAN=0` for untagged). Without the pointer, `omitempty` strips the field and the API applies its own default.
+  - Pointers on **nested structs** (`*NFSConfig`, `*EradicationConfig`) and on **optional refs** (`*NamedReference`) are also allowed and expected — `omitempty` does not omit value-type structs, so a pointer is the only way to keep the field out of the body when unset.
+  - Name field is never in the body (goes via `?names=` query param).
 - **PATCH struct**: Every field is a pointer. `nil` = omit from JSON. Non-nil = send.
   - `*string` for scalar fields
-  - `**NamedReference` for reference fields (outer nil = omit, outer non-nil + inner nil = set to null, outer non-nil + inner non-nil = set value)
+  - `**NamedReference` for reference fields (outer nil = omit, outer non-nil + inner nil = set to null, outer non-nil + inner non-nil = set value). This is the only way to clear an optional reference via PATCH — a single `*NamedReference` cannot distinguish "omit" from "set to null".
+  - `*NestedConfig` (single pointer) is acceptable for nested config blocks that are atomic (the whole block is replaced, not cleared to null).
 
 ### JSON tags
 

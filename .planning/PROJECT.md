@@ -8,11 +8,17 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: _none — planning next_
+## Current Milestone: v2.22.3 convention-compliance
+
+**Goal:** Eliminate 27 CONVENTIONS.md violations (4 Critical, 13 Important, 10 Cosmetic) surfaced by code audit and close documentation gaps for legitimate convention exceptions.
+
+**Target features:**
+- POST/PATCH pointer bug fixes (SubnetPost.VLAN, SubnetPatch.LAG, FileSystemExportPatch, ObjectStoreAccountExportPatch) — with schema version bumps + state upgraders
+- QoS POST pointer fixes, `ResourceWithUpgradeState` assertion on 9 resources, `object_store_access_key` import-state exception documented in CONVENTIONS.md
+- Test naming normalization (`TestMocked_*`/`TestCompute*` → `TestUnit_*`)
+- Handler hygiene: `byName` naming + `nextID` pattern in `subnets`/`network_interfaces`/`qos_policies`
 
 **Last shipped:** v2.22.2 — Directory Service Roles & Role Mappings (2026-04-17, 818 tests, 0 lint issues) — [archive](milestones/v2.22.2-ROADMAP.md)
-
-Run `/gsd:new-milestone` to start the next cycle.
 
 ## Requirements
 
@@ -40,7 +46,7 @@ Run `/gsd:new-milestone` to start the next cycle.
 
 ### Active
 
-_No active requirements. Milestone v2.22.2 complete — ready for next milestone (run `/gsd:new-milestone`)._
+Milestone v2.22.3 convention-compliance — see `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md`.
 
 ### Known Follow-up Defects
 
@@ -103,4 +109,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 after v2.22.2 milestone archival — Directory Service Roles & Role Mappings shipped, 818 tests, real-array UAT on par5/pa7*
+*Last updated: 2026-04-20 — milestone v2.22.3 convention-compliance started (27 CONVENTIONS.md violations to fix)*
