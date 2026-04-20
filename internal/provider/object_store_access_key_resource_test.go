@@ -372,11 +372,22 @@ func TestUnit_AccessKey_Lifecycle(t *testing.T) {
 	}
 }
 
-// TestUnit_AccessKey_NoImport verifies the resource does NOT implement ResourceWithImportState.
-func TestUnit_AccessKey_NoImport(t *testing.T) {
+// TestUnit_AccessKey_ImportRejected verifies the resource implements
+// ResourceWithImportState (per CONVENTIONS.md §Resource Implementation, all 4
+// interfaces are mandatory) but rejects any import attempt with a clear error —
+// secret_access_key is unavailable after creation, so import can never produce
+// correct state. See CONVENTIONS.md §Resource Implementation — documented exception.
+func TestUnit_AccessKey_ImportRejected(t *testing.T) {
 	r := NewObjectStoreAccessKeyResource()
-	if _, ok := r.(resource.ResourceWithImportState); ok {
-		t.Error("objectStoreAccessKeyResource must NOT implement ResourceWithImportState — secret unavailable after creation")
+	imp, ok := r.(resource.ResourceWithImportState)
+	if !ok {
+		t.Fatal("objectStoreAccessKeyResource must implement ResourceWithImportState (convention requires all 4 interfaces)")
+	}
+	req := resource.ImportStateRequest{ID: "acct/key"}
+	resp := resource.ImportStateResponse{}
+	imp.ImportState(context.Background(), req, &resp)
+	if !resp.Diagnostics.HasError() {
+		t.Error("expected ImportState to emit an error diagnostic; got none")
 	}
 }
 
