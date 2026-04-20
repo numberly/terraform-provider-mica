@@ -16,8 +16,16 @@ default: build
 build:
 	go build -trimpath -o $(BINARY_NAME)
 
+TEST_BASELINE=752
+
 test:
 	go test ./internal/... -count=1 -timeout 5m
+	@actual=$$(go test ./internal/... -list '.*' 2>/dev/null | grep -c '^Test'); \
+	  if [ $$actual -lt $(TEST_BASELINE) ]; then \
+	    echo "Test count dropped: $$actual < $(TEST_BASELINE) baseline (see CONVENTIONS.md)"; exit 1; \
+	  else \
+	    echo "Test count: $$actual (baseline $(TEST_BASELINE))"; \
+	  fi
 
 testacc:
 	TF_ACC=1 go test ./... -count=1 -timeout 120m

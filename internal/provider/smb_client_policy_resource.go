@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -18,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure smbClientPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &smbClientPolicyResource{}
 var _ resource.ResourceWithConfigure = &smbClientPolicyResource{}
 var _ resource.ResourceWithImportState = &smbClientPolicyResource{}
@@ -29,7 +29,6 @@ type smbClientPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSmbClientPolicyResource is the factory function registered in the provider.
 func NewSmbClientPolicyResource() resource.Resource {
 	return &smbClientPolicyResource{}
 }
@@ -50,7 +49,6 @@ type smbClientPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *smbClientPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_smb_client_policy"
 }
@@ -139,7 +137,6 @@ func (r *smbClientPolicyResource) Configure(_ context.Context, req resource.Conf
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new SMB client policy.
 func (r *smbClientPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data smbClientPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -171,7 +168,7 @@ func (r *smbClientPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -179,7 +176,6 @@ func (r *smbClientPolicyResource) Create(ctx context.Context, req resource.Creat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *smbClientPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data smbClientPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -209,11 +205,11 @@ func (r *smbClientPolicyResource) Read(ctx context.Context, req resource.ReadReq
 	// Drift detection on enabled field.
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
-			tflog.Info(ctx, "drift detected on SMB client policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on SMB client policy", map[string]any{
 				"resource":    name,
 				"field":       "enabled",
-				"state_value": data.Enabled.ValueBool(),
-				"api_value":   policy.Enabled,
+				"was":         data.Enabled.ValueBool(),
+				"now":           policy.Enabled,
 			})
 		}
 	}
@@ -221,11 +217,11 @@ func (r *smbClientPolicyResource) Read(ctx context.Context, req resource.ReadReq
 	// Drift detection on access_based_enumeration_enabled field.
 	if !data.AccessBasedEnumerationEnabled.IsNull() && !data.AccessBasedEnumerationEnabled.IsUnknown() {
 		if data.AccessBasedEnumerationEnabled.ValueBool() != policy.AccessBasedEnumerationEnabled {
-			tflog.Info(ctx, "drift detected on SMB client policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on SMB client policy", map[string]any{
 				"resource":    name,
 				"field":       "access_based_enumeration_enabled",
-				"state_value": data.AccessBasedEnumerationEnabled.ValueBool(),
-				"api_value":   policy.AccessBasedEnumerationEnabled,
+				"was":         data.AccessBasedEnumerationEnabled.ValueBool(),
+				"now":           policy.AccessBasedEnumerationEnabled,
 			})
 		}
 	}
@@ -276,7 +272,7 @@ func (r *smbClientPolicyResource) Update(ctx context.Context, req resource.Updat
 
 	// After rename the policy is now known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -326,7 +322,6 @@ func (r *smbClientPolicyResource) Delete(ctx context.Context, req resource.Delet
 	}
 }
 
-// ImportState imports an existing SMB client policy by name.
 func (r *smbClientPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -336,7 +331,7 @@ func (r *smbClientPolicyResource) ImportState(ctx context.Context, req resource.
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -347,14 +342,18 @@ func (r *smbClientPolicyResource) ImportState(ctx context.Context, req resource.
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSmbClientPolicy and maps the result into the provided model.
-func (r *smbClientPolicyResource) readIntoState(ctx context.Context, name string, data *smbClientPolicyModel, diags DiagnosticReporter) {
+func (r *smbClientPolicyResource) readIntoState(ctx context.Context, name string, data *smbClientPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetSmbClientPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading SMB client policy after write", err.Error())
-		return
+		return diags
 	}
 	mapSMBClientPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapSMBClientPolicyToModel maps a client.SmbClientPolicy to an smbClientPolicyModel.
 // It preserves user-managed fields (Timeouts).

@@ -367,9 +367,9 @@ func TestUnit_AlertWatcher_Get(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	got, err := c.GetAlertWatchers(context.Background())
+	got, err := c.ListAlertWatchers(context.Background())
 	if err != nil {
-		t.Fatalf("GetAlertWatchers: %v", err)
+		t.Fatalf("ListAlertWatchers: %v", err)
 	}
 	if len(got) != 2 {
 		t.Errorf("expected 2 watchers, got %d", len(got))

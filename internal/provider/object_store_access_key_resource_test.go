@@ -373,7 +373,7 @@ func TestUnit_AccessKey_Lifecycle(t *testing.T) {
 
 // TestUnit_AccessKey_NoImport verifies the resource does NOT implement ResourceWithImportState.
 func TestUnit_AccessKey_NoImport(t *testing.T) {
-	r := NewAccessKeyResource()
+	r := NewObjectStoreAccessKeyResource()
 	if _, ok := r.(resource.ResourceWithImportState); ok {
 		t.Error("objectStoreAccessKeyResource must NOT implement ResourceWithImportState — secret unavailable after creation")
 	}

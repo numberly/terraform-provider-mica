@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -18,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure smbSharePolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &smbSharePolicyResource{}
 var _ resource.ResourceWithConfigure = &smbSharePolicyResource{}
 var _ resource.ResourceWithImportState = &smbSharePolicyResource{}
@@ -29,7 +29,6 @@ type smbSharePolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSmbSharePolicyResource is the factory function registered in the provider.
 func NewSmbSharePolicyResource() resource.Resource {
 	return &smbSharePolicyResource{}
 }
@@ -49,7 +48,6 @@ type smbSharePolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *smbSharePolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_smb_share_policy"
 }
@@ -125,7 +123,6 @@ func (r *smbSharePolicyResource) Configure(_ context.Context, req resource.Confi
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new SMB share policy.
 func (r *smbSharePolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data smbSharePolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -153,7 +150,7 @@ func (r *smbSharePolicyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -161,7 +158,6 @@ func (r *smbSharePolicyResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *smbSharePolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data smbSharePolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -191,11 +187,11 @@ func (r *smbSharePolicyResource) Read(ctx context.Context, req resource.ReadRequ
 	// Drift detection on enabled field.
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
-			tflog.Info(ctx, "drift detected on SMB share policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on SMB share policy", map[string]any{
 				"resource":    name,
 				"field":       "enabled",
-				"state_value": data.Enabled.ValueBool(),
-				"api_value":   policy.Enabled,
+				"was":         data.Enabled.ValueBool(),
+				"now":           policy.Enabled,
 			})
 		}
 	}
@@ -242,7 +238,7 @@ func (r *smbSharePolicyResource) Update(ctx context.Context, req resource.Update
 
 	// After rename the policy is now known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -292,7 +288,6 @@ func (r *smbSharePolicyResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// ImportState imports an existing SMB share policy by name.
 func (r *smbSharePolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -302,7 +297,7 @@ func (r *smbSharePolicyResource) ImportState(ctx context.Context, req resource.I
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -313,14 +308,18 @@ func (r *smbSharePolicyResource) ImportState(ctx context.Context, req resource.I
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSmbSharePolicy and maps the result into the provided model.
-func (r *smbSharePolicyResource) readIntoState(ctx context.Context, name string, data *smbSharePolicyModel, diags DiagnosticReporter) {
+func (r *smbSharePolicyResource) readIntoState(ctx context.Context, name string, data *smbSharePolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetSmbSharePolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading SMB share policy after write", err.Error())
-		return
+		return diags
 	}
 	mapSMBPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapSMBPolicyToModel maps a client.SmbSharePolicy to an smbSharePolicyModel.
 // It preserves user-managed fields (Timeouts).

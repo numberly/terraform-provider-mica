@@ -238,12 +238,12 @@ func TestUnit_SnapshotPolicy_AddRule(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	pol, err := c.AddSnapshotPolicyRule(context.Background(), "my-snapshot-policy", client.SnapshotPolicyRulePost{
+	pol, err := c.PostSnapshotPolicyRule(context.Background(), "my-snapshot-policy", client.SnapshotPolicyRulePost{
 		Every:   &every,
 		KeepFor: &keepFor,
 	})
 	if err != nil {
-		t.Fatalf("AddSnapshotPolicyRule: %v", err)
+		t.Fatalf("PostSnapshotPolicyRule: %v", err)
 	}
 	if len(pol.Rules) != 1 {
 		t.Errorf("expected 1 rule after add, got %d", len(pol.Rules))
@@ -280,12 +280,12 @@ func TestUnit_SnapshotPolicy_RemoveRule(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
-	pol, err := c.RemoveSnapshotPolicyRule(context.Background(), "my-snapshot-policy", client.SnapshotPolicyRuleRemove{
+	pol, err := c.DeleteSnapshotPolicyRule(context.Background(), "my-snapshot-policy", client.SnapshotPolicyRuleRemove{
 		Every:   3600000,
 		KeepFor: 86400000,
 	})
 	if err != nil {
-		t.Fatalf("RemoveSnapshotPolicyRule: %v", err)
+		t.Fatalf("DeleteSnapshotPolicyRule: %v", err)
 	}
 	if len(pol.Rules) != 0 {
 		t.Errorf("expected 0 rules after remove, got %d", len(pol.Rules))

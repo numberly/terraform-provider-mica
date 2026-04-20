@@ -32,21 +32,7 @@ func (c *FlashBladeClient) DeleteQosPolicy(ctx context.Context, name string) err
 func (c *FlashBladeClient) ListQosPolicyMembers(ctx context.Context, policyName string) ([]QosPolicyMember, error) {
 	params := url.Values{}
 	params.Set("policy_names", policyName)
-	var all []QosPolicyMember
-	for {
-		path := "/qos-policies/members?" + params.Encode()
-
-		var resp ListResponse[QosPolicyMember]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[QosPolicyMember](c, ctx, "/qos-policies/members", params)
 }
 
 // PostQosPolicyMember adds a member to a QoS policy.

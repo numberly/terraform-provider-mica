@@ -38,8 +38,8 @@ func niDSSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildNIDSType returns the tftypes.Object for the network interface data source schema.
-func buildNIDSType() tftypes.Object {
+// buildNetworkInterfaceDSType returns the tftypes.Object for the network interface data source schema.
+func buildNetworkInterfaceDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":               tftypes.String,
 		"name":             tftypes.String,
@@ -91,7 +91,7 @@ func TestUnit_NetworkInterfaceDataSource_Read(t *testing.T) {
 	cfg := nullNIDSConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-vip")
 
-	objType := buildNIDSType()
+	objType := buildNetworkInterfaceDSType()
 	readResp := &datasource.ReadResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(objType, nil), Schema: s},
 	}
@@ -149,7 +149,7 @@ func TestUnit_NetworkInterfaceDataSource_NotFound(t *testing.T) {
 	cfg := nullNIDSConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, "nonexistent-vip")
 
-	objType := buildNIDSType()
+	objType := buildNetworkInterfaceDSType()
 	readResp := &datasource.ReadResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(objType, nil), Schema: s},
 	}
@@ -216,7 +216,7 @@ func TestUnit_NetworkInterfaceDataSource_WithServers(t *testing.T) {
 	cfg := nullNIDSConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, "vip-servers")
 
-	objType := buildNIDSType()
+	objType := buildNetworkInterfaceDSType()
 	readResp := &datasource.ReadResponse{
 		State: tfsdk.State{Raw: tftypes.NewValue(objType, nil), Schema: s},
 	}

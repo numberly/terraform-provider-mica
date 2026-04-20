@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreVirtualHostDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &objectStoreVirtualHostDataSource{}
 var _ datasource.DataSourceWithConfigure = &objectStoreVirtualHostDataSource{}
 
@@ -21,7 +20,6 @@ type objectStoreVirtualHostDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreVirtualHostDataSource is the factory function registered in the provider.
 func NewObjectStoreVirtualHostDataSource() datasource.DataSource {
 	return &objectStoreVirtualHostDataSource{}
 }
@@ -39,7 +37,6 @@ type objectStoreVirtualHostDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *objectStoreVirtualHostDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_virtual_host"
 }

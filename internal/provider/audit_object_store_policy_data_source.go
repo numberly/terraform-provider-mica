@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -12,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure auditObjectStorePolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &auditObjectStorePolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &auditObjectStorePolicyDataSource{}
 
@@ -21,7 +19,6 @@ type auditObjectStorePolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewAuditObjectStorePolicyDataSource is the factory function registered in the provider.
 func NewAuditObjectStorePolicyDataSource() datasource.DataSource {
 	return &auditObjectStorePolicyDataSource{}
 }
@@ -40,7 +37,6 @@ type auditObjectStorePolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *auditObjectStorePolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_audit_object_store_policy"
 }
@@ -123,17 +119,7 @@ func (d *auditObjectStorePolicyDataSource) Read(ctx context.Context, req datasou
 	config.IsLocal = types.BoolValue(policy.IsLocal)
 	config.PolicyType = types.StringValue(policy.PolicyType)
 
-	// Map LogTargets.
-	names := namedRefsToNames(policy.LogTargets)
-	if len(names) > 0 {
-		vals := make([]attr.Value, len(names))
-		for i, n := range names {
-			vals[i] = types.StringValue(n)
-		}
-		config.LogTargets = types.ListValueMust(types.StringType, vals)
-	} else {
-		config.LogTargets = types.ListValueMust(types.StringType, []attr.Value{})
-	}
+	config.LogTargets = namedRefsToListValue(policy.LogTargets)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

@@ -32,21 +32,7 @@ func (c *FlashBladeClient) DeleteAuditObjectStorePolicy(ctx context.Context, nam
 func (c *FlashBladeClient) ListAuditObjectStorePolicyMembers(ctx context.Context, policyName string) ([]AuditObjectStorePolicyMember, error) {
 	params := url.Values{}
 	params.Set("policy_names", policyName)
-	var all []AuditObjectStorePolicyMember
-	for {
-		path := "/audit-object-store-policies/members?" + params.Encode()
-
-		var resp ListResponse[AuditObjectStorePolicyMember]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[AuditObjectStorePolicyMember](c, ctx, "/audit-object-store-policies/members", params)
 }
 
 // PostAuditObjectStorePolicyMember adds a bucket as a member of an audit object store policy.

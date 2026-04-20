@@ -45,7 +45,6 @@ func (s *serverStore) AddServer(name string) *client.Server {
 	return srv
 }
 
-// handle dispatches server requests by HTTP method.
 func (s *serverStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

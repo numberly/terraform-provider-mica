@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
@@ -59,15 +58,6 @@ func stringOrNull(s string) types.String {
 
 // ---------- shared helpers (DUP-01 through DUP-05) -------------------------
 
-// DiagnosticReporter is the minimal interface for appending diagnostics.
-// It replaces the inline interface { AddError(string, string); HasError() bool }
-// used by readIntoState methods across resource files.
-type DiagnosticReporter interface {
-	AddError(string, string)
-	AddWarning(string, string)
-	HasError() bool
-}
-
 // spaceAttrTypes returns the attribute type map for the shared "space" nested object
 // used by filesystem, bucket, and object store account resources.
 func spaceAttrTypes() map[string]attr.Type {
@@ -108,10 +98,10 @@ func nullTimeoutsValue() timeouts.Value {
 	}
 }
 
-// nullTimeoutsValueCRD returns a timeouts.Value initialized with a null Object
+// nullTimeoutsValueNoUpdate returns a timeouts.Value initialized with a null Object
 // containing only Create, Read, and Delete timeout attribute types. Use in ImportState
 // methods for CRD-only resources (no Update operation).
-func nullTimeoutsValueCRD() timeouts.Value {
+func nullTimeoutsValueNoUpdate() timeouts.Value {
 	return timeouts.Value{
 		Object: types.ObjectNull(map[string]attr.Type{
 			"create": types.StringType,
@@ -133,6 +123,22 @@ func namedRefsToNames(refs []client.NamedReference) []string {
 	return names
 }
 
+// namedRefsToListValue converts a slice of NamedReference to a types.List of
+// their Name values. Returns an empty list (not null) when refs is empty.
+func namedRefsToListValue(refs []client.NamedReference) types.List {
+	return stringsToListValue(namedRefsToNames(refs))
+}
+
+// stringsToListValue converts a []string to a types.List of string values.
+// Returns an empty list (not null) when the slice is empty.
+func stringsToListValue(values []string) types.List {
+	vals := make([]attr.Value, len(values))
+	for i, v := range values {
+		vals[i] = types.StringValue(v)
+	}
+	return types.ListValueMust(types.StringType, vals)
+}
+
 // stringSlicesEqual returns true if two string slices have the same elements in the same order.
 func stringSlicesEqual(a, b []string) bool {
 	if len(a) != len(b) {
@@ -146,56 +152,3 @@ func stringSlicesEqual(a, b []string) bool {
 	return true
 }
 
-// ---------- plan modifier helpers -------------------------------------------
-
-// int64UseStateForUnknown returns an Int64 plan modifier that preserves state value
-// when the planned value is unknown (equivalent to stringplanmodifier.UseStateForUnknown).
-func int64UseStateForUnknown() planmodifier.Int64 {
-	return &int64UseStateForUnknownModifier{}
-}
-
-type int64UseStateForUnknownModifier struct{}
-
-func (m *int64UseStateForUnknownModifier) Description(_ context.Context) string {
-	return "Use state value for unknown planned values."
-}
-
-func (m *int64UseStateForUnknownModifier) MarkdownDescription(_ context.Context) string {
-	return "Use state value for unknown planned values."
-}
-
-func (m *int64UseStateForUnknownModifier) PlanModifyInt64(_ context.Context, req planmodifier.Int64Request, resp *planmodifier.Int64Response) {
-	if !req.PlanValue.IsUnknown() {
-		return
-	}
-	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-		return
-	}
-	resp.PlanValue = req.StateValue
-}
-
-// float64UseStateForUnknown returns a Float64 plan modifier that preserves state value
-// when the planned value is unknown (equivalent to stringplanmodifier.UseStateForUnknown).
-func float64UseStateForUnknown() planmodifier.Float64 {
-	return &float64UseStateForUnknownModifier{}
-}
-
-type float64UseStateForUnknownModifier struct{}
-
-func (m *float64UseStateForUnknownModifier) Description(_ context.Context) string {
-	return "Use state value for unknown planned values."
-}
-
-func (m *float64UseStateForUnknownModifier) MarkdownDescription(_ context.Context) string {
-	return "Use state value for unknown planned values."
-}
-
-func (m *float64UseStateForUnknownModifier) PlanModifyFloat64(_ context.Context, req planmodifier.Float64Request, resp *planmodifier.Float64Response) {
-	if !req.PlanValue.IsUnknown() {
-		return
-	}
-	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-		return
-	}
-	resp.PlanValue = req.StateValue
-}

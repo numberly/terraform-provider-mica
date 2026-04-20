@@ -62,7 +62,6 @@ func (m useDefaultIfNullListModifier) PlanModifyList(_ context.Context, req plan
 	}
 }
 
-// Ensure tlsPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &tlsPolicyResource{}
 var _ resource.ResourceWithConfigure = &tlsPolicyResource{}
 var _ resource.ResourceWithImportState = &tlsPolicyResource{}
@@ -73,7 +72,6 @@ type tlsPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewTlsPolicyResource is the factory function registered in the provider.
 func NewTlsPolicyResource() resource.Resource {
 	return &tlsPolicyResource{}
 }
@@ -99,7 +97,6 @@ type tlsPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *tlsPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_tls_policy"
 }
@@ -218,7 +215,6 @@ func (r *tlsPolicyResource) Configure(_ context.Context, req resource.ConfigureR
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new TLS policy.
 func (r *tlsPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data tlsPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -243,13 +239,17 @@ func (r *tlsPolicyResource) Create(ctx context.Context, req resource.CreateReque
 		post.ClientCertificatesRequired = data.ClientCertificatesRequired.ValueBool()
 	}
 	if !data.DisabledTlsCiphers.IsNull() && !data.DisabledTlsCiphers.IsUnknown() {
-		post.DisabledTlsCiphers = listToStringSlice(ctx, data.DisabledTlsCiphers)
+		v, d := listToStrings(ctx, data.DisabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
+		post.DisabledTlsCiphers = v
 	}
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		post.Enabled = data.Enabled.ValueBool()
 	}
 	if !data.EnabledTlsCiphers.IsNull() && !data.EnabledTlsCiphers.IsUnknown() {
-		post.EnabledTlsCiphers = listToStringSlice(ctx, data.EnabledTlsCiphers)
+		v, d := listToStrings(ctx, data.EnabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
+		post.EnabledTlsCiphers = v
 	}
 	if !data.MinTlsVersion.IsNull() && !data.MinTlsVersion.IsUnknown() {
 		post.MinTlsVersion = data.MinTlsVersion.ValueString()
@@ -321,7 +321,9 @@ func (r *tlsPolicyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		})
 	}
 
-	wasDisabled := strings.Join(listToStringSlice(ctx, data.DisabledTlsCiphers), ",")
+	wasDisabledList, dDisabled := listToStrings(ctx, data.DisabledTlsCiphers)
+	resp.Diagnostics.Append(dDisabled...)
+	wasDisabled := strings.Join(wasDisabledList, ",")
 	nowDisabled := strings.Join(policy.DisabledTlsCiphers, ",")
 	if wasDisabled != nowDisabled {
 		tflog.Debug(ctx, "drift detected", map[string]any{
@@ -341,7 +343,9 @@ func (r *tlsPolicyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		})
 	}
 
-	wasEnabled := strings.Join(listToStringSlice(ctx, data.EnabledTlsCiphers), ",")
+	wasEnabledList, dEnabled := listToStrings(ctx, data.EnabledTlsCiphers)
+	resp.Diagnostics.Append(dEnabled...)
+	wasEnabled := strings.Join(wasEnabledList, ",")
 	nowEnabled := strings.Join(policy.EnabledTlsCiphers, ",")
 	if wasEnabled != nowEnabled {
 		tflog.Debug(ctx, "drift detected", map[string]any{
@@ -441,7 +445,8 @@ func (r *tlsPolicyResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if !plan.DisabledTlsCiphers.Equal(state.DisabledTlsCiphers) {
-		v := listToStringSlice(ctx, plan.DisabledTlsCiphers)
+		v, d := listToStrings(ctx, plan.DisabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
 		patch.DisabledTlsCiphers = &v
 	}
 
@@ -451,7 +456,8 @@ func (r *tlsPolicyResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if !plan.EnabledTlsCiphers.Equal(state.EnabledTlsCiphers) {
-		v := listToStringSlice(ctx, plan.EnabledTlsCiphers)
+		v, d := listToStrings(ctx, plan.EnabledTlsCiphers)
+		resp.Diagnostics.Append(d...)
 		patch.EnabledTlsCiphers = &v
 	}
 
@@ -511,7 +517,6 @@ func (r *tlsPolicyResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-// ImportState imports an existing TLS policy by name.
 func (r *tlsPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	policy, err := r.client.GetTlsPolicy(ctx, name)
@@ -577,13 +582,3 @@ func mapTlsPolicyToModel(policy *client.TlsPolicy, data *tlsPolicyModel) {
 	data.VerifyClientCertificateTrust = types.BoolValue(policy.VerifyClientCertificateTrust)
 }
 
-// listToStringSlice converts a types.List to a []string.
-// Returns an empty slice if the list is null or unknown.
-func listToStringSlice(ctx context.Context, list types.List) []string {
-	if list.IsNull() || list.IsUnknown() {
-		return []string{}
-	}
-	var elems []string
-	_ = list.ElementsAs(ctx, &elems, false)
-	return elems
-}

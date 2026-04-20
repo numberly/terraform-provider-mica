@@ -108,7 +108,7 @@ func lifecycleRulePlanWith(t *testing.T, bucketName, ruleID, prefix string, enab
 // ---- tests ------------------------------------------------------------------
 
 // TestLifecycleRuleResource_Create verifies POST creates a rule, state populated with all fields.
-func TestLifecycleRuleResource_Create(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -154,7 +154,7 @@ func TestLifecycleRuleResource_Create(t *testing.T) {
 }
 
 // TestLifecycleRuleResource_Read verifies GET retrieves rule by bucket_name + rule_id.
-func TestLifecycleRuleResource_Read(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -197,7 +197,7 @@ func TestLifecycleRuleResource_Read(t *testing.T) {
 }
 
 // TestLifecycleRuleResource_Read_NotFound verifies GET returns 404, resource removed from state.
-func TestLifecycleRuleResource_Read_NotFound(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -232,7 +232,7 @@ func TestLifecycleRuleResource_Read_NotFound(t *testing.T) {
 }
 
 // TestLifecycleRuleResource_Update verifies PATCH sends only changed fields.
-func TestLifecycleRuleResource_Update(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -275,7 +275,7 @@ func TestLifecycleRuleResource_Update(t *testing.T) {
 }
 
 // TestLifecycleRuleResource_Delete verifies DELETE by bucket_name + rule_id succeeds.
-func TestLifecycleRuleResource_Delete(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -309,7 +309,7 @@ func TestLifecycleRuleResource_Delete(t *testing.T) {
 }
 
 // TestLifecycleRuleResource_Delete_NotFound verifies DELETE on already-deleted rule succeeds silently.
-func TestLifecycleRuleResource_Delete_NotFound(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Delete_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -339,7 +339,7 @@ func TestLifecycleRuleResource_Delete_NotFound(t *testing.T) {
 }
 
 // TestLifecycleRuleResource_Import verifies Import by "bucketName/ruleId" populates all state fields.
-func TestLifecycleRuleResource_Import(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterLifecycleRuleHandlers(ms.Mux)
@@ -393,7 +393,7 @@ func TestLifecycleRuleResource_Import(t *testing.T) {
 }
 
 // TestLifecycleRuleResource_Schema verifies schema properties.
-func TestLifecycleRuleResource_Schema(t *testing.T) {
+func TestUnit_LifecycleRuleResource_Schema(t *testing.T) {
 	s := lifecycleRuleResourceSchema(t).Schema
 
 	// bucket_name: Required + RequiresReplace.

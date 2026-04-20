@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -17,7 +18,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccountExportResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreAccountExportResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccountExportResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccountExportResource{}
@@ -28,7 +28,6 @@ type objectStoreAccountExportResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreAccountExportResource is the factory function registered in the provider.
 func NewObjectStoreAccountExportResource() resource.Resource {
 	return &objectStoreAccountExportResource{}
 }
@@ -48,7 +47,6 @@ type objectStoreAccountExportModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreAccountExportResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_account_export"
 }
@@ -134,7 +132,6 @@ func (r *objectStoreAccountExportResource) Configure(_ context.Context, req reso
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store account export.
 func (r *objectStoreAccountExportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreAccountExportModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -179,7 +176,6 @@ func (r *objectStoreAccountExportResource) Create(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreAccountExportResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreAccountExportModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -243,7 +239,7 @@ func (r *objectStoreAccountExportResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	r.readIntoState(ctx, state.Name.ValueString(), &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, state.Name.ValueString(), &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -307,14 +303,18 @@ func (r *objectStoreAccountExportResource) ImportState(ctx context.Context, req 
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreAccountExport and maps the result into the provided model.
-func (r *objectStoreAccountExportResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountExportModel, diags DiagnosticReporter) {
+func (r *objectStoreAccountExportResource) readIntoState(ctx context.Context, name string, data *objectStoreAccountExportModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	export, err := r.client.GetObjectStoreAccountExport(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store account export after write", err.Error())
-		return
+		return diags
 	}
 	mapObjectStoreAccountExportToModel(export, data)
+	return diags
 }
+
 
 // mapObjectStoreAccountExportToModel maps a client.ObjectStoreAccountExport to an objectStoreAccountExportModel.
 // It preserves user-managed fields (Timeouts).

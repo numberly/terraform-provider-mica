@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -18,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure snapshotPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &snapshotPolicyResource{}
 var _ resource.ResourceWithConfigure = &snapshotPolicyResource{}
 var _ resource.ResourceWithImportState = &snapshotPolicyResource{}
@@ -29,7 +29,6 @@ type snapshotPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSnapshotPolicyResource is the factory function registered in the provider.
 func NewSnapshotPolicyResource() resource.Resource {
 	return &snapshotPolicyResource{}
 }
@@ -49,7 +48,6 @@ type snapshotPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *snapshotPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_snapshot_policy"
 }
@@ -136,7 +134,6 @@ func (r *snapshotPolicyResource) Configure(_ context.Context, req resource.Confi
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new snapshot policy.
 func (r *snapshotPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data snapshotPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -164,7 +161,7 @@ func (r *snapshotPolicyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -172,7 +169,6 @@ func (r *snapshotPolicyResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *snapshotPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data snapshotPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -202,11 +198,11 @@ func (r *snapshotPolicyResource) Read(ctx context.Context, req resource.ReadRequ
 	// Drift detection on enabled field.
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
-			tflog.Info(ctx, "drift detected on snapshot policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on snapshot policy", map[string]any{
 				"resource":    name,
 				"field":       "enabled",
-				"state_value": data.Enabled.ValueBool(),
-				"api_value":   policy.Enabled,
+				"was":         data.Enabled.ValueBool(),
+				"now":           policy.Enabled,
 			})
 		}
 	}
@@ -248,7 +244,7 @@ func (r *snapshotPolicyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -298,7 +294,6 @@ func (r *snapshotPolicyResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// ImportState imports an existing snapshot policy by name.
 func (r *snapshotPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -308,7 +303,7 @@ func (r *snapshotPolicyResource) ImportState(ctx context.Context, req resource.I
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -319,14 +314,18 @@ func (r *snapshotPolicyResource) ImportState(ctx context.Context, req resource.I
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSnapshotPolicy and maps the result into the provided model.
-func (r *snapshotPolicyResource) readIntoState(ctx context.Context, name string, data *snapshotPolicyModel, diags DiagnosticReporter) {
+func (r *snapshotPolicyResource) readIntoState(ctx context.Context, name string, data *snapshotPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetSnapshotPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading snapshot policy after write", err.Error())
-		return
+		return diags
 	}
 	mapSnapshotPolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapSnapshotPolicyToModel maps a client.SnapshotPolicy to a snapshotPolicyModel.
 // It preserves user-managed fields (Timeouts).

@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arrayNtpDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &arrayNtpDataSource{}
 var _ datasource.DataSourceWithConfigure = &arrayNtpDataSource{}
 
@@ -20,7 +19,6 @@ type arrayNtpDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArrayNtpDataSource is the factory function registered in the provider.
 func NewArrayNtpDataSource() datasource.DataSource {
 	return &arrayNtpDataSource{}
 }
@@ -35,7 +33,6 @@ type arrayNtpDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *arrayNtpDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_ntp"
 }

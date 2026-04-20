@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
@@ -17,7 +18,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure logTargetObjectStoreResource satisfies the resource interfaces.
 var _ resource.Resource = &logTargetObjectStoreResource{}
 var _ resource.ResourceWithConfigure = &logTargetObjectStoreResource{}
 var _ resource.ResourceWithImportState = &logTargetObjectStoreResource{}
@@ -28,7 +28,6 @@ type logTargetObjectStoreResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewLogTargetObjectStoreResource is the factory function registered in the provider.
 func NewLogTargetObjectStoreResource() resource.Resource {
 	return &logTargetObjectStoreResource{}
 }
@@ -47,7 +46,6 @@ type logTargetObjectStoreModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *logTargetObjectStoreResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_log_target_object_store"
 }
@@ -119,7 +117,6 @@ func (r *logTargetObjectStoreResource) Configure(_ context.Context, req resource
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new log target object store.
 func (r *logTargetObjectStoreResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data logTargetObjectStoreModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -156,7 +153,6 @@ func (r *logTargetObjectStoreResource) Create(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *logTargetObjectStoreResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data logTargetObjectStoreModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -270,7 +266,7 @@ func (r *logTargetObjectStoreResource) Update(ctx context.Context, req resource.
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -304,7 +300,6 @@ func (r *logTargetObjectStoreResource) Delete(ctx context.Context, req resource.
 	}
 }
 
-// ImportState imports an existing log target object store by name.
 func (r *logTargetObjectStoreResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -312,7 +307,7 @@ func (r *logTargetObjectStoreResource) ImportState(ctx context.Context, req reso
 	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -323,14 +318,18 @@ func (r *logTargetObjectStoreResource) ImportState(ctx context.Context, req reso
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetLogTargetObjectStore and maps the result into the provided model.
-func (r *logTargetObjectStoreResource) readIntoState(ctx context.Context, name string, data *logTargetObjectStoreModel, diags DiagnosticReporter) {
+func (r *logTargetObjectStoreResource) readIntoState(ctx context.Context, name string, data *logTargetObjectStoreModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	item, err := r.client.GetLogTargetObjectStore(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading log target object store after write", err.Error())
-		return
+		return diags
 	}
 	mapLogTargetObjectStoreToModel(item, data)
+	return diags
 }
+
 
 // mapLogTargetObjectStoreToModel converts a client.LogTargetObjectStore to the Terraform model.
 // It preserves user-managed fields (Timeouts).

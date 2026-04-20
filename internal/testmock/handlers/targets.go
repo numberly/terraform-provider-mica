@@ -34,7 +34,6 @@ func (s *targetStore) Seed(t *client.Target) {
 	s.byName[t.Name] = t
 }
 
-// handle dispatches target requests by HTTP method.
 func (s *targetStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

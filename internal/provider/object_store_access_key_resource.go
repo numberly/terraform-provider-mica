@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccessKeyResource satisfies the resource interfaces.
 // Intentionally does NOT implement ResourceWithImportState — secret is unavailable after creation.
 var _ resource.Resource = &objectStoreAccessKeyResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccessKeyResource{}
@@ -27,8 +27,7 @@ type objectStoreAccessKeyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewAccessKeyResource is the factory function registered in the provider.
-func NewAccessKeyResource() resource.Resource {
+func NewObjectStoreAccessKeyResource() resource.Resource {
 	return &objectStoreAccessKeyResource{}
 }
 
@@ -48,7 +47,6 @@ type objectStoreAccessKeyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreAccessKeyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_access_key"
 }
@@ -105,7 +103,7 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 				Computed:    true,
 				Description: "Unix timestamp (milliseconds) when the access key was created.",
 				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"enabled": schema.BoolAttribute{
@@ -149,7 +147,6 @@ func (r *objectStoreAccessKeyResource) Configure(_ context.Context, req resource
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store access key.
 // The secret_access_key is returned only here — it is a write-only attribute and will
 // not be persisted in Terraform state. Operators must capture it via a Terraform output.
 func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -222,7 +219,6 @@ func (r *objectStoreAccessKeyResource) Create(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 // SecretAccessKey is intentionally not set — it is a write-only attribute and is never
 // returned by GET. The framework ensures write-only values are always null in state.
 func (r *objectStoreAccessKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

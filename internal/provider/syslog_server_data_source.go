@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure syslogServerDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &syslogServerDataSource{}
 var _ datasource.DataSourceWithConfigure = &syslogServerDataSource{}
 
@@ -21,7 +20,6 @@ type syslogServerDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSyslogServerDataSource is the factory function registered in the provider.
 func NewSyslogServerDataSource() datasource.DataSource {
 	return &syslogServerDataSource{}
 }
@@ -39,7 +37,6 @@ type syslogServerDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *syslogServerDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_syslog_server"
 }

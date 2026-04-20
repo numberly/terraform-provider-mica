@@ -66,8 +66,18 @@ func (c *FlashBladeClient) DeleteXxx(ctx context.Context, name string) error
 - **GET**: Use `getOneByName[T]` generic helper — never hand-roll list+filter logic.
 - **POST/PATCH/DELETE**: Name goes via `?names=` query param with `url.QueryEscape(name)`.
 - **Endpoint path**: No API version prefix — `"/targets?names=..."` not `"/api/2.22/targets?names=..."`. Version is added by `client.do()`.
-- **Error wrapping**: Use `fmt.Errorf("FuncName: %w", err)`.
+- **Error wrapping**: Return the underlying `APIError` directly — it is self-describing (HTTP status + message). Do not wrap with `fmt.Errorf("FuncName: %w", err)` in CRUD wrappers unless extra context is genuinely added.
 - **Context**: Always propagate caller `ctx` — never use `context.Background()`.
+
+### List method shapes
+
+`ListXxx` uses one of three canonical shapes — pick by what the API supports:
+
+1. **Opts struct** (`ListXxxOpts`): the API exposes filters/pagination for the collection. Use for top-level resources where callers may need `FilterID`, `ContinuationToken`, etc. Example: `ListBuckets(ctx, ListBucketsOpts{...})`.
+2. **Plain string parent key**: the endpoint is a sub-collection scoped to exactly one parent. The first positional argument is the parent name. Example: `ListNfsExportPolicyRules(ctx, policyName)`.
+3. **No arguments** beyond `ctx`: the collection is a global, flat set with no filter surface. Example: `ListSubnets(ctx)`.
+
+Do not invent a fourth shape. If a new filter is needed on a shape-3 method, migrate it to shape 1 with an `Opts` struct.
 
 Reference: `internal/client/remote_credentials.go`, `internal/client/targets.go`.
 
@@ -448,7 +458,7 @@ func nullXxxDSConfig() map[string]tftypes.Value
 
 ### Coverage rules
 
-- **Total test count MUST NOT decrease.** Current baseline: **818 tests**.
+- **Total test count MUST NOT decrease.** Current baseline: **752 tests**.
 - Every new resource adds at minimum **8 tests** (4 client + 3 resource + 1 data source).
 - Every state upgrader adds at minimum **1 test**.
 - Run `make test` and `make lint` before every commit. Both must be clean.

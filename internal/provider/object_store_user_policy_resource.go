@@ -18,7 +18,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreUserPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreUserPolicyResource{}
 var _ resource.ResourceWithConfigure = &objectStoreUserPolicyResource{}
 var _ resource.ResourceWithImportState = &objectStoreUserPolicyResource{}
@@ -28,7 +27,6 @@ type objectStoreUserPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreUserPolicyResource is the factory function registered in the provider.
 func NewObjectStoreUserPolicyResource() resource.Resource {
 	return &objectStoreUserPolicyResource{}
 }
@@ -44,7 +42,6 @@ type objectStoreUserPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreUserPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_user_policy"
 }
@@ -177,7 +174,6 @@ func (r *objectStoreUserPolicyResource) Update(_ context.Context, _ resource.Upd
 	)
 }
 
-// Delete removes the association between an object store user and an access policy.
 func (r *objectStoreUserPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data objectStoreUserPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

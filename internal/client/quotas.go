@@ -26,20 +26,7 @@ func (c *FlashBladeClient) ListQuotaUsers(ctx context.Context, fileSystemName st
 	params := url.Values{}
 	params.Set("file_system_names", fileSystemName)
 
-	var all []QuotaUser
-	for {
-		path := "/quotas/users?" + params.Encode()
-		var resp ListResponse[QuotaUser]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[QuotaUser](c, ctx, "/quotas/users", params)
 }
 
 // PostQuotaUser creates a new user quota on a file system.
@@ -78,20 +65,7 @@ func (c *FlashBladeClient) ListQuotaGroups(ctx context.Context, fileSystemName s
 	params := url.Values{}
 	params.Set("file_system_names", fileSystemName)
 
-	var all []QuotaGroup
-	for {
-		path := "/quotas/groups?" + params.Encode()
-		var resp ListResponse[QuotaGroup]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[QuotaGroup](c, ctx, "/quotas/groups", params)
 }
 
 // PostQuotaGroup creates a new group quota on a file system.

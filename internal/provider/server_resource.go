@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -18,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure serverResource satisfies the resource interfaces.
 var _ resource.Resource = &serverResource{}
 var _ resource.ResourceWithConfigure = &serverResource{}
 var _ resource.ResourceWithImportState = &serverResource{}
@@ -29,7 +29,6 @@ type serverResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewServerResource is the factory function registered in the provider.
 func NewServerResource() resource.Resource {
 	return &serverResource{}
 }
@@ -72,7 +71,6 @@ type serverV1StateModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *serverResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_server"
 }
@@ -101,7 +99,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: "Unix timestamp (milliseconds) when the server was created.",
 				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"dns": schema.ListAttribute{
@@ -288,7 +286,6 @@ func (r *serverResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new server.
 func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data serverResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -317,7 +314,8 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &data)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -325,7 +323,6 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data serverResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -352,7 +349,8 @@ func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &data)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -389,7 +387,8 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &plan)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &plan, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -431,7 +430,6 @@ func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-// ImportState imports an existing server by name.
 func (r *serverResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -453,7 +451,8 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 		return
 	}
 
-	mapServerToModel(ctx, r.client, srv, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapServerToModel(ctx, srv, &data)...)
+	enrichServerNetworkInterfaces(ctx, r.client, &data, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -463,15 +462,17 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 
 // ---------- helpers ---------------------------------------------------------
 
-// mapServerToModel maps a client.Server to a serverResourceModel.
-// It calls ListNetworkInterfaces to enrich the model with attached VIP names.
-// It preserves user-managed fields (Timeouts, CascadeDelete).
-func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *client.Server, data *serverResourceModel, diags *diag.Diagnostics) {
+// mapServerToModel is a pure transformer: it maps a client.Server to a
+// serverResourceModel without performing any network I/O. Call
+// enrichServerNetworkInterfaces separately to populate NetworkInterfaces
+// from ListNetworkInterfaces. Preserves user-managed fields (Timeouts,
+// CascadeDelete).
+func mapServerToModel(ctx context.Context, srv *client.Server, data *serverResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.ID = types.StringValue(srv.ID)
 	data.Name = types.StringValue(srv.Name)
 	data.Created = types.Int64Value(srv.Created)
 
-	// Map DNS names (flat list of strings).
 	if len(srv.DNS) > 0 {
 		names := make([]string, len(srv.DNS))
 		for i, d := range srv.DNS {
@@ -480,14 +481,13 @@ func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *clie
 		dnsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
 		diags.Append(listDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.DNS = dnsList
 	} else {
 		data.DNS = types.ListNull(types.StringType)
 	}
 
-	// Map directory_services names (computed, read-only).
 	if len(srv.DirectoryServices) > 0 {
 		names := make([]string, len(srv.DirectoryServices))
 		for i, ds := range srv.DirectoryServices {
@@ -496,16 +496,13 @@ func mapServerToModel(ctx context.Context, c *client.FlashBladeClient, srv *clie
 		dsList, listDiags := types.ListValueFrom(ctx, types.StringType, names)
 		diags.Append(listDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.DirectoryServices = dsList
 	} else {
 		data.DirectoryServices = types.ListNull(types.StringType)
 	}
-
-	// Enrich network_interfaces by discovering attached VIPs.
-	// VIP enrichment is optional — errors are warnings only to avoid blocking CRUD.
-	enrichServerNetworkInterfaces(ctx, c, data, diags)
+	return diags
 }
 
 // enrichServerNetworkInterfaces calls ListNetworkInterfaces and filters by server name.

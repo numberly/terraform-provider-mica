@@ -39,8 +39,8 @@ func bapResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildBAPType returns the tftypes.Object for the bucket access policy resource schema.
-func buildBAPType() tftypes.Object {
+// buildBucketAccessPolicyType returns the tftypes.Object for the bucket access policy resource schema.
+func buildBucketAccessPolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -76,7 +76,7 @@ func bapPlanWith(t *testing.T, bucketName string) tfsdk.Plan {
 	cfg := nullBAPConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, bucketName)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildBAPType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAccessPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -84,7 +84,7 @@ func bapPlanWith(t *testing.T, bucketName string) tfsdk.Plan {
 // ---- tests ------------------------------------------------------------------
 
 // TestBucketAccessPolicyResource_Metadata verifies type name is "flashblade_bucket_access_policy".
-func TestBucketAccessPolicyResource_Metadata(t *testing.T) {
+func TestUnit_BucketAccessPolicyResource_Metadata(t *testing.T) {
 	r := &bucketAccessPolicyResource{}
 	var resp resource.MetadataResponse
 	r.Metadata(context.Background(), resource.MetadataRequest{}, &resp)
@@ -94,7 +94,7 @@ func TestBucketAccessPolicyResource_Metadata(t *testing.T) {
 }
 
 // TestBucketAccessPolicyResource_Schema verifies schema properties.
-func TestBucketAccessPolicyResource_Schema(t *testing.T) {
+func TestUnit_BucketAccessPolicyResource_Schema(t *testing.T) {
 	s := bapResourceSchema(t).Schema
 
 	// bucket_name: Required + RequiresReplace.
@@ -129,7 +129,7 @@ func TestBucketAccessPolicyResource_Schema(t *testing.T) {
 }
 
 // TestBucketAccessPolicyResource_Create verifies POST creates a policy.
-func TestBucketAccessPolicyResource_Create(t *testing.T) {
+func TestUnit_BucketAccessPolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -139,7 +139,7 @@ func TestBucketAccessPolicyResource_Create(t *testing.T) {
 
 	plan := bapPlanWith(t, "test-bucket")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -165,7 +165,7 @@ func TestBucketAccessPolicyResource_Create(t *testing.T) {
 }
 
 // TestBucketAccessPolicyResource_Read verifies GET retrieves policy by bucket name.
-func TestBucketAccessPolicyResource_Read(t *testing.T) {
+func TestUnit_BucketAccessPolicyResource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -176,7 +176,7 @@ func TestBucketAccessPolicyResource_Read(t *testing.T) {
 	// Create first.
 	plan := bapPlanWith(t, "read-bucket")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -205,7 +205,7 @@ func TestBucketAccessPolicyResource_Read(t *testing.T) {
 }
 
 // TestBucketAccessPolicyResource_ReadNotFound verifies Read removes resource when not found.
-func TestBucketAccessPolicyResource_ReadNotFound(t *testing.T) {
+func TestUnit_BucketAccessPolicyResource_ReadNotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -220,7 +220,7 @@ func TestBucketAccessPolicyResource_ReadNotFound(t *testing.T) {
 	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, true)
 
 	state := tfsdk.State{
-		Raw:    tftypes.NewValue(buildBAPType(), cfg),
+		Raw:    tftypes.NewValue(buildBucketAccessPolicyType(), cfg),
 		Schema: s,
 	}
 
@@ -238,7 +238,7 @@ func TestBucketAccessPolicyResource_ReadNotFound(t *testing.T) {
 }
 
 // TestBucketAccessPolicyResource_Delete verifies DELETE succeeds.
-func TestBucketAccessPolicyResource_Delete(t *testing.T) {
+func TestUnit_BucketAccessPolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -249,7 +249,7 @@ func TestBucketAccessPolicyResource_Delete(t *testing.T) {
 	// Create.
 	plan := bapPlanWith(t, "del-bucket")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -272,7 +272,7 @@ func TestBucketAccessPolicyResource_Delete(t *testing.T) {
 }
 
 // TestBucketAccessPolicyResource_ImportState verifies import by bucket name.
-func TestBucketAccessPolicyResource_ImportState(t *testing.T) {
+func TestUnit_BucketAccessPolicyResource_ImportState(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -291,7 +291,7 @@ func TestBucketAccessPolicyResource_ImportState(t *testing.T) {
 	s := bapResourceSchema(t).Schema
 
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildBAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketAccessPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "imp-bucket"}, importResp)
 

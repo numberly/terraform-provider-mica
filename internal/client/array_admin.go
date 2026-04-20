@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -26,11 +25,7 @@ func (c *FlashBladeClient) PatchArrayDns(ctx context.Context, name string, body 
 
 // DeleteArrayDns deletes a DNS configuration entry by name.
 func (c *FlashBladeClient) DeleteArrayDns(ctx context.Context, name string) error {
-	path := "/dns?names=" + url.QueryEscape(name)
-	if err := c.delete(ctx, path); err != nil {
-		return fmt.Errorf("DeleteArrayDns: %w", err)
-	}
-	return nil
+	return c.delete(ctx, "/dns?names="+url.QueryEscape(name))
 }
 
 // GetArrayNtp retrieves the NTP servers configured on the array.
@@ -70,8 +65,8 @@ func (c *FlashBladeClient) PatchSmtpServer(ctx context.Context, body SmtpServerP
 	return patchOne[SmtpServerPatch, SmtpServer](c, ctx, "/smtp-servers", body, "PatchSmtpServer")
 }
 
-// GetAlertWatchers returns all configured alert watchers (email recipients).
-func (c *FlashBladeClient) GetAlertWatchers(ctx context.Context) ([]AlertWatcher, error) {
+// ListAlertWatchers returns all configured alert watchers (email recipients).
+func (c *FlashBladeClient) ListAlertWatchers(ctx context.Context) ([]AlertWatcher, error) {
 	var resp ListResponse[AlertWatcher]
 	if err := c.get(ctx, "/alert-watchers", &resp); err != nil {
 		return nil, err

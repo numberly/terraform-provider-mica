@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure targetResource satisfies the resource interfaces.
 var _ resource.Resource = &targetResource{}
 var _ resource.ResourceWithConfigure = &targetResource{}
 var _ resource.ResourceWithImportState = &targetResource{}
@@ -27,7 +26,6 @@ type targetResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewTargetResource is the factory function registered in the provider.
 func NewTargetResource() resource.Resource {
 	return &targetResource{}
 }
@@ -47,7 +45,6 @@ type targetModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *targetResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_target"
 }
@@ -124,7 +121,6 @@ func (r *targetResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new replication target.
 func (r *targetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data targetModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -291,7 +287,6 @@ func (r *targetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-// ImportState imports an existing target by name.
 func (r *targetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	tgt, err := r.client.GetTarget(ctx, name)

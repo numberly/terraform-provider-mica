@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure bucketAccessPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &bucketAccessPolicyResource{}
 var _ resource.ResourceWithConfigure = &bucketAccessPolicyResource{}
 var _ resource.ResourceWithImportState = &bucketAccessPolicyResource{}
@@ -26,7 +25,6 @@ type bucketAccessPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewBucketAccessPolicyResource is the factory function registered in the provider.
 func NewBucketAccessPolicyResource() resource.Resource {
 	return &bucketAccessPolicyResource{}
 }
@@ -43,7 +41,6 @@ type bucketAccessPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *bucketAccessPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_bucket_access_policy"
 }
@@ -99,7 +96,6 @@ func (r *bucketAccessPolicyResource) Configure(_ context.Context, req resource.C
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new bucket access policy.
 func (r *bucketAccessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data bucketAccessPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -127,7 +123,6 @@ func (r *bucketAccessPolicyResource) Create(ctx context.Context, req resource.Cr
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *bucketAccessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data bucketAccessPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

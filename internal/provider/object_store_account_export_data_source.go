@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccountExportDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &objectStoreAccountExportDataSource{}
 var _ datasource.DataSourceWithConfigure = &objectStoreAccountExportDataSource{}
 
@@ -20,7 +19,6 @@ type objectStoreAccountExportDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreAccountExportDataSource is the factory function registered in the provider.
 func NewObjectStoreAccountExportDataSource() datasource.DataSource {
 	return &objectStoreAccountExportDataSource{}
 }
@@ -39,7 +37,6 @@ type objectStoreAccountExportDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *objectStoreAccountExportDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_account_export"
 }

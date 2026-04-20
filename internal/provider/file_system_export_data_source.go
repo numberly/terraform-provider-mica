@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure fileSystemExportDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &fileSystemExportDataSource{}
 var _ datasource.DataSourceWithConfigure = &fileSystemExportDataSource{}
 
@@ -20,7 +19,6 @@ type fileSystemExportDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewFileSystemExportDataSource is the factory function registered in the provider.
 func NewFileSystemExportDataSource() datasource.DataSource {
 	return &fileSystemExportDataSource{}
 }
@@ -42,7 +40,6 @@ type fileSystemExportDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *fileSystemExportDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_file_system_export"
 }

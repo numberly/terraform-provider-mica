@@ -40,8 +40,8 @@ func smbPolicyResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildSMBPolicyType returns the tftypes.Object for the SMB share policy resource.
-func buildSMBPolicyType() tftypes.Object {
+// buildSmbSharePolicyType returns the tftypes.Object for the SMB share policy resource.
+func buildSmbSharePolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -83,7 +83,7 @@ func smbPolicyPlanWithName(t *testing.T, name string) tfsdk.Plan {
 	cfg := nullSMBPolicyConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBPolicyType(), cfg),
+		Raw:    tftypes.NewValue(buildSmbSharePolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -96,7 +96,7 @@ func smbPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tf
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, enabled)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildSMBPolicyType(), cfg),
+		Raw:    tftypes.NewValue(buildSmbSharePolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -104,7 +104,7 @@ func smbPolicyPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tf
 // ---- tests ------------------------------------------------------------------
 
 // TestSmbSharePolicyResource_Create verifies Create populates ID, name, and enabled.
-func TestSmbSharePolicyResource_Create(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -114,7 +114,7 @@ func TestSmbSharePolicyResource_Create(t *testing.T) {
 
 	plan := smbPolicyPlanWithNameAndEnabled(t, "test-smb-policy", true)
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -140,7 +140,7 @@ func TestSmbSharePolicyResource_Create(t *testing.T) {
 }
 
 // TestSmbSharePolicyResource_Update verifies PATCH updates enabled flag and supports rename.
-func TestSmbSharePolicyResource_Update(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -151,7 +151,7 @@ func TestSmbSharePolicyResource_Update(t *testing.T) {
 	// Create first.
 	createPlan := smbPolicyPlanWithNameAndEnabled(t, "update-smb-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -161,7 +161,7 @@ func TestSmbSharePolicyResource_Update(t *testing.T) {
 	// Update enabled=false.
 	newPlan := smbPolicyPlanWithNameAndEnabled(t, "update-smb-policy", false)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  newPlan,
@@ -183,7 +183,7 @@ func TestSmbSharePolicyResource_Update(t *testing.T) {
 	// Now rename the policy in-place.
 	renamePlan := smbPolicyPlanWithNameAndEnabled(t, "update-smb-policy-renamed", false)
 	renameResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  renamePlan,
@@ -204,7 +204,7 @@ func TestSmbSharePolicyResource_Update(t *testing.T) {
 }
 
 // TestSmbSharePolicyResource_Delete verifies DELETE removes the policy.
-func TestSmbSharePolicyResource_Delete(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -217,7 +217,7 @@ func TestSmbSharePolicyResource_Delete(t *testing.T) {
 	// Create first.
 	plan := smbPolicyPlanWithName(t, "delete-smb-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -239,7 +239,7 @@ func TestSmbSharePolicyResource_Delete(t *testing.T) {
 }
 
 // TestSmbSharePolicyResource_Import verifies ImportState populates all attributes.
-func TestSmbSharePolicyResource_Import(t *testing.T) {
+func TestUnit_SmbSharePolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -250,7 +250,7 @@ func TestSmbSharePolicyResource_Import(t *testing.T) {
 	// Create first.
 	plan := smbPolicyPlanWithName(t, "import-smb-policy")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -259,7 +259,7 @@ func TestSmbSharePolicyResource_Import(t *testing.T) {
 
 	// Import by name.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "import-smb-policy"}, importResp)
 
@@ -306,8 +306,8 @@ func smbPolicyDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildSMBPolicyDSType returns the tftypes.Object for the SMB share policy data source.
-func buildSMBPolicyDSType() tftypes.Object {
+// buildSmbSharePolicyDSType returns the tftypes.Object for the SMB share policy data source.
+func buildSmbSharePolicyDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":          tftypes.String,
 		"name":        tftypes.String,
@@ -329,7 +329,7 @@ func nullSMBPolicyDSConfig() map[string]tftypes.Value {
 }
 
 // TestSmbSharePolicyDataSource verifies data source reads policy by name and returns all attributes.
-func TestSmbSharePolicyDataSource(t *testing.T) {
+func TestUnit_SmbSharePolicyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -359,10 +359,10 @@ func TestSmbSharePolicyDataSource(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-smb-test-policy")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyDSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildSMBPolicyDSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildSmbSharePolicyDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if readResp.Diagnostics.HasError() {
@@ -386,7 +386,7 @@ func TestSmbSharePolicyDataSource(t *testing.T) {
 }
 
 // TestUnit_SmbSharePolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_SmbSharePolicy_Lifecycle(t *testing.T) {
+func TestUnit_Unit_SmbSharePolicy_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -398,7 +398,7 @@ func TestUnit_SmbSharePolicy_Lifecycle(t *testing.T) {
 	// Step 1: Create.
 	createPlan := smbPolicyPlanWithNameAndEnabled(t, "lifecycle-smb-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -429,7 +429,7 @@ func TestUnit_SmbSharePolicy_Lifecycle(t *testing.T) {
 	// Step 3: Update enabled=false.
 	updatePlan := smbPolicyPlanWithNameAndEnabled(t, "lifecycle-smb-policy", false)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -473,7 +473,7 @@ func TestUnit_SmbSharePolicy_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_SmbSharePolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterSmbSharePolicyHandlers(ms.Mux)
@@ -484,7 +484,7 @@ func TestUnit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := smbPolicyPlanWithNameAndEnabled(t, "idempotent-smb-policy", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -497,7 +497,7 @@ func TestUnit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
 
 	// ImportState.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildSMBPolicyType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildSmbSharePolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-smb-policy"}, importResp)
 	if importResp.Diagnostics.HasError() {
@@ -529,7 +529,7 @@ func TestUnit_SmbSharePolicy_ImportIdempotency(t *testing.T) {
 
 // TestUnit_SMBPolicy_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the smb_share_policy resource schema.
-func TestUnit_SMBPolicy_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_SMBPolicy_PlanModifiers(t *testing.T) {
 	s := smbPolicyResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

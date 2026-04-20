@@ -34,7 +34,6 @@ func (s *certificateStore) Seed(item *client.Certificate) {
 	s.byName[item.Name] = item
 }
 
-// handle dispatches certificate requests by HTTP method.
 func (s *certificateStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

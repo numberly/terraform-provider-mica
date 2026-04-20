@@ -95,7 +95,7 @@ func quotaUserPlan(t *testing.T, fsName, uid string, quota int64) tfsdk.Plan {
 // ---- tests ------------------------------------------------------------------
 
 // TestQuotaUserResource_Create verifies Create populates ID and quota.
-func TestQuotaUserResource_Create(t *testing.T) {
+func TestUnit_QuotaUserResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -134,7 +134,7 @@ func TestQuotaUserResource_Create(t *testing.T) {
 }
 
 // TestQuotaUserResource_Update verifies PATCH updates the quota limit.
-func TestQuotaUserResource_Update(t *testing.T) {
+func TestUnit_QuotaUserResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -176,7 +176,7 @@ func TestQuotaUserResource_Update(t *testing.T) {
 }
 
 // TestQuotaUserResource_Delete verifies Delete removes the quota.
-func TestQuotaUserResource_Delete(t *testing.T) {
+func TestUnit_QuotaUserResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -209,7 +209,7 @@ func TestQuotaUserResource_Delete(t *testing.T) {
 }
 
 // TestQuotaUserResource_Import verifies ImportState populates all attributes from composite ID.
-func TestQuotaUserResource_Import(t *testing.T) {
+func TestUnit_QuotaUserResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -310,7 +310,7 @@ func nullQuotaUserDSConfig() map[string]tftypes.Value {
 }
 
 // TestQuotaUserDataSource verifies data source reads quota by file_system_name+uid and returns all attributes.
-func TestQuotaUserDataSource(t *testing.T) {
+func TestUnit_QuotaUserDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -368,7 +368,7 @@ func TestQuotaUserDataSource(t *testing.T) {
 }
 
 // TestUnit_QuotaUser_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_QuotaUser_Lifecycle(t *testing.T) {
+func TestUnit_Unit_QuotaUser_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -454,7 +454,7 @@ func TestUnit_QuotaUser_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_QuotaUser_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_QuotaUser_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_QuotaUser_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -510,7 +510,7 @@ func TestUnit_QuotaUser_ImportIdempotency(t *testing.T) {
 
 // TestUnit_QuotaUser_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the quota_user resource schema.
-func TestUnit_QuotaUser_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_QuotaUser_PlanModifiers(t *testing.T) {
 	s := quotaUserResourceSchema(t).Schema
 
 	// id — UseStateForUnknown
@@ -552,7 +552,7 @@ func TestUnit_QuotaUser_PlanModifiers(t *testing.T) {
 
 // TestUnit_QuotaUser_QuotaValidator verifies the quota field rejects negative values
 // and accepts 0 and positive values.
-func TestUnit_QuotaUser_QuotaValidator(t *testing.T) {
+func TestUnit_Unit_QuotaUser_QuotaValidator(t *testing.T) {
 	s := quotaUserResourceSchema(t).Schema
 
 	qAttr, ok := s.Attributes["quota"].(resschema.Int64Attribute)

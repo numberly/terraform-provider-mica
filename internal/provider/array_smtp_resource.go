@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arraySmtpResource satisfies the resource interfaces.
 var _ resource.Resource = &arraySmtpResource{}
 var _ resource.ResourceWithConfigure = &arraySmtpResource{}
 var _ resource.ResourceWithImportState = &arraySmtpResource{}
@@ -34,7 +33,6 @@ type arraySmtpResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArraySmtpResource is the factory function registered in the provider.
 func NewArraySmtpResource() resource.Resource {
 	return &arraySmtpResource{}
 }
@@ -69,7 +67,6 @@ func alertWatcherAttrTypes() map[string]attr.Type {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *arraySmtpResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_smtp"
 }
@@ -204,16 +201,29 @@ func (r *arraySmtpResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	for _, w := range watchers {
+		email := w.Email.ValueString()
 		severity := w.MinimumNotificationSeverity.ValueString()
-		_, err := r.client.PostAlertWatcher(ctx, w.Email.ValueString(), client.AlertWatcherPost{
+		_, err := r.client.PostAlertWatcher(ctx, email, client.AlertWatcherPost{
 			MinimumNotificationSeverity: severity,
 		})
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error creating alert watcher",
-				fmt.Sprintf("Failed to create alert watcher for %s: %s", w.Email.ValueString(), err),
+				fmt.Sprintf("Failed to create alert watcher for %s: %s", email, err),
 			)
 			return
+		}
+		// AlertWatcherPost has no enabled field; the API defaults to enabled=true.
+		// PATCH to apply the plan's enabled=false.
+		if !w.Enabled.IsNull() && !w.Enabled.IsUnknown() && !w.Enabled.ValueBool() {
+			disabled := false
+			if _, err := r.client.PatchAlertWatcher(ctx, email, client.AlertWatcherPatch{Enabled: &disabled}); err != nil {
+				resp.Diagnostics.AddError(
+					"Error disabling alert watcher",
+					fmt.Sprintf("Failed to set enabled=false on new alert watcher %s: %s", email, err),
+				)
+				return
+			}
 		}
 	}
 
@@ -224,7 +234,6 @@ func (r *arraySmtpResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *arraySmtpResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data arraySmtpModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -319,6 +328,18 @@ func (r *arraySmtpResource) Update(ctx context.Context, req resource.UpdateReque
 					fmt.Sprintf("Failed to create alert watcher for %s: %s", email, err),
 				)
 				return
+			}
+			// AlertWatcherPost has no enabled field; the API defaults to enabled=true.
+			// PATCH to apply the plan's enabled=false.
+			if !w.Enabled.IsNull() && !w.Enabled.IsUnknown() && !w.Enabled.ValueBool() {
+				disabled := false
+				if _, err := r.client.PatchAlertWatcher(ctx, email, client.AlertWatcherPatch{Enabled: &disabled}); err != nil {
+					resp.Diagnostics.AddError(
+						"Error disabling alert watcher",
+						fmt.Sprintf("Failed to set enabled=false on new alert watcher %s: %s", email, err),
+					)
+					return
+				}
 			}
 		}
 	}
@@ -441,7 +462,7 @@ func (r *arraySmtpResource) readIntoState(ctx context.Context, data *arraySmtpMo
 		return diags
 	}
 
-	watchers, err := r.client.GetAlertWatchers(ctx)
+	watchers, err := r.client.ListAlertWatchers(ctx)
 	if err != nil {
 		diags.AddError("Error reading alert watchers", err.Error())
 		return diags

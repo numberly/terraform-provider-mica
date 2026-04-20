@@ -76,13 +76,11 @@ func (s *objectStoreUserStore) handleGet(w http.ResponseWriter, r *http.Request)
 	u := s.byName[name]
 	if u == nil {
 		// Return empty items list (provider synthesizes 404 from this).
-		WriteJSONListResponse(w, http.StatusOK, []map[string]any{})
+		WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreUser{})
 		return
 	}
 
-	WriteJSONListResponse(w, http.StatusOK, []map[string]any{
-		{"name": u.Name, "id": u.ID, "full_access": u.FullAccess},
-	})
+	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreUser{*u})
 }
 
 func (s *objectStoreUserStore) handlePost(w http.ResponseWriter, r *http.Request) {
@@ -108,9 +106,7 @@ func (s *objectStoreUserStore) handlePost(w http.ResponseWriter, r *http.Request
 	}
 	s.byName[name] = u
 
-	WriteJSONListResponse(w, http.StatusOK, []map[string]any{
-		{"name": u.Name, "id": u.ID, "full_access": u.FullAccess},
-	})
+	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreUser{*u})
 }
 
 func (s *objectStoreUserStore) handleDelete(w http.ResponseWriter, r *http.Request) {

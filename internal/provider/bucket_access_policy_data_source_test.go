@@ -34,7 +34,7 @@ func bapDSSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-func buildBAPDSType() tftypes.Object {
+func buildBucketAccessPolicyDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"bucket_name": tftypes.String,
 		"id":          tftypes.String,
@@ -52,7 +52,7 @@ func nullBAPDSConfig() map[string]tftypes.Value {
 	}
 }
 
-func TestBucketAccessPolicyDataSource_Read(t *testing.T) {
+func TestUnit_BucketAccessPolicyDataSource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
@@ -65,7 +65,7 @@ func TestBucketAccessPolicyDataSource_Read(t *testing.T) {
 
 	d := newTestBucketAccessPolicyDataSource(t, ms)
 	s := bapDSSchema(t).Schema
-	objType := buildBAPDSType()
+	objType := buildBucketAccessPolicyDSType()
 
 	cfg := nullBAPDSConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, "ds-bucket")
@@ -99,14 +99,14 @@ func TestBucketAccessPolicyDataSource_Read(t *testing.T) {
 	}
 }
 
-func TestBucketAccessPolicyDataSource_Read_NotFound(t *testing.T) {
+func TestUnit_BucketAccessPolicyDataSource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAccessPolicyHandlers(ms.Mux)
 
 	d := newTestBucketAccessPolicyDataSource(t, ms)
 	s := bapDSSchema(t).Schema
-	objType := buildBAPDSType()
+	objType := buildBucketAccessPolicyDSType()
 
 	cfg := nullBAPDSConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, "nope")

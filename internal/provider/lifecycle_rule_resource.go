@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure lifecycleRuleResource satisfies the resource interfaces.
 var _ resource.Resource = &lifecycleRuleResource{}
 var _ resource.ResourceWithConfigure = &lifecycleRuleResource{}
 var _ resource.ResourceWithImportState = &lifecycleRuleResource{}
@@ -28,7 +27,6 @@ type lifecycleRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewLifecycleRuleResource is the factory function registered in the provider.
 func NewLifecycleRuleResource() resource.Resource {
 	return &lifecycleRuleResource{}
 }
@@ -52,7 +50,6 @@ type lifecycleRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *lifecycleRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_lifecycle_rule"
 }
@@ -149,7 +146,6 @@ func (r *lifecycleRuleResource) Configure(_ context.Context, req resource.Config
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new lifecycle rule.
 func (r *lifecycleRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data lifecycleRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -198,7 +194,6 @@ func (r *lifecycleRuleResource) Create(ctx context.Context, req resource.CreateR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *lifecycleRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data lifecycleRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

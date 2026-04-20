@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -21,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure filesystemResource satisfies the resource.Resource interface.
 var _ resource.Resource = &filesystemResource{}
 var _ resource.ResourceWithConfigure = &filesystemResource{}
 var _ resource.ResourceWithImportState = &filesystemResource{}
@@ -32,8 +32,7 @@ type filesystemResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewFilesystemResource is the factory function registered in the provider.
-func NewFilesystemResource() resource.Resource {
+func NewFileSystemResource() resource.Resource {
 	return &filesystemResource{}
 }
 
@@ -79,7 +78,6 @@ type filesystemModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *filesystemResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_file_system"
 }
@@ -126,7 +124,7 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Computed:    true,
 				Description: "Unix timestamp (milliseconds) when the file system was created.",
 				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"promotion_status": schema.StringAttribute{
@@ -331,7 +329,6 @@ func (r *filesystemResource) Configure(_ context.Context, req resource.Configure
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new file system.
 func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data filesystemModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -386,7 +383,7 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -394,7 +391,6 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *filesystemResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data filesystemModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -424,17 +420,17 @@ func (r *filesystemResource) Read(ctx context.Context, req resource.ReadRequest,
 	// Drift detection: compare user-configurable fields against current state.
 	if !data.Provisioned.IsNull() && !data.Provisioned.IsUnknown() {
 		if data.Provisioned.ValueInt64() != fs.Provisioned {
-			tflog.Info(ctx, "drift detected on file system", map[string]any{
+			tflog.Debug(ctx, "drift detected on file system", map[string]any{
 				"resource":    name,
 				"field":       "provisioned",
-				"state_value": data.Provisioned.ValueInt64(),
-				"api_value":   fs.Provisioned,
+				"was":         data.Provisioned.ValueInt64(),
+				"now":           fs.Provisioned,
 			})
 		}
 	}
 
 	// Map API response to model.
-	resp.Diagnostics.Append(mapFSToModel(fs, &data)...)
+	resp.Diagnostics.Append(mapFileSystemToModel(fs, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -512,7 +508,7 @@ func (r *filesystemResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Use the new name for read-at-end-of-write (in case of rename).
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -538,36 +534,13 @@ func (r *filesystemResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
-
-	// Phase 1: Soft-delete.
-	destroyed := true
-	_, err := r.client.PatchFileSystem(ctx, id, client.FileSystemPatch{Destroyed: &destroyed})
-	if err != nil {
-		if client.IsNotFound(err) {
-			// Already gone — no error.
-			return
-		}
-		resp.Diagnostics.AddError("Error soft-deleting file system", err.Error())
-		return
-	}
-
-	// Phase 2 + 3: Eradicate only if destroy_eradicate_on_delete is true (or null/default).
 	eradicate := data.DestroyEradicateOnDelete.IsNull() || data.DestroyEradicateOnDelete.ValueBool()
-	if eradicate {
-		if err := r.client.DeleteFileSystem(ctx, id); err != nil {
-			if !client.IsNotFound(err) {
-				resp.Diagnostics.AddError("Error eradicating file system", err.Error())
-				return
-			}
-		}
-		if err := r.client.PollUntilEradicated(ctx, name); err != nil {
-			resp.Diagnostics.AddError("Error waiting for file system eradication", err.Error())
-			return
-		}
+	if err := r.client.DestroyAndEradicateFileSystem(ctx, id, name, eradicate); err != nil {
+		resp.Diagnostics.AddError("Error deleting file system", err.Error())
+		return
 	}
 }
 
-// ImportState imports an existing file system by name.
 func (r *filesystemResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	fs, err := r.client.GetFileSystem(ctx, name)
@@ -583,7 +556,7 @@ func (r *filesystemResource) ImportState(ctx context.Context, req resource.Impor
 	// Initialize timeouts with a proper null value so the framework can serialize it.
 	data.Timeouts = nullTimeoutsValue()
 
-	resp.Diagnostics.Append(mapFSToModel(fs, &data)...)
+	resp.Diagnostics.Append(mapFileSystemToModel(fs, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -644,25 +617,21 @@ func fsSourceAttrTypes() map[string]attr.Type {
 
 // readIntoState calls GetFileSystem and maps the result into the provided model.
 // This is the Read-at-end-of-write pattern ensuring state reflects true API state.
-func (r *filesystemResource) readIntoState(ctx context.Context, name string, data *filesystemModel, reporter DiagnosticReporter) {
+func (r *filesystemResource) readIntoState(ctx context.Context, name string, data *filesystemModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	fs, err := r.client.GetFileSystem(ctx, name)
 	if err != nil {
-		reporter.AddError("Error reading file system after write", err.Error())
-		return
+		diags.AddError("Error reading file system after write", err.Error())
+		return diags
 	}
-	for _, d := range mapFSToModel(fs, data) {
-		if d.Severity() == diag.SeverityWarning {
-			reporter.AddWarning(d.Summary(), d.Detail())
-		} else {
-			reporter.AddError(d.Summary(), d.Detail())
-		}
-	}
+	diags.Append(mapFileSystemToModel(fs, data)...)
+	return diags
 }
 
-// mapFSToModel maps a client.FileSystem to a filesystemModel.
+// mapFileSystemToModel maps a client.FileSystem to a filesystemModel.
 // It preserves user-managed fields (DestroyEradicateOnDelete, Timeouts, policy fields).
 // Returns diagnostics instead of panicking on object construction errors.
-func mapFSToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics {
+func mapFileSystemToModel(fs *client.FileSystem, data *filesystemModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	data.ID = types.StringValue(fs.ID)

@@ -34,8 +34,5 @@ func (c *FlashBladeClient) PostManagementAccessPolicyDirectoryServiceRoleMembers
 // DeleteManagementAccessPolicyDirectoryServiceRoleMembership removes the association.
 // Neither the policy nor the role is deleted — only the link is severed.
 func (c *FlashBladeClient) DeleteManagementAccessPolicyDirectoryServiceRoleMembership(ctx context.Context, policyName, roleName string) error {
-	if err := c.delete(ctx, dsrmPath(policyName, roleName)); err != nil {
-		return fmt.Errorf("DeleteManagementAccessPolicyDirectoryServiceRoleMembership: %w", err)
-	}
-	return nil
+	return c.delete(ctx, dsrmPath(policyName, roleName))
 }

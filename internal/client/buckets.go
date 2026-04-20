@@ -51,24 +51,7 @@ func (c *FlashBladeClient) ListBuckets(ctx context.Context, opts ListBucketsOpts
 		}
 	}
 
-	var all []Bucket
-	for {
-		path := "/buckets"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[Bucket]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[Bucket](c, ctx, "/buckets", params)
 }
 
 // GetBucket retrieves a bucket by name.
@@ -102,4 +85,29 @@ func (c *FlashBladeClient) DeleteBucket(ctx context.Context, id string) error {
 // The caller should provide a context with an appropriate timeout.
 func (c *FlashBladeClient) PollBucketUntilEradicated(ctx context.Context, name string) error {
 	return pollUntilGone[Bucket](c, ctx, "/buckets", "bucket", name)
+}
+
+// DestroyAndEradicateBucket encapsulates the two-phase bucket delete: soft-delete
+// via PATCH destroyed=true, then (if eradicate is true) DELETE and poll until
+// the bucket is gone. Treats IsNotFound as success at each phase so callers
+// get a clean no-op if another actor already removed the bucket. The name
+// parameter is only used for the post-eradicate poll.
+func (c *FlashBladeClient) DestroyAndEradicateBucket(ctx context.Context, id, name string, eradicate bool) error {
+	destroyed := true
+	if _, err := c.PatchBucket(ctx, id, BucketPatch{Destroyed: &destroyed}); err != nil {
+		if IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("DestroyAndEradicateBucket: soft-delete: %w", err)
+	}
+	if !eradicate {
+		return nil
+	}
+	if err := c.DeleteBucket(ctx, id); err != nil && !IsNotFound(err) {
+		return fmt.Errorf("DestroyAndEradicateBucket: eradicate: %w", err)
+	}
+	if err := c.PollBucketUntilEradicated(ctx, name); err != nil {
+		return fmt.Errorf("DestroyAndEradicateBucket: wait for eradication: %w", err)
+	}
+	return nil
 }

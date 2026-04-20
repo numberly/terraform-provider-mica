@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -22,7 +23,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure bucketResource satisfies the resource interfaces.
 var _ resource.Resource = &bucketResource{}
 var _ resource.ResourceWithConfigure = &bucketResource{}
 var _ resource.ResourceWithImportState = &bucketResource{}
@@ -34,7 +34,6 @@ type bucketResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewBucketResource is the factory function registered in the provider.
 func NewBucketResource() resource.Resource {
 	return &bucketResource{}
 }
@@ -66,7 +65,6 @@ type bucketModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *bucketResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_bucket"
 }
@@ -102,7 +100,7 @@ func (r *bucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: "Unix timestamp (milliseconds) when the bucket was created.",
 				PlanModifiers: []planmodifier.Int64{
-					int64UseStateForUnknown(),
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"destroyed": schema.BoolAttribute{
@@ -308,7 +306,6 @@ func (r *bucketResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new bucket.
 func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data bucketModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -362,7 +359,7 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -370,7 +367,6 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data bucketModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -400,31 +396,31 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 	// Drift detection on user-configurable fields.
 	if !data.Versioning.IsNull() && !data.Versioning.IsUnknown() {
 		if data.Versioning.ValueString() != bkt.Versioning {
-			tflog.Info(ctx, "drift detected on bucket", map[string]any{
+			tflog.Debug(ctx, "drift detected on bucket", map[string]any{
 				"resource":    name,
 				"field":       "versioning",
-				"state_value": data.Versioning.ValueString(),
-				"api_value":   bkt.Versioning,
+				"was":         data.Versioning.ValueString(),
+				"now":           bkt.Versioning,
 			})
 		}
 	}
 	if !data.QuotaLimit.IsNull() && !data.QuotaLimit.IsUnknown() {
 		if data.QuotaLimit.ValueInt64() != bkt.QuotaLimit {
-			tflog.Info(ctx, "drift detected on bucket", map[string]any{
+			tflog.Debug(ctx, "drift detected on bucket", map[string]any{
 				"resource":    name,
 				"field":       "quota_limit",
-				"state_value": data.QuotaLimit.ValueInt64(),
-				"api_value":   bkt.QuotaLimit,
+				"was":         data.QuotaLimit.ValueInt64(),
+				"now":           bkt.QuotaLimit,
 			})
 		}
 	}
 	if !data.HardLimitEnabled.IsNull() && !data.HardLimitEnabled.IsUnknown() {
 		if data.HardLimitEnabled.ValueBool() != bkt.HardLimitEnabled {
-			tflog.Info(ctx, "drift detected on bucket", map[string]any{
+			tflog.Debug(ctx, "drift detected on bucket", map[string]any{
 				"resource":    name,
 				"field":       "hard_limit_enabled",
-				"state_value": data.HardLimitEnabled.ValueBool(),
-				"api_value":   bkt.HardLimitEnabled,
+				"was":         data.HardLimitEnabled.ValueBool(),
+				"now":           bkt.HardLimitEnabled,
 			})
 		}
 	}
@@ -490,7 +486,7 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	r.readIntoState(ctx, plan.Name.ValueString(), &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, plan.Name.ValueString(), &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -535,35 +531,13 @@ func (r *bucketResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	// Phase 1: Soft-delete.
-	destroyed := true
-	_, err = r.client.PatchBucket(ctx, id, client.BucketPatch{Destroyed: &destroyed})
-	if err != nil {
-		if client.IsNotFound(err) {
-			// Already gone — no error.
-			return
-		}
-		resp.Diagnostics.AddError("Error soft-deleting bucket", err.Error())
-		return
-	}
-
-	// Phase 2: Eradicate only if destroy_eradicate_on_delete is true.
 	eradicate := data.DestroyEradicateOnDelete.ValueBool()
-	if eradicate {
-		if err := r.client.DeleteBucket(ctx, id); err != nil {
-			if !client.IsNotFound(err) {
-				resp.Diagnostics.AddError("Error eradicating bucket", err.Error())
-				return
-			}
-		}
-		if err := r.client.PollBucketUntilEradicated(ctx, name); err != nil {
-			resp.Diagnostics.AddError("Error waiting for bucket eradication", err.Error())
-			return
-		}
+	if err := r.client.DestroyAndEradicateBucket(ctx, id, name, eradicate); err != nil {
+		resp.Diagnostics.AddError("Error deleting bucket", err.Error())
+		return
 	}
 }
 
-// ImportState imports an existing bucket by name.
 func (r *bucketResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	bkt, err := r.client.GetBucket(ctx, name)
@@ -589,16 +563,20 @@ func (r *bucketResource) ImportState(ctx context.Context, req resource.ImportSta
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetBucket and maps the result into the provided model.
-func (r *bucketResource) readIntoState(ctx context.Context, name string, data *bucketModel, diags DiagnosticReporter) {
+func (r *bucketResource) readIntoState(ctx context.Context, name string, data *bucketModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	bkt, err := r.client.GetBucket(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading bucket after write", err.Error())
-		return
+		return diags
 	}
 	for _, d := range mapBucketToModel(bkt, data) {
 		diags.AddError(d.Summary(), d.Detail())
 	}
+	return diags
 }
+
 
 // mapBucketToModel maps a client.Bucket to a bucketModel.
 // It preserves user-managed fields (DestroyEradicateOnDelete, Timeouts).

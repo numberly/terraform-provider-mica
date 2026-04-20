@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure qosPolicyMemberResource satisfies the resource interfaces.
 var _ resource.Resource = &qosPolicyMemberResource{}
 var _ resource.ResourceWithConfigure = &qosPolicyMemberResource{}
 var _ resource.ResourceWithImportState = &qosPolicyMemberResource{}
@@ -26,7 +25,6 @@ type qosPolicyMemberResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQosPolicyMemberResource is the factory function registered in the provider.
 func NewQosPolicyMemberResource() resource.Resource {
 	return &qosPolicyMemberResource{}
 }
@@ -43,7 +41,6 @@ type qosPolicyMemberModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *qosPolicyMemberResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_qos_policy_member"
 }

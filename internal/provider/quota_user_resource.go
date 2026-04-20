@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -20,7 +21,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure quotaUserResource satisfies the resource interfaces.
 var _ resource.Resource = &quotaUserResource{}
 var _ resource.ResourceWithConfigure = &quotaUserResource{}
 var _ resource.ResourceWithImportState = &quotaUserResource{}
@@ -31,7 +31,6 @@ type quotaUserResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQuotaUserResource is the factory function registered in the provider.
 func NewQuotaUserResource() resource.Resource {
 	return &quotaUserResource{}
 }
@@ -50,7 +49,6 @@ type quotaUserModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *quotaUserResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_quota_user"
 }
@@ -130,7 +128,6 @@ func (r *quotaUserResource) Configure(_ context.Context, req resource.ConfigureR
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new user quota.
 func (r *quotaUserResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data quotaUserModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -171,7 +168,7 @@ func (r *quotaUserResource) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 
-	r.readIntoState(ctx, fsName, uid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, uid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -179,7 +176,6 @@ func (r *quotaUserResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *quotaUserResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data quotaUserModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -211,11 +207,11 @@ func (r *quotaUserResource) Read(ctx context.Context, req resource.ReadRequest, 
 	// Drift detection on quota.
 	if !data.Quota.IsNull() && !data.Quota.IsUnknown() {
 		if data.Quota.ValueInt64() != qu.Quota {
-			tflog.Info(ctx, "drift detected on user quota", map[string]any{
+			tflog.Debug(ctx, "drift detected on user quota", map[string]any{
 				"resource":    fsName + "/" + uid,
 				"field":       "quota",
-				"state_value": data.Quota.ValueInt64(),
-				"api_value":   qu.Quota,
+				"was":         data.Quota.ValueInt64(),
+				"now":           qu.Quota,
 			})
 		}
 	}
@@ -256,7 +252,7 @@ func (r *quotaUserResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	r.readIntoState(ctx, fsName, uid, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, uid, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -311,7 +307,7 @@ func (r *quotaUserResource) ImportState(ctx context.Context, req resource.Import
 	data.FileSystemName = types.StringValue(fsName)
 	data.UID = types.StringValue(uid)
 
-	r.readIntoState(ctx, fsName, uid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, uid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -322,14 +318,18 @@ func (r *quotaUserResource) ImportState(ctx context.Context, req resource.Import
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetQuotaUser and maps the result into the provided model.
-func (r *quotaUserResource) readIntoState(ctx context.Context, fsName, uid string, data *quotaUserModel, diags DiagnosticReporter) {
+func (r *quotaUserResource) readIntoState(ctx context.Context, fsName, uid string, data *quotaUserModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	qu, err := r.client.GetQuotaUser(ctx, fsName, uid)
 	if err != nil {
 		diags.AddError("Error reading user quota after write", err.Error())
-		return
+		return diags
 	}
 	mapQuotaUserToModel(fsName, uid, qu, data)
+	return diags
 }
+
 
 // mapQuotaUserToModel maps a client.QuotaUser to a quotaUserModel.
 // Preserves user-managed fields (Timeouts).

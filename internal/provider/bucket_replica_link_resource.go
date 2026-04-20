@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure bucketReplicaLinkResource satisfies the resource interfaces.
 var _ resource.Resource = &bucketReplicaLinkResource{}
 var _ resource.ResourceWithConfigure = &bucketReplicaLinkResource{}
 var _ resource.ResourceWithImportState = &bucketReplicaLinkResource{}
@@ -28,7 +27,6 @@ type bucketReplicaLinkResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewBucketReplicaLinkResource is the factory function registered in the provider.
 func NewBucketReplicaLinkResource() resource.Resource {
 	return &bucketReplicaLinkResource{}
 }
@@ -52,7 +50,6 @@ type bucketReplicaLinkModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *bucketReplicaLinkResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_bucket_replica_link"
 }
@@ -165,7 +162,6 @@ func (r *bucketReplicaLinkResource) Configure(_ context.Context, req resource.Co
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new bucket replica link.
 func (r *bucketReplicaLinkResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data bucketReplicaLinkModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -201,7 +197,6 @@ func (r *bucketReplicaLinkResource) Create(ctx context.Context, req resource.Cre
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *bucketReplicaLinkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data bucketReplicaLinkModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

@@ -51,24 +51,7 @@ func (c *FlashBladeClient) ListFileSystems(ctx context.Context, opts ListFileSys
 		params.Set("limit", fmt.Sprintf("%d", opts.Limit))
 	}
 
-	var all []FileSystem
-	for {
-		path := "/file-systems"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[FileSystem]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[FileSystem](c, ctx, "/file-systems", params)
 }
 
 // PostFileSystem creates a new file system.
@@ -91,9 +74,34 @@ func (c *FlashBladeClient) DeleteFileSystem(ctx context.Context, id string) erro
 	return c.delete(ctx, path)
 }
 
-// PollUntilEradicated polls GET /file-systems?names={name}&destroyed=true until the
+// PollFileSystemUntilEradicated polls GET /file-systems?names={name}&destroyed=true until the
 // file system is fully eradicated (empty items response). Respects context deadline.
 // The caller should provide a context with an appropriate timeout (e.g., Terraform resource timeout).
-func (c *FlashBladeClient) PollUntilEradicated(ctx context.Context, name string) error {
+func (c *FlashBladeClient) PollFileSystemUntilEradicated(ctx context.Context, name string) error {
 	return pollUntilGone[FileSystem](c, ctx, "/file-systems", "file system", name)
+}
+
+// DestroyAndEradicateFileSystem encapsulates the two-phase file-system delete:
+// soft-delete via PATCH destroyed=true, then (if eradicate is true) DELETE and
+// poll until the file system is gone. Treats IsNotFound as success at each
+// phase so callers get a clean no-op if another actor already removed the file
+// system. The name parameter is only used for the post-eradicate poll.
+func (c *FlashBladeClient) DestroyAndEradicateFileSystem(ctx context.Context, id, name string, eradicate bool) error {
+	destroyed := true
+	if _, err := c.PatchFileSystem(ctx, id, FileSystemPatch{Destroyed: &destroyed}); err != nil {
+		if IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("DestroyAndEradicateFileSystem: soft-delete: %w", err)
+	}
+	if !eradicate {
+		return nil
+	}
+	if err := c.DeleteFileSystem(ctx, id); err != nil && !IsNotFound(err) {
+		return fmt.Errorf("DestroyAndEradicateFileSystem: eradicate: %w", err)
+	}
+	if err := c.PollFileSystemUntilEradicated(ctx, name); err != nil {
+		return fmt.Errorf("DestroyAndEradicateFileSystem: wait for eradication: %w", err)
+	}
+	return nil
 }

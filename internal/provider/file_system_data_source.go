@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure filesystemDataSource satisfies the datasource.DataSource interface.
 var _ datasource.DataSource = &filesystemDataSource{}
 var _ datasource.DataSourceWithConfigure = &filesystemDataSource{}
 
@@ -20,8 +19,7 @@ type filesystemDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewFilesystemDataSource is the factory function registered in the provider.
-func NewFilesystemDataSource() datasource.DataSource {
+func NewFileSystemDataSource() datasource.DataSource {
 	return &filesystemDataSource{}
 }
 
@@ -48,7 +46,6 @@ type filesystemDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *filesystemDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_file_system"
 }
@@ -265,7 +262,7 @@ func (d *filesystemDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	// Map API response to model via shared mapFSToModel to avoid duplicated mapping logic.
 	var tmp filesystemModel
-	fsDiags := mapFSToModel(fs, &tmp)
+	fsDiags := mapFileSystemToModel(fs, &tmp)
 	resp.Diagnostics.Append(fsDiags...)
 	if resp.Diagnostics.HasError() {
 		return

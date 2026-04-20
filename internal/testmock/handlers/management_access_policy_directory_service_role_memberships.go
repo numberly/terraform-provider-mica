@@ -36,7 +36,6 @@ func dsrMemberKey(policyName, roleName string) string {
 	return policyName + "|" + roleName
 }
 
-// handle dispatches membership requests by HTTP method.
 func (s *mapDsrMembershipsStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

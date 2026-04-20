@@ -96,7 +96,7 @@ func quotaGroupPlan(t *testing.T, fsName, gid string, quota int64) tfsdk.Plan {
 // ---- tests ------------------------------------------------------------------
 
 // TestQuotaGroupResource_Create verifies Create populates ID and quota.
-func TestQuotaGroupResource_Create(t *testing.T) {
+func TestUnit_QuotaGroupResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -135,7 +135,7 @@ func TestQuotaGroupResource_Create(t *testing.T) {
 }
 
 // TestQuotaGroupResource_Update verifies PATCH updates the quota limit.
-func TestQuotaGroupResource_Update(t *testing.T) {
+func TestUnit_QuotaGroupResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -177,7 +177,7 @@ func TestQuotaGroupResource_Update(t *testing.T) {
 }
 
 // TestQuotaGroupResource_Delete verifies Delete removes the quota.
-func TestQuotaGroupResource_Delete(t *testing.T) {
+func TestUnit_QuotaGroupResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -210,7 +210,7 @@ func TestQuotaGroupResource_Delete(t *testing.T) {
 }
 
 // TestQuotaGroupResource_Import verifies ImportState populates all attributes from composite ID.
-func TestQuotaGroupResource_Import(t *testing.T) {
+func TestUnit_QuotaGroupResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -311,7 +311,7 @@ func nullQuotaGroupDSConfig() map[string]tftypes.Value {
 }
 
 // TestQuotaGroupDataSource verifies data source reads quota by file_system_name+gid and returns all attributes.
-func TestQuotaGroupDataSource(t *testing.T) {
+func TestUnit_QuotaGroupDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -370,7 +370,7 @@ func TestQuotaGroupDataSource(t *testing.T) {
 
 // TestUnit_QuotaGroup_Create_Conflict verifies that a 409 Conflict on POST produces
 // an error diagnostic.
-func TestUnit_QuotaGroup_Create_Conflict(t *testing.T) {
+func TestUnit_Unit_QuotaGroup_Create_Conflict(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	ms.RegisterHandler("/api/2.22/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
@@ -398,7 +398,7 @@ func TestUnit_QuotaGroup_Create_Conflict(t *testing.T) {
 
 // TestUnit_QuotaGroup_Read_NotFound verifies that a not-found response during Read
 // removes the resource from Terraform state without an error diagnostic.
-func TestUnit_QuotaGroup_Read_NotFound(t *testing.T) {
+func TestUnit_Unit_QuotaGroup_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	ms.RegisterHandler("/api/2.22/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
@@ -427,7 +427,7 @@ func TestUnit_QuotaGroup_Read_NotFound(t *testing.T) {
 }
 
 // TestUnit_QuotaGroup_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_QuotaGroup_Lifecycle(t *testing.T) {
+func TestUnit_Unit_QuotaGroup_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -513,7 +513,7 @@ func TestUnit_QuotaGroup_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_QuotaGroup_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_QuotaGroup_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_QuotaGroup_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterQuotaHandlers(ms.Mux)
@@ -569,7 +569,7 @@ func TestUnit_QuotaGroup_ImportIdempotency(t *testing.T) {
 
 // TestUnit_QuotaGroup_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the quota_group resource schema.
-func TestUnit_QuotaGroup_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_QuotaGroup_PlanModifiers(t *testing.T) {
 	s := quotaGroupResourceSchema(t).Schema
 
 	// id — UseStateForUnknown
@@ -611,7 +611,7 @@ func TestUnit_QuotaGroup_PlanModifiers(t *testing.T) {
 
 // TestUnit_QuotaGroup_QuotaValidator verifies the quota field rejects negative values
 // and accepts 0 and positive values.
-func TestUnit_QuotaGroup_QuotaValidator(t *testing.T) {
+func TestUnit_Unit_QuotaGroup_QuotaValidator(t *testing.T) {
 	s := quotaGroupResourceSchema(t).Schema
 
 	qAttr, ok := s.Attributes["quota"].(resschema.Int64Attribute)

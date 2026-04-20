@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccessKeyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &objectStoreAccessKeyDataSource{}
 var _ datasource.DataSourceWithConfigure = &objectStoreAccessKeyDataSource{}
 
@@ -20,8 +19,7 @@ type objectStoreAccessKeyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewAccessKeyDataSource is the factory function registered in the provider.
-func NewAccessKeyDataSource() datasource.DataSource {
+func NewObjectStoreAccessKeyDataSource() datasource.DataSource {
 	return &objectStoreAccessKeyDataSource{}
 }
 
@@ -39,7 +37,6 @@ type objectStoreAccessKeyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *objectStoreAccessKeyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_access_key"
 }

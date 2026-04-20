@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure snapshotPolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &snapshotPolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &snapshotPolicyDataSource{}
 
@@ -20,7 +19,6 @@ type snapshotPolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSnapshotPolicyDataSource is the factory function registered in the provider.
 func NewSnapshotPolicyDataSource() datasource.DataSource {
 	return &snapshotPolicyDataSource{}
 }
@@ -39,7 +37,6 @@ type snapshotPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *snapshotPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_snapshot_policy"
 }

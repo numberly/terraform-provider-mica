@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure linkAggregationGroupDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &linkAggregationGroupDataSource{}
 var _ datasource.DataSourceWithConfigure = &linkAggregationGroupDataSource{}
 
@@ -20,7 +19,6 @@ type linkAggregationGroupDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewLinkAggregationGroupDataSource is the factory function registered in the provider.
 func NewLinkAggregationGroupDataSource() datasource.DataSource {
 	return &linkAggregationGroupDataSource{}
 }
@@ -40,7 +38,6 @@ type lagDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *linkAggregationGroupDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_link_aggregation_group"
 }

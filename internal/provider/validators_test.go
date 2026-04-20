@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestAlphanumericValidator(t *testing.T) {
+func TestUnit_AlphanumericValidator(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -51,7 +51,7 @@ func TestAlphanumericValidator(t *testing.T) {
 	}
 }
 
-func TestHostnameNoDotValidator(t *testing.T) {
+func TestUnit_HostnameNoDotValidator(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -91,7 +91,7 @@ func TestHostnameNoDotValidator(t *testing.T) {
 	}
 }
 
-func TestLDAPURIValidator(t *testing.T) {
+func TestUnit_LDAPURIValidator(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name     string

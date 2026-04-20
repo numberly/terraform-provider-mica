@@ -84,7 +84,7 @@ func qosPolicyMemberPlanWith(t *testing.T, policyName, memberName string) tfsdk.
 // ---- tests ------------------------------------------------------------------
 
 // TestQosPolicyMemberResource_Create verifies POST creates a member assignment.
-func TestQosPolicyMemberResource_Create(t *testing.T) {
+func TestUnit_QosPolicyMemberResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -127,7 +127,7 @@ func TestQosPolicyMemberResource_Create(t *testing.T) {
 }
 
 // TestQosPolicyMemberResource_Read verifies reading an existing member.
-func TestQosPolicyMemberResource_Read(t *testing.T) {
+func TestUnit_QosPolicyMemberResource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -178,7 +178,7 @@ func TestQosPolicyMemberResource_Read(t *testing.T) {
 }
 
 // TestQosPolicyMemberResource_Read_NotFound verifies reading non-existent member removes state.
-func TestQosPolicyMemberResource_Read_NotFound(t *testing.T) {
+func TestUnit_QosPolicyMemberResource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -217,7 +217,7 @@ func TestQosPolicyMemberResource_Read_NotFound(t *testing.T) {
 }
 
 // TestQosPolicyMemberResource_Delete verifies DELETE removes a member.
-func TestQosPolicyMemberResource_Delete(t *testing.T) {
+func TestUnit_QosPolicyMemberResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterQosPolicyHandlers(ms.Mux)
@@ -265,7 +265,7 @@ func TestQosPolicyMemberResource_Delete(t *testing.T) {
 }
 
 // TestQosPolicyMemberResource_Import verifies Import by "policyName/memberName" populates state.
-func TestQosPolicyMemberResource_Import(t *testing.T) {
+func TestUnit_QosPolicyMemberResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterQosPolicyHandlers(ms.Mux)

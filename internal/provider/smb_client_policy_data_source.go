@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure smbClientPolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &smbClientPolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &smbClientPolicyDataSource{}
 
@@ -20,7 +19,6 @@ type smbClientPolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSmbClientPolicyDataSource is the factory function registered in the provider.
 func NewSmbClientPolicyDataSource() datasource.DataSource {
 	return &smbClientPolicyDataSource{}
 }
@@ -40,7 +38,6 @@ type smbClientPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *smbClientPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_smb_client_policy"
 }

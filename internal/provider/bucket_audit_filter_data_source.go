@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure bucketAuditFilterDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &bucketAuditFilterDataSource{}
 var _ datasource.DataSourceWithConfigure = &bucketAuditFilterDataSource{}
 
@@ -20,7 +19,6 @@ type bucketAuditFilterDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewBucketAuditFilterDataSource is the factory function registered in the provider.
 func NewBucketAuditFilterDataSource() datasource.DataSource {
 	return &bucketAuditFilterDataSource{}
 }
@@ -36,7 +34,6 @@ type bucketAuditFilterDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *bucketAuditFilterDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_bucket_audit_filter"
 }

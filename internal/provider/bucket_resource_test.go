@@ -168,11 +168,11 @@ func bucketPlanWithNameAndAccount(t *testing.T, name, account string) tfsdk.Plan
 
 // setupBucketMockServer creates a mock server with account and bucket handlers,
 // pre-seeds an account, and returns the server, client, and bucket store.
-func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBladeClient, *handlers.BucketStore) {
+func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBladeClient, *handlers.BucketStoreFacade) {
 	t.Helper()
 	ms := testmock.NewMockServer()
 	accountStore := handlers.RegisterObjectStoreAccountHandlers(ms.Mux)
-	bucketStore := handlers.RegisterBucketHandlers(ms.Mux, accountStore)
+	bucketStore := handlers.NewBucketStoreFacade(handlers.RegisterBucketHandlers(ms.Mux, accountStore))
 
 	c, err := client.NewClient(context.Background(), client.Config{
 		Endpoint:           ms.URL(),
@@ -196,7 +196,7 @@ func setupBucketMockServer(t *testing.T) (*testmock.MockServer, *client.FlashBla
 // ---- tests ------------------------------------------------------------------
 
 // TestUnit_Bucket_Create verifies Create populates ID, account, versioning, and created.
-func TestUnit_Bucket_Create(t *testing.T) {
+func TestUnit_Unit_Bucket_Create(t *testing.T) {
 	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -238,7 +238,7 @@ func TestUnit_Bucket_Create(t *testing.T) {
 }
 
 // TestUnit_Bucket_Update verifies PATCH updates quota_limit, versioning, and hard_limit_enabled.
-func TestUnit_Bucket_Update(t *testing.T) {
+func TestUnit_Unit_Bucket_Update(t *testing.T) {
 	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -296,7 +296,7 @@ func TestUnit_Bucket_Update(t *testing.T) {
 
 // TestUnit_Bucket_Destroy verifies that when destroy_eradicate_on_delete=false,
 // only soft-delete is performed (no DELETE/eradication).
-func TestUnit_Bucket_Destroy(t *testing.T) {
+func TestUnit_Unit_Bucket_Destroy(t *testing.T) {
 	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -340,7 +340,7 @@ func TestUnit_Bucket_Destroy(t *testing.T) {
 
 // TestUnit_Bucket_Destroy_WithEradicate verifies that when destroy_eradicate_on_delete=true,
 // the bucket is soft-deleted AND eradicated.
-func TestUnit_Bucket_Destroy_WithEradicate(t *testing.T) {
+func TestUnit_Unit_Bucket_Destroy_WithEradicate(t *testing.T) {
 	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -386,7 +386,7 @@ func TestUnit_Bucket_Destroy_WithEradicate(t *testing.T) {
 
 // TestUnit_Bucket_Import verifies ImportState populates all attributes including account ref,
 // and that a subsequent Read produces 0 diff.
-func TestUnit_Bucket_Import(t *testing.T) {
+func TestUnit_Unit_Bucket_Import(t *testing.T) {
 	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -440,7 +440,7 @@ func TestUnit_Bucket_Import(t *testing.T) {
 
 // TestUnit_Bucket_DriftLog verifies that Read logs diffs via tflog when quota_limit
 // or versioning diverge from state.
-func TestUnit_Bucket_DriftLog(t *testing.T) {
+func TestUnit_Unit_Bucket_DriftLog(t *testing.T) {
 	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -496,7 +496,7 @@ func TestUnit_Bucket_DriftLog(t *testing.T) {
 
 // TestUnit_Bucket_NonEmptyDelete verifies that attempting to delete a bucket with
 // objects returns a clear diagnostic error.
-func TestUnit_Bucket_NonEmptyDelete(t *testing.T) {
+func TestUnit_Unit_Bucket_NonEmptyDelete(t *testing.T) {
 	ms, c, bs := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -546,7 +546,7 @@ func TestUnit_Bucket_NonEmptyDelete(t *testing.T) {
 
 // TestUnit_Bucket_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the bucket resource schema.
-func TestUnit_Bucket_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_Bucket_PlanModifiers(t *testing.T) {
 	s := bucketResourceSchema(t).Schema
 
 	// id — UseStateForUnknown
@@ -596,7 +596,7 @@ func TestUnit_Bucket_PlanModifiers(t *testing.T) {
 }
 
 // TestUnit_Bucket_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_Bucket_Lifecycle(t *testing.T) {
+func TestUnit_Unit_Bucket_Lifecycle(t *testing.T) {
 	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -682,7 +682,7 @@ func TestUnit_Bucket_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_Bucket_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_Bucket_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_Bucket_ImportIdempotency(t *testing.T) {
 	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -746,7 +746,7 @@ func TestUnit_Bucket_ImportIdempotency(t *testing.T) {
 
 // TestUnit_Bucket_Create_Conflict verifies that a 409 Conflict on POST produces
 // an error diagnostic (not a panic or silent failure).
-func TestUnit_Bucket_Create_Conflict(t *testing.T) {
+func TestUnit_Unit_Bucket_Create_Conflict(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	// Register a mock that always returns 409 on POST /buckets.
@@ -789,7 +789,7 @@ func TestUnit_Bucket_Create_Conflict(t *testing.T) {
 
 // TestUnit_Bucket_Read_NotFound verifies that a 404 during Read removes the resource
 // from Terraform state without producing an error diagnostic.
-func TestUnit_Bucket_Read_NotFound(t *testing.T) {
+func TestUnit_Unit_Bucket_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	// Register a GET handler that always returns 404-equivalent: empty items list.
@@ -822,7 +822,7 @@ func TestUnit_Bucket_Read_NotFound(t *testing.T) {
 
 // TestUnit_Bucket_VersioningValidator verifies the versioning field rejects
 // invalid values and accepts the valid enum values.
-func TestUnit_Bucket_VersioningValidator(t *testing.T) {
+func TestUnit_Unit_Bucket_VersioningValidator(t *testing.T) {
 	s := bucketResourceSchema(t).Schema
 
 	vAttr, ok := s.Attributes["versioning"].(resschema.StringAttribute)
@@ -858,7 +858,7 @@ func TestUnit_Bucket_VersioningValidator(t *testing.T) {
 
 // TestUnit_Bucket_VersioningWarning verifies that ValidateConfig emits a warning
 // when versioning is not set to "enabled" (replication readiness).
-func TestUnit_Bucket_VersioningWarning(t *testing.T) {
+func TestUnit_Unit_Bucket_VersioningWarning(t *testing.T) {
 	r := &bucketResource{}
 
 	// Verify interface is satisfied.
@@ -942,7 +942,7 @@ func publicAccessConfigTFValue(blockNewPolicies, blockAccess bool) tftypes.Value
 
 // TestBucketResource_Create_WithEradicationConfig verifies that Create sends
 // eradication_config in the POST body and the response contains the configured values.
-func TestBucketResource_Create_WithEradicationConfig(t *testing.T) {
+func TestUnit_BucketResource_Create_WithEradicationConfig(t *testing.T) {
 	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -986,7 +986,7 @@ func TestBucketResource_Create_WithEradicationConfig(t *testing.T) {
 
 // TestBucketResource_Update_WithPublicAccessConfig verifies that Update sends
 // public_access_config in the PATCH body and the response reflects the update.
-func TestBucketResource_Update_WithPublicAccessConfig(t *testing.T) {
+func TestUnit_BucketResource_Update_WithPublicAccessConfig(t *testing.T) {
 	ms, _, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
@@ -1046,7 +1046,7 @@ func TestBucketResource_Update_WithPublicAccessConfig(t *testing.T) {
 
 // TestBucketResource_Read_MapsConfigBlocks verifies that Read populates all
 // config blocks and public_status from the API response.
-func TestBucketResource_Read_MapsConfigBlocks(t *testing.T) {
+func TestUnit_BucketResource_Read_MapsConfigBlocks(t *testing.T) {
 	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 

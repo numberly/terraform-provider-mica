@@ -33,7 +33,6 @@ type s3ExportPolicyRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewS3ExportPolicyRuleResource is the factory function registered in the provider.
 func NewS3ExportPolicyRuleResource() resource.Resource {
 	return &s3ExportPolicyRuleResource{}
 }
@@ -54,7 +53,6 @@ type s3ExportPolicyRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *s3ExportPolicyRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_s3_export_policy_rule"
 }
@@ -147,7 +145,6 @@ func (r *s3ExportPolicyRuleResource) Configure(_ context.Context, req resource.C
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new rule in the S3 export policy.
 func (r *s3ExportPolicyRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data s3ExportPolicyRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -200,7 +197,6 @@ func (r *s3ExportPolicyRuleResource) Create(ctx context.Context, req resource.Cr
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *s3ExportPolicyRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data s3ExportPolicyRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -232,12 +228,12 @@ func (r *s3ExportPolicyRuleResource) Read(ctx context.Context, req resource.Read
 	// Drift detection on effect field.
 	if !data.Effect.IsNull() && !data.Effect.IsUnknown() {
 		if data.Effect.ValueString() != rule.Effect {
-			tflog.Info(ctx, "drift detected on S3 export policy rule", map[string]any{
+			tflog.Debug(ctx, "drift detected on S3 export policy rule", map[string]any{
 				"policy":      policyName,
 				"rule":        ruleName,
 				"field":       "effect",
-				"state_value": data.Effect.ValueString(),
-				"api_value":   rule.Effect,
+				"was":         data.Effect.ValueString(),
+				"now":           rule.Effect,
 			})
 		}
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure qosPolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &qosPolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &qosPolicyDataSource{}
 
@@ -20,7 +19,6 @@ type qosPolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQosPolicyDataSource is the factory function registered in the provider.
 func NewQosPolicyDataSource() datasource.DataSource {
 	return &qosPolicyDataSource{}
 }
@@ -40,7 +38,6 @@ type qosPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *qosPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_qos_policy"
 }

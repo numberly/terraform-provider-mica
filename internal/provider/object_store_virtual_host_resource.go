@@ -19,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreVirtualHostResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreVirtualHostResource{}
 var _ resource.ResourceWithConfigure = &objectStoreVirtualHostResource{}
 var _ resource.ResourceWithImportState = &objectStoreVirtualHostResource{}
@@ -30,7 +29,6 @@ type objectStoreVirtualHostResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreVirtualHostResource is the factory function registered in the provider.
 func NewObjectStoreVirtualHostResource() resource.Resource {
 	return &objectStoreVirtualHostResource{}
 }
@@ -57,7 +55,6 @@ type objectStoreVirtualHostV0Model struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreVirtualHostResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_virtual_host"
 }
@@ -163,7 +160,6 @@ func (r *objectStoreVirtualHostResource) Configure(_ context.Context, req resour
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store virtual host.
 func (r *objectStoreVirtualHostResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreVirtualHostModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -203,7 +199,6 @@ func (r *objectStoreVirtualHostResource) Create(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreVirtualHostResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreVirtualHostModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -304,7 +299,7 @@ func (r *objectStoreVirtualHostResource) Update(ctx context.Context, req resourc
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -380,17 +375,15 @@ func (r *objectStoreVirtualHostResource) ImportState(ctx context.Context, req re
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreVirtualHost and maps the result into the provided model.
-func (r *objectStoreVirtualHostResource) readIntoState(ctx context.Context, name string, data *objectStoreVirtualHostModel, diags interface {
-	AddError(string, string)
-	HasError() bool
-	Append(...diag.Diagnostic)
-}) {
+func (r *objectStoreVirtualHostResource) readIntoState(ctx context.Context, name string, data *objectStoreVirtualHostModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	vh, err := r.client.GetObjectStoreVirtualHost(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store virtual host after write", err.Error())
-		return
+		return diags
 	}
-	mapVirtualHostToModel(ctx, vh, data, diags)
+	mapVirtualHostToModel(ctx, vh, data, &diags)
+	return diags
 }
 
 // mapVirtualHostToModel converts a client.ObjectStoreVirtualHost to the Terraform model.

@@ -36,20 +36,7 @@ func (c *FlashBladeClient) ListNfsExportPolicyRules(ctx context.Context, policyN
 	params := url.Values{}
 	params.Set("policy_names", policyName)
 
-	var all []NfsExportPolicyRule
-	for {
-		path := "/nfs-export-policies/rules?" + params.Encode()
-		var resp ListResponse[NfsExportPolicyRule]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[NfsExportPolicyRule](c, ctx, "/nfs-export-policies/rules", params)
 }
 
 // GetNfsExportPolicyRuleByIndex retrieves an NFS export policy rule by its index within the policy.

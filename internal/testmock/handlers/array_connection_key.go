@@ -31,7 +31,6 @@ func (s *arrayConnectionKeyStore) Seed(key *client.ArrayConnectionKey) {
 	s.current = key
 }
 
-// handle dispatches requests by HTTP method.
 func (s *arrayConnectionKeyStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

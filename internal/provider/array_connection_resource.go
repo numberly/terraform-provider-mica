@@ -19,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure arrayConnectionResource satisfies the resource interfaces.
 var _ resource.Resource = &arrayConnectionResource{}
 var _ resource.ResourceWithConfigure = &arrayConnectionResource{}
 var _ resource.ResourceWithImportState = &arrayConnectionResource{}
@@ -30,7 +29,6 @@ type arrayConnectionResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewArrayConnectionResource is the factory function registered in the provider.
 func NewArrayConnectionResource() resource.Resource {
 	return &arrayConnectionResource{}
 }
@@ -71,7 +69,6 @@ var throttleAttrTypes = map[string]attr.Type{
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *arrayConnectionResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_array_connection"
 }
@@ -192,7 +189,6 @@ func (r *arrayConnectionResource) Configure(_ context.Context, req resource.Conf
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new array connection.
 func (r *arrayConnectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data arrayConnectionModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)

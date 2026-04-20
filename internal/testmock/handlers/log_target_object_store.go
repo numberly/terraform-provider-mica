@@ -34,7 +34,6 @@ func (s *logTargetObjectStoreStore) Seed(item *client.LogTargetObjectStore) {
 	s.byName[item.Name] = item
 }
 
-// handle dispatches log target object store requests by HTTP method.
 func (s *logTargetObjectStoreStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

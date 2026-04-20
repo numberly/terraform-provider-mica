@@ -35,20 +35,7 @@ func (c *FlashBladeClient) ListSmbSharePolicyRules(ctx context.Context, policyNa
 	params := url.Values{}
 	params.Set("policy_names", policyName)
 
-	var all []SmbSharePolicyRule
-	for {
-		path := "/smb-share-policies/rules?" + params.Encode()
-		var resp ListResponse[SmbSharePolicyRule]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[SmbSharePolicyRule](c, ctx, "/smb-share-policies/rules", params)
 }
 
 // GetSmbSharePolicyRuleByName retrieves an SMB share policy rule by name within a policy.

@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure certificateGroupMemberResource satisfies the resource interfaces.
 var _ resource.Resource = &certificateGroupMemberResource{}
 var _ resource.ResourceWithConfigure = &certificateGroupMemberResource{}
 var _ resource.ResourceWithImportState = &certificateGroupMemberResource{}
@@ -27,7 +26,6 @@ type certificateGroupMemberResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewCertificateGroupMemberResource is the factory function registered in the provider.
 func NewCertificateGroupMemberResource() resource.Resource {
 	return &certificateGroupMemberResource{}
 }
@@ -43,7 +41,6 @@ type certificateGroupMemberModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *certificateGroupMemberResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_certificate_group_member"
 }
@@ -142,18 +139,13 @@ func (r *certificateGroupMemberResource) Read(ctx context.Context, req resource.
 	ctx, cancel := context.WithTimeout(ctx, readTimeout)
 	defer cancel()
 
-	exists, err := r.client.GetCertificateGroupMember(ctx, data.GroupName.ValueString(), data.CertName.ValueString())
+	_, err := r.client.GetCertificateGroupMember(ctx, data.GroupName.ValueString(), data.CertName.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError("Error reading certificate group member", err.Error())
-		return
-	}
-
-	if !exists {
-		resp.State.RemoveResource(ctx)
 		return
 	}
 
@@ -206,17 +198,15 @@ func (r *certificateGroupMemberResource) ImportState(ctx context.Context, req re
 	groupName := parts[0]
 	certName := parts[1]
 
-	exists, err := r.client.GetCertificateGroupMember(ctx, groupName, certName)
-	if err != nil {
+	if _, err := r.client.GetCertificateGroupMember(ctx, groupName, certName); err != nil {
+		if client.IsNotFound(err) {
+			resp.Diagnostics.AddError(
+				"Certificate group member not found",
+				fmt.Sprintf("No certificate %q found in group %q.", certName, groupName),
+			)
+			return
+		}
 		resp.Diagnostics.AddError("Error importing certificate group member", err.Error())
-		return
-	}
-
-	if !exists {
-		resp.Diagnostics.AddError(
-			"Certificate group member not found",
-			fmt.Sprintf("No certificate %q found in group %q.", certName, groupName),
-		)
 		return
 	}
 

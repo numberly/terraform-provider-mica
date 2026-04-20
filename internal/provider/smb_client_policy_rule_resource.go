@@ -20,7 +20,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure smbClientPolicyRuleResource satisfies the resource interfaces.
 var _ resource.Resource = &smbClientPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &smbClientPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &smbClientPolicyRuleResource{}
@@ -31,7 +30,6 @@ type smbClientPolicyRuleResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSmbClientPolicyRuleResource is the factory function registered in the provider.
 func NewSmbClientPolicyRuleResource() resource.Resource {
 	return &smbClientPolicyRuleResource{}
 }
@@ -52,7 +50,6 @@ type smbClientPolicyRuleModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *smbClientPolicyRuleResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_smb_client_policy_rule"
 }
@@ -145,7 +142,6 @@ func (r *smbClientPolicyRuleResource) Configure(_ context.Context, req resource.
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new rule in the SMB client policy.
 func (r *smbClientPolicyRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data smbClientPolicyRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -190,7 +186,6 @@ func (r *smbClientPolicyRuleResource) Create(ctx context.Context, req resource.C
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *smbClientPolicyRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data smbClientPolicyRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -222,12 +217,12 @@ func (r *smbClientPolicyRuleResource) Read(ctx context.Context, req resource.Rea
 	// Drift detection on client field.
 	if !data.Client.IsNull() && !data.Client.IsUnknown() {
 		if data.Client.ValueString() != rule.Client {
-			tflog.Info(ctx, "drift detected on SMB client policy rule", map[string]any{
+			tflog.Debug(ctx, "drift detected on SMB client policy rule", map[string]any{
 				"policy":      policyName,
 				"rule":        ruleName,
 				"field":       "client",
-				"state_value": data.Client.ValueString(),
-				"api_value":   rule.Client,
+				"was":         data.Client.ValueString(),
+				"now":           rule.Client,
 			})
 		}
 	}

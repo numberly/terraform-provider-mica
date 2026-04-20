@@ -15,7 +15,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure FlashBladeProvider satisfies the provider.Provider interface.
 var _ provider.Provider = &FlashBladeProvider{}
 
 // FlashBladeProvider is the root provider struct.
@@ -250,7 +249,7 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		// Storage — file systems
-		NewFilesystemResource,
+		NewFileSystemResource,
 
 		// Storage — object store
 		NewObjectStoreAccountResource,
@@ -258,7 +257,7 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 		NewObjectStoreVirtualHostResource,
 		NewObjectStoreUserResource,
 		NewObjectStoreUserPolicyResource,
-		NewAccessKeyResource,
+		NewObjectStoreAccessKeyResource,
 		NewBucketResource,
 		NewBucketAccessPolicyResource,
 		NewBucketAccessPolicyRuleResource,
@@ -329,14 +328,14 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		// Storage — file systems
-		NewFilesystemDataSource,
+		NewFileSystemDataSource,
 
 		// Storage — object store
 		NewObjectStoreAccountDataSource,
 		NewObjectStoreAccountExportDataSource,
 		NewObjectStoreVirtualHostDataSource,
 		NewObjectStoreUserDataSource,
-		NewAccessKeyDataSource,
+		NewObjectStoreAccessKeyDataSource,
 		NewBucketDataSource,
 		NewBucketAccessPolicyDataSource,
 		NewBucketAuditFilterDataSource,

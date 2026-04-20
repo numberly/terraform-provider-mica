@@ -175,7 +175,7 @@ func (r *directoryServiceManagementResource) Create(ctx context.Context, req res
 
 	// Build patch body from plan — treat as full create (no prior state).
 	var zeroState directoryServiceManagementModel
-	patch, d := buildDSMPatchFromPlan(ctx, data, zeroState)
+	patch, d := buildDSMPatch(ctx, data, zeroState)
 	resp.Diagnostics.Append(d...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -374,76 +374,10 @@ func (r *directoryServiceManagementResource) Update(ctx context.Context, req res
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	patch := client.DirectoryServicePatch{}
-
-	if !plan.Enabled.Equal(state.Enabled) {
-		v := plan.Enabled.ValueBool()
-		patch.Enabled = &v
-	}
-
-	if !plan.URIs.Equal(state.URIs) {
-		uris, d := listToStrings(ctx, plan.URIs)
-		resp.Diagnostics.Append(d...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		patch.URIs = &uris
-	}
-
-	if !plan.BaseDN.Equal(state.BaseDN) {
-		v := plan.BaseDN.ValueString()
-		patch.BaseDN = &v
-	}
-
-	if !plan.BindUser.Equal(state.BindUser) {
-		v := plan.BindUser.ValueString()
-		patch.BindUser = &v
-	}
-
-	if !plan.BindPassword.Equal(state.BindPassword) {
-		v := plan.BindPassword.ValueString()
-		patch.BindPassword = &v
-	}
-
-	if !plan.CACertificate.Equal(state.CACertificate) {
-		if plan.CACertificate.IsNull() || plan.CACertificate.ValueString() == "" {
-			var nilRef *client.NamedReference
-			patch.CACertificate = &nilRef
-		} else {
-			ref := &client.NamedReference{Name: plan.CACertificate.ValueString()}
-			patch.CACertificate = &ref
-		}
-	}
-
-	if !plan.CACertificateGroup.Equal(state.CACertificateGroup) {
-		if plan.CACertificateGroup.IsNull() || plan.CACertificateGroup.ValueString() == "" {
-			var nilRef *client.NamedReference
-			patch.CACertificateGroup = &nilRef
-		} else {
-			ref := &client.NamedReference{Name: plan.CACertificateGroup.ValueString()}
-			patch.CACertificateGroup = &ref
-		}
-	}
-
-	// Management sub-object: build only if any sub-field changed.
-	mgmtChanged := !plan.UserLoginAttribute.Equal(state.UserLoginAttribute) ||
-		!plan.UserObjectClass.Equal(state.UserObjectClass) ||
-		!plan.SSHPublicKeyAttribute.Equal(state.SSHPublicKeyAttribute)
-	if mgmtChanged {
-		mgmtPatch := &client.DirectoryServiceManagementPatch{}
-		if !plan.UserLoginAttribute.Equal(state.UserLoginAttribute) {
-			v := plan.UserLoginAttribute.ValueString()
-			mgmtPatch.UserLoginAttribute = &v
-		}
-		if !plan.UserObjectClass.Equal(state.UserObjectClass) {
-			v := plan.UserObjectClass.ValueString()
-			mgmtPatch.UserObjectClass = &v
-		}
-		if !plan.SSHPublicKeyAttribute.Equal(state.SSHPublicKeyAttribute) {
-			v := plan.SSHPublicKeyAttribute.ValueString()
-			mgmtPatch.SSHPublicKeyAttribute = &v
-		}
-		patch.Management = mgmtPatch
+	patch, d := buildDSMPatch(ctx, plan, state)
+	resp.Diagnostics.Append(d...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	result, err := r.client.PatchDirectoryServiceManagement(ctx, managementDirectoryServiceName, patch)
@@ -452,17 +386,13 @@ func (r *directoryServiceManagementResource) Update(ctx context.Context, req res
 		return
 	}
 
+	// Preserve write-only bind_password from plan — the API never returns it.
+	savedPassword := plan.BindPassword
 	resp.Diagnostics.Append(mapDirectoryServiceToModel(ctx, result, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// Preserve write-only bind_password from plan.
-	plan.BindPassword = state.BindPassword
-	if !req.Plan.Raw.IsNull() {
-		var planData directoryServiceManagementModel
-		req.Plan.Get(ctx, &planData)
-		plan.BindPassword = planData.BindPassword
-	}
+	plan.BindPassword = savedPassword
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -587,19 +517,20 @@ func mapDirectoryServiceToModel(ctx context.Context, ds *client.DirectoryService
 	return diags
 }
 
-// buildDSMPatchFromPlan builds a DirectoryServicePatch from the plan.
-// For fields not set in plan (null/unknown), the patch field is left nil (omitted).
-// This is used for Create where we send all plan-specified fields.
-func buildDSMPatchFromPlan(ctx context.Context, plan directoryServiceManagementModel, _ directoryServiceManagementModel) (client.DirectoryServicePatch, diag.Diagnostics) {
+// buildDSMPatch produces a DirectoryServicePatch containing only fields that
+// differ between plan and state. Create callers pass a zero-value state so
+// every populated plan field is sent; Update callers pass the current state
+// so only genuinely changed fields are included.
+func buildDSMPatch(ctx context.Context, plan, state directoryServiceManagementModel) (client.DirectoryServicePatch, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	patch := client.DirectoryServicePatch{}
 
-	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+	if !plan.Enabled.Equal(state.Enabled) {
 		v := plan.Enabled.ValueBool()
 		patch.Enabled = &v
 	}
 
-	if !plan.URIs.IsNull() && !plan.URIs.IsUnknown() {
+	if !plan.URIs.Equal(state.URIs) {
 		uris, d := listToStrings(ctx, plan.URIs)
 		diags.Append(d...)
 		if diags.HasError() {
@@ -608,46 +539,57 @@ func buildDSMPatchFromPlan(ctx context.Context, plan directoryServiceManagementM
 		patch.URIs = &uris
 	}
 
-	if !plan.BaseDN.IsNull() && !plan.BaseDN.IsUnknown() {
+	if !plan.BaseDN.Equal(state.BaseDN) {
 		v := plan.BaseDN.ValueString()
 		patch.BaseDN = &v
 	}
 
-	if !plan.BindUser.IsNull() && !plan.BindUser.IsUnknown() {
+	if !plan.BindUser.Equal(state.BindUser) {
 		v := plan.BindUser.ValueString()
 		patch.BindUser = &v
 	}
 
-	if !plan.BindPassword.IsNull() && !plan.BindPassword.IsUnknown() && plan.BindPassword.ValueString() != "" {
+	// BindPassword is sensitive/write-only; skip empty-string plans so we
+	// never push "" as a credential (the provider treats empty as "unset").
+	if !plan.BindPassword.Equal(state.BindPassword) && plan.BindPassword.ValueString() != "" {
 		v := plan.BindPassword.ValueString()
 		patch.BindPassword = &v
 	}
 
-	if !plan.CACertificate.IsNull() && !plan.CACertificate.IsUnknown() && plan.CACertificate.ValueString() != "" {
-		ref := &client.NamedReference{Name: plan.CACertificate.ValueString()}
-		patch.CACertificate = &ref
+	if !plan.CACertificate.Equal(state.CACertificate) {
+		if plan.CACertificate.IsNull() || plan.CACertificate.ValueString() == "" {
+			var nilRef *client.NamedReference
+			patch.CACertificate = &nilRef
+		} else {
+			ref := &client.NamedReference{Name: plan.CACertificate.ValueString()}
+			patch.CACertificate = &ref
+		}
 	}
 
-	if !plan.CACertificateGroup.IsNull() && !plan.CACertificateGroup.IsUnknown() && plan.CACertificateGroup.ValueString() != "" {
-		ref := &client.NamedReference{Name: plan.CACertificateGroup.ValueString()}
-		patch.CACertificateGroup = &ref
+	if !plan.CACertificateGroup.Equal(state.CACertificateGroup) {
+		if plan.CACertificateGroup.IsNull() || plan.CACertificateGroup.ValueString() == "" {
+			var nilRef *client.NamedReference
+			patch.CACertificateGroup = &nilRef
+		} else {
+			ref := &client.NamedReference{Name: plan.CACertificateGroup.ValueString()}
+			patch.CACertificateGroup = &ref
+		}
 	}
 
-	// Management sub-object.
-	anyMgmt := (!plan.UserLoginAttribute.IsNull() && !plan.UserLoginAttribute.IsUnknown()) ||
-		(!plan.UserObjectClass.IsNull() && !plan.UserObjectClass.IsUnknown()) ||
-		(!plan.SSHPublicKeyAttribute.IsNull() && !plan.SSHPublicKeyAttribute.IsUnknown())
-	if anyMgmt {
+	mgmtChanged := !plan.UserLoginAttribute.Equal(state.UserLoginAttribute) ||
+		!plan.UserObjectClass.Equal(state.UserObjectClass) ||
+		!plan.SSHPublicKeyAttribute.Equal(state.SSHPublicKeyAttribute)
+	if mgmtChanged {
 		mgmt := &client.DirectoryServiceManagementPatch{}
-		if !plan.UserLoginAttribute.IsNull() && !plan.UserLoginAttribute.IsUnknown() {
+		if !plan.UserLoginAttribute.Equal(state.UserLoginAttribute) {
 			v := plan.UserLoginAttribute.ValueString()
 			mgmt.UserLoginAttribute = &v
 		}
-		if !plan.UserObjectClass.IsNull() && !plan.UserObjectClass.IsUnknown() {
+		if !plan.UserObjectClass.Equal(state.UserObjectClass) {
 			v := plan.UserObjectClass.ValueString()
 			mgmt.UserObjectClass = &v
 		}
-		if !plan.SSHPublicKeyAttribute.IsNull() && !plan.SSHPublicKeyAttribute.IsUnknown() {
+		if !plan.SSHPublicKeyAttribute.Equal(state.SSHPublicKeyAttribute) {
 			v := plan.SSHPublicKeyAttribute.ValueString()
 			mgmt.SSHPublicKeyAttribute = &v
 		}

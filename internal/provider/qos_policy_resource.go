@@ -16,7 +16,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure qosPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &qosPolicyResource{}
 var _ resource.ResourceWithConfigure = &qosPolicyResource{}
 var _ resource.ResourceWithImportState = &qosPolicyResource{}
@@ -26,7 +25,6 @@ type qosPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQosPolicyResource is the factory function registered in the provider.
 func NewQosPolicyResource() resource.Resource {
 	return &qosPolicyResource{}
 }
@@ -47,7 +45,6 @@ type qosPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *qosPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_qos_policy"
 }
@@ -125,7 +122,6 @@ func (r *qosPolicyResource) Configure(_ context.Context, req resource.ConfigureR
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new QoS policy.
 func (r *qosPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data qosPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -166,7 +162,6 @@ func (r *qosPolicyResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *qosPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data qosPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -277,7 +272,6 @@ func (r *qosPolicyResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-// ImportState imports an existing QoS policy by name.
 func (r *qosPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	policy, err := r.client.GetQosPolicy(ctx, req.ID)
 	if err != nil {

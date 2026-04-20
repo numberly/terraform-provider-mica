@@ -17,7 +17,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreUserResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreUserResource{}
 var _ resource.ResourceWithConfigure = &objectStoreUserResource{}
 var _ resource.ResourceWithImportState = &objectStoreUserResource{}
@@ -28,7 +27,6 @@ type objectStoreUserResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreUserResource is the factory function registered in the provider.
 func NewObjectStoreUserResource() resource.Resource {
 	return &objectStoreUserResource{}
 }
@@ -45,7 +43,6 @@ type objectStoreUserModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreUserResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_user"
 }
@@ -110,7 +107,6 @@ func (r *objectStoreUserResource) Configure(_ context.Context, req resource.Conf
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store user.
 func (r *objectStoreUserResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreUserModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -153,7 +149,6 @@ func (r *objectStoreUserResource) Create(ctx context.Context, req resource.Creat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreUserResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreUserModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

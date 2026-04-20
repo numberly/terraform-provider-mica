@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure targetDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &targetDataSource{}
 var _ datasource.DataSourceWithConfigure = &targetDataSource{}
 
@@ -20,7 +19,6 @@ type targetDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewTargetDataSource is the factory function registered in the provider.
 func NewTargetDataSource() datasource.DataSource {
 	return &targetDataSource{}
 }
@@ -39,7 +37,6 @@ type targetDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *targetDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_target"
 }

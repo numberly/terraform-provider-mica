@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -17,7 +18,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure objectStoreAccessPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &objectStoreAccessPolicyResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccessPolicyResource{}
 var _ resource.ResourceWithImportState = &objectStoreAccessPolicyResource{}
@@ -28,7 +28,6 @@ type objectStoreAccessPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewObjectStoreAccessPolicyResource is the factory function registered in the provider.
 func NewObjectStoreAccessPolicyResource() resource.Resource {
 	return &objectStoreAccessPolicyResource{}
 }
@@ -49,7 +48,6 @@ type objectStoreAccessPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *objectStoreAccessPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_object_store_access_policy"
 }
@@ -142,7 +140,6 @@ func (r *objectStoreAccessPolicyResource) Configure(_ context.Context, req resou
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new object store access policy.
 func (r *objectStoreAccessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data objectStoreAccessPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -169,7 +166,7 @@ func (r *objectStoreAccessPolicyResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -177,7 +174,6 @@ func (r *objectStoreAccessPolicyResource) Create(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *objectStoreAccessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data objectStoreAccessPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -207,16 +203,16 @@ func (r *objectStoreAccessPolicyResource) Read(ctx context.Context, req resource
 	// Drift detection on name field.
 	if !data.Name.IsNull() && !data.Name.IsUnknown() {
 		if data.Name.ValueString() != policy.Name {
-			tflog.Info(ctx, "drift detected on object store access policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on object store access policy", map[string]any{
 				"resource":    name,
 				"field":       "name",
-				"state_value": data.Name.ValueString(),
-				"api_value":   policy.Name,
+				"was":         data.Name.ValueString(),
+				"now":           policy.Name,
 			})
 		}
 	}
 
-	mapOAPToModel(policy, &data)
+	mapObjectStoreAccessPolicyToModel(policy, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -255,7 +251,7 @@ func (r *objectStoreAccessPolicyResource) Update(ctx context.Context, req resour
 
 	// After rename the policy is known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -305,7 +301,6 @@ func (r *objectStoreAccessPolicyResource) Delete(ctx context.Context, req resour
 	}
 }
 
-// ImportState imports an existing object store access policy by name.
 func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -315,7 +310,7 @@ func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req r
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -326,18 +321,22 @@ func (r *objectStoreAccessPolicyResource) ImportState(ctx context.Context, req r
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetObjectStoreAccessPolicy and maps the result into the provided model.
-func (r *objectStoreAccessPolicyResource) readIntoState(ctx context.Context, name string, data *objectStoreAccessPolicyModel, diags DiagnosticReporter) {
+func (r *objectStoreAccessPolicyResource) readIntoState(ctx context.Context, name string, data *objectStoreAccessPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetObjectStoreAccessPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading object store access policy after write", err.Error())
-		return
+		return diags
 	}
-	mapOAPToModel(policy, data)
+	mapObjectStoreAccessPolicyToModel(policy, data)
+	return diags
 }
 
-// mapOAPToModel maps a client.ObjectStoreAccessPolicy to an objectStoreAccessPolicyModel.
+
+// mapObjectStoreAccessPolicyToModel maps a client.ObjectStoreAccessPolicy to an objectStoreAccessPolicyModel.
 // It preserves user-managed fields (Timeouts).
-func mapOAPToModel(policy *client.ObjectStoreAccessPolicy, data *objectStoreAccessPolicyModel) {
+func mapObjectStoreAccessPolicyToModel(policy *client.ObjectStoreAccessPolicy, data *objectStoreAccessPolicyModel) {
 	data.ID = types.StringValue(policy.ID)
 	data.Name = types.StringValue(policy.Name)
 	data.ARN = types.StringValue(policy.ARN)

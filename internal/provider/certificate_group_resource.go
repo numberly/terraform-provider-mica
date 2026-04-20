@@ -18,7 +18,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure certificateGroupResource satisfies the resource interfaces.
 var _ resource.Resource = &certificateGroupResource{}
 var _ resource.ResourceWithConfigure = &certificateGroupResource{}
 var _ resource.ResourceWithImportState = &certificateGroupResource{}
@@ -29,7 +28,6 @@ type certificateGroupResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewCertificateGroupResource is the factory function registered in the provider.
 func NewCertificateGroupResource() resource.Resource {
 	return &certificateGroupResource{}
 }
@@ -46,7 +44,6 @@ type certificateGroupModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *certificateGroupResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_certificate_group"
 }
@@ -108,7 +105,6 @@ func (r *certificateGroupResource) Configure(_ context.Context, req resource.Con
 
 // ---------- CRD methods (no Update) -----------------------------------------
 
-// Create creates a new certificate group.
 func (r *certificateGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data certificateGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -171,7 +167,9 @@ func (r *certificateGroupResource) Read(ctx context.Context, req resource.ReadRe
 		})
 	}
 
-	wasRealms := strings.Join(listToStringSlice(ctx, data.Realms), ",")
+	wasRealmsList, dRealms := listToStrings(ctx, data.Realms)
+	resp.Diagnostics.Append(dRealms...)
+	wasRealms := strings.Join(wasRealmsList, ",")
 	nowRealms := strings.Join(group.Realms, ",")
 	if wasRealms != nowRealms {
 		tflog.Debug(ctx, "drift detected", map[string]any{
@@ -220,7 +218,6 @@ func (r *certificateGroupResource) Delete(ctx context.Context, req resource.Dele
 	}
 }
 
-// ImportState imports an existing certificate group by name.
 func (r *certificateGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 	group, err := r.client.GetCertificateGroup(ctx, name)

@@ -11,7 +11,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure networkAccessPolicyDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &networkAccessPolicyDataSource{}
 var _ datasource.DataSourceWithConfigure = &networkAccessPolicyDataSource{}
 
@@ -20,7 +19,6 @@ type networkAccessPolicyDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNetworkAccessPolicyDataSource is the factory function registered in the provider.
 func NewNetworkAccessPolicyDataSource() datasource.DataSource {
 	return &networkAccessPolicyDataSource{}
 }
@@ -39,7 +37,6 @@ type networkAccessPolicyDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *networkAccessPolicyDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_network_access_policy"
 }

@@ -358,8 +358,8 @@ func TestUnit_FileSystem_PollEradicated(t *testing.T) {
 
 	c := newTestClient(t, srv)
 	ctx := context.Background()
-	if err := c.PollUntilEradicated(ctx, "poll-fs"); err != nil {
-		t.Fatalf("PollUntilEradicated: %v", err)
+	if err := c.PollFileSystemUntilEradicated(ctx, "poll-fs"); err != nil {
+		t.Fatalf("PollFileSystemUntilEradicated: %v", err)
 	}
 	if callCount < 3 {
 		t.Errorf("expected at least 3 GET calls, got %d", callCount)
@@ -387,7 +387,7 @@ func TestUnit_FileSystem_PollEradicated_Timeout(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
 
-	err := c.PollUntilEradicated(ctx, "timeout-fs")
+	err := c.PollFileSystemUntilEradicated(ctx, "timeout-fs")
 	if err == nil {
 		t.Fatal("expected error due to context timeout, got nil")
 	}

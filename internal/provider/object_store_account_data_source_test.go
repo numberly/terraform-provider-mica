@@ -38,8 +38,8 @@ func osaDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildOSADSType returns the tftypes.Object for the object store account data source schema.
-func buildOSADSType() tftypes.Object {
+// buildObjectStoreAccountDSType returns the tftypes.Object for the object store account data source schema.
+func buildObjectStoreAccountDSType() tftypes.Object {
 	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"data_reduction":      tftypes.Number,
 		"snapshots":           tftypes.Number,
@@ -112,10 +112,10 @@ func TestUnit_ObjectStoreAccountDataSource(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "ds-test-account")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSADSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildOSADSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildObjectStoreAccountDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if readResp.Diagnostics.HasError() {
@@ -151,10 +151,10 @@ func TestUnit_ObjectStoreAccountDataSource_NotFound(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "nonexistent-account")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildOSADSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildObjectStoreAccountDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildOSADSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildObjectStoreAccountDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if !readResp.Diagnostics.HasError() {

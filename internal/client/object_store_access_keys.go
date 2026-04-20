@@ -32,24 +32,7 @@ func (c *FlashBladeClient) ListObjectStoreAccessKeys(ctx context.Context, opts L
 		params.Set("filter", opts.Filter)
 	}
 
-	var all []ObjectStoreAccessKey
-	for {
-		path := "/object-store-access-keys"
-		if len(params) > 0 {
-			path += "?" + params.Encode()
-		}
-
-		var resp ListResponse[ObjectStoreAccessKey]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, err
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[ObjectStoreAccessKey](c, ctx, "/object-store-access-keys", params)
 }
 
 // PostObjectStoreAccessKey creates a new object store access key.

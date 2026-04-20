@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -29,7 +30,6 @@ type s3ExportPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewS3ExportPolicyResource is the factory function registered in the provider.
 func NewS3ExportPolicyResource() resource.Resource {
 	return &s3ExportPolicyResource{}
 }
@@ -49,7 +49,6 @@ type s3ExportPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *s3ExportPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_s3_export_policy"
 }
@@ -129,7 +128,6 @@ func (r *s3ExportPolicyResource) Configure(_ context.Context, req resource.Confi
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new S3 export policy.
 func (r *s3ExportPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data s3ExportPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -157,7 +155,7 @@ func (r *s3ExportPolicyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -165,7 +163,6 @@ func (r *s3ExportPolicyResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *s3ExportPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data s3ExportPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -195,11 +192,11 @@ func (r *s3ExportPolicyResource) Read(ctx context.Context, req resource.ReadRequ
 	// Drift detection on enabled field.
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
-			tflog.Info(ctx, "drift detected on S3 export policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on S3 export policy", map[string]any{
 				"resource":    name,
 				"field":       "enabled",
-				"state_value": data.Enabled.ValueBool(),
-				"api_value":   policy.Enabled,
+				"was":         data.Enabled.ValueBool(),
+				"now":           policy.Enabled,
 			})
 		}
 	}
@@ -246,7 +243,7 @@ func (r *s3ExportPolicyResource) Update(ctx context.Context, req resource.Update
 
 	// After rename the policy is now known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -291,7 +288,7 @@ func (r *s3ExportPolicyResource) ImportState(ctx context.Context, req resource.I
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -302,14 +299,18 @@ func (r *s3ExportPolicyResource) ImportState(ctx context.Context, req resource.I
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetS3ExportPolicy and maps the result into the provided model.
-func (r *s3ExportPolicyResource) readIntoState(ctx context.Context, name string, data *s3ExportPolicyModel, diags DiagnosticReporter) {
+func (r *s3ExportPolicyResource) readIntoState(ctx context.Context, name string, data *s3ExportPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetS3ExportPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading S3 export policy after write", err.Error())
-		return
+		return diags
 	}
 	mapS3PolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapS3PolicyToModel maps a client.S3ExportPolicy to an s3ExportPolicyModel.
 // It preserves user-managed fields (Timeouts).

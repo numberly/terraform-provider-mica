@@ -30,7 +30,6 @@ func RegisterObjectStoreAccountHandlers(mux *http.ServeMux) *objectStoreAccountS
 	return store
 }
 
-// handle dispatches object store account requests by HTTP method.
 func (s *objectStoreAccountStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

@@ -35,7 +35,6 @@ func (s *bucketReplicaLinkStore) Seed(link *client.BucketReplicaLink) {
 	s.byID[link.ID] = link
 }
 
-// handle dispatches bucket replica link requests by HTTP method.
 func (s *bucketReplicaLinkStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

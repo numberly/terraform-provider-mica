@@ -34,7 +34,6 @@ func (s *remoteCredentialsStore) Seed(cred *client.ObjectStoreRemoteCredentials)
 	s.byName[cred.Name] = cred
 }
 
-// handle dispatches object store remote credentials requests by HTTP method.
 func (s *remoteCredentialsStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -19,7 +20,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure auditObjectStorePolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &auditObjectStorePolicyResource{}
 var _ resource.ResourceWithConfigure = &auditObjectStorePolicyResource{}
 var _ resource.ResourceWithImportState = &auditObjectStorePolicyResource{}
@@ -30,7 +30,6 @@ type auditObjectStorePolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewAuditObjectStorePolicyResource is the factory function registered in the provider.
 func NewAuditObjectStorePolicyResource() resource.Resource {
 	return &auditObjectStorePolicyResource{}
 }
@@ -50,7 +49,6 @@ type auditObjectStorePolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *auditObjectStorePolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_audit_object_store_policy"
 }
@@ -134,7 +132,6 @@ func (r *auditObjectStorePolicyResource) Configure(_ context.Context, req resour
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new audit object store policy.
 func (r *auditObjectStorePolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data auditObjectStorePolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -177,7 +174,6 @@ func (r *auditObjectStorePolicyResource) Create(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *auditObjectStorePolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data auditObjectStorePolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -277,7 +273,7 @@ func (r *auditObjectStorePolicyResource) Update(ctx context.Context, req resourc
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -311,7 +307,6 @@ func (r *auditObjectStorePolicyResource) Delete(ctx context.Context, req resourc
 	}
 }
 
-// ImportState imports an existing audit object store policy by name.
 func (r *auditObjectStorePolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -319,7 +314,7 @@ func (r *auditObjectStorePolicyResource) ImportState(ctx context.Context, req re
 	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -330,14 +325,18 @@ func (r *auditObjectStorePolicyResource) ImportState(ctx context.Context, req re
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetAuditObjectStorePolicy and maps the result into the provided model.
-func (r *auditObjectStorePolicyResource) readIntoState(ctx context.Context, name string, data *auditObjectStorePolicyModel, diags DiagnosticReporter) {
+func (r *auditObjectStorePolicyResource) readIntoState(ctx context.Context, name string, data *auditObjectStorePolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetAuditObjectStorePolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading audit object store policy after write", err.Error())
-		return
+		return diags
 	}
 	mapAuditObjectStorePolicyToModel(policy, data)
+	return diags
 }
+
 
 // mapAuditObjectStorePolicyToModel converts a client.AuditObjectStorePolicy to the Terraform model.
 // It preserves user-managed fields (Timeouts).

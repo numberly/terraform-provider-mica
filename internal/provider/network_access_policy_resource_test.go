@@ -40,8 +40,8 @@ func napResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildNAPType returns the tftypes.Object for the NAP resource.
-func buildNAPType() tftypes.Object {
+// buildNetworkAccessPolicyType returns the tftypes.Object for the NAP resource.
+func buildNetworkAccessPolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -85,7 +85,7 @@ func napPlanWithName(t *testing.T, name string) tfsdk.Plan {
 	cfg := nullNAPConfig()
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildNAPType(), cfg),
+		Raw:    tftypes.NewValue(buildNetworkAccessPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -98,7 +98,7 @@ func napPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tfsdk.Pl
 	cfg["name"] = tftypes.NewValue(tftypes.String, name)
 	cfg["enabled"] = tftypes.NewValue(tftypes.Bool, enabled)
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildNAPType(), cfg),
+		Raw:    tftypes.NewValue(buildNetworkAccessPolicyType(), cfg),
 		Schema: s,
 	}
 }
@@ -106,7 +106,7 @@ func napPlanWithNameAndEnabled(t *testing.T, name string, enabled bool) tfsdk.Pl
 // ---- tests ------------------------------------------------------------------
 
 // TestNetworkAccessPolicyResource_Create verifies Create (GET+PATCH) populates state from the pre-seeded "default" singleton.
-func TestNetworkAccessPolicyResource_Create(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -117,7 +117,7 @@ func TestNetworkAccessPolicyResource_Create(t *testing.T) {
 	// The mock pre-seeds a "default" policy. Create should adopt it via GET+PATCH.
 	plan := napPlanWithNameAndEnabled(t, "default", true)
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -143,7 +143,7 @@ func TestNetworkAccessPolicyResource_Create(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyResource_Create_NotFound verifies Create fails with a clear error for non-existent policies.
-func TestNetworkAccessPolicyResource_Create_NotFound(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Create_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -154,7 +154,7 @@ func TestNetworkAccessPolicyResource_Create_NotFound(t *testing.T) {
 	// "nonexistent-policy" is not pre-seeded in the mock.
 	plan := napPlanWithName(t, "nonexistent-policy")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -165,7 +165,7 @@ func TestNetworkAccessPolicyResource_Create_NotFound(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyResource_Update verifies PATCH updates enabled flag.
-func TestNetworkAccessPolicyResource_Update(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -176,7 +176,7 @@ func TestNetworkAccessPolicyResource_Update(t *testing.T) {
 	// Adopt the default singleton.
 	createPlan := napPlanWithNameAndEnabled(t, "default", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -186,7 +186,7 @@ func TestNetworkAccessPolicyResource_Update(t *testing.T) {
 	// Update enabled=false.
 	updatePlan := napPlanWithNameAndEnabled(t, "default", false)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -208,7 +208,7 @@ func TestNetworkAccessPolicyResource_Update(t *testing.T) {
 
 // TestNetworkAccessPolicyResource_Delete verifies Delete resets singleton to disabled=false via PATCH.
 // The policy should still exist on the array (it is a singleton).
-func TestNetworkAccessPolicyResource_Delete(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -219,7 +219,7 @@ func TestNetworkAccessPolicyResource_Delete(t *testing.T) {
 	// Adopt the default singleton.
 	plan := napPlanWithNameAndEnabled(t, "default", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -246,7 +246,7 @@ func TestNetworkAccessPolicyResource_Delete(t *testing.T) {
 }
 
 // TestNetworkAccessPolicyResource_Import verifies ImportState populates all attributes.
-func TestNetworkAccessPolicyResource_Import(t *testing.T) {
+func TestUnit_NetworkAccessPolicyResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -256,7 +256,7 @@ func TestNetworkAccessPolicyResource_Import(t *testing.T) {
 
 	// Import the pre-seeded "default" singleton directly by name.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default"}, importResp)
 
@@ -303,8 +303,8 @@ func napDataSourceSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-// buildNAPDSType returns the tftypes.Object for the NAP data source.
-func buildNAPDSType() tftypes.Object {
+// buildNetworkAccessPolicyDSType returns the tftypes.Object for the NAP data source.
+func buildNetworkAccessPolicyDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":          tftypes.String,
 		"name":        tftypes.String,
@@ -328,7 +328,7 @@ func nullNAPDSConfig() map[string]tftypes.Value {
 }
 
 // TestNetworkAccessPolicyDataSource verifies data source reads the pre-seeded "default" policy by name.
-func TestNetworkAccessPolicyDataSource(t *testing.T) {
+func TestUnit_NetworkAccessPolicyDataSource(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -341,10 +341,10 @@ func TestNetworkAccessPolicyDataSource(t *testing.T) {
 	cfg["name"] = tftypes.NewValue(tftypes.String, "default")
 
 	readResp := &datasource.ReadResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPDSType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyDSType(), nil), Schema: s},
 	}
 	d.Read(context.Background(), datasource.ReadRequest{
-		Config: tfsdk.Config{Raw: tftypes.NewValue(buildNAPDSType(), cfg), Schema: s},
+		Config: tfsdk.Config{Raw: tftypes.NewValue(buildNetworkAccessPolicyDSType(), cfg), Schema: s},
 	}, readResp)
 
 	if readResp.Diagnostics.HasError() {
@@ -369,7 +369,7 @@ func TestNetworkAccessPolicyDataSource(t *testing.T) {
 
 // TestUnit_NetworkAccessPolicy_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
 // NAP is a singleton (GET+PATCH). Create adopts the existing "default" policy.
-func TestUnit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
+func TestUnit_Unit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -380,7 +380,7 @@ func TestUnit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
 	// Step 1: Create (adopt singleton via GET+PATCH).
 	createPlan := napPlanWithNameAndEnabled(t, "default", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -414,7 +414,7 @@ func TestUnit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
 	// Step 3: Update enabled=false.
 	updatePlan := napPlanWithNameAndEnabled(t, "default", false)
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -454,7 +454,7 @@ func TestUnit_NetworkAccessPolicy_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_NetworkAccessPolicy_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNetworkAccessPolicyHandlers(ms.Mux)
@@ -465,7 +465,7 @@ func TestUnit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
 	// Create (adopt singleton).
 	createPlan := napPlanWithNameAndEnabled(t, "default", true)
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -478,7 +478,7 @@ func TestUnit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
 
 	// ImportState.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNAPType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNetworkAccessPolicyType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "default"}, importResp)
 	if importResp.Diagnostics.HasError() {
@@ -510,7 +510,7 @@ func TestUnit_NetworkAccessPolicy_ImportIdempotency(t *testing.T) {
 
 // TestUnit_NAP_PlanModifiers verifies all UseStateForUnknown plan modifiers
 // in the network_access_policy resource schema.
-func TestUnit_NAP_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_NAP_PlanModifiers(t *testing.T) {
 	s := napResourceSchema(t).Schema
 
 	// id — UseStateForUnknown

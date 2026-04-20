@@ -31,7 +31,6 @@ func RegisterObjectStoreAccessKeyHandlers(mux *http.ServeMux, accounts *objectSt
 	return store
 }
 
-// handle dispatches object store access key requests by HTTP method.
 func (s *accessKeyStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

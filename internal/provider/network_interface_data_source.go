@@ -12,7 +12,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure networkInterfaceDataSource satisfies the datasource interfaces.
 var _ datasource.DataSource = &networkInterfaceDataSource{}
 var _ datasource.DataSourceWithConfigure = &networkInterfaceDataSource{}
 
@@ -21,7 +20,6 @@ type networkInterfaceDataSource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNetworkInterfaceDataSource is the factory function registered in the provider.
 func NewNetworkInterfaceDataSource() datasource.DataSource {
 	return &networkInterfaceDataSource{}
 }
@@ -47,7 +45,6 @@ type networkInterfaceDataSourceModel struct {
 
 // ---------- data source interface methods -----------------------------------
 
-// Metadata sets the Terraform type name.
 func (d *networkInterfaceDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = "flashblade_network_interface"
 }
@@ -153,7 +150,7 @@ func (d *networkInterfaceDataSource) Read(ctx context.Context, req datasource.Re
 		return
 	}
 
-	mapNetworkInterfaceToDataSourceModel(ctx, ni, &config, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToDataSourceModel(ctx, ni, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -162,7 +159,8 @@ func (d *networkInterfaceDataSource) Read(ctx context.Context, req datasource.Re
 }
 
 // mapNetworkInterfaceToDataSourceModel maps a *client.NetworkInterface to a *networkInterfaceDataSourceModel.
-func mapNetworkInterfaceToDataSourceModel(ctx context.Context, ni *client.NetworkInterface, data *networkInterfaceDataSourceModel, diags *diag.Diagnostics) {
+func mapNetworkInterfaceToDataSourceModel(ctx context.Context, ni *client.NetworkInterface, data *networkInterfaceDataSourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.ID = types.StringValue(ni.ID)
 	data.Name = types.StringValue(ni.Name)
 	data.Address = types.StringValue(ni.Address)
@@ -174,7 +172,6 @@ func mapNetworkInterfaceToDataSourceModel(ctx context.Context, ni *client.Networ
 	data.Netmask = stringOrNull(ni.Netmask)
 	data.SubnetName = refToSubnetName(ni.Subnet)
 
-	// Collapse []string services to a single string value.
 	if len(ni.Services) > 0 {
 		data.Services = types.StringValue(ni.Services[0])
 	} else {
@@ -182,35 +179,17 @@ func mapNetworkInterfaceToDataSourceModel(ctx context.Context, ni *client.Networ
 	}
 
 	// AttachedServers: always use a list (empty, not null) to prevent spurious drift.
-	if len(ni.AttachedServers) > 0 {
-		names := make([]string, 0, len(ni.AttachedServers))
-		for _, s := range ni.AttachedServers {
-			names = append(names, s.Name)
-		}
-		serverList, serverDiags := types.ListValueFrom(ctx, types.StringType, names)
-		diags.Append(serverDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.AttachedServers = serverList
-	} else {
-		emptyList, emptyDiags := types.ListValueFrom(ctx, types.StringType, []string{})
-		diags.Append(emptyDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.AttachedServers = emptyList
-	}
+	data.AttachedServers = namedRefsToListValue(ni.AttachedServers)
 
-	// Realms: null when absent, list otherwise.
 	if len(ni.Realms) > 0 {
 		realmList, realmDiags := types.ListValueFrom(ctx, types.StringType, ni.Realms)
 		diags.Append(realmDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.Realms = realmList
 	} else {
 		data.Realms = types.ListNull(types.StringType)
 	}
+	return diags
 }

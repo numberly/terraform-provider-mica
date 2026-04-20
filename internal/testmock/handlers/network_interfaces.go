@@ -59,7 +59,6 @@ func (s *networkInterfaceStore) AddNetworkInterface(name, address, subnetName, n
 	return ni
 }
 
-// handle dispatches network interface requests by HTTP method.
 func (s *networkInterfaceStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

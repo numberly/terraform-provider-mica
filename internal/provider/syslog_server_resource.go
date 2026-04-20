@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -18,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure syslogServerResource satisfies the resource interfaces.
 var _ resource.Resource = &syslogServerResource{}
 var _ resource.ResourceWithConfigure = &syslogServerResource{}
 var _ resource.ResourceWithImportState = &syslogServerResource{}
@@ -29,7 +29,6 @@ type syslogServerResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewSyslogServerResource is the factory function registered in the provider.
 func NewSyslogServerResource() resource.Resource {
 	return &syslogServerResource{}
 }
@@ -48,7 +47,6 @@ type syslogServerModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *syslogServerResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_syslog_server"
 }
@@ -125,7 +123,6 @@ func (r *syslogServerResource) Configure(_ context.Context, req resource.Configu
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new syslog server.
 func (r *syslogServerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data syslogServerModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -158,7 +155,6 @@ func (r *syslogServerResource) Create(ctx context.Context, req resource.CreateRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *syslogServerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data syslogServerModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -188,11 +184,11 @@ func (r *syslogServerResource) Read(ctx context.Context, req resource.ReadReques
 	// Drift detection on uri.
 	if !data.URI.IsNull() && !data.URI.IsUnknown() {
 		if data.URI.ValueString() != srv.URI {
-			tflog.Info(ctx, "drift detected on syslog server", map[string]any{
+			tflog.Debug(ctx, "drift detected on syslog server", map[string]any{
 				"resource":    name,
 				"field":       "uri",
-				"state_value": data.URI.ValueString(),
-				"api_value":   srv.URI,
+				"was":         data.URI.ValueString(),
+				"now":           srv.URI,
 			})
 		}
 	}
@@ -248,7 +244,7 @@ func (r *syslogServerResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 
-	r.readIntoState(ctx, name, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -282,7 +278,6 @@ func (r *syslogServerResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 }
 
-// ImportState imports an existing syslog server by name.
 func (r *syslogServerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -291,7 +286,7 @@ func (r *syslogServerResource) ImportState(ctx context.Context, req resource.Imp
 	data.Timeouts = nullTimeoutsValue()
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -302,13 +297,15 @@ func (r *syslogServerResource) ImportState(ctx context.Context, req resource.Imp
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetSyslogServer and maps the result into the provided model.
-func (r *syslogServerResource) readIntoState(ctx context.Context, name string, data *syslogServerModel, diags DiagnosticReporter) {
+func (r *syslogServerResource) readIntoState(ctx context.Context, name string, data *syslogServerModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	srv, err := r.client.GetSyslogServer(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading syslog server after write", err.Error())
-		return
+		return diags
 	}
 	mapSyslogServerToModel(srv, data)
+	return diags
 }
 
 // mapSyslogServerToModel converts a client.SyslogServer to the Terraform model.

@@ -30,32 +30,27 @@ func (c *FlashBladeClient) DeleteCertificateGroup(ctx context.Context, name stri
 func (c *FlashBladeClient) ListCertificateGroupMembers(ctx context.Context, groupName string) ([]CertificateGroupMember, error) {
 	params := url.Values{}
 	params.Set("certificate_group_names", groupName)
-	var all []CertificateGroupMember
-	for {
-		path := "/certificate-groups/certificates?" + params.Encode()
-		var resp ListResponse[CertificateGroupMember]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, fmt.Errorf("ListCertificateGroupMembers: %w", err)
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[CertificateGroupMember](c, ctx, "/certificate-groups/certificates", params)
 }
 
-// GetCertificateGroupMember checks if a specific certificate is in a certificate group.
-// Filters by both group and certificate name. Returns true if the membership exists.
-func (c *FlashBladeClient) GetCertificateGroupMember(ctx context.Context, groupName string, certName string) (bool, error) {
+// GetCertificateGroupMember returns the membership entry for (groupName, certName).
+// Returns an APIError with StatusCode 404 (detectable via IsNotFound) when the
+// API's list response is empty, matching the (*T, error) contract used by every
+// other Get* client method.
+func (c *FlashBladeClient) GetCertificateGroupMember(ctx context.Context, groupName string, certName string) (*CertificateGroupMember, error) {
 	path := "/certificate-groups/certificates?certificate_group_names=" + url.QueryEscape(groupName) +
 		"&certificate_names=" + url.QueryEscape(certName)
 	var resp ListResponse[CertificateGroupMember]
 	if err := c.get(ctx, path, &resp); err != nil {
-		return false, fmt.Errorf("GetCertificateGroupMember: %w", err)
+		return nil, fmt.Errorf("GetCertificateGroupMember: %w", err)
 	}
-	return len(resp.Items) > 0, nil
+	if len(resp.Items) == 0 {
+		return nil, &APIError{
+			StatusCode: 404,
+			Errors:     []APISubError{{Message: "certificate group member does not exist"}},
+		}
+	}
+	return &resp.Items[0], nil
 }
 
 // PostCertificateGroupMember adds a certificate to a certificate group.

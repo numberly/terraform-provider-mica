@@ -22,7 +22,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure networkInterfaceResource satisfies the resource interfaces.
 var _ resource.Resource = &networkInterfaceResource{}
 var _ resource.ResourceWithConfigure = &networkInterfaceResource{}
 var _ resource.ResourceWithImportState = &networkInterfaceResource{}
@@ -33,7 +32,6 @@ type networkInterfaceResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNetworkInterfaceResource is the factory function registered in the provider.
 func NewNetworkInterfaceResource() resource.Resource {
 	return &networkInterfaceResource{}
 }
@@ -60,7 +58,6 @@ type networkInterfaceResourceModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *networkInterfaceResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_network_interface"
 }
@@ -209,7 +206,6 @@ func (r *networkInterfaceResource) ConfigValidators(_ context.Context) []resourc
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new network interface.
 func (r *networkInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data networkInterfaceResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -242,7 +238,7 @@ func (r *networkInterfaceResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -250,7 +246,6 @@ func (r *networkInterfaceResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *networkInterfaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data networkInterfaceResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -279,19 +274,23 @@ func (r *networkInterfaceResource) Read(ctx context.Context, req resource.ReadRe
 
 	// Log drift on mutable fields.
 	if data.Address.ValueString() != ni.Address {
-		tflog.Info(ctx, "network interface drift detected: address changed",
-			map[string]any{"name": name, "state": data.Address.ValueString(), "api": ni.Address})
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name, "field": "address",
+			"was": data.Address.ValueString(), "now": ni.Address,
+		})
 	}
 	apiSvc := ""
 	if len(ni.Services) > 0 {
 		apiSvc = ni.Services[0]
 	}
 	if data.Services.ValueString() != apiSvc {
-		tflog.Info(ctx, "network interface drift detected: services changed",
-			map[string]any{"name": name, "state": data.Services.ValueString(), "api": apiSvc})
+		tflog.Debug(ctx, "drift detected", map[string]any{
+			"resource": name, "field": "services",
+			"was": data.Services.ValueString(), "now": apiSvc,
+		})
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -337,7 +336,7 @@ func (r *networkInterfaceResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -370,7 +369,6 @@ func (r *networkInterfaceResource) Delete(ctx context.Context, req resource.Dele
 	}
 }
 
-// ImportState imports an existing network interface by name.
 func (r *networkInterfaceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -384,7 +382,7 @@ func (r *networkInterfaceResource) ImportState(ctx context.Context, req resource
 		return
 	}
 
-	mapNetworkInterfaceToModel(ctx, ni, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(mapNetworkInterfaceToModel(ctx, ni, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -395,7 +393,8 @@ func (r *networkInterfaceResource) ImportState(ctx context.Context, req resource
 // ---------- helpers ---------------------------------------------------------
 
 // mapNetworkInterfaceToModel maps a *client.NetworkInterface to a *networkInterfaceResourceModel.
-func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface, data *networkInterfaceResourceModel, diags *diag.Diagnostics) {
+func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface, data *networkInterfaceResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	data.ID = types.StringValue(ni.ID)
 	data.Name = types.StringValue(ni.Name)
 	data.Address = types.StringValue(ni.Address)
@@ -407,7 +406,6 @@ func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface
 	data.Netmask = stringOrNull(ni.Netmask)
 	data.SubnetName = refToSubnetName(ni.Subnet)
 
-	// Collapse []string services to a single string value.
 	if len(ni.Services) > 0 {
 		data.Services = types.StringValue(ni.Services[0])
 	} else {
@@ -415,37 +413,19 @@ func mapNetworkInterfaceToModel(ctx context.Context, ni *client.NetworkInterface
 	}
 
 	// AttachedServers: always use a list (empty, not null) to prevent spurious drift.
-	if len(ni.AttachedServers) > 0 {
-		names := make([]string, 0, len(ni.AttachedServers))
-		for _, s := range ni.AttachedServers {
-			names = append(names, s.Name)
-		}
-		serverList, serverDiags := types.ListValueFrom(ctx, types.StringType, names)
-		diags.Append(serverDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.AttachedServers = serverList
-	} else {
-		emptyList, emptyDiags := types.ListValueFrom(ctx, types.StringType, []string{})
-		diags.Append(emptyDiags...)
-		if diags.HasError() {
-			return
-		}
-		data.AttachedServers = emptyList
-	}
+	data.AttachedServers = namedRefsToListValue(ni.AttachedServers)
 
-	// Realms: null when absent, list otherwise.
 	if len(ni.Realms) > 0 {
 		realmList, realmDiags := types.ListValueFrom(ctx, types.StringType, ni.Realms)
 		diags.Append(realmDiags...)
 		if diags.HasError() {
-			return
+			return diags
 		}
 		data.Realms = realmList
 	} else {
 		data.Realms = types.ListNull(types.StringType)
 	}
+	return diags
 }
 
 // refToSubnetName converts a *client.NamedReference to a flat types.String.

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -18,7 +19,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure nfsExportPolicyResource satisfies the resource interfaces.
 var _ resource.Resource = &nfsExportPolicyResource{}
 var _ resource.ResourceWithConfigure = &nfsExportPolicyResource{}
 var _ resource.ResourceWithImportState = &nfsExportPolicyResource{}
@@ -29,7 +29,6 @@ type nfsExportPolicyResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewNfsExportPolicyResource is the factory function registered in the provider.
 func NewNfsExportPolicyResource() resource.Resource {
 	return &nfsExportPolicyResource{}
 }
@@ -49,7 +48,6 @@ type nfsExportPolicyModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *nfsExportPolicyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_nfs_export_policy"
 }
@@ -129,7 +127,6 @@ func (r *nfsExportPolicyResource) Configure(_ context.Context, req resource.Conf
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new NFS export policy.
 func (r *nfsExportPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data nfsExportPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -157,7 +154,7 @@ func (r *nfsExportPolicyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	r.readIntoState(ctx, data.Name.ValueString(), &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, data.Name.ValueString(), &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -165,7 +162,6 @@ func (r *nfsExportPolicyResource) Create(ctx context.Context, req resource.Creat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *nfsExportPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data nfsExportPolicyModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -195,16 +191,16 @@ func (r *nfsExportPolicyResource) Read(ctx context.Context, req resource.ReadReq
 	// Drift detection on enabled field.
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
-			tflog.Info(ctx, "drift detected on NFS export policy", map[string]any{
+			tflog.Debug(ctx, "drift detected on NFS export policy", map[string]any{
 				"resource":    name,
 				"field":       "enabled",
-				"state_value": data.Enabled.ValueBool(),
-				"api_value":   policy.Enabled,
+				"was":         data.Enabled.ValueBool(),
+				"now":           policy.Enabled,
 			})
 		}
 	}
 
-	mapNFSPolicyToModel(policy, &data)
+	mapNfsExportPolicyToModel(policy, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -246,7 +242,7 @@ func (r *nfsExportPolicyResource) Update(ctx context.Context, req resource.Updat
 
 	// After rename the policy is now known by the new name.
 	newName := plan.Name.ValueString()
-	r.readIntoState(ctx, newName, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, newName, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -296,7 +292,6 @@ func (r *nfsExportPolicyResource) Delete(ctx context.Context, req resource.Delet
 	}
 }
 
-// ImportState imports an existing NFS export policy by name.
 func (r *nfsExportPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	name := req.ID
 
@@ -306,7 +301,7 @@ func (r *nfsExportPolicyResource) ImportState(ctx context.Context, req resource.
 	// Set Name so Read can look up the policy.
 	data.Name = types.StringValue(name)
 
-	r.readIntoState(ctx, name, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, name, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -317,18 +312,22 @@ func (r *nfsExportPolicyResource) ImportState(ctx context.Context, req resource.
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetNfsExportPolicy and maps the result into the provided model.
-func (r *nfsExportPolicyResource) readIntoState(ctx context.Context, name string, data *nfsExportPolicyModel, diags DiagnosticReporter) {
+func (r *nfsExportPolicyResource) readIntoState(ctx context.Context, name string, data *nfsExportPolicyModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	policy, err := r.client.GetNfsExportPolicy(ctx, name)
 	if err != nil {
 		diags.AddError("Error reading NFS export policy after write", err.Error())
-		return
+		return diags
 	}
-	mapNFSPolicyToModel(policy, data)
+	mapNfsExportPolicyToModel(policy, data)
+	return diags
 }
 
-// mapNFSPolicyToModel maps a client.NfsExportPolicy to an nfsExportPolicyModel.
+
+// mapNfsExportPolicyToModel maps a client.NfsExportPolicy to an nfsExportPolicyModel.
 // It preserves user-managed fields (Timeouts).
-func mapNFSPolicyToModel(policy *client.NfsExportPolicy, data *nfsExportPolicyModel) {
+func mapNfsExportPolicyToModel(policy *client.NfsExportPolicy, data *nfsExportPolicyModel) {
 	data.ID = types.StringValue(policy.ID)
 	data.Name = types.StringValue(policy.Name)
 	data.Enabled = types.BoolValue(policy.Enabled)

@@ -34,7 +34,7 @@ func bafDSSchema(t *testing.T) datasource.SchemaResponse {
 	return resp
 }
 
-func buildBAFDSType() tftypes.Object {
+func buildBucketAuditFilterDSType() tftypes.Object {
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"bucket_name": tftypes.String,
 		"actions":     tftypes.Set{ElementType: tftypes.String},
@@ -50,7 +50,7 @@ func nullBAFDSConfig() map[string]tftypes.Value {
 	}
 }
 
-func TestBucketAuditFilterDataSource_Read(t *testing.T) {
+func TestUnit_BucketAuditFilterDataSource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	store := handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
@@ -63,7 +63,7 @@ func TestBucketAuditFilterDataSource_Read(t *testing.T) {
 
 	d := newTestBucketAuditFilterDataSource(t, ms)
 	s := bafDSSchema(t).Schema
-	objType := buildBAFDSType()
+	objType := buildBucketAuditFilterDSType()
 
 	cfg := nullBAFDSConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, "ds-bucket")
@@ -105,14 +105,14 @@ func TestBucketAuditFilterDataSource_Read(t *testing.T) {
 	}
 }
 
-func TestBucketAuditFilterDataSource_Read_NotFound(t *testing.T) {
+func TestUnit_BucketAuditFilterDataSource_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterBucketAuditFilterHandlers(ms.Mux)
 
 	d := newTestBucketAuditFilterDataSource(t, ms)
 	s := bafDSSchema(t).Schema
-	objType := buildBAFDSType()
+	objType := buildBucketAuditFilterDSType()
 
 	cfg := nullBAFDSConfig()
 	cfg["bucket_name"] = tftypes.NewValue(tftypes.String, "nope")

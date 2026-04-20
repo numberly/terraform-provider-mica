@@ -12,8 +12,8 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// BucketStore is the thread-safe in-memory state for bucket handlers.
-type BucketStore struct {
+// bucketStore is the thread-safe in-memory state for bucket handlers.
+type bucketStore struct {
 	mu       sync.Mutex
 	byName   map[string]*client.Bucket
 	byID     map[string]*client.Bucket
@@ -23,8 +23,8 @@ type BucketStore struct {
 // RegisterBucketHandlers registers CRUD handlers for /api/2.22/buckets against the provided
 // ServeMux. The accounts store is used to validate account references on POST.
 // The returned store pointer can be used by other handlers that need bucket cross-reference.
-func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *BucketStore {
-	store := &BucketStore{
+func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *bucketStore {
+	store := &bucketStore{
 		byName:   make(map[string]*client.Bucket),
 		byID:     make(map[string]*client.Bucket),
 		accounts: accounts,
@@ -33,8 +33,7 @@ func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStor
 	return store
 }
 
-// handle dispatches bucket requests by HTTP method.
-func (s *BucketStore) handle(w http.ResponseWriter, r *http.Request) {
+func (s *bucketStore) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.handleGet(w, r)
@@ -51,7 +50,7 @@ func (s *BucketStore) handle(w http.ResponseWriter, r *http.Request) {
 
 // handleGet handles GET /api/2.22/buckets with optional ?names=, ?ids=, ?destroyed=,
 // and ?account_names= query parameters.
-func (s *BucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
+func (s *bucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "ids", "destroyed", "account_names"}) {
 		return
 	}
@@ -123,7 +122,7 @@ func (s *BucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
 
 // handlePost handles POST /api/2.22/buckets?names={name}.
 // Validates the account reference against the account store before creating the bucket.
-func (s *BucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
+func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
 	}
@@ -206,7 +205,7 @@ func (s *BucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 
 // handlePatch handles PATCH /api/2.22/buckets?ids={id}.
 // Uses raw map for true PATCH semantics — only provided fields are updated.
-func (s *BucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
+func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
 		return
 	}
@@ -319,7 +318,7 @@ func (s *BucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 
 // handleDelete handles DELETE /api/2.22/buckets?ids={id}.
 // The bucket must already be soft-deleted (destroyed=true) before eradication.
-func (s *BucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
+func (s *bucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
 		return
 	}
@@ -352,10 +351,27 @@ func (s *BucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 
 // SetObjectCount sets the ObjectCount field on a bucket identified by name.
 // This is a test helper for simulating non-empty buckets.
-func (s *BucketStore) SetObjectCount(name string, count int64) {
+func (s *bucketStore) SetObjectCount(name string, count int64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if b, ok := s.byName[name]; ok {
 		b.ObjectCount = count
 	}
+}
+
+// BucketStoreFacade exposes test-helper methods on the unexported bucketStore
+// for use in tests from packages outside the handlers package.
+type BucketStoreFacade struct {
+	store *bucketStore
+}
+
+// NewBucketStoreFacade wraps the internal store so cross-package tests can
+// call SetObjectCount without BucketStore being exported.
+func NewBucketStoreFacade(store *bucketStore) *BucketStoreFacade {
+	return &BucketStoreFacade{store: store}
+}
+
+// SetObjectCount delegates to the underlying store's SetObjectCount.
+func (f *BucketStoreFacade) SetObjectCount(name string, count int64) {
+	f.store.SetObjectCount(name, count)
 }

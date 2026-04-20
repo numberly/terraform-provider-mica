@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -20,7 +21,6 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Ensure quotaGroupResource satisfies the resource interfaces.
 var _ resource.Resource = &quotaGroupResource{}
 var _ resource.ResourceWithConfigure = &quotaGroupResource{}
 var _ resource.ResourceWithImportState = &quotaGroupResource{}
@@ -31,7 +31,6 @@ type quotaGroupResource struct {
 	client *client.FlashBladeClient
 }
 
-// NewQuotaGroupResource is the factory function registered in the provider.
 func NewQuotaGroupResource() resource.Resource {
 	return &quotaGroupResource{}
 }
@@ -50,7 +49,6 @@ type quotaGroupModel struct {
 
 // ---------- resource interface methods --------------------------------------
 
-// Metadata sets the Terraform type name.
 func (r *quotaGroupResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_quota_group"
 }
@@ -130,7 +128,6 @@ func (r *quotaGroupResource) Configure(_ context.Context, req resource.Configure
 
 // ---------- CRUD methods ----------------------------------------------------
 
-// Create creates a new group quota.
 func (r *quotaGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data quotaGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -171,7 +168,7 @@ func (r *quotaGroupResource) Create(ctx context.Context, req resource.CreateRequ
 		}
 	}
 
-	r.readIntoState(ctx, fsName, gid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, gid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -179,7 +176,6 @@ func (r *quotaGroupResource) Create(ctx context.Context, req resource.CreateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes Terraform state from the API.
 func (r *quotaGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data quotaGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -211,11 +207,11 @@ func (r *quotaGroupResource) Read(ctx context.Context, req resource.ReadRequest,
 	// Drift detection on quota.
 	if !data.Quota.IsNull() && !data.Quota.IsUnknown() {
 		if data.Quota.ValueInt64() != qg.Quota {
-			tflog.Info(ctx, "drift detected on group quota", map[string]any{
+			tflog.Debug(ctx, "drift detected on group quota", map[string]any{
 				"resource":    fsName + "/" + gid,
 				"field":       "quota",
-				"state_value": data.Quota.ValueInt64(),
-				"api_value":   qg.Quota,
+				"was":         data.Quota.ValueInt64(),
+				"now":           qg.Quota,
 			})
 		}
 	}
@@ -256,7 +252,7 @@ func (r *quotaGroupResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	r.readIntoState(ctx, fsName, gid, &plan, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, gid, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -311,7 +307,7 @@ func (r *quotaGroupResource) ImportState(ctx context.Context, req resource.Impor
 	data.FileSystemName = types.StringValue(fsName)
 	data.GID = types.StringValue(gid)
 
-	r.readIntoState(ctx, fsName, gid, &data, &resp.Diagnostics)
+	resp.Diagnostics.Append(r.readIntoState(ctx, fsName, gid, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -322,14 +318,18 @@ func (r *quotaGroupResource) ImportState(ctx context.Context, req resource.Impor
 // ---------- helpers ---------------------------------------------------------
 
 // readIntoState calls GetQuotaGroup and maps the result into the provided model.
-func (r *quotaGroupResource) readIntoState(ctx context.Context, fsName, gid string, data *quotaGroupModel, diags DiagnosticReporter) {
+func (r *quotaGroupResource) readIntoState(ctx context.Context, fsName, gid string, data *quotaGroupModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	qg, err := r.client.GetQuotaGroup(ctx, fsName, gid)
 	if err != nil {
 		diags.AddError("Error reading group quota after write", err.Error())
-		return
+		return diags
 	}
 	mapQuotaGroupToModel(fsName, gid, qg, data)
+	return diags
 }
+
 
 // mapQuotaGroupToModel maps a client.QuotaGroup to a quotaGroupModel.
 // Preserves user-managed fields (Timeouts).

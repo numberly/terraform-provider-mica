@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -27,8 +26,5 @@ func (c *FlashBladeClient) PatchDirectoryServiceRole(ctx context.Context, name s
 
 // DeleteDirectoryServiceRole removes a directory service role by name.
 func (c *FlashBladeClient) DeleteDirectoryServiceRole(ctx context.Context, name string) error {
-	if err := c.delete(ctx, "/directory-services/roles?names="+url.QueryEscape(name)); err != nil {
-		return fmt.Errorf("DeleteDirectoryServiceRole: %w", err)
-	}
-	return nil
+	return c.delete(ctx, "/directory-services/roles?names="+url.QueryEscape(name))
 }

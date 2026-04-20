@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 )
 
@@ -34,20 +33,7 @@ func (c *FlashBladeClient) DeleteTlsPolicy(ctx context.Context, name string) err
 func (c *FlashBladeClient) ListTlsPolicyMembers(ctx context.Context, policyName string) ([]TlsPolicyMember, error) {
 	params := url.Values{}
 	params.Set("policy_names", policyName)
-	var all []TlsPolicyMember
-	for {
-		path := "/tls-policies/members?" + params.Encode()
-		var resp ListResponse[TlsPolicyMember]
-		if err := c.get(ctx, path, &resp); err != nil {
-			return nil, fmt.Errorf("ListTlsPolicyMembers: %w", err)
-		}
-		all = append(all, resp.Items...)
-		if resp.ContinuationToken == "" {
-			break
-		}
-		params.Set("continuation_token", resp.ContinuationToken)
-	}
-	return all, nil
+	return listAll[TlsPolicyMember](c, ctx, "/tls-policies/members", params)
 }
 
 // PostTlsPolicyMember assigns a network interface to a TLS policy.

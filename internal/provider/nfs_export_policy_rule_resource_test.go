@@ -40,8 +40,8 @@ func nfsRuleResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildNFSRuleType returns the tftypes.Object for the NFS export policy rule resource.
-func buildNFSRuleType() tftypes.Object {
+// buildNfsExportPolicyRuleType returns the tftypes.Object for the NFS export policy rule resource.
+func buildNfsExportPolicyRuleType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -112,7 +112,7 @@ func nfsRulePlan(t *testing.T, policyName, access, clientStr, permission string)
 		cfg["permission"] = tftypes.NewValue(tftypes.String, permission)
 	}
 	return tfsdk.Plan{
-		Raw:    tftypes.NewValue(buildNFSRuleType(), cfg),
+		Raw:    tftypes.NewValue(buildNfsExportPolicyRuleType(), cfg),
 		Schema: s,
 	}
 }
@@ -130,7 +130,7 @@ func createTestPolicy(t *testing.T, c *client.FlashBladeClient, name string) {
 // ---- tests ------------------------------------------------------------------
 
 // TestNfsExportPolicyRuleResource_Create verifies Create populates id, name, index, and rule fields.
-func TestNfsExportPolicyRuleResource_Create(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Create(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -142,7 +142,7 @@ func TestNfsExportPolicyRuleResource_Create(t *testing.T) {
 
 	plan := nfsRulePlan(t, "rule-create-policy", "root-squash", "*", "rw")
 	resp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 
 	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
@@ -180,7 +180,7 @@ func TestNfsExportPolicyRuleResource_Create(t *testing.T) {
 }
 
 // TestNfsExportPolicyRuleResource_Update verifies PATCH updates mutable rule fields.
-func TestNfsExportPolicyRuleResource_Update(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Update(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -193,7 +193,7 @@ func TestNfsExportPolicyRuleResource_Update(t *testing.T) {
 	// Create rule first.
 	createPlan := nfsRulePlan(t, "rule-update-policy", "root-squash", "*", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -203,7 +203,7 @@ func TestNfsExportPolicyRuleResource_Update(t *testing.T) {
 	// Update client to "10.0.0.0/8".
 	updatePlan := nfsRulePlan(t, "rule-update-policy", "root-squash", "10.0.0.0/8", "rw")
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -224,7 +224,7 @@ func TestNfsExportPolicyRuleResource_Update(t *testing.T) {
 }
 
 // TestNfsExportPolicyRuleResource_Delete verifies DELETE removes the rule.
-func TestNfsExportPolicyRuleResource_Delete(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Delete(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -237,7 +237,7 @@ func TestNfsExportPolicyRuleResource_Delete(t *testing.T) {
 	// Create rule first.
 	createPlan := nfsRulePlan(t, "rule-delete-policy", "root-squash", "*", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -265,7 +265,7 @@ func TestNfsExportPolicyRuleResource_Delete(t *testing.T) {
 }
 
 // TestNfsExportPolicyRuleResource_Import verifies ImportState with composite ID "policy_name/index".
-func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
+func TestUnit_NfsExportPolicyRuleResource_Import(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -278,7 +278,7 @@ func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
 	// Create rule.
 	createPlan := nfsRulePlan(t, "rule-import-policy", "root-squash", "*", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -293,7 +293,7 @@ func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
 
 	// Import using "policy_name/index" composite ID.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	importID := "rule-import-policy/" + index
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: importID}, importResp)
@@ -322,7 +322,7 @@ func TestNfsExportPolicyRuleResource_Import(t *testing.T) {
 }
 
 // TestUnit_NfsExportPolicyRule_Lifecycle exercises the full Create->Read->Update->Read->Delete sequence.
-func TestUnit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -335,7 +335,7 @@ func TestUnit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
 	// Step 1: Create.
 	createPlan := nfsRulePlan(t, "lifecycle-nfs-rule-policy", "root-squash", "*", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -366,7 +366,7 @@ func TestUnit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
 	// Step 3: Update client to specific subnet.
 	updatePlan := nfsRulePlan(t, "lifecycle-nfs-rule-policy", "root-squash", "192.168.0.0/16", "rw")
 	updateResp := &resource.UpdateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.Update(context.Background(), resource.UpdateRequest{
 		Plan:  updatePlan,
@@ -406,7 +406,7 @@ func TestUnit_NfsExportPolicyRule_Lifecycle(t *testing.T) {
 }
 
 // TestUnit_NfsExportPolicyRule_ImportIdempotency verifies ImportState->Read produces state matching original Create.
-func TestUnit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
+func TestUnit_Unit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
@@ -419,7 +419,7 @@ func TestUnit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
 	// Create.
 	createPlan := nfsRulePlan(t, "idempotent-nfs-rule-policy", "root-squash", "*", "rw")
 	createResp := &resource.CreateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.Create(context.Background(), resource.CreateRequest{Plan: createPlan}, createResp)
 	if createResp.Diagnostics.HasError() {
@@ -433,7 +433,7 @@ func TestUnit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
 
 	// ImportState using composite ID.
 	importResp := &resource.ImportStateResponse{
-		State: tfsdk.State{Raw: tftypes.NewValue(buildNFSRuleType(), nil), Schema: s},
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
 	}
 	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "idempotent-nfs-rule-policy/" + index}, importResp)
 	if importResp.Diagnostics.HasError() {
@@ -465,7 +465,7 @@ func TestUnit_NfsExportPolicyRule_ImportIdempotency(t *testing.T) {
 
 // TestUnit_NFSRule_PlanModifiers verifies all RequiresReplace and UseStateForUnknown
 // plan modifiers in the nfs_export_policy_rule resource schema.
-func TestUnit_NFSRule_PlanModifiers(t *testing.T) {
+func TestUnit_Unit_NFSRule_PlanModifiers(t *testing.T) {
 	s := nfsRuleResourceSchema(t).Schema
 
 	// id — UseStateForUnknown
