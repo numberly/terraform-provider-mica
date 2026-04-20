@@ -74,7 +74,7 @@
 
 ---
 
-### R-007 — Add `ResourceWithUpgradeState` assertion to 9 resources (Important)
+### R-007 — Add `ResourceWithUpgradeState` assertion to 9 resources (Important) ✅ DONE
 
 **Why:** Convention §Resource Implementation: all 4 interface assertions are mandatory. The following resources have only 3:
 - `bucket_access_policy_resource.go`
@@ -90,6 +90,8 @@
 **Validation:** `grep -c "ResourceWithUpgradeState" internal/provider/*_resource.go` shows assertion on every resource file. Each file has a no-op `UpgradeState` method returning `map[int64]resource.StateUpgrader{}` (when version is 0).
 
 **Primary owner:** Phase 52-important-conformance
+
+**Status:** Closed 2026-04-20 by 52-02 (commit 5e1d9b1) and prior phases. `subnet_resource.go` was already compliant after Phase 51. `qos_policy_resource.go` was closed by 52-01 (real v0→v1 upgrader). The remaining 7 resources got the assertion + a no-op `UpgradeState` in this plan. All 54 `*_resource.go` files now carry the 4th interface assertion; `make test`/`make lint` clean.
 
 ---
 
