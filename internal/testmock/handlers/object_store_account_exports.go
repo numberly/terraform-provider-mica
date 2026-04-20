@@ -185,12 +185,16 @@ func (s *objectStoreAccountExportStore) handlePatch(w http.ResponseWriter, r *ht
 	}
 
 	if v, ok := rawPatch["policy"]; ok {
-		var ref client.NamedReference
-		if err := json.Unmarshal(v, &ref); err != nil {
-			WriteJSONError(w, http.StatusBadRequest, "invalid policy field")
-			return
+		if string(v) == "null" {
+			export.Policy = nil
+		} else {
+			var ref client.NamedReference
+			if err := json.Unmarshal(v, &ref); err != nil {
+				WriteJSONError(w, http.StatusBadRequest, "invalid policy field")
+				return
+			}
+			export.Policy = &ref
 		}
-		export.Policy = &ref
 	}
 
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccountExport{*export})

@@ -71,9 +71,13 @@ type ObjectStoreAccountExportPost struct {
 }
 
 // ObjectStoreAccountExportPatch contains pointer fields for PATCH /object-store-account-exports.
+// Policy is **NamedReference (CONVENTIONS.md §Pointer rules, PATCH struct):
+//   - nil outer                    → omit
+//   - non-nil outer, nil inner     → clear (send JSON null)
+//   - non-nil outer, non-nil inner → set value
 type ObjectStoreAccountExportPatch struct {
-	ExportEnabled *bool           `json:"export_enabled,omitempty"`
-	Policy        *NamedReference `json:"policy,omitempty"`
+	ExportEnabled *bool            `json:"export_enabled,omitempty"`
+	Policy        **NamedReference `json:"policy,omitempty"`
 }
 
 // ObjectStoreVirtualHost represents a FlashBlade virtual host from GET responses.

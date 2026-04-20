@@ -45,6 +45,18 @@ type objectStoreAccountExportModel struct {
 	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
+// objectStoreAccountExportV0Model is the v0 state model. Identical attribute set to
+// the current model — the v0→v1 bump is defensive per D-51-04.
+type objectStoreAccountExportV0Model struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	AccountName types.String   `tfsdk:"account_name"`
+	ServerName  types.String   `tfsdk:"server_name"`
+	Enabled     types.Bool     `tfsdk:"enabled"`
+	PolicyName  types.String   `tfsdk:"policy_name"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
+}
+
 // ---------- resource interface methods --------------------------------------
 
 func (r *objectStoreAccountExportResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -54,7 +66,7 @@ func (r *objectStoreAccountExportResource) Metadata(_ context.Context, _ resourc
 // Schema defines the resource schema.
 func (r *objectStoreAccountExportResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade object store account export.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -110,8 +122,46 @@ func (r *objectStoreAccountExportResource) Schema(ctx context.Context, _ resourc
 
 
 // UpgradeState returns state upgraders for schema migrations.
-func (r *objectStoreAccountExportResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+// v0→v1: no-op identity. The Terraform attribute set is unchanged; the bump exists because
+// wire-format semantics changed for Policy (**NamedReference in PATCH).
+// See D-51-03 and D-51-04.
+func (r *objectStoreAccountExportResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade object store account export.",
+				Attributes: map[string]schema.Attribute{
+					"id":           schema.StringAttribute{Computed: true},
+					"name":         schema.StringAttribute{Computed: true},
+					"account_name": schema.StringAttribute{Required: true},
+					"server_name":  schema.StringAttribute{Required: true},
+					"enabled": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+						Default:  booldefault.StaticBool(true),
+					},
+					"policy_name": schema.StringAttribute{Required: true},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState objectStoreAccountExportV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				newState := objectStoreAccountExportModel(oldState)
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -161,9 +211,11 @@ func (r *objectStoreAccountExportResource) Create(ctx context.Context, req resou
 	mapObjectStoreAccountExportToModel(export, &data)
 
 	// Apply policy_name if set, since POST does not support it.
+	// Build a **NamedReference that represents the SET state (outer non-nil, inner non-nil).
 	if !data.PolicyName.IsNull() && !data.PolicyName.IsUnknown() && data.PolicyName.ValueString() != "" {
+		ref := &client.NamedReference{Name: data.PolicyName.ValueString()}
 		patch := client.ObjectStoreAccountExportPatch{
-			Policy: &client.NamedReference{Name: data.PolicyName.ValueString()},
+			Policy: &ref,
 		}
 		updated, patchErr := r.client.PatchObjectStoreAccountExport(ctx, export.ID, patch)
 		if patchErr != nil {
@@ -229,9 +281,14 @@ func (r *objectStoreAccountExportResource) Update(ctx context.Context, req resou
 		v := plan.Enabled.ValueBool()
 		patch.ExportEnabled = &v
 	}
-	if !plan.PolicyName.Equal(state.PolicyName) {
-		patch.Policy = &client.NamedReference{Name: plan.PolicyName.ValueString()}
-	}
+	// Use doublePointerRefForPatch so that:
+	//   - unchanged policy_name       → omit (nil outer)
+	//   - policy_name set → null     → CLEAR (non-nil outer, nil inner)
+	//   - policy_name changed / set   → SET
+	// R-004, D-51-01. Note: policy_name currently carries RequiresReplace, so in
+	// practice only OMIT is exercised by today's Terraform plans — but the helper
+	// keeps the wire-format consistent for the day RequiresReplace is relaxed.
+	patch.Policy = doublePointerRefForPatch(state.PolicyName, plan.PolicyName)
 
 	_, err := r.client.PatchObjectStoreAccountExport(ctx, state.ID.ValueString(), patch)
 	if err != nil {

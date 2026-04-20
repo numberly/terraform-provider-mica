@@ -2,10 +2,12 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
@@ -410,5 +412,104 @@ func TestUnit_AccountExport_Idempotent(t *testing.T) {
 	}
 	if beforeModel.Enabled.ValueBool() != afterModel.Enabled.ValueBool() {
 		t.Errorf("Enabled changed after Read: %v -> %v", beforeModel.Enabled.ValueBool(), afterModel.Enabled.ValueBool())
+	}
+}
+
+// TestUnit_ObjectStoreAccountExport_StateUpgrade_V0toV1 verifies the v0->v1
+// upgrader preserves every attribute (identity).
+func TestUnit_ObjectStoreAccountExport_StateUpgrade_V0toV1(t *testing.T) {
+	r := &objectStoreAccountExportResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0->v1 upgrader at key 0")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema for v0->v1 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":           tftypes.String,
+		"name":         tftypes.String,
+		"account_name": tftypes.String,
+		"server_name":  tftypes.String,
+		"enabled":      tftypes.Bool,
+		"policy_name":  tftypes.String,
+		"timeouts":     timeoutsType,
+	}}
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":           tftypes.NewValue(tftypes.String, "oae-001"),
+		"name":         tftypes.NewValue(tftypes.String, "acct1/export1"),
+		"account_name": tftypes.NewValue(tftypes.String, "acct1"),
+		"server_name":  tftypes.NewValue(tftypes.String, "server1"),
+		"enabled":      tftypes.NewValue(tftypes.Bool, true),
+		"policy_name":  tftypes.NewValue(tftypes.String, "policy1"),
+		"timeouts":     tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildAccountExportType(), nil),
+			Schema: accountExportResourceSchema(t).Schema,
+		},
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model objectStoreAccountExportModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.Name.ValueString() != "acct1/export1" {
+		t.Errorf("expected name=acct1/export1, got %s", model.Name.ValueString())
+	}
+	if model.PolicyName.ValueString() != "policy1" {
+		t.Errorf("expected policy_name=policy1, got %s", model.PolicyName.ValueString())
+	}
+	if model.AccountName.ValueString() != "acct1" {
+		t.Errorf("expected account_name=acct1, got %s", model.AccountName.ValueString())
+	}
+}
+
+// TestUnit_ObjectStoreAccountExport_Patch_ClearPolicy verifies the CLEAR
+// encoding for policy_name via the helper + JSON marshaling. Regression guard
+// for R-004.
+func TestUnit_ObjectStoreAccountExport_Patch_ClearPolicy(t *testing.T) {
+	state := types.StringValue("policy1")
+	plan := types.StringNull()
+
+	patch := client.ObjectStoreAccountExportPatch{}
+	patch.Policy = doublePointerRefForPatch(state, plan)
+
+	raw, err := json.Marshal(patch)
+	if err != nil {
+		t.Fatalf("marshal patch: %v", err)
+	}
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &body); err != nil {
+		t.Fatalf("decode patch: %v", err)
+	}
+	v, ok := body["policy"]
+	if !ok {
+		t.Fatalf("expected 'policy' key in PATCH body, got %s", string(raw))
+	}
+	if string(v) != "null" {
+		t.Errorf("expected policy=null in PATCH body, got %s", string(v))
 	}
 }
