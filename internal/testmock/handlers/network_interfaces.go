@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
@@ -18,6 +17,7 @@ type networkInterfaceStore struct {
 	mu     sync.Mutex
 	byName map[string]*client.NetworkInterface
 	byID   map[string]*client.NetworkInterface
+	nextID int
 }
 
 // RegisterNetworkInterfaceHandlers registers CRUD handlers for /api/2.22/network-interfaces
@@ -37,8 +37,9 @@ func (s *networkInterfaceStore) AddNetworkInterface(name, address, subnetName, n
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.nextID++
 	ni := &client.NetworkInterface{
-		ID:              uuid.New().String(),
+		ID:              fmt.Sprintf("nic-%d", s.nextID),
 		Name:            name,
 		Address:         address,
 		Enabled:         true,
@@ -132,8 +133,9 @@ func (s *networkInterfaceStore) handlePost(w http.ResponseWriter, r *http.Reques
 		subnet = &client.NamedReference{Name: subnetName}
 	}
 
+	s.nextID++
 	ni := &client.NetworkInterface{
-		ID:              uuid.New().String(),
+		ID:              fmt.Sprintf("nic-%d", s.nextID),
 		Name:            name,
 		Address:         body.Address,
 		Enabled:         true,

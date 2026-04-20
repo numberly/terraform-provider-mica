@@ -12,10 +12,10 @@ import (
 
 // qosPolicyStore is the thread-safe in-memory state for QoS policy handlers.
 type qosPolicyStore struct {
-	mu       sync.Mutex
-	policies map[string]*client.QosPolicy          // keyed by policy name
-	members  map[string][]client.QosPolicyMember    // keyed by policy name
-	nextID   int
+	mu      sync.Mutex
+	byName  map[string]*client.QosPolicy       // keyed by policy name
+	members map[string][]client.QosPolicyMember // keyed by policy name
+	nextID  int
 }
 
 // RegisterQosPolicyHandlers registers CRUD handlers for
@@ -23,8 +23,8 @@ type qosPolicyStore struct {
 // against the provided ServeMux. The returned store pointer can be used for test setup.
 func RegisterQosPolicyHandlers(mux *http.ServeMux) *qosPolicyStore {
 	store := &qosPolicyStore{
-		policies: make(map[string]*client.QosPolicy),
-		members:  make(map[string][]client.QosPolicyMember),
+		byName:  make(map[string]*client.QosPolicy),
+		members: make(map[string][]client.QosPolicyMember),
 	}
 	mux.HandleFunc("/api/2.22/qos-policies/members", store.handleMember)
 	mux.HandleFunc("/api/2.22/qos-policies", store.handlePolicy)
@@ -35,7 +35,7 @@ func RegisterQosPolicyHandlers(mux *http.ServeMux) *qosPolicyStore {
 func (s *qosPolicyStore) Seed(policy *client.QosPolicy) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.policies[policy.Name] = policy
+	s.byName[policy.Name] = policy
 }
 
 // SeedMember adds a QoS policy member directly to the store for test setup.
@@ -76,11 +76,11 @@ func (s *qosPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request)
 	var items []client.QosPolicy
 
 	if namesFilter != "" {
-		if policy, ok := s.policies[namesFilter]; ok {
+		if policy, ok := s.byName[namesFilter]; ok {
 			items = append(items, *policy)
 		}
 	} else {
-		for _, policy := range s.policies {
+		for _, policy := range s.byName {
 			items = append(items, *policy)
 		}
 	}
@@ -113,7 +113,7 @@ func (s *qosPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.policies[name]; exists {
+	if _, exists := s.byName[name]; exists {
 		WriteJSONError(w, http.StatusConflict, fmt.Sprintf("QoS policy %q already exists", name))
 		return
 	}
@@ -136,7 +136,7 @@ func (s *qosPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request
 		PolicyType:          "bandwidth-limit",
 	}
 
-	s.policies[name] = policy
+	s.byName[name] = policy
 
 	WriteJSONListResponse(w, http.StatusOK, []client.QosPolicy{*policy})
 }
@@ -170,7 +170,7 @@ func (s *qosPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Reques
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	policy, exists := s.policies[name]
+	policy, exists := s.byName[name]
 	if !exists {
 		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("QoS policy %q not found", name))
 		return
@@ -189,8 +189,8 @@ func (s *qosPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Reques
 		oldName := policy.Name
 		policy.Name = *body.Name
 		if *body.Name != oldName {
-			s.policies[*body.Name] = policy
-			delete(s.policies, oldName)
+			s.byName[*body.Name] = policy
+			delete(s.byName, oldName)
 			// Move members to the new key.
 			if members, ok := s.members[oldName]; ok {
 				s.members[*body.Name] = members
@@ -216,12 +216,12 @@ func (s *qosPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Reque
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.policies[name]; !exists {
+	if _, exists := s.byName[name]; !exists {
 		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("QoS policy %q not found", name))
 		return
 	}
 
-	delete(s.policies, name)
+	delete(s.byName, name)
 	delete(s.members, name)
 
 	w.WriteHeader(http.StatusOK)
@@ -295,7 +295,7 @@ func (s *qosPolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.policies[policyName]; !exists {
+	if _, exists := s.byName[policyName]; !exists {
 		WriteJSONError(w, http.StatusNotFound, fmt.Sprintf("QoS policy %q not found", policyName))
 		return
 	}

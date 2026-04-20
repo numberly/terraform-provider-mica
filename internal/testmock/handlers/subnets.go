@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
@@ -18,6 +17,7 @@ type subnetStore struct {
 	mu     sync.Mutex
 	byName map[string]*client.Subnet
 	byID   map[string]*client.Subnet
+	nextID int
 }
 
 // RegisterSubnetHandlers registers CRUD handlers for /api/2.22/subnets
@@ -38,8 +38,9 @@ func (s *subnetStore) AddSubnet(name string, prefix string, lagName string) *cli
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.nextID++
 	subnet := &client.Subnet{
-		ID:      uuid.New().String(),
+		ID:      fmt.Sprintf("subnet-%d", s.nextID),
 		Name:    name,
 		Enabled: true,
 		Prefix:  prefix,
@@ -122,8 +123,9 @@ func (s *subnetStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.nextID++
 	subnet := &client.Subnet{
-		ID:                   uuid.New().String(),
+		ID:                   fmt.Sprintf("subnet-%d", s.nextID),
 		Name:                 name,
 		Enabled:              true,
 		Gateway:              body.Gateway,
