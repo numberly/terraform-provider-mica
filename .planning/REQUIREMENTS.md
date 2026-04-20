@@ -131,7 +131,7 @@
 
 ---
 
-### R-011 — PATCH slice fields use `*[]string` in policy rules (Cosmetic)
+### R-011 — PATCH slice fields use `*[]string` in policy rules (Cosmetic) ✅ **Validated 2026-04-20**
 
 **Why:** Convention §PATCH struct: every field is a pointer. Applies to `ObjectStoreAccessPolicyRulePatch.Actions`/`.Resources`, `S3ExportPolicyRulePatch.Actions`/`.Resources`, `NetworkAccessPolicyRulePatch.Interfaces`, `NetworkInterfacePatch.Services`/`.AttachedServers`.
 
@@ -157,7 +157,7 @@
 
 ## Validated Requirements
 
-_(none yet — milestone started 2026-04-20)_
+- **R-011** (Phase 53-01, commit `97a603e`, 2026-04-20): 3 policy-rule PATCH structs migrated to `*[]string`; NetworkInterfacePatch documented as formal "always send" carve-out in CONVENTIONS.md §Pointer rules. +3 tests → 835 total.
 
 ## Invalidated Requirements
 
