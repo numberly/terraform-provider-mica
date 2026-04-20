@@ -17,9 +17,14 @@ import (
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 )
 
-// Intentionally does NOT implement ResourceWithImportState — secret is unavailable after creation.
+// ImportState is implemented as a hard-reject shim: the secret_access_key is
+// only returned at creation time and cannot be retrieved by the API afterwards,
+// so reconstructing state via import is intentionally unsupported. Convention
+// compliance is preserved (4th interface declared) while the runtime contract
+// remains explicit. See CONVENTIONS.md §Resource Implementation.
 var _ resource.Resource = &objectStoreAccessKeyResource{}
 var _ resource.ResourceWithConfigure = &objectStoreAccessKeyResource{}
+var _ resource.ResourceWithImportState = &objectStoreAccessKeyResource{}
 var _ resource.ResourceWithUpgradeState = &objectStoreAccessKeyResource{}
 
 // objectStoreAccessKeyResource implements the flashblade_object_store_access_key resource.
@@ -127,6 +132,14 @@ func (r *objectStoreAccessKeyResource) Schema(ctx context.Context, _ resource.Sc
 // UpgradeState returns state upgraders for schema migrations.
 func (r *objectStoreAccessKeyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
 	return map[int64]resource.StateUpgrader{}
+}
+
+// ImportState is intentionally rejected — see file header comment.
+func (r *objectStoreAccessKeyResource) ImportState(_ context.Context, _ resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resp.Diagnostics.AddError(
+		"Import not supported",
+		"flashblade_object_store_access_key cannot be imported because secret_access_key is only returned at creation time and is never retrievable afterwards. Recreate the resource via `terraform apply` instead.",
+	)
 }
 
 // Configure injects the FlashBladeClient into the resource.

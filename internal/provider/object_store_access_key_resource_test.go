@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -537,5 +538,25 @@ func TestUnit_AccessKey_PlanModifiers(t *testing.T) {
 	}
 	if len(enabledAttr.PlanModifiers) == 0 {
 		t.Error("expected RequiresReplace plan modifier on enabled attribute")
+	}
+}
+
+func TestUnit_ObjectStoreAccessKeyResource_Import_Rejected(t *testing.T) {
+	r := &objectStoreAccessKeyResource{}
+	resp := &resource.ImportStateResponse{}
+	r.ImportState(context.Background(), resource.ImportStateRequest{ID: "any-name"}, resp)
+
+	if !resp.Diagnostics.HasError() {
+		t.Fatalf("expected error diagnostic, got none")
+	}
+	errs := resp.Diagnostics.Errors()
+	if len(errs) != 1 {
+		t.Fatalf("expected exactly 1 error diagnostic, got %d", len(errs))
+	}
+	if errs[0].Summary() != "Import not supported" {
+		t.Errorf("expected summary %q, got %q", "Import not supported", errs[0].Summary())
+	}
+	if !strings.Contains(errs[0].Detail(), "secret_access_key") {
+		t.Errorf("expected detail to mention secret_access_key, got %q", errs[0].Detail())
 	}
 }
