@@ -23,6 +23,7 @@ import (
 var _ resource.Resource = &subnetResource{}
 var _ resource.ResourceWithConfigure = &subnetResource{}
 var _ resource.ResourceWithImportState = &subnetResource{}
+var _ resource.ResourceWithUpgradeState = &subnetResource{}
 
 // subnetResource implements the flashblade_subnet resource.
 type subnetResource struct {
@@ -50,6 +51,23 @@ type subnetResourceModel struct {
 	Timeouts   timeouts.Value `tfsdk:"timeouts"`
 }
 
+// subnetV0Model is the v0 state model. Identical attribute set to the current model —
+// the v0→v1 bump is defensive (no on-disk shape change; only wire-format semantics changed
+// for VLAN and LinkAggregationGroup). See CONVENTIONS.md §State Upgraders and D-51-04.
+type subnetV0Model struct {
+	ID         types.String   `tfsdk:"id"`
+	Name       types.String   `tfsdk:"name"`
+	Prefix     types.String   `tfsdk:"prefix"`
+	Gateway    types.String   `tfsdk:"gateway"`
+	MTU        types.Int64    `tfsdk:"mtu"`
+	VLAN       types.Int64    `tfsdk:"vlan"`
+	LagName    types.String   `tfsdk:"lag_name"`
+	Enabled    types.Bool     `tfsdk:"enabled"`
+	Services   types.List     `tfsdk:"services"`
+	Interfaces types.List     `tfsdk:"interfaces"`
+	Timeouts   timeouts.Value `tfsdk:"timeouts"`
+}
+
 // ---------- resource interface methods --------------------------------------
 
 func (r *subnetResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -59,7 +77,7 @@ func (r *subnetResource) Metadata(_ context.Context, _ resource.MetadataRequest,
 // Schema defines the resource schema.
 func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade subnet.",
 		MarkdownDescription: `Manages a FlashBlade subnet.
 
@@ -153,6 +171,56 @@ resource "flashblade_subnet" "data" {
 	}
 }
 
+// UpgradeState returns state upgraders for schema migrations.
+// v0→v1: no-op identity — the Terraform attribute set is unchanged. The bump exists
+// because wire-format semantics changed (VLAN *int64, LinkAggregationGroup **NamedReference
+// in PATCH). See D-51-03 and D-51-04.
+func (r *subnetResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade subnet.",
+				Attributes: map[string]schema.Attribute{
+					"id":       schema.StringAttribute{Computed: true},
+					"name":     schema.StringAttribute{Required: true},
+					"prefix":   schema.StringAttribute{Required: true},
+					"gateway":  schema.StringAttribute{Optional: true, Computed: true},
+					"mtu":      schema.Int64Attribute{Optional: true, Computed: true},
+					"vlan":     schema.Int64Attribute{Optional: true, Computed: true},
+					"lag_name": schema.StringAttribute{Optional: true, Computed: true},
+					"enabled":  schema.BoolAttribute{Computed: true},
+					"services": schema.ListAttribute{
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"interfaces": schema.ListAttribute{
+						Computed:    true,
+						ElementType: types.StringType,
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var oldState subnetV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				// Identity copy — no attribute shape change.
+				newState := subnetResourceModel(oldState)
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
+}
+
 // Configure injects the FlashBladeClient into the resource.
 func (r *subnetResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
@@ -195,7 +263,10 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		body.MTU = data.MTU.ValueInt64()
 	}
 	if !data.VLAN.IsNull() && !data.VLAN.IsUnknown() {
-		body.VLAN = data.VLAN.ValueInt64()
+		// Send VLAN as an explicit *int64 so VLAN=0 (untagged) is preserved
+		// in the POST body instead of being dropped by omitempty (R-001).
+		v := data.VLAN.ValueInt64()
+		body.VLAN = &v
 	}
 
 	subnet, err := r.client.PostSubnet(ctx, data.Name.ValueString(), body)
@@ -301,9 +372,12 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		v := plan.VLAN.ValueInt64()
 		patch.VLAN = &v
 	}
-	if !plan.LagName.Equal(state.LagName) {
-		patch.LinkAggregationGroup = lagNameToRef(plan.LagName)
-	}
+	// Use doublePointerRefForPatch so that:
+	//   - unchanged lag_name         → omit (nil outer)
+	//   - lag_name set → null        → CLEAR (non-nil outer, nil inner)
+	//   - lag_name changed / set     → SET
+	// R-002, D-51-01.
+	patch.LinkAggregationGroup = doublePointerRefForPatch(state.LagName, plan.LagName)
 
 	subnet, err := r.client.PatchSubnet(ctx, plan.Name.ValueString(), patch)
 	if err != nil {

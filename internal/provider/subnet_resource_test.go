@@ -1,11 +1,17 @@
 package provider
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/numberly/opentofu-provider-flashblade/internal/client"
 	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
@@ -382,5 +388,200 @@ func TestUnit_SubnetResource_NotFound(t *testing.T) {
 	}
 	if !readResp.State.Raw.IsNull() {
 		t.Error("expected state to be removed (null) when subnet not found")
+	}
+}
+
+// TestUnit_Subnet_StateUpgrade_V0toV1 verifies that the v0->v1 upgrader is a
+// no-op identity: every attribute present in v0 state lands in v1 state unchanged.
+func TestUnit_Subnet_StateUpgrade_V0toV1(t *testing.T) {
+	r := &subnetResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0->v1 upgrader at key 0")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema to be set for v0->v1 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	stringList := tftypes.List{ElementType: tftypes.String}
+
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":         tftypes.String,
+		"name":       tftypes.String,
+		"prefix":     tftypes.String,
+		"gateway":    tftypes.String,
+		"mtu":        tftypes.Number,
+		"vlan":       tftypes.Number,
+		"lag_name":   tftypes.String,
+		"enabled":    tftypes.Bool,
+		"services":   stringList,
+		"interfaces": stringList,
+		"timeouts":   timeoutsType,
+	}}
+
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":         tftypes.NewValue(tftypes.String, "sub-001"),
+		"name":       tftypes.NewValue(tftypes.String, "my-subnet"),
+		"prefix":     tftypes.NewValue(tftypes.String, "10.0.0.0/24"),
+		"gateway":    tftypes.NewValue(tftypes.String, "10.0.0.1"),
+		"mtu":        tftypes.NewValue(tftypes.Number, 1500),
+		"vlan":       tftypes.NewValue(tftypes.Number, 0),
+		"lag_name":   tftypes.NewValue(tftypes.String, "lag0"),
+		"enabled":    tftypes.NewValue(tftypes.Bool, true),
+		"services":   tftypes.NewValue(stringList, nil),
+		"interfaces": tftypes.NewValue(stringList, nil),
+		"timeouts":   tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	currentSchema := subnetResourceSchema(t).Schema
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildSubnetType(), nil),
+			Schema: currentSchema,
+		},
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model subnetResourceModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.Name.ValueString() != "my-subnet" {
+		t.Errorf("expected name=my-subnet, got %s", model.Name.ValueString())
+	}
+	if model.Prefix.ValueString() != "10.0.0.0/24" {
+		t.Errorf("expected prefix=10.0.0.0/24, got %s", model.Prefix.ValueString())
+	}
+	if model.VLAN.ValueInt64() != 0 {
+		t.Errorf("expected vlan=0, got %d", model.VLAN.ValueInt64())
+	}
+	if model.LagName.ValueString() != "lag0" {
+		t.Errorf("expected lag_name=lag0, got %s", model.LagName.ValueString())
+	}
+	if model.MTU.ValueInt64() != 1500 {
+		t.Errorf("expected mtu=1500, got %d", model.MTU.ValueInt64())
+	}
+}
+
+// subnetBodyCaptor is a tiny http.Handler wrapper that records the last request
+// body for POST/PATCH to /api/2.22/subnets and then delegates to the real mock.
+type subnetBodyCaptor struct {
+	inner     http.Handler
+	lastPOST  []byte
+	lastPATCH []byte
+}
+
+func (c *subnetBodyCaptor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/2.22/subnets" && (r.Method == http.MethodPost || r.Method == http.MethodPatch) {
+		buf, _ := io.ReadAll(r.Body)
+		r.Body = io.NopCloser(bytes.NewReader(buf))
+		if r.Method == http.MethodPost {
+			c.lastPOST = buf
+		} else {
+			c.lastPATCH = buf
+		}
+	}
+	c.inner.ServeHTTP(w, r)
+}
+
+// newCaptorClient builds a FlashBladeClient pointed at a captor-wrapped mock mux.
+func newCaptorClient(t *testing.T, captor *subnetBodyCaptor) (*client.FlashBladeClient, *httptest.Server) {
+	t.Helper()
+	srv := httptest.NewServer(captor)
+	c, err := client.NewClient(context.Background(), client.Config{
+		Endpoint:           srv.URL,
+		APIToken:           "test-token",
+		InsecureSkipVerify: true,
+		MaxRetries:         1,
+	})
+	if err != nil {
+		srv.Close()
+		t.Fatalf("NewClient: %v", err)
+	}
+	return c, srv
+}
+
+// TestUnit_Subnet_Create_VLANZero verifies that when the plan sets vlan=0 explicitly,
+// the POST body contains "vlan":0 (not omitted). This is the R-001 regression guard.
+func TestUnit_Subnet_Create_VLANZero(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterSubnetHandlers(ms.Mux)
+
+	captor := &subnetBodyCaptor{inner: ms.Mux}
+	c, captureSrv := newCaptorClient(t, captor)
+	defer captureSrv.Close()
+
+	zero := int64(0)
+	_, err := c.PostSubnet(context.Background(), "test-subnet", client.SubnetPost{
+		Prefix: "10.0.0.0/24",
+		VLAN:   &zero,
+	})
+	if err != nil {
+		t.Fatalf("PostSubnet: %v", err)
+	}
+
+	if captor.lastPOST == nil {
+		t.Fatal("expected POST body to be captured")
+	}
+	var body map[string]any
+	if err := json.Unmarshal(captor.lastPOST, &body); err != nil {
+		t.Fatalf("decode POST body: %v", err)
+	}
+	v, ok := body["vlan"]
+	if !ok {
+		t.Fatalf("expected 'vlan' in POST body, got: %s", string(captor.lastPOST))
+	}
+	vf, _ := v.(float64)
+	if vf != 0 {
+		t.Errorf("expected vlan=0 in POST body, got %v", v)
+	}
+}
+
+// TestUnit_Subnet_Patch_ClearLag verifies that when lag_name transitions from
+// set to null, the PATCH body contains "link_aggregation_group":null (CLEAR).
+// This is the R-002 regression guard.
+func TestUnit_Subnet_Patch_ClearLag(t *testing.T) {
+	state := types.StringValue("lag0")
+	plan := types.StringNull()
+
+	patch := client.SubnetPatch{}
+	patch.LinkAggregationGroup = doublePointerRefForPatch(state, plan)
+
+	raw, err := json.Marshal(patch)
+	if err != nil {
+		t.Fatalf("marshal patch: %v", err)
+	}
+
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &body); err != nil {
+		t.Fatalf("decode patch: %v", err)
+	}
+	v, ok := body["link_aggregation_group"]
+	if !ok {
+		t.Fatalf("expected 'link_aggregation_group' key in PATCH body, got %s", string(raw))
+	}
+	if string(v) != "null" {
+		t.Errorf("expected link_aggregation_group=null in PATCH body, got %s", string(v))
 	}
 }

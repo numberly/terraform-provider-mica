@@ -130,7 +130,9 @@ func (s *subnetStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		LinkAggregationGroup: body.LinkAggregationGroup,
 		MTU:                  body.MTU,
 		Prefix:               body.Prefix,
-		VLAN:                 body.VLAN,
+	}
+	if body.VLAN != nil {
+		subnet.VLAN = *body.VLAN
 	}
 
 	s.byName[subnet.Name] = subnet

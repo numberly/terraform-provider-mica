@@ -33,8 +33,10 @@ func TestUnit_Subnet_Create(t *testing.T) {
 				Prefix:  body.Prefix,
 				Gateway: body.Gateway,
 				MTU:     body.MTU,
-				VLAN:    body.VLAN,
 				Enabled: true,
+			}
+			if body.VLAN != nil {
+				sub.VLAN = *body.VLAN
 			}
 			if body.LinkAggregationGroup != nil {
 				sub.LinkAggregationGroup = body.LinkAggregationGroup
@@ -47,11 +49,12 @@ func TestUnit_Subnet_Create(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(t, srv)
+	vlan999 := int64(999)
 	sub, err := c.PostSubnet(context.Background(), "test-subnet", client.SubnetPost{
 		Prefix:  "10.99.99.0/24",
 		Gateway: "10.99.99.1",
 		MTU:     1500,
-		VLAN:    999,
+		VLAN:    &vlan999,
 		LinkAggregationGroup: &client.NamedReference{Name: "uplink"},
 	})
 	if err != nil {

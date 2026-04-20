@@ -18,23 +18,28 @@ type Subnet struct {
 // SubnetPost contains writable fields for POST /api/2.22/subnets?names=<name>.
 // Name is NOT included — it is passed as the ?names= query parameter.
 // Enabled, ID, Interfaces, and Services are read-only (ro) in the API spec and must not be sent.
+// VLAN is *int64 so that VLAN=0 (semantic "untagged") is sent explicitly instead of being
+// silently dropped by omitempty. See CONVENTIONS.md §Pointer rules (POST struct).
 type SubnetPost struct {
 	Gateway              string          `json:"gateway,omitempty"`
 	LinkAggregationGroup *NamedReference `json:"link_aggregation_group,omitempty"`
 	MTU                  int64           `json:"mtu,omitempty"`
 	Prefix               string          `json:"prefix,omitempty"`
-	VLAN                 int64           `json:"vlan,omitempty"`
+	VLAN                 *int64          `json:"vlan,omitempty"`
 }
 
 // SubnetPatch contains writable fields for PATCH /api/2.22/subnets?names=<name>.
 // Pointer types allow true omission of unchanged fields.
-// *int64 is used for MTU and VLAN so that zero values (e.g., VLAN=0 for untagged) are serializable.
+// LinkAggregationGroup uses **NamedReference (CONVENTIONS.md §Pointer rules, PATCH struct):
+//   - nil outer                        → omit
+//   - non-nil outer, nil inner         → clear (send JSON null)
+//   - non-nil outer, non-nil inner     → set value
 type SubnetPatch struct {
-	Gateway              *string         `json:"gateway,omitempty"`
-	LinkAggregationGroup *NamedReference `json:"link_aggregation_group,omitempty"`
-	MTU                  *int64          `json:"mtu,omitempty"`
-	Prefix               *string         `json:"prefix,omitempty"`
-	VLAN                 *int64          `json:"vlan,omitempty"`
+	Gateway              *string          `json:"gateway,omitempty"`
+	LinkAggregationGroup **NamedReference `json:"link_aggregation_group,omitempty"`
+	MTU                  *int64           `json:"mtu,omitempty"`
+	Prefix               *string          `json:"prefix,omitempty"`
+	VLAN                 *int64           `json:"vlan,omitempty"`
 }
 
 // LinkAggregationGroup represents a FlashBlade LAG from GET /api/2.22/link-aggregation-groups.
