@@ -15,7 +15,7 @@
 - tools-v1.0 API Tooling Pipeline (Phases 43-48) -- shipped 2026-04-14
 - ✅ v2.22.1 Directory Service – Array Management (Phases 49-49) -- shipped 2026-04-17 — [archive](milestones/v2.22.1-ROADMAP.md)
 - ✅ v2.22.2 Directory Service Roles & Role Mappings (Phases 50, 50.1) -- shipped 2026-04-17 — [archive](milestones/v2.22.2-ROADMAP.md)
-- 🔵 v2.22.3 Convention Compliance (Phases 51-53) -- in progress, started 2026-04-20
+- ✅ v2.22.3 Convention Compliance (Phases 51-53) -- shipped 2026-04-20 — [archive](milestones/v2.22.3-ROADMAP.md)
 
 ## Phases
 
@@ -777,46 +777,4 @@ Full details archived at [milestones/v2.22.2-ROADMAP.md](milestones/v2.22.2-ROAD
 
 ---
 
-<details open>
-<summary>🔵 v2.22.3 Convention Compliance (Phases 51-53) — IN PROGRESS</summary>
-
-### Phase 51: Critical Pointer & Schema Fixes
-**Goal**: Users can create untagged subnets (VLAN=0), detach subnets from LAGs, and clear optional refs on export/account-export PATCH — no silent data loss
-**Depends on**: Nothing (entry point of milestone)
-**Requirements**: R-001, R-002, R-003, R-004, R-005
-**Success Criteria** (what must be TRUE):
-  1. `SubnetPost.VLAN` is `*int64`; creating a subnet with `vlan=0` reads back `vlan=0`
-  2. `SubnetPatch.LinkAggregationGroup` is `**NamedReference`; unsetting LAG in HCL detaches it on the array
-  3. `FileSystemExportPatch.Server` and `.SharePolicy` are `**NamedReference`; clearing `share_policy` in HCL removes it on the array
-  4. `ObjectStoreAccountExportPatch.Policy` is `**NamedReference`; clearing policy in HCL removes it on the array
-  5. Affected resources bump SchemaVersion and ship `TestUnit_<Resource>_StateUpgrade_V*toV*` tests; `make test` count ≥ 822
-**Plans**: TBD (run `/gsd:plan-phase 51`)
-
-### Phase 52: Important Conformance
-**Goal**: All resources declare the 4 mandatory interface assertions, QoS POST encodes unlimited quotas correctly, NFS policy rule PATCH can clear security, and test naming is uniform
-**Depends on**: Phase 51 (avoid churn on files touched by critical fixes)
-**Requirements**: R-006, R-007, R-008, R-009, R-010
-**Success Criteria** (what must be TRUE):
-  1. `QosPolicyPost.MaxTotalBytesPerSec` / `MaxTotalOpsPerSec` are `*int64`; `Name` has `json:"-"`; creating a QoS policy with `0` unlimited value persists as `0`
-  2. All 9 resources missing `ResourceWithUpgradeState` declare it and implement a no-op `UpgradeState`
-  3. `object_store_access_key_resource.go` either implements `ImportState` (rejecting with an informative error) or CONVENTIONS.md documents the exception with rationale
-  4. `NfsExportPolicyRulePatch.Security` is `*[]string`; a test verifies the empty-list clear path
-  5. `grep -rE "^func (TestMocked_|TestCompute)" internal/` returns 0 results
-**Plans**: TBD (run `/gsd:plan-phase 52`)
-
-### Phase 53: Cosmetic Hygiene
-**Goal**: PATCH slice fields across policy rules use `*[]string`, and mock handler stores follow the canonical `byName`/`nextID` pattern
-**Depends on**: Phase 52
-**Requirements**: R-011, R-012
-**Success Criteria** (what must be TRUE):
-  1. `ObjectStoreAccessPolicyRulePatch`, `S3ExportPolicyRulePatch`, `NetworkAccessPolicyRulePatch` use `*[]string` for their list fields; existing tests pass
-  2. `NetworkInterfacePatch.Services` / `.AttachedServers` are `*[]NamedReference` / `*[]string` OR CONVENTIONS.md documents the deliberate "always send" exception
-  3. `qos_policies.go` handler renames `policies` → `byName`; `subnets.go` and `network_interfaces.go` handlers replace `uuid.New()` with `nextID` counter and `fmt.Sprintf(..., s.nextID)`
-  4. `make test` count ≥ Phase 52 baseline, `make lint` clean
-**Plans**: TBD (run `/gsd:plan-phase 53`)
-
-</details>
-
----
-
-_Last updated: 2026-04-20 — milestone v2.22.3 started_
+_Last updated: 2026-04-20 — milestone v2.22.3 shipped_

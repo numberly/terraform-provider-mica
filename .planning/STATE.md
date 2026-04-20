@@ -1,15 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: executing
-last_updated: "2026-04-20T15:15:44.197Z"
-last_activity: 2026-04-20 — Completed 53-02-PLAN.md (R-012, 0 tests added, commit f153ee2)
+milestone: null
+milestone_name: null
+status: "milestone-archived"
+stopped_at: "Milestone v2.22.3 archived"
+last_updated: "2026-04-20T00:00:00.000Z"
+last_activity: 2026-04-20 — Milestone v2.22.3 convention-compliance archived
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -18,19 +20,20 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-04-20)
 
-**Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises
-**Current focus:** Milestone v2.22.3 convention-compliance — defining requirements
+**Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
+**Current focus:** none — ready for next milestone. Run `/gsd:new-milestone`.
 
 ## Current Position
 
-Milestone: v2.22.3 convention-compliance
-Phase: 53-cosmetic-hygiene (2/2 plans complete)
-Plan: — (all plans in milestone complete)
-Status: Complete
-Last activity: 2026-04-20 — Completed 53-02-PLAN.md (R-012, 0 tests added, commit f153ee2)
+Milestone: none (last shipped: v2.22.3 convention-compliance)
+Phase: —
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-04-20 — Milestone v2.22.3 archived
 
 ## Recent Milestones
 
+- ✅ **v2.22.3** — Convention Compliance (shipped 2026-04-20, 779 tests, 12/12 requirements, [archive](milestones/v2.22.3-ROADMAP.md))
 - ✅ **v2.22.2** — Directory Service Roles & Role Mappings (shipped 2026-04-17, 818 tests, [archive](milestones/v2.22.2-ROADMAP.md))
 - ✅ **v2.22.1** — Directory Service – Array Management (shipped 2026-04-17, 798 tests, [archive](milestones/v2.22.1-ROADMAP.md))
 
@@ -40,13 +43,9 @@ Last activity: 2026-04-20 — Completed 53-02-PLAN.md (R-012, 0 tests added, com
 
 Full project decision log in `.planning/PROJECT.md`. Highlights across recent milestones:
 
-- v2.22.2: DSR name is user-supplied via `?names=` (D-03 superseded post-50.1); composite ID for DSRM membership uses `/` not `:` (D-05) because role names can contain `:` (e.g. `pure:policy/array_admin`).
+- v2.22.3: CONVENTIONS.md §Pointer rules formalized with three exception classes (POST `*bool`/`*int64` for non-zero API defaults, `*[]T` for PATCH slices, "always send" carve-out for `NetworkInterfacePatch`). `doublePointerRefForPatch` helper becomes the canonical pattern for all `**NamedReference` PATCH call sites. Identity state upgraders (`type(oldState)` conversion) are the standard when only wire format changes.
+- v2.22.2: DSR name user-supplied via `?names=` (D-03 superseded post-50.1); composite ID for DSRM membership uses `/` not `:` because role names can contain `:` (e.g. `pure:policy/array_admin`).
 - v2.22.1: Directory Service Management is a singleton resource; `bind_password` Sensitive write-only; Delete is full-reset PATCH (no DELETE endpoint).
-- v2.22.3 (2026-04-20): CONVENTIONS.md §Pointer rules clarified — `*bool` allowed in POST when API default is non-zero (e.g., policy `Enabled` defaults to `true`); `*int64`/`*string` allowed when zero is a semantic user choice (e.g., `VLAN=0` means untagged); pointers on nested structs and optional refs are the correct Go idiom for `omitempty`.
-- D-52-01 (2026-04-20): `QosPolicyPost.MaxTotal*` migrated to `*int64` + `Name` → `json:"-"`; QoS resource schema v0→v1 with identity upgrader (R-006 closed, commit 4b83e27).
-- D-52-04 (2026-04-20): `NfsExportPolicyRulePatch.Security` migrated `[]string` → `*[]string`; nfs_export_policy_rule schema v0→v1 with identity upgrader; `terraform apply` can now clear the security flavors list (R-009 closed, commit 6804f59).
-- D-53-01/02 (2026-04-20): `ObjectStoreAccessPolicyRulePatch`, `S3ExportPolicyRulePatch`, `NetworkAccessPolicyRulePatch` list fields migrated to `*[]string`; `NetworkInterfacePatch.Services`/`.AttachedServers` kept as plain slices and formalized as "always send" carve-out in CONVENTIONS.md §Pointer rules (R-011 closed, commit 97a603e).
-- D-53-03/04 (2026-04-20): mock handler hygiene — `qosPolicyStore.policies` renamed to `byName`; `subnetStore`/`networkInterfaceStore` use `nextID` counter (`subnet-N`/`nic-N`) instead of `uuid.New()`; `google/uuid` dropped from both files; `byID` retained for internal iteration/deletion (R-012 closed, commit f153ee2).
 
 ### Open Blockers
 
@@ -54,4 +53,4 @@ _(none)_
 
 ## Next Steps
 
-Draft `.planning/REQUIREMENTS.md` for v2.22.3 (27 violations grouped in Critical/Important/Cosmetic phases), then `/gsd:plan-phase 51` to start execution.
+Run `/gsd:new-milestone` to start the next cycle.
