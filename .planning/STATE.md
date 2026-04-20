@@ -1,17 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.22.3
-milestone_name: convention-compliance
-status: defining-requirements
-stopped_at: null
-last_updated: "2026-04-20T00:00:00.000Z"
-last_activity: 2026-04-20
+milestone: v1.0
+milestone_name: milestone
+status: Defining requirements
+last_updated: "2026-04-20T08:11:12.060Z"
+last_activity: 2026-04-20 — Milestone v2.22.3 started
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 4
+  completed_plans: 1
 ---
 
 # Project State
@@ -41,6 +39,7 @@ Last activity: 2026-04-20 — Milestone v2.22.3 started
 ### Key Decisions
 
 Full project decision log in `.planning/PROJECT.md`. Highlights across recent milestones:
+
 - v2.22.2: DSR name is user-supplied via `?names=` (D-03 superseded post-50.1); composite ID for DSRM membership uses `/` not `:` (D-05) because role names can contain `:` (e.g. `pure:policy/array_admin`).
 - v2.22.1: Directory Service Management is a singleton resource; `bind_password` Sensitive write-only; Delete is full-reset PATCH (no DELETE endpoint).
 - v2.22.3 (2026-04-20): CONVENTIONS.md §Pointer rules clarified — `*bool` allowed in POST when API default is non-zero (e.g., policy `Enabled` defaults to `true`); `*int64`/`*string` allowed when zero is a semantic user choice (e.g., `VLAN=0` means untagged); pointers on nested structs and optional refs are the correct Go idiom for `omitempty`.
