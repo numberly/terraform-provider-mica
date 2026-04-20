@@ -62,13 +62,15 @@
 
 ---
 
-### R-006 — QosPolicyPost scalar pointer fixes (Important)
+### R-006 — QosPolicyPost scalar pointer fixes (Important) ✅ DONE
 
 **Why:** Convention §POST struct: `*int64` for semantic zero. `MaxTotalBytesPerSec=0` and `MaxTotalOpsPerSec=0` mean "unlimited" on FlashBlade. Current `int64 + omitempty` drops them, letting API apply default quota instead. Also: `Name` field has `json:"name"` (must be `json:"-"` per convention — name goes via `?names=` query).
 
 **Validation:** Integration test creating a QoS policy with `max_total_bytes_per_sec=0` reads back `0`.
 
 **Primary owner:** Phase 52-important-conformance
+
+**Status:** Closed 2026-04-20 by 52-01 (commit 4b83e27). `TestUnit_QosPolicyPost_JSONEncoding` enforces wire-format contract; `TestUnit_QosPolicyResource_StateUpgrade_V0toV1` enforces identity upgrader.
 
 ---
 
