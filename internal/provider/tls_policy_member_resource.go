@@ -19,6 +19,7 @@ import (
 var _ resource.Resource = &tlsPolicyMemberResource{}
 var _ resource.ResourceWithConfigure = &tlsPolicyMemberResource{}
 var _ resource.ResourceWithImportState = &tlsPolicyMemberResource{}
+var _ resource.ResourceWithUpgradeState = &tlsPolicyMemberResource{}
 
 // tlsPolicyMemberResource implements the flashblade_tls_policy_member resource.
 type tlsPolicyMemberResource struct {
@@ -241,4 +242,9 @@ func (r *tlsPolicyMemberResource) ImportState(ctx context.Context, req resource.
 	data.PolicyName = types.StringValue(found.Policy.Name)
 	data.MemberName = types.StringValue(found.Member.Name)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *tlsPolicyMemberResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }

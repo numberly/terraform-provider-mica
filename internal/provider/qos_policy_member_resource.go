@@ -19,6 +19,7 @@ import (
 var _ resource.Resource = &qosPolicyMemberResource{}
 var _ resource.ResourceWithConfigure = &qosPolicyMemberResource{}
 var _ resource.ResourceWithImportState = &qosPolicyMemberResource{}
+var _ resource.ResourceWithUpgradeState = &qosPolicyMemberResource{}
 
 // qosPolicyMemberResource implements the flashblade_qos_policy_member resource.
 type qosPolicyMemberResource struct {
@@ -246,6 +247,11 @@ func (r *qosPolicyMemberResource) ImportState(ctx context.Context, req resource.
 
 	mapQosPolicyMemberToModel(found, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *qosPolicyMemberResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // ---------- helpers ---------------------------------------------------------

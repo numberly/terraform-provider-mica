@@ -20,6 +20,7 @@ import (
 var _ resource.Resource = &bucketAccessPolicyRuleResource{}
 var _ resource.ResourceWithConfigure = &bucketAccessPolicyRuleResource{}
 var _ resource.ResourceWithImportState = &bucketAccessPolicyRuleResource{}
+var _ resource.ResourceWithUpgradeState = &bucketAccessPolicyRuleResource{}
 
 // bucketAccessPolicyRuleResource implements the flashblade_bucket_access_policy_rule resource.
 type bucketAccessPolicyRuleResource struct {
@@ -249,6 +250,11 @@ func (r *bucketAccessPolicyRuleResource) ImportState(ctx context.Context, req re
 
 	resp.Diagnostics.Append(mapBucketAccessPolicyRuleToModel(ctx, rule, parts[0], &data)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *bucketAccessPolicyRuleResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // ---------- helpers ---------------------------------------------------------

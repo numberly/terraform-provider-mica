@@ -21,6 +21,7 @@ import (
 var _ resource.Resource = &bucketAuditFilterResource{}
 var _ resource.ResourceWithConfigure = &bucketAuditFilterResource{}
 var _ resource.ResourceWithImportState = &bucketAuditFilterResource{}
+var _ resource.ResourceWithUpgradeState = &bucketAuditFilterResource{}
 
 // bucketAuditFilterResource implements the flashblade_bucket_audit_filter resource.
 type bucketAuditFilterResource struct {
@@ -292,6 +293,11 @@ func (r *bucketAuditFilterResource) ImportState(ctx context.Context, req resourc
 
 	mapBucketAuditFilterToModel(filter, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *bucketAuditFilterResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // ---------- helpers ---------------------------------------------------------

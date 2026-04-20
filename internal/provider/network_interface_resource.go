@@ -26,6 +26,7 @@ var _ resource.Resource = &networkInterfaceResource{}
 var _ resource.ResourceWithConfigure = &networkInterfaceResource{}
 var _ resource.ResourceWithImportState = &networkInterfaceResource{}
 var _ resource.ResourceWithConfigValidators = &networkInterfaceResource{}
+var _ resource.ResourceWithUpgradeState = &networkInterfaceResource{}
 
 // networkInterfaceResource implements the flashblade_network_interface resource.
 type networkInterfaceResource struct {
@@ -388,6 +389,11 @@ func (r *networkInterfaceResource) ImportState(ctx context.Context, req resource
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *networkInterfaceResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // ---------- helpers ---------------------------------------------------------

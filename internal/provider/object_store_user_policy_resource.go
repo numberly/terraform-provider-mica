@@ -21,6 +21,7 @@ import (
 var _ resource.Resource = &objectStoreUserPolicyResource{}
 var _ resource.ResourceWithConfigure = &objectStoreUserPolicyResource{}
 var _ resource.ResourceWithImportState = &objectStoreUserPolicyResource{}
+var _ resource.ResourceWithUpgradeState = &objectStoreUserPolicyResource{}
 
 // objectStoreUserPolicyResource implements the flashblade_object_store_user_policy resource.
 type objectStoreUserPolicyResource struct {
@@ -249,6 +250,11 @@ func (r *objectStoreUserPolicyResource) ImportState(ctx context.Context, req res
 
 	mapObjectStoreUserPolicyToModel(found, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// UpgradeState returns state upgraders for schema migrations.
+func (r *objectStoreUserPolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
 }
 
 // ---------- helpers ---------------------------------------------------------
