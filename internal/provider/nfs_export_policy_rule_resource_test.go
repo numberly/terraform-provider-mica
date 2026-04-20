@@ -1,7 +1,12 @@
 package provider
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 
@@ -493,5 +498,275 @@ func TestUnit_Unit_NFSRule_PlanModifiers(t *testing.T) {
 	}
 	if len(nameAttr.PlanModifiers) == 0 {
 		t.Error("expected UseStateForUnknown plan modifier on name attribute")
+	}
+}
+
+// nfsRuleBodyCaptor records the last PATCH body for the rules endpoint.
+type nfsRuleBodyCaptor struct {
+	inner     http.Handler
+	lastPATCH []byte
+}
+
+func (c *nfsRuleBodyCaptor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/2.22/nfs-export-policies/rules" && r.Method == http.MethodPatch {
+		buf, _ := io.ReadAll(r.Body)
+		r.Body = io.NopCloser(bytes.NewReader(buf))
+		c.lastPATCH = buf
+	}
+	c.inner.ServeHTTP(w, r)
+}
+
+// newNFSRuleCaptorClient builds a FlashBladeClient pointed at a captor-wrapped mock mux.
+func newNFSRuleCaptorClient(t *testing.T, captor *nfsRuleBodyCaptor) (*client.FlashBladeClient, *httptest.Server) {
+	t.Helper()
+	srv := httptest.NewServer(captor)
+	c, err := client.NewClient(context.Background(), client.Config{
+		Endpoint:           srv.URL,
+		APIToken:           "test-token",
+		InsecureSkipVerify: true,
+		MaxRetries:         1,
+	})
+	if err != nil {
+		srv.Close()
+		t.Fatalf("NewClient: %v", err)
+	}
+	return c, srv
+}
+
+// TestUnit_NfsExportPolicyRule_Patch_Security_Clear verifies that transitioning
+// the security list from ["sys"] to [] emits "security":[] in the PATCH body
+// (not omitted), and that the mock-stored rule ends up with an empty security
+// list. Regression guard for R-009.
+func TestUnit_NfsExportPolicyRule_Patch_Security_Clear(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterNfsExportPolicyHandlers(ms.Mux)
+
+	captor := &nfsRuleBodyCaptor{inner: ms.Mux}
+	c, captureSrv := newNFSRuleCaptorClient(t, captor)
+	defer captureSrv.Close()
+
+	// Create policy + rule via the client (exercises the POST path, gets a real
+	// server-assigned rule name/id).
+	createTestPolicy(t, c, "clear-sec-policy")
+	created, err := c.PostNfsExportPolicyRule(context.Background(), "clear-sec-policy", client.NfsExportPolicyRulePost{
+		Access:     "root-squash",
+		Client:     "*",
+		Permission: "rw",
+		Security:   []string{"sys"},
+	})
+	if err != nil {
+		t.Fatalf("PostNfsExportPolicyRule: %v", err)
+	}
+	ruleName := created.Name
+
+	r := &nfsExportPolicyRuleResource{client: c}
+	s := nfsRuleResourceSchema(t).Schema
+
+	// Build state: fully populated (simulating state after a prior read).
+	stateCfg := nullNFSRuleConfig()
+	stateCfg["id"] = tftypes.NewValue(tftypes.String, created.ID)
+	stateCfg["policy_name"] = tftypes.NewValue(tftypes.String, "clear-sec-policy")
+	stateCfg["name"] = tftypes.NewValue(tftypes.String, ruleName)
+	stateCfg["index"] = tftypes.NewValue(tftypes.Number, created.Index)
+	stateCfg["policy_version"] = tftypes.NewValue(tftypes.String, "v1")
+	stateCfg["access"] = tftypes.NewValue(tftypes.String, "root-squash")
+	stateCfg["client"] = tftypes.NewValue(tftypes.String, "*")
+	stateCfg["permission"] = tftypes.NewValue(tftypes.String, "rw")
+	stateCfg["anonuid"] = tftypes.NewValue(tftypes.Number, 0)
+	stateCfg["anongid"] = tftypes.NewValue(tftypes.Number, 0)
+	stateCfg["atime"] = tftypes.NewValue(tftypes.Bool, true)
+	stateCfg["fileid_32bit"] = tftypes.NewValue(tftypes.Bool, false)
+	stateCfg["secure"] = tftypes.NewValue(tftypes.Bool, false)
+	stateCfg["security"] = tftypes.NewValue(
+		tftypes.List{ElementType: tftypes.String},
+		[]tftypes.Value{tftypes.NewValue(tftypes.String, "sys")},
+	)
+	stateCfg["required_transport_security"] = tftypes.NewValue(tftypes.String, "")
+
+	priorState := tfsdk.State{
+		Raw:    tftypes.NewValue(buildNfsExportPolicyRuleType(), stateCfg),
+		Schema: s,
+	}
+
+	// Build plan: same as state but security = [] (non-null empty list).
+	planCfg := nullNFSRuleConfig()
+	for k, v := range stateCfg {
+		planCfg[k] = v
+	}
+	planCfg["security"] = tftypes.NewValue(
+		tftypes.List{ElementType: tftypes.String},
+		[]tftypes.Value{},
+	)
+
+	plan := tfsdk.Plan{
+		Raw:    tftypes.NewValue(buildNfsExportPolicyRuleType(), planCfg),
+		Schema: s,
+	}
+
+	updateResp := &resource.UpdateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildNfsExportPolicyRuleType(), nil), Schema: s},
+	}
+	r.Update(context.Background(), resource.UpdateRequest{Plan: plan, State: priorState}, updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatalf("Update returned error: %s", updateResp.Diagnostics)
+	}
+
+	// Assertion 1: captured PATCH body contains "security":[] (not omitted, not null).
+	if captor.lastPATCH == nil {
+		t.Fatal("expected PATCH body to be captured")
+	}
+	var rawBody map[string]json.RawMessage
+	if err := json.Unmarshal(captor.lastPATCH, &rawBody); err != nil {
+		t.Fatalf("decode PATCH body: %v", err)
+	}
+	secRaw, ok := rawBody["security"]
+	if !ok {
+		t.Fatalf("expected 'security' key in PATCH body, got: %s", string(captor.lastPATCH))
+	}
+	if string(secRaw) != "[]" {
+		t.Errorf("expected security=[] in PATCH body, got %s", string(secRaw))
+	}
+
+	// Assertion 2: mock-stored rule now has empty Security slice.
+	got, err := c.GetNfsExportPolicyRuleByName(context.Background(), "clear-sec-policy", ruleName)
+	if err != nil {
+		t.Fatalf("GetNfsExportPolicyRuleByName: %v", err)
+	}
+	if len(got.Security) != 0 {
+		t.Errorf("expected stored Security to be empty, got %v", got.Security)
+	}
+
+	// Assertion 3: returned state has non-null empty security list.
+	var model nfsExportPolicyRuleModel
+	if diags := updateResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+	if model.Security.IsNull() {
+		t.Error("expected Security in state to be non-null (empty list)")
+	}
+	if len(model.Security.Elements()) != 0 {
+		t.Errorf("expected Security in state to be empty, got %d elements", len(model.Security.Elements()))
+	}
+}
+
+// TestUnit_NfsExportPolicyRuleResource_StateUpgrade_V0toV1 verifies that the
+// v0->v1 upgrader is an identity: every attribute present in v0 state lands
+// in v1 state unchanged. Regression guard for R-009 schema bump.
+func TestUnit_NfsExportPolicyRuleResource_StateUpgrade_V0toV1(t *testing.T) {
+	r := &nfsExportPolicyRuleResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected v0->v1 upgrader at key 0")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema to be set for v0->v1 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	stringList := tftypes.List{ElementType: tftypes.String}
+
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                          tftypes.String,
+		"policy_name":                 tftypes.String,
+		"name":                        tftypes.String,
+		"index":                       tftypes.Number,
+		"policy_version":              tftypes.String,
+		"access":                      tftypes.String,
+		"client":                      tftypes.String,
+		"permission":                  tftypes.String,
+		"anonuid":                     tftypes.Number,
+		"anongid":                     tftypes.Number,
+		"atime":                       tftypes.Bool,
+		"fileid_32bit":                tftypes.Bool,
+		"secure":                      tftypes.Bool,
+		"security":                    stringList,
+		"required_transport_security": tftypes.String,
+		"timeouts":                    timeoutsType,
+	}}
+
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":                          tftypes.NewValue(tftypes.String, "rule-001"),
+		"policy_name":                 tftypes.NewValue(tftypes.String, "my-policy"),
+		"name":                        tftypes.NewValue(tftypes.String, "rule-abc"),
+		"index":                       tftypes.NewValue(tftypes.Number, 3),
+		"policy_version":              tftypes.NewValue(tftypes.String, "v7"),
+		"access":                      tftypes.NewValue(tftypes.String, "root-squash"),
+		"client":                      tftypes.NewValue(tftypes.String, "10.0.0.0/8"),
+		"permission":                  tftypes.NewValue(tftypes.String, "rw"),
+		"anonuid":                     tftypes.NewValue(tftypes.Number, 65534),
+		"anongid":                     tftypes.NewValue(tftypes.Number, 65534),
+		"atime":                       tftypes.NewValue(tftypes.Bool, true),
+		"fileid_32bit":                tftypes.NewValue(tftypes.Bool, false),
+		"secure":                      tftypes.NewValue(tftypes.Bool, true),
+		"security":                    tftypes.NewValue(stringList, []tftypes.Value{tftypes.NewValue(tftypes.String, "sys")}),
+		"required_transport_security": tftypes.NewValue(tftypes.String, "krb5"),
+		"timeouts":                    tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	currentSchema := nfsRuleResourceSchema(t).Schema
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildNfsExportPolicyRuleType(), nil),
+			Schema: currentSchema,
+		},
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model nfsExportPolicyRuleModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.ID.ValueString() != "rule-001" {
+		t.Errorf("expected id=rule-001, got %s", model.ID.ValueString())
+	}
+	if model.PolicyName.ValueString() != "my-policy" {
+		t.Errorf("expected policy_name=my-policy, got %s", model.PolicyName.ValueString())
+	}
+	if model.Name.ValueString() != "rule-abc" {
+		t.Errorf("expected name=rule-abc, got %s", model.Name.ValueString())
+	}
+	if model.Index.ValueInt64() != 3 {
+		t.Errorf("expected index=3, got %d", model.Index.ValueInt64())
+	}
+	if model.Access.ValueString() != "root-squash" {
+		t.Errorf("expected access=root-squash, got %s", model.Access.ValueString())
+	}
+	if model.Client.ValueString() != "10.0.0.0/8" {
+		t.Errorf("expected client=10.0.0.0/8, got %s", model.Client.ValueString())
+	}
+	if model.Permission.ValueString() != "rw" {
+		t.Errorf("expected permission=rw, got %s", model.Permission.ValueString())
+	}
+	if model.Anonuid.ValueInt64() != 65534 {
+		t.Errorf("expected anonuid=65534, got %d", model.Anonuid.ValueInt64())
+	}
+	if !model.Secure.ValueBool() {
+		t.Error("expected secure=true")
+	}
+	if len(model.Security.Elements()) != 1 {
+		t.Errorf("expected security list length=1, got %d", len(model.Security.Elements()))
+	}
+	if model.RequiredTransportSecurity.ValueString() != "krb5" {
+		t.Errorf("expected required_transport_security=krb5, got %s", model.RequiredTransportSecurity.ValueString())
 	}
 }

@@ -67,7 +67,7 @@ func (r *nfsExportPolicyRuleResource) Metadata(_ context.Context, _ resource.Met
 // Schema defines the resource schema.
 func (r *nfsExportPolicyRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a rule within a FlashBlade NFS export policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -170,9 +170,145 @@ func (r *nfsExportPolicyRuleResource) Schema(ctx context.Context, _ resource.Sch
 }
 
 
+// nfsExportPolicyRuleV0Model mirrors the schema as of Version 0. It is identical
+// to the v1 model for this migration — the change was wire-level only (PATCH
+// encoding of Security became pointer-aware), not model-level. The bump is
+// mandated by CONVENTIONS.md §State Upgraders because a client model type changed.
+type nfsExportPolicyRuleV0Model struct {
+	ID                        types.String   `tfsdk:"id"`
+	PolicyName                types.String   `tfsdk:"policy_name"`
+	Name                      types.String   `tfsdk:"name"`
+	Index                     types.Int64    `tfsdk:"index"`
+	PolicyVersion             types.String   `tfsdk:"policy_version"`
+	Access                    types.String   `tfsdk:"access"`
+	Client                    types.String   `tfsdk:"client"`
+	Permission                types.String   `tfsdk:"permission"`
+	Anonuid                   types.Int64    `tfsdk:"anonuid"`
+	Anongid                   types.Int64    `tfsdk:"anongid"`
+	Atime                     types.Bool     `tfsdk:"atime"`
+	Fileid32bit               types.Bool     `tfsdk:"fileid_32bit"`
+	Secure                    types.Bool     `tfsdk:"secure"`
+	Security                  types.List     `tfsdk:"security"`
+	RequiredTransportSecurity types.String   `tfsdk:"required_transport_security"`
+	Timeouts                  timeouts.Value `tfsdk:"timeouts"`
+}
+
 // UpgradeState returns state upgraders for schema migrations.
-func (r *nfsExportPolicyRuleResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *nfsExportPolicyRuleResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &schema.Schema{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The unique identifier of the NFS export policy rule (server-assigned UUID).",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"policy_name": schema.StringAttribute{
+						Required:    true,
+						Description: "The name of the NFS export policy this rule belongs to. Changing this forces a new resource.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The server-assigned rule identifier. Used internally for PATCH/DELETE API calls.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"index": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The server-assigned ordering index for this rule within the policy. Used for import.",
+					},
+					"policy_version": schema.StringAttribute{
+						Computed:    true,
+						Description: "The version of the parent policy at the time this rule was last read.",
+					},
+					"access": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The access control for NFS clients (e.g. 'root-squash', 'no-root-squash', 'all-squash').",
+						Validators: []validator.String{
+							stringvalidator.OneOf("root-squash", "no-root-squash", "all-squash"),
+						},
+					},
+					"client": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "A pattern matching the clients to which this rule applies (e.g. '*', '10.0.0.0/8').",
+					},
+					"permission": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The read/write permission for matching clients (e.g. 'rw', 'ro').",
+						Validators: []validator.String{
+							stringvalidator.OneOf("rw", "ro"),
+						},
+					},
+					"anonuid": schema.Int64Attribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The UID to use for anonymous (squashed) users.",
+					},
+					"anongid": schema.Int64Attribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The GID to use for anonymous (squashed) users.",
+					},
+					"atime": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "If true, access time updates are enabled.",
+					},
+					"fileid_32bit": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "If true, use 32-bit file IDs.",
+					},
+					"secure": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "If true, require clients to use a privileged port.",
+					},
+					"security": schema.ListAttribute{
+						Optional:    true,
+						Computed:    true,
+						ElementType: types.StringType,
+						Description: "Security flavors to enforce for this rule.",
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"required_transport_security": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Required transport security for this rule (e.g. 'krb5', 'krb5i', 'krb5p').",
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var old nfsExportPolicyRuleV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &old)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+				// Identity migration: the v0 and v1 models are structurally identical;
+				// the bump is convention-driven (client model type changed at wire level).
+				newState := nfsExportPolicyRuleModel(old)
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -372,7 +508,10 @@ func (r *nfsExportPolicyRuleResource) Update(ctx context.Context, req resource.U
 		var security []string
 		resp.Diagnostics.Append(plan.Security.ElementsAs(ctx, &security, false)...)
 		if !resp.Diagnostics.HasError() {
-			patch.Security = security
+			if security == nil {
+				security = []string{}
+			}
+			patch.Security = &security
 		}
 	}
 	if !plan.RequiredTransportSecurity.Equal(state.RequiredTransportSecurity) {

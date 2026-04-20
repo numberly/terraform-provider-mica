@@ -88,8 +88,8 @@ type NfsExportPolicyRulePatch struct {
 	Atime                     *bool    `json:"atime,omitempty"`
 	Fileid32bit               *bool    `json:"fileid_32bit,omitempty"`
 	Secure                    *bool    `json:"secure,omitempty"`
-	Security                  []string `json:"security,omitempty"`
-	RequiredTransportSecurity *string  `json:"required_transport_security,omitempty"`
+	Security                  *[]string `json:"security,omitempty"`
+	RequiredTransportSecurity *string   `json:"required_transport_security,omitempty"`
 }
 
 // SmbSharePolicy represents a FlashBlade SMB share policy from GET responses.
