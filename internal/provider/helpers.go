@@ -56,6 +56,28 @@ func stringOrNull(s string) types.String {
 	return types.StringValue(s)
 }
 
+// doublePointerRefForPatch encodes the three-state PATCH semantics for
+// clearable reference fields (CONVENTIONS.md §Pointer rules).
+//
+// Returns:
+//   - nil                                          when state == plan (OMIT: do not send)
+//   - &(*NamedReference)(nil)                      when plan is null and state was set (CLEAR: send JSON null)
+//   - &(&NamedReference{Name: plan.ValueString()}) when plan has a new value (SET: send value)
+//
+// Use this helper from Update() to build PATCH bodies with `**NamedReference`
+// fields so that users can clear, set, or leave untouched any reference.
+func doublePointerRefForPatch(state, plan types.String) **client.NamedReference {
+	if state.Equal(plan) {
+		return nil
+	}
+	if plan.IsNull() {
+		var null *client.NamedReference
+		return &null
+	}
+	ref := &client.NamedReference{Name: plan.ValueString()}
+	return &ref
+}
+
 // ---------- shared helpers (DUP-01 through DUP-05) -------------------------
 
 // spaceAttrTypes returns the attribute type map for the shared "space" nested object
