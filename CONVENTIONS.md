@@ -44,6 +44,18 @@ Three structs per resource in `internal/client/models_<domain>.go`:
   - `*string` for scalar fields
   - `**NamedReference` for reference fields (outer nil = omit, outer non-nil + inner nil = set to null, outer non-nil + inner non-nil = set value). This is the only way to clear an optional reference via PATCH — a single `*NamedReference` cannot distinguish "omit" from "set to null".
   - `*NestedConfig` (single pointer) is acceptable for nested config blocks that are atomic (the whole block is replaced, not cleared to null).
+  - `*[]T` (pointer to slice) for list fields with `omitempty`: `nil` = omit, `&[]T{}` = clear (send `"field": []`), `&[...]` = set. Resource `Update()` call sites must assign `&slice` so an empty `ElementsAs` result still transmits the empty list.
+
+#### Exception — "always send" list fields
+
+Some FlashBlade API endpoints treat an absent list key and an empty list as distinct: the only way to clear the list is to send `"field": []` in the JSON body, and any `omitempty` on the JSON tag would wrongly drop that empty slice. For these endpoints, the PATCH struct field MUST be a plain `[]T` **without** `omitempty` — the normal `*[]T`+`omitempty` pattern does not apply.
+
+Known exceptions (do not migrate):
+
+- `NetworkInterfacePatch.Services` (`internal/client/models_network.go`)
+- `NetworkInterfacePatch.AttachedServers` (`internal/client/models_network.go`)
+
+When adding a new PATCH struct, default to `*[]T` with `omitempty`. Only fall back to plain `[]T` (no `omitempty`) when the API is verified to reject absent keys as "no change" semantics that differ from an explicit empty list.
 
 ### JSON tags
 

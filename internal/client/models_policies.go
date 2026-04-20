@@ -312,10 +312,11 @@ type ObjectStoreAccessPolicyRulePost struct {
 
 // ObjectStoreAccessPolicyRulePatch contains pointer fields for PATCH /object-store-access-policies/rules.
 // Effect is read-only after creation (RequiresReplace in TF schema).
+// List fields use *[]string per CONVENTIONS.md §Pointer rules: nil = omit, &[]string{} = clear, &[...] = set.
 type ObjectStoreAccessPolicyRulePatch struct {
-	Actions    []string        `json:"actions,omitempty"`
+	Actions    *[]string       `json:"actions,omitempty"`
 	Conditions json.RawMessage `json:"conditions,omitempty"`
-	Resources  []string        `json:"resources,omitempty"`
+	Resources  *[]string       `json:"resources,omitempty"`
 }
 
 // NetworkAccessPolicy represents a FlashBlade network access policy from GET responses.
@@ -356,11 +357,12 @@ type NetworkAccessPolicyRulePost struct {
 }
 
 // NetworkAccessPolicyRulePatch contains pointer fields for PATCH /network-access-policies/rules.
+// List fields use *[]string per CONVENTIONS.md §Pointer rules.
 type NetworkAccessPolicyRulePatch struct {
-	Client     *string  `json:"client,omitempty"`
-	Effect     *string  `json:"effect,omitempty"`
-	Index      *int     `json:"index,omitempty"`
-	Interfaces []string `json:"interfaces,omitempty"`
+	Client     *string   `json:"client,omitempty"`
+	Effect     *string   `json:"effect,omitempty"`
+	Index      *int      `json:"index,omitempty"`
+	Interfaces *[]string `json:"interfaces,omitempty"`
 }
 
 // QuotaUser represents a per-filesystem user quota from GET /quotas/users.
@@ -441,8 +443,9 @@ type S3ExportPolicyRulePost struct {
 }
 
 // S3ExportPolicyRulePatch contains pointer fields for PATCH /s3-export-policies/rules.
+// List fields use *[]string per CONVENTIONS.md §Pointer rules.
 type S3ExportPolicyRulePatch struct {
-	Effect    *string  `json:"effect,omitempty"`
-	Actions   []string `json:"actions,omitempty"`
-	Resources []string `json:"resources,omitempty"`
+	Effect    *string   `json:"effect,omitempty"`
+	Actions   *[]string `json:"actions,omitempty"`
+	Resources *[]string `json:"resources,omitempty"`
 }

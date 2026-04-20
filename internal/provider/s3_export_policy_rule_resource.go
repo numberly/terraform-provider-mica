@@ -276,14 +276,14 @@ func (r *s3ExportPolicyRuleResource) Update(ctx context.Context, req resource.Up
 		var actions []string
 		resp.Diagnostics.Append(plan.Actions.ElementsAs(ctx, &actions, false)...)
 		if !resp.Diagnostics.HasError() {
-			patch.Actions = actions
+			patch.Actions = &actions
 		}
 	}
 	if !plan.Resources.Equal(state.Resources) {
 		var resources []string
 		resp.Diagnostics.Append(plan.Resources.ElementsAs(ctx, &resources, false)...)
 		if !resp.Diagnostics.HasError() {
-			patch.Resources = resources
+			patch.Resources = &resources
 		}
 	}
 

@@ -1,8 +1,10 @@
 package client_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -370,5 +372,54 @@ func TestUnit_S3ExportPolicyRule_GetByIndex(t *testing.T) {
 	}
 	if rule.Effect != "deny" {
 		t.Errorf("expected Effect deny, got %q", rule.Effect)
+	}
+}
+
+func TestUnit_S3ExportPolicyRule_Patch_ClearList(t *testing.T) {
+	var capturedBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/s3-export-policies/rules":
+			capturedBody, _ = io.ReadAll(r.Body)
+			rule := client.S3ExportPolicyRule{
+				Name:      r.URL.Query().Get("names"),
+				Effect:    "Allow",
+				Actions:   []string{},
+				Resources: []string{},
+				Policy:    client.NamedReference{Name: r.URL.Query().Get("policy_names")},
+			}
+			writeJSON(w, http.StatusOK, listResponse([]client.S3ExportPolicyRule{rule}))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	_, err := c.PatchS3ExportPolicyRule(context.Background(), "my-s3p", "rule-1", client.S3ExportPolicyRulePatch{
+		Actions:   &[]string{},
+		Resources: &[]string{},
+	})
+	if err != nil {
+		t.Fatalf("PatchS3ExportPolicyRule: %v", err)
+	}
+	if !bytes.Contains(capturedBody, []byte(`"actions":[]`)) {
+		t.Errorf("expected body to contain \"actions\":[], got %s", capturedBody)
+	}
+	if !bytes.Contains(capturedBody, []byte(`"resources":[]`)) {
+		t.Errorf("expected body to contain \"resources\":[], got %s", capturedBody)
+	}
+
+	// Additional: nil pointers omit fields entirely.
+	capturedBody = nil
+	_, err = c.PatchS3ExportPolicyRule(context.Background(), "my-s3p", "rule-1", client.S3ExportPolicyRulePatch{})
+	if err != nil {
+		t.Fatalf("PatchS3ExportPolicyRule (nil): %v", err)
+	}
+	if bytes.Contains(capturedBody, []byte(`"actions"`)) {
+		t.Errorf("expected actions to be omitted when nil, got %s", capturedBody)
 	}
 }

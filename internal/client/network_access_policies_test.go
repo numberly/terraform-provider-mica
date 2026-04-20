@@ -1,7 +1,9 @@
 package client_test
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -98,5 +100,42 @@ func TestUnit_NetworkAccessPolicy_List_SinglePage(t *testing.T) {
 	}
 	if callCount != 1 {
 		t.Errorf("expected exactly 1 GET request, got %d", callCount)
+	}
+}
+
+func TestUnit_NetworkAccessPolicyRule_Patch_ClearList(t *testing.T) {
+	var capturedBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/network-access-policies/rules":
+			capturedBody, _ = io.ReadAll(r.Body)
+			rule := client.NetworkAccessPolicyRule{
+				Name:       r.URL.Query().Get("names"),
+				Effect:     "allow",
+				Interfaces: []string{},
+				Policy:     &client.NamedReference{Name: r.URL.Query().Get("policy_names")},
+			}
+			writeJSON(w, http.StatusOK, listResponse([]client.NetworkAccessPolicyRule{rule}))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	rule, err := c.PatchNetworkAccessPolicyRule(context.Background(), "my-nap", "rule-1", client.NetworkAccessPolicyRulePatch{
+		Interfaces: &[]string{},
+	})
+	if err != nil {
+		t.Fatalf("PatchNetworkAccessPolicyRule: %v", err)
+	}
+	if !bytes.Contains(capturedBody, []byte(`"interfaces":[]`)) {
+		t.Errorf("expected body to contain \"interfaces\":[], got %s", capturedBody)
+	}
+	if len(rule.Interfaces) != 0 {
+		t.Errorf("expected empty Interfaces, got %v", rule.Interfaces)
 	}
 }

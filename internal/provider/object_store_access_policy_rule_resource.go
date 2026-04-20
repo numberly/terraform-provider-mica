@@ -290,7 +290,7 @@ func (r *objectStoreAccessPolicyRuleResource) Update(ctx context.Context, req re
 		var actions []string
 		resp.Diagnostics.Append(plan.Actions.ElementsAs(ctx, &actions, false)...)
 		if !resp.Diagnostics.HasError() {
-			patch.Actions = actions
+			patch.Actions = &actions
 		}
 	}
 
@@ -298,7 +298,7 @@ func (r *objectStoreAccessPolicyRuleResource) Update(ctx context.Context, req re
 		var resources []string
 		resp.Diagnostics.Append(plan.Resources.ElementsAs(ctx, &resources, false)...)
 		if !resp.Diagnostics.HasError() {
-			patch.Resources = resources
+			patch.Resources = &resources
 		}
 	}
 

@@ -278,7 +278,7 @@ func (r *networkAccessPolicyRuleResource) Update(ctx context.Context, req resour
 		var interfaces []string
 		resp.Diagnostics.Append(plan.Interfaces.ElementsAs(ctx, &interfaces, false)...)
 		if !resp.Diagnostics.HasError() {
-			patch.Interfaces = interfaces
+			patch.Interfaces = &interfaces
 		}
 	}
 	if resp.Diagnostics.HasError() {

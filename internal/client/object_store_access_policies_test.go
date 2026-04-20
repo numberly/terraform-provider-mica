@@ -1,8 +1,10 @@
 package client_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -400,11 +402,15 @@ func TestUnit_ObjectStoreAccessPolicyRule_Patch(t *testing.T) {
 				return
 			}
 			rule := client.ObjectStoreAccessPolicyRule{
-				Name:      ruleName,
-				Effect:    "Allow",
-				Actions:   body.Actions,
-				Resources: body.Resources,
-				Policy:    &client.NamedReference{Name: policyName},
+				Name:   ruleName,
+				Effect: "Allow",
+				Policy: &client.NamedReference{Name: policyName},
+			}
+			if body.Actions != nil {
+				rule.Actions = *body.Actions
+			}
+			if body.Resources != nil {
+				rule.Resources = *body.Resources
 			}
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccessPolicyRule{rule}))
 		default:
@@ -415,8 +421,8 @@ func TestUnit_ObjectStoreAccessPolicyRule_Patch(t *testing.T) {
 
 	c := newTestClient(t, srv)
 	rule, err := c.PatchObjectStoreAccessPolicyRule(context.Background(), "my-oap", "allow-get-object", client.ObjectStoreAccessPolicyRulePatch{
-		Actions:   []string{"s3:GetObject", "s3:ListBucket"},
-		Resources: []string{"arn:aws:s3:::my-bucket", "arn:aws:s3:::my-bucket/*"},
+		Actions:   &[]string{"s3:GetObject", "s3:ListBucket"},
+		Resources: &[]string{"arn:aws:s3:::my-bucket", "arn:aws:s3:::my-bucket/*"},
 	})
 	if err != nil {
 		t.Fatalf("PatchObjectStoreAccessPolicyRule: %v", err)
@@ -426,5 +432,47 @@ func TestUnit_ObjectStoreAccessPolicyRule_Patch(t *testing.T) {
 	}
 	if len(rule.Actions) != 2 {
 		t.Errorf("expected 2 actions after patch, got %d", len(rule.Actions))
+	}
+}
+
+func TestUnit_ObjectStoreAccessPolicyRule_Patch_ClearList(t *testing.T) {
+	var capturedBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-access-policies/rules":
+			capturedBody, _ = io.ReadAll(r.Body)
+			rule := client.ObjectStoreAccessPolicyRule{
+				Name:      r.URL.Query().Get("names"),
+				Effect:    "Allow",
+				Actions:   []string{},
+				Resources: []string{},
+				Policy:    &client.NamedReference{Name: r.URL.Query().Get("policy_names")},
+			}
+			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccessPolicyRule{rule}))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	c := newTestClient(t, srv)
+	rule, err := c.PatchObjectStoreAccessPolicyRule(context.Background(), "my-oap", "allow-get-object", client.ObjectStoreAccessPolicyRulePatch{
+		Actions:   &[]string{},
+		Resources: &[]string{},
+	})
+	if err != nil {
+		t.Fatalf("PatchObjectStoreAccessPolicyRule: %v", err)
+	}
+	if !bytes.Contains(capturedBody, []byte(`"actions":[]`)) {
+		t.Errorf("expected body to contain \"actions\":[], got %s", capturedBody)
+	}
+	if !bytes.Contains(capturedBody, []byte(`"resources":[]`)) {
+		t.Errorf("expected body to contain \"resources\":[], got %s", capturedBody)
+	}
+	if len(rule.Actions) != 0 {
+		t.Errorf("expected empty Actions, got %v", rule.Actions)
 	}
 }
