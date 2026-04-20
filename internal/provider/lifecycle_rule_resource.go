@@ -190,6 +190,20 @@ func (r *lifecycleRuleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// The FlashBlade API does not accept `enabled` on POST — rules are always
+	// created with `enabled=true` by default. When the user requests
+	// `enabled=false`, immediately PATCH the rule to disable it so the returned
+	// state matches the plan.
+	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() && !data.Enabled.ValueBool() {
+		v := false
+		patched, perr := r.client.PatchLifecycleRule(ctx, rule.Bucket.Name, rule.RuleID, client.LifecycleRulePatch{Enabled: &v}, false)
+		if perr != nil {
+			resp.Diagnostics.AddError("Error disabling lifecycle rule after creation", perr.Error())
+			return
+		}
+		rule = patched
+	}
+
 	mapLifecycleRuleToModel(rule, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

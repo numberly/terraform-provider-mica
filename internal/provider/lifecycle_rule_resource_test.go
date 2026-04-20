@@ -153,6 +153,42 @@ func TestUnit_LifecycleRuleResource_Create(t *testing.T) {
 	}
 }
 
+// TestUnit_LifecycleRuleResource_Create_Disabled verifies that creating a rule
+// with enabled=false issues a follow-up PATCH to disable it (the FlashBlade
+// POST /lifecycle-rules endpoint ignores `enabled` and always creates rules
+// with enabled=true). Without the PATCH, Terraform raises "Provider produced
+// inconsistent result after apply" because plan.enabled=false but API returns
+// enabled=true.
+func TestUnit_LifecycleRuleResource_Create_Disabled(t *testing.T) {
+	ms := testmock.NewMockServer()
+	defer ms.Close()
+	handlers.RegisterLifecycleRuleHandlers(ms.Mux)
+
+	r := newTestLifecycleRuleResource(t, ms)
+	s := lifecycleRuleResourceSchema(t).Schema
+
+	plan := lifecycleRulePlanWith(t, "my-bucket", "rule-disabled", "logs/", false, 86400000)
+	req := resource.CreateRequest{Plan: plan}
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildLifecycleRuleType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", resp.Diagnostics)
+	}
+
+	var model lifecycleRuleModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	if model.Enabled.ValueBool() != false {
+		t.Errorf("expected enabled=false after Create with disabled plan; got %v", model.Enabled.ValueBool())
+	}
+}
+
 // TestLifecycleRuleResource_Read verifies GET retrieves rule by bucket_name + rule_id.
 func TestUnit_LifecycleRuleResource_Read(t *testing.T) {
 	ms := testmock.NewMockServer()
