@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// TestMocked_ObjectStoreUser_DataSource verifies that the data source populates all
+// TestUnit_ObjectStoreUserDataSource_Basic verifies that the data source populates all
 // attributes (name, id, full_access) after the resource is created.
-func TestMocked_ObjectStoreUser_DataSource(t *testing.T) {
+func TestUnit_ObjectStoreUserDataSource_Basic(t *testing.T) {
 	factories := setupObjectStoreUserTest(t)
 
 	resource.UnitTest(t, resource.TestCase{

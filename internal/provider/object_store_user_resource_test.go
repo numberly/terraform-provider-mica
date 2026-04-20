@@ -28,8 +28,8 @@ func setupObjectStoreUserTest(t *testing.T) map[string]func() (tfprotov6.Provide
 	}
 }
 
-// TestMocked_ObjectStoreUser_Lifecycle verifies the full Create/Read/PlanConvergence/Import cycle.
-func TestMocked_ObjectStoreUser_Lifecycle(t *testing.T) {
+// TestUnit_ObjectStoreUserResource_Lifecycle verifies the full Create/Read/PlanConvergence/Import cycle.
+func TestUnit_ObjectStoreUserResource_Lifecycle(t *testing.T) {
 	factories := setupObjectStoreUserTest(t)
 
 	resource.UnitTest(t, resource.TestCase{
@@ -69,8 +69,8 @@ func TestMocked_ObjectStoreUser_Lifecycle(t *testing.T) {
 	})
 }
 
-// TestMocked_ObjectStoreUser_FullAccess verifies that full_access=true is set and stable.
-func TestMocked_ObjectStoreUser_FullAccess(t *testing.T) {
+// TestUnit_ObjectStoreUserResource_FullAccess verifies that full_access=true is set and stable.
+func TestUnit_ObjectStoreUserResource_FullAccess(t *testing.T) {
 	factories := setupObjectStoreUserTest(t)
 
 	resource.UnitTest(t, resource.TestCase{

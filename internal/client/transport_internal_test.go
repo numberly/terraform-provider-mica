@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestComputeDelayJitter(t *testing.T) {
+func TestUnit_Transport_ComputeDelayJitter(t *testing.T) {
 	base := 100 * time.Millisecond
 	seen := make(map[time.Duration]bool)
 	for i := 0; i < 100; i++ {
@@ -21,7 +21,7 @@ func TestComputeDelayJitter(t *testing.T) {
 	}
 }
 
-func TestComputeDelayCap(t *testing.T) {
+func TestUnit_Transport_ComputeDelayCap(t *testing.T) {
 	base := time.Second
 	d := computeDelay(base, 10) // 1s * 1024 = 1024s, capped at 30s + jitter
 	maxWithJitter := 30*time.Second + 6*time.Second // 30s + 20%

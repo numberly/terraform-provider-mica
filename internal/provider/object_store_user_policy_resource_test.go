@@ -28,9 +28,9 @@ func setupObjectStoreUserPolicyTest(t *testing.T) map[string]func() (tfprotov6.P
 	}
 }
 
-// TestMocked_ObjectStoreUserPolicy_Lifecycle verifies Create, plan-convergence, and ImportState
+// TestUnit_ObjectStoreUserPolicyResource_Lifecycle verifies Create, plan-convergence, and ImportState
 // for the flashblade_object_store_user_policy member resource.
-func TestMocked_ObjectStoreUserPolicy_Lifecycle(t *testing.T) {
+func TestUnit_ObjectStoreUserPolicyResource_Lifecycle(t *testing.T) {
 	factories := setupObjectStoreUserPolicyTest(t)
 
 	resource.UnitTest(t, resource.TestCase{
