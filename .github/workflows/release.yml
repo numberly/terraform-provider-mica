@@ -35,6 +35,16 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
+      # GoReleaser's before-hook runs `go test ./internal/...`, which invokes
+      # terraform-plugin-testing's resource.UnitTest — it auto-downloads
+      # Terraform from releases.hashicorp.com and verifies the openpgp
+      # signature. HashiCorp's release key expired (2026-04), breaking the
+      # auto-installer. Pre-install Terraform via the official action instead.
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
