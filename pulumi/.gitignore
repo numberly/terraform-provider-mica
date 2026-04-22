@@ -1,0 +1,14 @@
+# Build artifacts
+/provider/cmd/pulumi-tfgen-flashblade/pulumi-tfgen-flashblade
+/provider/cmd/pulumi-resource-flashblade/pulumi-resource-flashblade
+
+# Python/TS/Go SDK generated output (Phase 56)
+/sdk/go/flashblade/
+/sdk/python/bin/
+/sdk/python/pulumi_flashblade.egg-info/
+/sdk/python/pulumi_flashblade/
+/sdk/nodejs/
+/sdk/dotnet/
+
+# Tooling
+.pulumi/
