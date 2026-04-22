@@ -163,6 +163,136 @@ func Provider() tfbridge.ProviderInfo {
 		panic("flashblade_object_store_access_policy_rule resource not found after MustComputeTokens")
 	}
 
+	// ---- COMPOSITE-02: flashblade_bucket_access_policy_rule ComputeID ----
+	// Composite ID: bucketName/ruleName (verified against
+	// internal/provider/bucket_access_policy_rule_resource.go ImportState).
+	if r, ok := prov.Resources["flashblade_bucket_access_policy_rule"]; ok {
+		r.ComputeID = func(ctx context.Context, state resource.PropertyMap) (resource.ID, error) {
+			bucketName, ok1 := state["bucketName"]
+			ruleName, ok2 := state["name"]
+			if !ok1 || !ok2 {
+				return "", fmt.Errorf(
+					"bucket_access_policy_rule: missing bucketName or name in state (got keys %v)",
+					mapKeys(state),
+				)
+			}
+			bs, bsOk := bucketName.V.(string)
+			rs, rsOk := ruleName.V.(string)
+			if !bsOk || !rsOk {
+				return "", fmt.Errorf(
+					"bucket_access_policy_rule: bucketName and name must be strings",
+				)
+			}
+			return resource.ID(bs + "/" + rs), nil
+		}
+	} else {
+		panic("flashblade_bucket_access_policy_rule resource not found after MustComputeTokens")
+	}
+
+	// ---- COMPOSITE-03: flashblade_network_access_policy_rule ComputeID ----
+	// Composite ID: policyName/ruleName (verified against
+	// internal/provider/network_access_policy_rule_resource.go model — policy_name → policyName, name → name).
+	if r, ok := prov.Resources["flashblade_network_access_policy_rule"]; ok {
+		r.ComputeID = func(ctx context.Context, state resource.PropertyMap) (resource.ID, error) {
+			policyName, ok1 := state["policyName"]
+			ruleName, ok2 := state["name"]
+			if !ok1 || !ok2 {
+				return "", fmt.Errorf(
+					"network_access_policy_rule: missing policyName or name in state (got keys %v)",
+					mapKeys(state),
+				)
+			}
+			ps, psOk := policyName.V.(string)
+			rs, rsOk := ruleName.V.(string)
+			if !psOk || !rsOk {
+				return "", fmt.Errorf(
+					"network_access_policy_rule: policyName and name must be strings",
+				)
+			}
+			return resource.ID(ps + "/" + rs), nil
+		}
+	} else {
+		panic("flashblade_network_access_policy_rule resource not found after MustComputeTokens")
+	}
+
+	// ---- COMPOSITE-04: flashblade_management_access_policy_directory_service_role_membership ComputeID ----
+	// Composite ID: role/policy — role FIRST so SplitN("/", 2) correctly handles built-in
+	// policy names containing slashes (e.g. "pure:policy/array_admin").
+	// (verified against internal/provider/management_access_policy_directory_service_role_membership_resource.go:127)
+	if r, ok := prov.Resources["flashblade_management_access_policy_directory_service_role_membership"]; ok {
+		r.ComputeID = func(ctx context.Context, state resource.PropertyMap) (resource.ID, error) {
+			roleName, ok1 := state["role"]
+			policyName, ok2 := state["policy"]
+			if !ok1 || !ok2 {
+				return "", fmt.Errorf(
+					"management_access_policy_dsr_membership: missing role or policy in state (got keys %v)",
+					mapKeys(state),
+				)
+			}
+			rs, rsOk := roleName.V.(string)
+			ps, psOk := policyName.V.(string)
+			if !rsOk || !psOk {
+				return "", fmt.Errorf(
+					"management_access_policy_dsr_membership: role and policy must be strings",
+				)
+			}
+			return resource.ID(rs + "/" + ps), nil
+		}
+	} else {
+		panic("flashblade_management_access_policy_directory_service_role_membership resource not found after MustComputeTokens")
+	}
+
+	// ---- SECRETS-02: Explicit Secret:tfbridge.True() for all remaining sensitive fields ----
+
+	// flashblade_object_store_access_key — secret_access_key is write-only after creation (PB3).
+	if r, ok := prov.Resources["flashblade_object_store_access_key"]; ok {
+		if r.Fields == nil {
+			r.Fields = map[string]*tfbridge.SchemaInfo{}
+		}
+		r.Fields["secret_access_key"] = &tfbridge.SchemaInfo{Secret: tfbridge.True()}
+	} else {
+		panic("flashblade_object_store_access_key resource not found after MustComputeTokens")
+	}
+
+	// flashblade_array_connection — connection_key is a sensitive credential (PB3).
+	if r, ok := prov.Resources["flashblade_array_connection"]; ok {
+		if r.Fields == nil {
+			r.Fields = map[string]*tfbridge.SchemaInfo{}
+		}
+		r.Fields["connection_key"] = &tfbridge.SchemaInfo{Secret: tfbridge.True()}
+	} else {
+		panic("flashblade_array_connection resource not found after MustComputeTokens")
+	}
+
+	// flashblade_array_connection_key — connection_key is Sensitive:true in TF schema (PB3).
+	// r.Fields already initialized above (id = False()). Add connection_key = True().
+	if r, ok := prov.Resources["flashblade_array_connection_key"]; ok {
+		r.Fields["connection_key"] = &tfbridge.SchemaInfo{Secret: tfbridge.True()}
+	} else {
+		panic("flashblade_array_connection_key resource not found after MustComputeTokens")
+	}
+
+	// flashblade_certificate — passphrase and private_key are sensitive credentials (PB3).
+	if r, ok := prov.Resources["flashblade_certificate"]; ok {
+		if r.Fields == nil {
+			r.Fields = map[string]*tfbridge.SchemaInfo{}
+		}
+		r.Fields["passphrase"] = &tfbridge.SchemaInfo{Secret: tfbridge.True()}
+		r.Fields["private_key"] = &tfbridge.SchemaInfo{Secret: tfbridge.True()}
+	} else {
+		panic("flashblade_certificate resource not found after MustComputeTokens")
+	}
+
+	// flashblade_directory_service_management — bind_password is a sensitive credential (PB3).
+	if r, ok := prov.Resources["flashblade_directory_service_management"]; ok {
+		if r.Fields == nil {
+			r.Fields = map[string]*tfbridge.SchemaInfo{}
+		}
+		r.Fields["bind_password"] = &tfbridge.SchemaInfo{Secret: tfbridge.True()}
+	} else {
+		panic("flashblade_directory_service_management resource not found after MustComputeTokens")
+	}
+
 	// ---- MAPPING-05: Autonaming deliberately omitted. FlashBlade names are operational. ----
 
 	// Apply auto-aliases (D-02).
