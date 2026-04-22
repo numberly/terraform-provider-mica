@@ -8,11 +8,21 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: _none — planning next_
+## Current Milestone: pulumi-2.22.3 — Pulumi Bridge Alpha
+
+**Goal:** Expose the FlashBlade Terraform provider to Pulumi users (Python + Go) via the official `pulumi/pulumi-terraform-bridge` (`pkg/pf/*` for terraform-plugin-framework), in a new `./pulumi/` sub-directory with its own `go.mod`, distributed privately through GitHub releases.
+
+**Target features:**
+- Pulumi bridge scaffold in `./pulumi/` (tfgen + runtime binaries, ProviderInfo, embedded schema)
+- Mapping of all 28 resources + 21 data sources (auto-tokenization + targeted overrides for composite IDs, secrets, timeouts)
+- Python and Go SDK generation (embedded `schema.json` + `bridge-metadata.json`)
+- ProgramTest coverage on 3 representative resources (target, remote_credentials, bucket)
+- Private release pipeline: GitHub Actions build + goreleaser + cosign, tag `pulumi-2.22.3`
+- Auto-converted HCL examples (`PULUMI_CONVERT=1`) + 2 hand-written examples (bucket-py, bucket-go)
+
+**Key context:** Research already consolidated in `pulumi-bridge.md` (12 sections, 8 pitfalls, 6-step POC plan). Bridges the existing v2.22.3 provider (28 resources, 21 DS, 779 tests) without rewriting anything.
 
 **Last shipped:** v2.22.3 — Convention Compliance (2026-04-20, 779 tests, 0 lint issues, 12/12 requirements satisfied) — [archive](milestones/v2.22.3-ROADMAP.md)
-
-Run `/gsd:new-milestone` to start the next cycle.
 
 ## Requirements
 
@@ -40,7 +50,7 @@ Run `/gsd:new-milestone` to start the next cycle.
 
 ### Active
 
-_No active requirements. Milestone v2.22.3 complete — ready for next milestone (run `/gsd:new-milestone`)._
+_Active requirements are being defined for milestone pulumi-2.22.3 (see `.planning/REQUIREMENTS.md`)._
 
 ### Known Follow-up Defects
 
@@ -48,7 +58,6 @@ _(none — `member_names` query-param fix landed in commit `05faac1`, certificat
 
 ### Out of Scope
 
-- Pulumi bridge — deferred, provider structure compatible
 - Array connection resource (create/delete) — defer to future
 - File system replica links — defer to v2.1
 - Cascading replication — defer to v2.1
@@ -103,4 +112,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-20 after v2.22.3 milestone archival — Convention Compliance shipped, 779 tests, 0 lint issues, 12/12 requirements satisfied*
+*Last updated: 2026-04-21 — milestone pulumi-2.22.3 started (Pulumi Bridge Alpha, Python + Go SDKs, private distribution)*

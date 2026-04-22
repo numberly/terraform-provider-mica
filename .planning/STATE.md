@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: "milestone-archived"
-stopped_at: "Milestone v2.22.3 archived"
-last_updated: "2026-04-20T00:00:00.000Z"
-last_activity: 2026-04-20 — Milestone v2.22.3 convention-compliance archived
+milestone: pulumi-2.22.3
+milestone_name: "Pulumi Bridge Alpha"
+status: "defining-requirements"
+stopped_at: "Milestone pulumi-2.22.3 started"
+last_updated: "2026-04-21T00:00:00.000Z"
+last_activity: 2026-04-21 — Milestone pulumi-2.22.3 started (defining requirements)
 progress:
   total_phases: 0
   completed_phases: 0
@@ -18,18 +18,18 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-20)
+See: .planning/PROJECT.md (updated 2026-04-21)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** none — ready for next milestone. Run `/gsd:new-milestone`.
+**Current focus:** pulumi-2.22.3 — Bridge the FlashBlade TF provider to Pulumi (Python + Go, private distribution).
 
 ## Current Position
 
-Milestone: none (last shipped: v2.22.3 convention-compliance)
-Phase: —
+Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha)
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-04-20 — Milestone v2.22.3 archived
+Status: Defining requirements
+Last activity: 2026-04-21 — Milestone pulumi-2.22.3 started
 
 ## Recent Milestones
 
@@ -53,4 +53,4 @@ _(none)_
 
 ## Next Steps
 
-Run `/gsd:new-milestone` to start the next cycle.
+Research (4 parallel agents) → REQUIREMENTS.md → ROADMAP.md → `/gsd:discuss-phase [N]` on first phase.
