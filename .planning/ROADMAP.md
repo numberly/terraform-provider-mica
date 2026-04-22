@@ -808,7 +808,13 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
   3. `resources_test.go` assertions pass: bucket `DeleteTimeout >= 25*time.Minute`, no `timeouts` input in any resource schema, `api_token` is secret in provider config
   4. `pulumi import flashblade:index:ObjectStoreAccessPolicyRule my-rule 'mypolicy/myrulename'` round-trip succeeds (COMPOSITE-01 validation)
   5. `pulumi stack export` for a remote_credentials resource shows `secret_access_key` value is secret (not plaintext)
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 58-01-PLAN.md — GoReleaser config + release workflow
+- [ ] 58-02-PLAN.md — 6 ProgramTest examples (target/remote_credentials/bucket × py/go)
+- [ ] 58-03-PLAN.md — README.md + CHANGELOG.md + Makefile docs target
+- [ ] 58-04-PLAN.md — Composite ID import tests + example validation
 **UI hint**: no
 
 ### Phase 55: Full Mapping — 28 Resources + 21 Data Sources
@@ -837,7 +843,7 @@ Plans:
   2. `make generate_go` produces `pulumi/sdk/go/` under `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`; `cd pulumi/sdk/go && go build ./...` exits 0
   3. `schema.json` and `schema-embed.json` are the committed files — SDK gen does not regenerate them (CI diff gate confirms 0 changes)
   4. No `generate_nodejs`, `generate_dotnet`, or `generate_java` Makefile targets exist (TypeScript/C#/Java explicitly out of scope)
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: no
 
 ### Phase 57: CI Pipeline
@@ -848,7 +854,7 @@ Plans:
   1. A PR modifying any file under `./pulumi/` triggers `pulumi-ci.yml`; the workflow runs `make tfgen`, uploads schema-embed.json as artifact, then builds provider + SDKs in parallel jobs
   2. Introducing a manual edit to `schema.json` in a PR causes `pulumi-ci.yml` to fail with a non-zero exit on the `git diff --exit-code` step (schema drift gate enforced)
   3. Merging a TF-provider-only PR (touching `./internal/**` only) does NOT trigger `pulumi-ci.yml`; the existing TF CI workflow still passes unchanged
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: no
 
 ### Phase 58: Release Pipeline + Docs
@@ -861,7 +867,13 @@ Plans:
   3. `git tag sdk/go/v2.22.3` exists and `go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3` resolves (with `GOPRIVATE=github.com/numberly/*`)
   4. `./pulumi/examples/` contains 6 working directories (`target-py/`, `target-go/`, `remote_credentials-py/`, `remote_credentials-go/`, `bucket-py/`, `bucket-go/`), each with a valid `Pulumi.yaml` and main program
   5. `./pulumi/README.md` documents GOPRIVATE setup, plugin install URL, wheel install URL, `customTimeouts` for soft-delete, and composite ID import syntax
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 58-01-PLAN.md — GoReleaser config + release workflow
+- [ ] 58-02-PLAN.md — 6 ProgramTest examples (target/remote_credentials/bucket × py/go)
+- [ ] 58-03-PLAN.md — README.md + CHANGELOG.md + Makefile docs target
+- [ ] 58-04-PLAN.md — Composite ID import tests + example validation
 **UI hint**: no
 
 ## Progress Table
@@ -872,7 +884,7 @@ Plans:
 | 55. Full Mapping — 28 Resources + 21 Data Sources | 2/2 | Complete    | 2026-04-22 |
 | 56. SDK Generation — Python + Go | 3/3 | Complete   | 2026-04-22 |
 | 57. CI Pipeline | 1/1 | Complete | 2026-04-22 |
-| 58. Release Pipeline + Docs | 0/? | Not started | - |
+| 58. Release Pipeline + Docs | 0/4 | Planned | - |
 
 ---
 
