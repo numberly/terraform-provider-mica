@@ -46,11 +46,14 @@ generate_python: tfgen
 	@echo "Python SDK generated in $(PYTHON_SDK_DIR)"
 
 # Generate Go SDK from committed schema. Preserves existing go.mod.
+# Post-generation: patch import paths to include /pulumi/ prefix.
 generate_go: tfgen
 	@echo "Generating Go SDK..."
 	@rm -rf $(GO_SDK_DIR)/*.go $(GO_SDK_DIR)/*/
 	@cp $(GO_SDK_DIR)/go.mod $(GO_SDK_DIR)/go.mod.bak
 	$(TFGEN_BIN) go --out $(GO_SDK_DIR) --skip-docs --skip-examples
+	@find $(GO_SDK_DIR) -name "*.go" -exec sed -i \
+		's|github.com/numberly/opentofu-provider-flashblade/sdk/go|github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go|g' {} +
 	@mv $(GO_SDK_DIR)/go.mod.bak $(GO_SDK_DIR)/go.mod
 	@echo "Go SDK generated in $(GO_SDK_DIR)"
 
