@@ -864,7 +864,7 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 54. Bridge Bootstrap + POC (3 Resources) | 0/? | Not started | - |
+| 54. Bridge Bootstrap + POC (3 Resources) | 1/5 | In Progress|  |
 | 55. Full Mapping — 28 Resources + 21 Data Sources | 0/? | Not started | - |
 | 56. SDK Generation — Python + Go | 0/? | Not started | - |
 | 57. CI Pipeline | 0/? | Not started | - |
