@@ -1,3 +1,4 @@
 name: flashblade-remote-credentials-go
 description: FlashBlade remote credentials example in Go
 runtime: go
+main: main.go
