@@ -8,7 +8,7 @@ TFGEN_BIN   := $(PROVIDER_DIR)/cmd/pulumi-tfgen-flashblade/pulumi-tfgen-flashbla
 RUNTIME_BIN := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade/pulumi-resource-flashblade
 SCHEMA_DIR  := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade
 
-.PHONY: version tfgen_build tfgen provider test clean generate_python generate_go test_python_sdk test_go_sdk
+.PHONY: version tfgen_build tfgen provider test clean generate_python generate_go test_python_sdk test_go_sdk docs
 
 version:
 	@echo $(VERSION)
@@ -82,3 +82,33 @@ test:
 clean:
 	rm -f $(TFGEN_BIN) $(RUNTIME_BIN)
 	rm -f $(SCHEMA_DIR)/schema.json $(SCHEMA_DIR)/bridge-metadata.json $(SCHEMA_DIR)/schema-embed.json
+
+# DOCS-01: PULUMI_CONVERT translation report.
+# Running tfgen with PULUMI_CONVERT=1 causes the bridge to attempt converting
+# TF HCL examples to Pulumi Python + Go. Failures are captured but non-blocking.
+# The report is written to .coverage/translation-report.md.
+COVERAGE_DIR := .coverage
+
+docs: tfgen_build
+	@mkdir -p $(COVERAGE_DIR)
+	@echo "# Pulumi HCL Translation Report" > $(COVERAGE_DIR)/translation-report.md
+	@echo "" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "Generated: $$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "## Summary" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "This report captures the output of running tfgen with PULUMI_CONVERT=1." >> $(COVERAGE_DIR)/translation-report.md
+	@echo "The bridge attempts to convert Terraform HCL examples to Pulumi Python and Go." >> $(COVERAGE_DIR)/translation-report.md
+	@echo "Failures are non-blocking and indicate examples that need manual conversion." >> $(COVERAGE_DIR)/translation-report.md
+	@echo "" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "## Conversion Output" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "" >> $(COVERAGE_DIR)/translation-report.md
+	@echo '```' >> $(COVERAGE_DIR)/translation-report.md
+	@PULUMI_CONVERT=1 $(TFGEN_BIN) schema --out $(SCHEMA_DIR) 2>&1 | tee -a $(COVERAGE_DIR)/translation-report.md || true
+	@echo '```' >> $(COVERAGE_DIR)/translation-report.md
+	@echo "" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "## Next Steps" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "" >> $(COVERAGE_DIR)/translation-report.md
+	@echo "- Review failures above and hand-write Pulumi examples in pulumi/examples/." >> $(COVERAGE_DIR)/translation-report.md
+	@echo "- Re-run 'make docs' after fixing HCL examples to verify conversion succeeds." >> $(COVERAGE_DIR)/translation-report.md
+	@echo "Report written to $(COVERAGE_DIR)/translation-report.md"
