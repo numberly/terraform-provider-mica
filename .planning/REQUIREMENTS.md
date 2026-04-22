@@ -52,19 +52,19 @@
 
 - [x] **SECRETS-01**: Provider config `api_token` is secret. TF provider uses a nested `auth { api_token }` block; the bridge auto-promotes `auth.apiToken` as `secret: true` in the generated schema.json config variables. `ProviderInfo.Config` is empty by design — nested block secrets are handled via TF schema introspection, not explicit Config overrides.
 - [x] **SECRETS-02**: The 6 write-once / sensitive fields (`object_store_access_key.secret_access_key`, `directory_service_management.bind_password`, `array_connection.connection_key`, `array_connection_key.connection_key`, `certificate.private_key`, `certificate.passphrase`, plus any additional `**password` fields discovered by audit) are marked `Secret: tfbridge.True()` + listed in `AdditionalSecretOutputs` for their owning resource (belt-and-braces per bridge issue #1028).
-- [ ] **SECRETS-03**: `resources_test.go` asserts every field tagged `Sensitive: true` in the TF schema is promoted to a Pulumi Secret (auto-mapping coverage test). Test fails loudly if a new sensitive field is added upstream without bridge mapping.
+- [x] **SECRETS-03**: `resources_test.go` asserts every field tagged `Sensitive: true` in the TF schema is promoted to a Pulumi Secret (auto-mapping coverage test). Test fails loudly if a new sensitive field is added upstream without bridge mapping.
 
 ### SOFTDELETE — Soft-delete timeout defense
 
 - [x] **SOFTDELETE-01**: `flashblade_bucket` delete timeout is 30 minutes. Bridge v3.127.0 `ResourceInfo` has no `DeleteTimeout` field; the TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim. This is validated by the TF provider's own test suite. Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields on `ResourceInfo`.
 - [x] **SOFTDELETE-02**: `flashblade_file_system` is registered in `resources.go` with a comment documenting that `DeleteTimeout` is not available on `ResourceInfo` in bridge v3.127.0. The TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim (same pattern as SOFTDELETE-01). Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields.
-- [ ] **SOFTDELETE-03**: `resources_test.go` asserts both soft-delete resources (`flashblade_bucket`, `flashblade_file_system`) are registered in `prov.Resources`. `DeleteTimeout` assertion deferred — bridge v3.127.0 `ResourceInfo` does not expose timeout fields; the TF provider's timeouts block defaults are inherited via the shim and validated by the TF provider's own test suite. Test fails loudly if either resource is missing from the bridge registration.
+- [x] **SOFTDELETE-03**: `resources_test.go` asserts both soft-delete resources (`flashblade_bucket`, `flashblade_file_system`) are registered in `prov.Resources`. `DeleteTimeout` assertion deferred — bridge v3.127.0 `ResourceInfo` does not expose timeout fields; the TF provider's timeouts block defaults are inherited via the shim and validated by the TF provider's own test suite. Test fails loudly if either resource is missing from the bridge registration.
 
 ### UPGRADE — State upgrader safety
 
-- [ ] **UPGRADE-01**: `flashblade_server` (SchemaVersion 0→1→2) is registered in `prov.Resources`. The bridge delegates schema version migration to the TF provider's `UpgradeState` chain via the `pf.ShimProvider` shim, which is already validated by 818+ TF provider tests. Full `pulumi refresh` smoke tests with pre-captured state snapshots deferred to Phase 58 TEST-02/03.
-- [ ] **UPGRADE-02**: `flashblade_directory_service_role` (v0→v1) is registered in `prov.Resources`. Same delegation pattern as UPGRADE-01. Full smoke tests deferred to Phase 58.
-- [ ] **UPGRADE-03**: `flashblade_object_store_remote_credentials` (v0→v1) is registered in `prov.Resources`. Same delegation pattern as UPGRADE-01. Full smoke tests deferred to Phase 58.
+- [x] **UPGRADE-01**: `flashblade_server` (SchemaVersion 0→1→2) is registered in `prov.Resources`. The bridge delegates schema version migration to the TF provider's `UpgradeState` chain via the `pf.ShimProvider` shim, which is already validated by 818+ TF provider tests. Full `pulumi refresh` smoke tests with pre-captured state snapshots deferred to Phase 58 TEST-02/03.
+- [x] **UPGRADE-02**: `flashblade_directory_service_role` (v0→v1) is registered in `prov.Resources`. Same delegation pattern as UPGRADE-01. Full smoke tests deferred to Phase 58.
+- [x] **UPGRADE-03**: `flashblade_object_store_remote_credentials` (v0→v1) is registered in `prov.Resources`. Same delegation pattern as UPGRADE-01. Full smoke tests deferred to Phase 58.
 
 ### SDK — SDK generation (Python + Go)
 
@@ -128,13 +128,13 @@
 | COMPOSITE-04 | Phase 55 | Complete | — |
 | SECRETS-01 | Phase 54 | Complete | — |
 | SECRETS-02 | Phase 54 | Complete | — |
-| SECRETS-03 | Phase 55 | pending | — |
+| SECRETS-03 | Phase 55 | Complete | — |
 | SOFTDELETE-01 | Phase 54 | Complete | — |
 | SOFTDELETE-02 | Phase 55 | Complete | — |
-| SOFTDELETE-03 | Phase 55 | pending | — |
-| UPGRADE-01 | Phase 55 | pending | — |
-| UPGRADE-02 | Phase 55 | pending | — |
-| UPGRADE-03 | Phase 55 | pending | — |
+| SOFTDELETE-03 | Phase 55 | Complete | — |
+| UPGRADE-01 | Phase 55 | Complete | — |
+| UPGRADE-02 | Phase 55 | Complete | — |
+| UPGRADE-03 | Phase 55 | Complete | — |
 | SDK-01 | Phase 56 | pending | — |
 | SDK-02 | Phase 56 | pending | — |
 | SDK-03 | Phase 56 | pending | — |
