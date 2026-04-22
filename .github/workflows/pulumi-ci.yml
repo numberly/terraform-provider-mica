@@ -1,0 +1,161 @@
+---
+name: Pulumi CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "pulumi/**"
+      - "internal/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "pulumi/**"
+      - "internal/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  prerequisites:
+    name: Prerequisites
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: pulumi/provider/go.mod
+          cache: true
+
+      - name: Run provider unit tests
+        working-directory: pulumi
+        run: make test
+
+      - name: Generate schema artifacts
+        working-directory: pulumi
+        run: make tfgen
+
+      - name: Schema drift gate
+        run: |
+          git diff --exit-code \
+            pulumi/provider/cmd/pulumi-resource-flashblade/schema.json \
+            pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json \
+            pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
+
+      - name: Upload schema-embed.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-embed
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: pulumi/provider/go.mod
+          cache: true
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          working-directory: pulumi/provider
+          args: --config ../../.golangci.yml ./...
+
+  build_provider:
+    name: Build Provider
+    needs: prerequisites
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: pulumi/provider/go.mod
+          cache: true
+
+      - name: Download schema-embed.json artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: schema-embed
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+
+      - name: Build provider snapshot
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: build --snapshot --config .goreleaser.pulumi.yml
+
+  generate_sdk_python:
+    name: Generate Python SDK
+    needs: prerequisites
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: pulumi/provider/go.mod
+          cache: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download schema-embed.json artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: schema-embed
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+
+      - name: Generate Python SDK
+        working-directory: pulumi
+        run: make generate_python
+
+      - name: Test Python SDK build
+        working-directory: pulumi
+        run: make test_python_sdk
+
+  generate_sdk_go:
+    name: Generate Go SDK
+    needs: prerequisites
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: pulumi/provider/go.mod
+          cache: true
+
+      - name: Download schema-embed.json artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: schema-embed
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+
+      - name: Generate Go SDK
+        working-directory: pulumi
+        run: make generate_go
+
+      - name: Test Go SDK build
+        working-directory: pulumi
+        run: make test_go_sdk
