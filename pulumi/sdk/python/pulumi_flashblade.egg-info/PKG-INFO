@@ -1,0 +1,25 @@
+Metadata-Version: 2.4
+Name: pulumi_flashblade
+Version: 0.0.0
+Summary: A Pulumi package for managing Pure Storage FlashBlade resources.
+Home-page: https://github.com/numberly/opentofu-provider-flashblade
+License: Apache-2.0
+Project-URL: Repository, https://github.com/numberly/opentofu-provider-flashblade
+Keywords: pulumi flashblade pure-storage category/infrastructure
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: parver>=0.2.1
+Requires-Dist: pulumi<4.0.0,>=3.142.0
+Requires-Dist: semver>=2.8.1
+Requires-Dist: typing-extensions<5,>=4.11; python_version < "3.11"
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: project-url
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+flashblade Pulumi Package - Development Version
