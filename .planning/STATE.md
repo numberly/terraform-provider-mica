@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-22T10:18:58.361Z"
+last_updated: "2026-04-22T11:08:59.871Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 100
 ---
 
@@ -20,17 +20,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-21)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** Phase 54 — bridge-bootstrap-poc-3-resources
+**Current focus:** Phase 55 — full-mapping-28-resources-21-data-sources
 
 ## Current Position
 
 Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha)
-Phase: 55
-Plan: Not started
+Phase: 55 (full-mapping-28-resources-21-data-sources) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
 Last activity: 2026-04-22
 
-Progress: [██████████] 100% (5/5 plans)
+Progress: [█████████░] 88% (7/8 plans)
 
 ## Recent Milestones
 
@@ -76,7 +76,13 @@ _(none — 3 open questions from research resolved via REQUIREMENTS.md decisions
 
 ## Next Steps
 
-Phase 54 complete. All requirements satisfied (01-06 plans, 3 VERIFICATION.md gaps closed). Next: Phase 55 (filesystem + NFS export bridge resources, SOFTDELETE-02/03).
+Phase 55 plan 01 complete. Plan 02 next: make tfgen + schema.json regeneration to capture new ComputeID + Secret marks.
+
+## Key Decisions (Phase 55)
+
+- **COMPOSITE-03 state keys:** policyName+name (network_access_policy_rule CRUD uses string names; ImportState parses integer index but CRUD path is by name)
+- **COMPOSITE-04 ordering:** role FIRST in composite ID — built-in policy names contain slashes (e.g. pure:policy/array_admin)
+- **array_connection_key dual override:** id:False() for sensitive ID + connection_key:True() for the key value itself
 
 ## Session Log
 
@@ -86,3 +92,4 @@ Phase 54 complete. All requirements satisfied (01-06 plans, 3 VERIFICATION.md ga
 - 2026-04-22T11:48Z — Plan 54-04 completed: make tfgen + schema generation, 6 auto-fixes (SingleModule, semver, False() sensitive ID, nested config, schema-embed.json), schema.json 54 resources committed
 - 2026-04-22T12:08Z — Plan 54-05 completed: resources_test.go, 11 TestProviderInfo_* tests all pass, TEST-01 satisfied, Phase 54 bridge chain validated
 - 2026-04-22T10:13Z — Plan 54-06 completed: 3 VERIFICATION.md gaps closed (pulumi/examples/.gitkeep, SECRETS-01/SOFTDELETE-01/MAPPING-03 spec aligned with bridge v3.127.0 reality)
+- 2026-04-22T11:18Z — Plan 55-01 completed: 3 ComputeID closures + 6 Secret:True() marks, go build + go vet clean

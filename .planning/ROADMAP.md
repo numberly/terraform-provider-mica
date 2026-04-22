@@ -821,10 +821,10 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
   3. ComputeID unit tests invoke each closure directly with sample `resource.PropertyMap` data and assert the returned ID string for all 4 composite-ID resources, including a test with colon-containing policy name (`pure:policy/array_admin`) for COMPOSITE-04
   4. State-upgrader resources (`flashblade_server`, `flashblade_directory_service_role`, `flashblade_object_store_remote_credentials`) are registered in `prov.Resources`. The bridge delegates schema version migration to the TF provider via the shim. Full `pulumi refresh` smoke tests deferred to Phase 58 TEST-02/03
   5. `schema.json`, `schema-embed.json`, `bridge-metadata.json` are committed; `git diff --exit-code` on these 3 files exits 0 after `make tfgen`
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 55-01-PLAN.md — ComputeID closures + Secret marks + SOFTDELETE-02 overrides in resources.go
+- [x] 55-01-PLAN.md — ComputeID closures + Secret marks + SOFTDELETE-02 overrides in resources.go
 - [ ] 55-02-PLAN.md — SECRETS-03 auto-mapping test + SOFTDELETE-03 + UPGRADE-01/02/03 tests + ComputeID unit tests + schema regeneration
 **UI hint**: no
 
@@ -869,7 +869,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 54. Bridge Bootstrap + POC (3 Resources) | 6/6 | Complete    | 2026-04-22 |
-| 55. Full Mapping — 28 Resources + 21 Data Sources | 0/2 | Planning complete | - |
+| 55. Full Mapping — 28 Resources + 21 Data Sources | 1/2 | In Progress|  |
 | 56. SDK Generation — Python + Go | 0/? | Not started | - |
 | 57. CI Pipeline | 0/? | Not started | - |
 | 58. Release Pipeline + Docs | 0/? | Not started | - |

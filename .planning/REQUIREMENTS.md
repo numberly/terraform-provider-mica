@@ -35,18 +35,18 @@
 
 ### MAPPING — Resource / data source tokenization
 
-- [ ] **MAPPING-01**: All 28 resources + 21 data sources are tokenized via `MustComputeTokens` + `KnownModules(["bucket", "filesystem", "policy", "objectstore", "array", "network", "index"], ...)` + `MustApplyAutoAliases()`. Post-`make tfgen` output reports zero `MISSING` tokens.
+- [x] **MAPPING-01**: All 28 resources + 21 data sources are tokenized via `MustComputeTokens` + `KnownModules(["bucket", "filesystem", "policy", "objectstore", "array", "network", "index"], ...)` + `MustApplyAutoAliases()`. Post-`make tfgen` output reports zero `MISSING` tokens.
 - [x] **MAPPING-02**: `Fields["timeouts"].Omit = true` is applied to every resource via a helper (`omitTimeoutsOnAll`) invoked in `resources.go` **after `MustComputeTokens` populates `prov.Resources`** and before returning the `ProviderInfo` — iterating an empty Resources map before tokenization is a no-op. Verified by schema inspection (no `timeouts` input in generated SDKs) and `resources_test.go`.
 - [x] **MAPPING-03**: Resource timeouts match TF provider defaults. Bridge v3.127.0 `ResourceInfo` has no `CreateTimeout`/`UpdateTimeout`/`DeleteTimeout` fields; TF provider timeouts block defaults (Create 20m, Update 20m, Delete 30m for bucket/filesystem) are inherited via the `pf.ShimProvider` shim. Explicit bridge-layer timeout overrides deferred until a bridge version exposes these fields.
-- [ ] **MAPPING-04**: Reserved Pulumi identifiers (`id`, `urn`, `provider`) are renamed where they collide with existing field names. Python token collisions (e.g. `target`) are validated against first `make tfgen` output.
+- [x] **MAPPING-04**: Reserved Pulumi identifiers (`id`, `urn`, `provider`) are renamed where they collide with existing field names. Python token collisions (e.g. `target`) are validated against first `make tfgen` output.
 - [x] **MAPPING-05**: `SetAutonaming` is **not called** — storage names are operational identifiers. Consumer must supply `name` explicitly (documented in examples).
 
 ### COMPOSITE — Composite ID handlers
 
 - [x] **COMPOSITE-01**: `flashblade_object_store_access_policy_rule` has `ComputeID` producing `policyName/ruleName` (slash separator, string rule name — verified against `internal/provider/object_store_access_policy_rule_resource.go` `readIntoState`). `pulumi import` round-trip test passes.
-- [ ] **COMPOSITE-02**: `flashblade_bucket_access_policy_rule` has `ComputeID` producing `bucketName/ruleName`. ComputeID unit test invokes the closure with a sample `resource.PropertyMap` and asserts the returned ID string matches `bucketName/ruleName`. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
-- [ ] **COMPOSITE-03**: `flashblade_network_access_policy_rule` has `ComputeID` producing `policyName/ruleName`. ComputeID unit test invokes the closure with a sample `resource.PropertyMap` and asserts the returned ID string. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
-- [ ] **COMPOSITE-04**: `flashblade_management_access_policy_directory_service_role_membership` has `ComputeID` producing `roleName/policyName` (role FIRST — policy names contain colons like `pure:policy/array_admin`). ComputeID unit test includes a test case with `policy = "pure:policy/array_admin"` to verify colon handling. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
+- [x] **COMPOSITE-02**: `flashblade_bucket_access_policy_rule` has `ComputeID` producing `bucketName/ruleName`. ComputeID unit test invokes the closure with a sample `resource.PropertyMap` and asserts the returned ID string matches `bucketName/ruleName`. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
+- [x] **COMPOSITE-03**: `flashblade_network_access_policy_rule` has `ComputeID` producing `policyName/ruleName`. ComputeID unit test invokes the closure with a sample `resource.PropertyMap` and asserts the returned ID string. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
+- [x] **COMPOSITE-04**: `flashblade_management_access_policy_directory_service_role_membership` has `ComputeID` producing `roleName/policyName` (role FIRST — policy names contain colons like `pure:policy/array_admin`). ComputeID unit test includes a test case with `policy = "pure:policy/array_admin"` to verify colon handling. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
 
 ### SECRETS — Sensitive / write-once field promotion
 
@@ -57,7 +57,7 @@
 ### SOFTDELETE — Soft-delete timeout defense
 
 - [x] **SOFTDELETE-01**: `flashblade_bucket` delete timeout is 30 minutes. Bridge v3.127.0 `ResourceInfo` has no `DeleteTimeout` field; the TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim. This is validated by the TF provider's own test suite. Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields on `ResourceInfo`.
-- [ ] **SOFTDELETE-02**: `flashblade_file_system` is registered in `resources.go` with a comment documenting that `DeleteTimeout` is not available on `ResourceInfo` in bridge v3.127.0. The TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim (same pattern as SOFTDELETE-01). Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields.
+- [x] **SOFTDELETE-02**: `flashblade_file_system` is registered in `resources.go` with a comment documenting that `DeleteTimeout` is not available on `ResourceInfo` in bridge v3.127.0. The TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim (same pattern as SOFTDELETE-01). Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields.
 - [ ] **SOFTDELETE-03**: `resources_test.go` asserts both soft-delete resources (`flashblade_bucket`, `flashblade_file_system`) are registered in `prov.Resources`. `DeleteTimeout` assertion deferred — bridge v3.127.0 `ResourceInfo` does not expose timeout fields; the TF provider's timeouts block defaults are inherited via the shim and validated by the TF provider's own test suite. Test fails loudly if either resource is missing from the bridge registration.
 
 ### UPGRADE — State upgrader safety
@@ -117,20 +117,20 @@
 | BRIDGE-03 | Phase 54 | Complete | — |
 | BRIDGE-04 | Phase 54 | Complete | — |
 | BRIDGE-05 | Phase 54 | Complete | — |
-| MAPPING-01 | Phase 55 | pending | — |
+| MAPPING-01 | Phase 55 | Complete | — |
 | MAPPING-02 | Phase 54 | Complete | — |
 | MAPPING-03 | Phase 54 | Complete | — |
-| MAPPING-04 | Phase 55 | pending | — |
+| MAPPING-04 | Phase 55 | Complete | — |
 | MAPPING-05 | Phase 54 | Complete | — |
 | COMPOSITE-01 | Phase 54 | Complete | — |
-| COMPOSITE-02 | Phase 55 | pending | — |
-| COMPOSITE-03 | Phase 55 | pending | — |
-| COMPOSITE-04 | Phase 55 | pending | — |
+| COMPOSITE-02 | Phase 55 | Complete | — |
+| COMPOSITE-03 | Phase 55 | Complete | — |
+| COMPOSITE-04 | Phase 55 | Complete | — |
 | SECRETS-01 | Phase 54 | Complete | — |
 | SECRETS-02 | Phase 54 | Complete | — |
 | SECRETS-03 | Phase 55 | pending | — |
 | SOFTDELETE-01 | Phase 54 | Complete | — |
-| SOFTDELETE-02 | Phase 55 | pending | — |
+| SOFTDELETE-02 | Phase 55 | Complete | — |
 | SOFTDELETE-03 | Phase 55 | pending | — |
 | UPGRADE-01 | Phase 55 | pending | — |
 | UPGRADE-02 | Phase 55 | pending | — |
