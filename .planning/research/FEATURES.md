@@ -1,263 +1,236 @@
 # Feature Research
 
-**Domain:** Terraform provider for enterprise storage (Pure Storage FlashBlade REST API v2.22)
-**Researched:** 2026-03-30 (VIP milestone update; original 2026-03-26)
-**Confidence:** HIGH (API reference verified in FLASHBLADE_API.md + existing provider patterns)
+**Domain:** Pulumi bridge for an existing terraform-plugin-framework provider (Pure Storage FlashBlade)
+**Researched:** 2026-04-21
+**Confidence:** HIGH (pulumi-bridge.md + pulumi-terraform-bridge source + reference providers)
 
 ---
 
-## Milestone v2.1.1 — Network Interface (VIP) Feature Scope
+## Scope Note
 
-This section focuses exclusively on the new network interface (VIP) features.
-The sections below it cover the full provider feature landscape from the original research.
+This document covers what Pulumi users (Python + Go only) expect from a bridged provider.
+Source: `pulumi-bridge.md`, `pulumi/pulumi-terraform-bridge pkg/pf/`, reference providers
+(`pulumi-random`, `pulumi-cloudflare`, `pulumi-vault`, `pulumi-gitlab`).
+Private distribution only — no Pulumi Registry publishing, no TypeScript/C#/Java SDKs.
 
-### API Capability Summary (v2.22)
+---
 
-```
-POST   /api/2.22/network-interfaces
-  Writable:  address (string), type (string — only valid value: "vip"),
-             subnet (object — reference by name), services (array),
-             attached_servers (array — list of server name references)
-  Read-only at create: enabled, gateway, mtu, netmask, vlan, realms, name, id
-
-PATCH  /api/2.22/network-interfaces  ?names=[name]
-  Writable:  address (string), attached_servers (array), services (array)
-  NOT patchable: subnet, type, name
-
-GET    /api/2.22/network-interfaces  ?names=[name]
-  Returns all fields (writable + read-only)
-
-DELETE /api/2.22/network-interfaces  ?names=[name]
-```
-
-Key API constraints:
-- `name` is read-only (assigned by the API, not user-defined at POST time — needs investigation)
-- `subnet` is set at create, cannot be changed (RequiresReplace on update)
-- `type` is always `"vip"` — no other valid value at v2.22
-- `gateway`, `mtu`, `netmask`, `vlan` are derived from the subnet (read-only on VIP)
-- `services` controls what protocols the VIP serves (e.g., `data-s3`, `data-nfs`, `management`)
-- `attached_servers` follows the same pattern as `object_store_virtual_host.attached_servers`
+## Feature Landscape
 
 ### Table Stakes (Users Expect These)
 
+Features Pulumi users assume exist in any bridged provider. Missing these = provider feels broken.
+
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| `flashblade_network_interface` resource (CRUD) | Core deliverable of this milestone — VIPs cannot be managed without it | MEDIUM | POST + PATCH + GET + DELETE. Pattern mirrors `server_resource.go` + `object_store_virtual_host_resource.go`. |
-| `flashblade_network_interface` data source | Consumers need to reference existing VIPs (not Terraform-managed) by name for cross-stack composition | LOW | Read-only, single lookup by name. Mirrors `server_data_source.go` pattern exactly. |
-| Import support (`terraform import flashblade_network_interface.x <name>`) | Team has existing VIPs; can't adopt into state without import | LOW | ImportState by name — identical to every other resource in this provider. |
-| Drift detection on all writable fields | Ops compliance requirement — already present on all 29+ resources; VIP must be consistent | MEDIUM | Read after Create/Update; log diffs via tflog for `address`, `services`, `attached_servers`. |
-| Read-only computed fields exposed in state | Consumers need `gateway`, `mtu`, `netmask`, `vlan`, `enabled` to discover network properties | LOW | All read-only fields from GET response must be in schema as `Computed: true`. Essential for data source consumers. |
-| `attached_servers` on server resource/data source | Server consumers (e.g., bucket workflows) need to discover which VIPs are reachable via a given server | MEDIUM | Enrichment of existing `flashblade_server` resource and data source. Add `network_interfaces` computed list attribute. |
-| `subnet` as a named reference (string) | Subnet is required at creation and is a reference object in the API; must be addressable by name | LOW | Expose as `subnet_name` string (Required, RequiresReplace). Do not attempt to manage the subnet itself. |
-| `services` as a list of strings | Consumers need to declare which protocols a VIP serves | LOW | `["data-s3"]`, `["data-nfs"]`, `["management"]` are the expected valid values. Validate against known enum. |
-| Timeouts on all operations | Provider-wide convention — all resources have configurable timeouts | LOW | Use `timeouts.Attributes(ctx, timeouts.Opts{Create, Read, Update, Delete})` — copy from server_resource.go. |
+| Auto-tokenization of all 28 resources + 21 data sources | Pulumi expects every TF resource to be reachable as a typed SDK class; unmapped resources cause runtime errors | MEDIUM | `MustComputeTokens` + `KnownModules` covers ~90% automatically; targeted `Tok` overrides for the rest |
+| camelCase field names in Python + Go SDKs | Pulumi SDK convention; snake_case inputs in Python/Go code feel wrong to Pulumi users | LOW | Automatic from bridge; override via `Fields[x].Name` only for genuine ambiguity |
+| `pulumi import` for every resource | Pulumi users adopt existing FlashBlade infrastructure into state; import is the first thing they test | MEDIUM | Free when Pulumi ID = TF ID (name-based); explicit `ComputeID` callback required for composite-ID resources |
+| Secret promotion for all sensitive fields | Pulumi encrypts state secrets; fields marked `Sensitive: true` in TF schema auto-promote — users expect this to "just work" | LOW | Auto-promotion covers top-level fields; belt-and-braces `AdditionalSecretOutputs` required for nested structs (bridge issue #1028) |
+| `customTimeouts` option replaces TF `timeouts {}` block | Pulumi users set per-resource timeouts via `opts.CustomTimeouts`; they never interact with TF `timeouts {}` blocks directly | LOW | `Fields["timeouts"].Omit = true` on every resource; Pulumi SDK surfaces `customTimeouts` automatically |
+| Python SDK: `pip install pulumi-flashblade` (private wheel) | Python users expect a standard package install; wheel from GitHub Releases is the private equivalent | MEDIUM | PyPI publish replaced by GitHub Releases asset; users `pip install ./sdk/python` or wheel URL |
+| Go SDK: `go get github.com/pure-storage/pulumi-flashblade/sdk/go` | Go users expect a standard Go module; private GitHub repo with GOPROXY or direct go.sum is the pattern | LOW | Sub-module `sdk/go/go.mod`; tag `sdk/go/vX.Y.Z` for go module versioning |
+| Embedded schema (`schema.json`) committed to repo | Bridge runtime requires the schema at startup; must be bundled in the binary | LOW | `//go:embed schema-embed.json` in `pulumi-resource-flashblade/main.go`; generated by `make tfgen`, committed |
+| ProgramTest coverage on representative resources | Pulumi integration tests (`integration.ProgramTest`) validate real `pulumi up/preview/destroy` round-trips | MEDIUM | Minimum 3: `target` (auto-tokenization), `remote_credentials` (secrets), `bucket` (soft-delete + timeouts) |
+| `pulumi preview` shows accurate diff | Users run preview before apply; spurious diffs (e.g., from volatile computed fields) erode trust | MEDIUM | Inherited from TF provider drift detection; `UseStateForUnknown` on stable fields prevents "(known after apply)" noise |
 
 ### Differentiators (Competitive Advantage)
 
+Features that make this bridge stand out vs. a minimal wrapper. Relevant for an internal provider where
+user trust and adoption depend on correctness, not marketing.
+
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Server data source enrichment with VIP list | Consumers can discover all VIPs attached to a server in one data source lookup — enables endpoint discovery patterns in workflows | MEDIUM | Add `network_interfaces` computed list of objects (`name`, `address`, `services`, `enabled`) to `flashblade_server` data source. Requires additional GET `/api/2.22/network-interfaces?names=...` call filtered by server. |
-| `services` enum validator | Catches invalid service names at plan time (before apply) | LOW | Validate `services` list elements against `["data-s3", "data-nfs", "management", "replication"]`. Consistent with existing provider validator pattern (`HostnameNoDotValidator`, etc.). |
-| Explicit `RequiresReplace` on `subnet` | Makes immutability of subnet visible in plan output — prevents surprise destroys | LOW | `stringplanmodifier.RequiresReplace()` on `subnet_name`. Documents the API constraint clearly. |
-| Expose VIP name as computed (API-assigned) | If VIP `name` is truly read-only (API-assigned), exposing it as `Computed` with `UseStateForUnknown` prevents spurious plan diffs | LOW | Needs verification: does POST accept a `name` parameter or is it always derived? FLASHBLADE_API.md shows `name(ro string)` — treat as computed. |
+| Write-Only Fields model for `secret_access_key` | `secret_access_key` is write-once in the API (Read returns null); Write-Only fields in Pulumi explicitly model this semantic, preventing state-vs-API confusion | MEDIUM | Use Pulumi Write-Only Fields pattern: field marked secret + not read back from API; users write it once, Pulumi never computes a diff on it. Bridge issue #10 for auto-promotion; belt-and-braces `Secret: tfbridge.True()` + `AdditionalSecretOutputs`. Applies to: `secret_access_key`, `bind_password`, `connection_key`, `private_key_passphrase`, `private_key` (certificate). |
+| Explicit `ComputeID` for composite-ID resources | Resources with composite IDs (`policy_name:rule_index`, `role_name/policy_name`) must produce a stable, importable Pulumi resource ID; bridge does not auto-derive this | HIGH | Two resources need `ComputeID`: `flashblade_object_store_access_policy_rule` (`policyName:ruleIndex`) and `flashblade_directory_service_role_membership` (`roleName/policyName`). Import symmetry must be tested via `pulumi import`. Bridge issue #2272. |
+| Per-resource `DeleteTimeout` defaults in `ResourceInfo` | Buckets and filesystems have 30-minute two-phase destroys; Pulumi's default delete timeout is 5 minutes; explicit defaults in bridge code prevent silent timeouts | MEDIUM | `ResourceInfo{DeleteTimeout: 30*time.Minute}` on `flashblade_bucket` and `flashblade_filesystem`. Users can override with `customTimeouts.delete`. Documents the eradication window explicitly. Bridge issue #1652. |
+| `ProviderInfo` unit tests (mapping coverage) | Tests that verify every `flashblade_*` resource is tokenized, every sensitive field is secret-flagged, composite IDs are set — catch regressions silently introduced by provider upgrades | LOW | `provider/resources_test.go`: iterate `ProviderInfo.Resources`, assert no `MISSING` token, assert secret fields. Pattern from `pulumi-cloudflare`. |
+| Schema snapshot in CI | `schema.json` committed and diffed on every PR; catches accidental breaking schema changes before they reach users | LOW | CI step: `make tfgen && git diff --exit-code provider/cmd/pulumi-resource-flashblade/schema.json`. |
+| `MustApplyAutoAliases` for rename-safety | As TF provider evolves (token renames, module refactors), auto-aliases preserve existing Pulumi state without forced replacement | LOW | `prov.MustApplyAutoAliases()` in `Provider()`. Required before first public release. |
+| Private GitHub Release distribution | Users `pulumi plugin install resource flashblade vX.Y.Z --server github://api.github.com/pure-storage`; no public registry needed | LOW | `PluginDownloadURL: "github://api.github.com/pure-storage"` in `ProviderInfo`. GoReleaser cross-compiles 6 platforms, cosign-signs assets. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
+Features that seem natural to request but are wrong for this private, Python+Go-only bridge.
+
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Subnet management as part of VIP resource | "One resource to create both subnet and VIP together" | Subnets are lower-level network infrastructure, typically managed by network team separately; mixing creates blast-radius issues | Manage subnets via the FlashBlade admin UI or a separate `flashblade_subnet` resource (future, out of scope for v2.1.1). Reference by name with `subnet_name`. |
-| Network interface connectors management | "I see `/api/2.22/network-interfaces/connectors` in the API" | Physical connector settings (lane speed, port count, transceiver type) are hardware configuration, not declarative IaC. Values depend on physical hardware and should not be Terraform-managed. | Out of scope. Read-only data source if needed, but connector settings are changed by hardware upgrades, not code. |
-| Auto-detect `services` from subnet | "Let the provider figure out what services are enabled" | Services are user intent, not derived state. Auto-detection hides configuration from the plan and creates hidden dependencies. | User explicitly declares `services`. Provider validates against known enum at plan time. |
-| Ping/trace diagnostic resources | "Expose `GET /network-interfaces/ping` and `/trace` as data sources" | Diagnostics are operational actions, not infrastructure state. Results change every run, causing permanent drift in data source results. | Use the FlashBlade admin UI or direct API calls for network diagnostics. |
-| Managing `enabled` state of a VIP | "I want to disable a VIP via Terraform" | `enabled` is read-only in the API — it reflects physical link state, not a configurable flag. Setting it would require modifying the subnet, not the VIP. | If VIP needs to be disabled, delete it and recreate, or manage the subnet's enabled state separately. |
+| TypeScript / C# / Java SDKs | "Other providers ship 5 languages" | SDK gen + CI matrix adds ~4x build time and maintenance cost for languages no one on the team uses; ci-mgmt YAML bloat | Python + Go only; `JavaScriptInfo`, `CSharpInfo`, `JavaInfo` set to nil or omitted in `ProviderInfo`. Can add later in 1 commit if needed. |
+| Pulumi Registry publication | "Let's publish to the registry for discoverability" | Public registry requires Pulumi approval, compliance review, public GitHub repo, logo, homepage — not aligned with private distribution model | GitHub Releases + `PluginDownloadURL` covers all install needs for private use. Registry is a future consideration if the provider goes open-source. |
+| Re-implementing resource logic in bridge layer | "The bridge layer could handle soft-delete more cleanly" | The TF provider already implements soft-delete correctly; duplicating logic in the bridge layer creates two sources of truth and doubles test surface | Bridge calls TF `Delete` verbatim; TF provider handles the two-phase destroy. Bridge only sets timeout defaults and strips the `timeouts {}` block. |
+| Exposing TF `timeouts {}` block as a bridge field | "Users want to configure timeouts in the HCL-style block" | Pulumi has `customTimeouts` as a first-class resource option; the TF `timeouts {}` block is a TF-specific UI artifact that confuses Pulumi users | `Fields["timeouts"].Omit = true` on all resources. Document `customTimeouts` in provider README. |
+| Custom drift logic in bridge layer | "Add bridge-level drift detection with more detail" | The TF provider already logs field-level drift via `tflog.Debug`; bridge-level additions duplicate this and `tflog.Debug` lines are invisible at normal Pulumi log levels anyway | Keep drift detection in TF provider. Document `PULUMI_DEBUG_PROVIDERS` / `TF_LOG=DEBUG` for users who need drift detail. |
+| Auto-naming (Pulumi autonaming) on all resources | "Let Pulumi auto-generate resource names with random suffixes" | FlashBlade resource names are meaningful operational identifiers (bucket names, policy names, target names); random suffixes break naming conventions and make resources unrecognizable in the FlashBlade admin UI | `SetAutonaming(255, "-")` is available but should be applied selectively or not at all. Users must supply explicit names for storage resources. |
+| Full `ci-mgmt` template adoption | "Use `pulumi/ci-mgmt` to generate all GitHub Actions workflows" | ci-mgmt generates workflows for 5 languages + Pulumi Registry + upgrade automation; private single-team provider doesn't need this complexity | Minimal hand-written GitHub Actions: `make tfgen`, `make provider`, `make generate_python make generate_go`, goreleaser release on tag. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-flashblade_network_interface
-    └──references──> subnet (by name, pre-existing — not managed by provider in v2.1.1)
-    └──references──> flashblade_server (via attached_servers — optional, by name)
+Bridge bootstrap (go.mod, ProviderInfo, pf.ShimProvider)
+    └──required by──> all other bridge features
 
-flashblade_server (data source enrichment)
-    └──reads──> flashblade_network_interface (to populate network_interfaces computed list)
+Auto-tokenization (MustComputeTokens)
+    └──required by──> SDK generation (generate_python, generate_go)
+    └──required by──> schema.json emission
+    └──required by──> ProgramTest (resources must be addressable)
 
-flashblade_object_store_virtual_host
-    └──same attached_servers pattern (already implemented — reference, not dependency)
+schema.json (make tfgen)
+    └──required by──> pulumi-resource-flashblade binary (//go:embed)
+    └──required by──> SDK generation
+    └──required by──> schema snapshot CI check
+
+Composite ID (ComputeID callbacks)
+    └──required by──> pulumi import for composite-ID resources
+    └──tested by──> ProgramTest import round-trip
+
+Secret promotion (Secret: tfbridge.True() + AdditionalSecretOutputs)
+    └──required by──> Write-Only Fields model for write-once secrets
+
+Timeouts omit (Fields["timeouts"].Omit = true)
+    └──enhances──> customTimeouts usability (no confusing duplicate)
+
+DeleteTimeout defaults (ResourceInfo.DeleteTimeout)
+    └──required by──> bucket + filesystem soft-delete correctness
+
+Private release (goreleaser + cosign + PluginDownloadURL)
+    └──required by──> pulumi plugin install from GitHub Releases
+    └──required by──> Python wheel distribution
 ```
 
 ### Dependency Notes
 
-- **`flashblade_network_interface` requires a pre-existing subnet:** The `subnet_name` field references a subnet that must exist on the FlashBlade. The provider does not manage subnets. If the subnet is absent, the POST will fail with an API error (not a plan error). No Terraform-level dependency can be declared without a subnet resource.
-- **`attached_servers` is optional:** VIPs can exist without any server attached. Servers can be attached after creation via PATCH. This means `attached_servers` should be Optional+Computed, not Required — mirrors `object_store_virtual_host.attached_servers`.
-- **Server data source enrichment is independent of VIP resource:** The `flashblade_server` data source can expose VIP info as a secondary lookup (GET network-interfaces filtered by server name) without any change to the VIP resource itself. These are parallel changes to separate files.
-- **`type` is a constant:** The API documents `type: "vip"` as the only valid value. It should be Required+Computed or set as a constant in the schema description. Simplest approach: Required with a validator that only accepts `"vip"`, or Computed with hardcoded value set during Read.
+- **Bootstrap before everything:** The `pf.ShimProvider` wiring and `go.mod` must exist before any mapping or SDK gen work. This is the single gate on all other features.
+- **Auto-tokenization before SDK gen:** `MustComputeTokens` must run before `make generate_python` / `make generate_go`; SDK gen reads the schema, which is emitted by `make tfgen`, which reads the token map.
+- **Composite ID callbacks are independent of auto-tokenization:** They can be added in the same `Provider()` function call before or after `MustComputeTokens`; order does not matter.
+- **Secret promotion is incremental:** Top-level sensitive fields auto-promote without any override. `AdditionalSecretOutputs` and `Secret: tfbridge.True()` overrides are required only for write-once fields and nested structs where auto-promotion fails (bridge issue #1028).
+- **ProgramTest depends on working binary:** Integration tests require a compiled `pulumi-resource-flashblade` binary with embedded schema; they cannot run until `make provider` succeeds.
 
 ---
 
-## MVP Definition (v2.1.1)
+## MVP Definition
 
-### Launch With
+### Launch With (Bridge Alpha — pulumi-2.22.3)
 
-- [ ] `flashblade_network_interface` resource — full CRUD + import + drift detection
-  - Schema: `name` (Computed), `address` (Required), `type` (Computed, always "vip"), `subnet_name` (Required, RequiresReplace), `services` (Optional+Computed list), `attached_servers` (Optional+Computed list), computed: `enabled`, `gateway`, `mtu`, `netmask`, `vlan`, `id`
-  - Client methods: PostNetworkInterface, GetNetworkInterface, PatchNetworkInterface, DeleteNetworkInterface
-- [ ] `flashblade_network_interface` data source — read by name
-  - All fields Computed; `name` Required as lookup key
-- [ ] `flashblade_server` data source enrichment — add `network_interfaces` computed list
-- [ ] `flashblade_server` resource enrichment — add `network_interfaces` computed list (read-only, no write)
-- [ ] Unit tests for schema, validators, plan modifiers (new resource + data source)
+Minimum viable: Python + Go users can `pulumi up` FlashBlade resources with correct secrets, IDs, and timeouts.
 
-### Defer (Not in v2.1.1)
+- [ ] Bootstrap: `./pulumi/` sub-directory with own `go.mod`, wiring to TF provider via `pf.ShimProvider`
+- [ ] `ProviderInfo` with `MustComputeTokens`, `MustApplyAutoAliases`, `SetAutonaming` — all 28 resources + 21 DS tokenized
+- [ ] Sensitive field overrides: `api_token`, `secret_access_key`, `bind_password`, `connection_key`, `private_key_passphrase`, `private_key` — all marked `Secret: tfbridge.True()`
+- [ ] `ComputeID` callbacks for 2 composite-ID resources: `object_store_access_policy_rule`, `directory_service_role_membership`
+- [ ] `timeouts` block omitted (`Omit: true`) on all resources; `DeleteTimeout: 30*time.Minute` on bucket + filesystem
+- [ ] `make tfgen` emits `schema.json` + `bridge-metadata.json`; both committed
+- [ ] Python SDK generated (`make generate_python`); Go SDK generated (`make generate_go`)
+- [ ] ProgramTest on 3 resources: `target` (auto-tokenization), `remote_credentials` (secrets + write-once), `bucket` (soft-delete + customTimeouts)
+- [ ] `ProviderInfo` unit tests: all resources tokenized, sensitive fields flagged, composite IDs present
+- [ ] GitHub Actions: `make tfgen` → build provider binary → `make generate_python generate_go` → goreleaser release on tag `pulumi-2.22.3`
+- [ ] Private release: goreleaser cross-compiles 6 platforms, cosign-signs, assets on GitHub Releases
 
-- [ ] `flashblade_subnet` resource — full subnet management is a separate, larger feature
-- [ ] Network interface connector management — hardware config, not IaC
-- [ ] Ping/trace diagnostic data sources — operational tools, not infrastructure state
-- [ ] TLS policy attachment to network interfaces (`/network-interfaces/tls-policies`) — security hardening, defer to v2.2
+### Add After Validation (v0.1.x)
+
+- [ ] Write-Only Fields model for write-once secrets (`secret_access_key` etc.) — requires Pulumi SDK support check
+- [ ] `pulumi import` round-trip CI test for each composite-ID resource
+- [ ] Schema snapshot CI diff gate
+- [ ] `MustApplyAutoAliases` validation against real state migration
+- [ ] Hand-written Python example: bucket lifecycle workflow (bucket-py)
+- [ ] Hand-written Go example: bucket replication workflow (bucket-go)
+
+### Future Consideration (v0.2+)
+
+- [ ] Auto-converted HCL examples (`PULUMI_CONVERT=1`) — blocked on tfgen conversion reliability per resource
+- [ ] Registry publication — requires public repo and Pulumi approval
+- [ ] TypeScript / C# / Java SDKs — add only if team adopts those languages
+- [ ] `upgrade-provider.yml` + `upgrade-bridge.yml` cron automation — defer until bridge is stable and provider has regular releases
 
 ---
 
-## Feature Prioritization Matrix (v2.1.1 scope)
+## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| `flashblade_network_interface` resource (CRUD) | HIGH | MEDIUM | P1 |
-| `flashblade_network_interface` data source | HIGH | LOW | P1 |
-| Import support | HIGH | LOW | P1 |
-| Drift detection + tflog | HIGH | LOW | P1 |
-| Computed fields (gateway, mtu, netmask, vlan) | MEDIUM | LOW | P1 |
-| `flashblade_server` data source enrichment | MEDIUM | MEDIUM | P2 |
-| `flashblade_server` resource enrichment | LOW | LOW | P2 |
-| `services` enum validator | MEDIUM | LOW | P2 |
-| Unit tests | HIGH | LOW | P1 |
+| Bridge bootstrap + pf wiring | HIGH | MEDIUM | P1 |
+| Auto-tokenization (all 28 resources) | HIGH | LOW | P1 |
+| Sensitive field secrets promotion | HIGH | LOW | P1 |
+| `ComputeID` for composite-ID resources | HIGH | MEDIUM | P1 |
+| `timeouts` omit + `DeleteTimeout` defaults | HIGH | LOW | P1 |
+| `make tfgen` + schema embed | HIGH | LOW | P1 |
+| Python + Go SDK generation | HIGH | LOW | P1 |
+| ProgramTest (3 resources) | HIGH | MEDIUM | P1 |
+| `ProviderInfo` unit tests | MEDIUM | LOW | P1 |
+| GitHub Actions + goreleaser private release | HIGH | MEDIUM | P1 |
+| Write-Only Fields for write-once secrets | MEDIUM | MEDIUM | P2 |
+| Schema snapshot CI gate | MEDIUM | LOW | P2 |
+| `pulumi import` CI test per composite resource | MEDIUM | LOW | P2 |
+| Hand-written examples (bucket-py, bucket-go) | MEDIUM | LOW | P2 |
+| Auto-converted HCL examples | LOW | HIGH | P3 |
+| Multi-language docs portal | LOW | HIGH | P3 |
+| Pulumi Registry publication | LOW | HIGH | P3 |
 
 **Priority key:**
-- P1: Must have for milestone completion
-- P2: Should have — adds significant value with low cost
-- P3: Nice to have, future consideration
+- P1: Required for `pulumi-2.22.3` tag / private alpha release
+- P2: Add before first team onboarding (v0.1.x)
+- P3: Future consideration, do not block alpha on these
 
 ---
 
-## Implementation Notes (VIP-specific)
+## Provider-Specific Mapping Details
 
-### Name Assignment
+### Composite ID Resources
 
-The API schema shows `name(ro string)` on NetworkInterface, which means the provider likely cannot specify the name at POST time (unlike `flashblade_server` where name is Required+RequiresReplace). This needs verification:
+| TF Resource | TF Import Key | Pulumi `ComputeID` Format | Note |
+|-------------|--------------|---------------------------|------|
+| `flashblade_object_store_access_policy_rule` | `policy_name:rule_index` | `policyName:ruleIndex` (camelCase fields) | `rule_index` is an int; format as `%s:%d` |
+| `flashblade_directory_service_role_membership` | `role_name/policy_name` | `roleName/policyName` | Slash separator; colon avoided because policy names can contain colons |
 
-- If POST accepts `?names=[name]` query param (like PATCH/DELETE do): `name` is Required+RequiresReplace (same as server)
-- If POST does not accept name: `name` is Computed+UseStateForUnknown; the API assigns it, and import must use the API-assigned name
+Import symmetry requirement: `pulumi import flashblade:policy:AccessPolicyRule x "my-policy:0"` must round-trip to the same state as `pulumi up`.
 
-Recommendation: Verify with actual API call. The FLASHBLADE_API.md POST line does not list `name` in the body, but GET/PATCH/DELETE use `?names=` query param — strongly suggests name IS user-supplied at POST via query param, not body. **Check POST endpoint behavior before writing the client method.**
+### Write-Once / Sensitive Fields
 
-### `subnet` Field Modeling
+| TF Resource | Field | API Behavior | Pulumi Handling |
+|-------------|-------|-------------|-----------------|
+| `flashblade_object_store_access_key` | `secret_access_key` | API returns null on Read | `Secret: tfbridge.True()` + Write-Only candidate; never read back |
+| `flashblade_directory_service` | `bind_password` | Write-only in API | `Secret: tfbridge.True()` + `AdditionalSecretOutputs` |
+| `flashblade_array_connection` | `connection_key` | Write-only in API | `Secret: tfbridge.True()` |
+| `flashblade_certificate` | `private_key` | Write-only in API | `Secret: tfbridge.True()` |
+| `flashblade_certificate` | `private_key_passphrase` | Write-only in API | `Secret: tfbridge.True()` |
+| Provider config | `api_token` | Credential | `Secret: tfbridge.True()` in `Config` map |
 
-The API `subnet` field is an object reference (not a flat string). The provider should expose it as `subnet_name` (string) to avoid nested object complexity — consistent with how `attached_servers` is a flat list of name strings rather than objects.
+### Soft-Delete Resources
 
-During Read, extract `subnet.name` and map to `subnet_name` in state.
+| TF Resource | TF Delete Timeout | Required Bridge Override |
+|-------------|------------------|--------------------------|
+| `flashblade_bucket` | 30 minutes | `ResourceInfo.DeleteTimeout: 30*time.Minute`; `Fields["timeouts"].Omit = true` |
+| `flashblade_filesystem` | 30 minutes | Same |
 
-### `attached_servers` Pattern
+Pulumi's default delete timeout is 5 minutes. Without the override, soft-delete + eradication polling will time out silently and leave orphaned resources.
 
-Follows the exact same pattern as `object_store_virtual_host.attached_servers`:
-- Optional+Computed list of strings (server names)
-- On Create: pass as named references to POST body
-- On Read: map API response array of objects to flat list of name strings
-- On Update: include in PATCH body only when changed
+### Token Map (Module Assignment)
 
-Reuse `modelServersToNamedRefs()` helper if applicable — or create equivalent `modelServersToNetworkInterfaceRefs()`.
+| TF Resource Prefix | Pulumi Module | Example Token |
+|--------------------|---------------|---------------|
+| `flashblade_bucket` | `bucket` | `flashblade:bucket:Bucket` |
+| `flashblade_filesystem` | `filesystem` | `flashblade:filesystem:Filesystem` |
+| `flashblade_object_store_*` | `objectstore` | `flashblade:objectstore:AccessKey` |
+| `flashblade_nfs_*`, `flashblade_smb_*`, `flashblade_snapshot_*`, `flashblade_quota_*` | `policy` | `flashblade:policy:NfsExportPolicy` |
+| `flashblade_network_*` | `network` | `flashblade:network:NetworkInterface` |
+| `flashblade_array_*` | `array` | `flashblade:array:Connection` |
+| `flashblade_target`, `flashblade_server`, `flashblade_remote_credentials`, `flashblade_certificate`, `flashblade_directory_service*` | `index` (fallback) | `flashblade:index:Target` |
 
----
-
-## Original Provider Feature Landscape (v1.0 research — preserved)
-
-### Table Stakes (Users Expect These)
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Full CRUD for every resource | Terraform's core contract — resources without full lifecycle are broken | MEDIUM | Create/Read/Update/Delete + destroy for all 12 resource families in PROJECT.md |
-| Accurate drift detection (Read) | Users run `terraform plan` to detect out-of-band changes; stale Read = silent corruption | HIGH | Must capture ALL attributes in Read, including computed/backend-assigned ones. Call Read after Create/Update to sync state. |
-| `terraform import` for all resources | Ops team has existing FlashBlade infra; can't manage without import | MEDIUM | Implement `ResourceWithImportState`; use `resource.ImportStatePassthroughID()` where name is the natural key. Policy rules need composite ID (`policy_name/rule_index`). |
-| Data sources for every resource | Users need to reference existing infra (not Terraform-managed) in configs | MEDIUM | Parallel to each resource: `flashblade_file_system`, `flashblade_bucket`, etc. List data sources for multi-result lookups. |
-| Dual authentication: API token + OAuth2 | API token = dev/local; OAuth2 client_credentials = production CI/CD | MEDIUM | API token via session login (`POST /api/login` → `x-auth-token`). OAuth2 via `POST /oauth2/1.0/token` with `token-exchange` grant type. |
-| TLS support with custom CA certificates | Enterprise environments use internal CAs; hard failure without this | LOW | Configurable `ca_cert_file` or `ca_cert` in provider schema. Standard Go `tls.Config`. |
-| Sensitive attribute flags on secrets | API tokens, passwords, access keys must not appear in plan/apply output | LOW | Mark `api_token`, `secret_access_key`, `password` fields as `Sensitive: true` in schema. |
-| `sensitive` flag on object store access keys | Access keys stored in state must be redacted from CLI output | LOW | `flashblade_object_store_access_key` — secret_access_key is sensitive |
-| Provider-level environment variable configuration | CI/CD pipelines pass credentials via env vars; hardcoding is anti-pattern | LOW | `FLASHBLADE_ENDPOINT`, `FLASHBLADE_API_TOKEN`, `FLASHBLADE_OAUTH2_*` env vars as fallback to config block |
-| Correct plan modifiers on computed attributes | Without `UseStateForUnknown` on stable computed attrs, every plan shows "(known after apply)" noise | MEDIUM | All `id`, `eui`, `wwn`, `created`, `space` fields need `UseStateForUnknown`. Immutable fields (account on bucket, nfs_v3 on create) need `RequiresReplace`. |
-| Resource validators | Invalid input (negative quota, invalid policy rule syntax) must fail at plan time, not at apply | MEDIUM | Custom `validator.String`/`validator.Int64` for quota values, policy effect enum, retention period ranges |
-| Structured logging via `tflog` | Required for debugging provider issues in production; standard across ecosystem | LOW | Use `tflog.Info/Debug/Error` with structured fields (resource name, operation, API path). Critical for the audit logging requirement. |
-| Unit tests for schema and validators | Schema regressions and validator bugs are common; catch before acceptance tests | MEDIUM | Test plan modifiers, validators, schema defaults in isolation — no API required |
-| Acceptance tests against real FlashBlade | The only way to verify full CRUD behavior including API responses and state convergence | HIGH | Use `resource.Test` + `resource.TestStep` sequences (Create → Read → Update → Read → Destroy) |
-| API versioning header | FlashBlade requires `/api/2.22/` prefix; future-proof version handling | LOW | Pin to `2.22` in HTTP client. Version negotiation via `GET /api/api_version` on startup. |
-
-### Differentiators (Competitive Advantage)
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Drift detection with structured audit log output | Ops compliance requirement: when Read detects a diff, log exactly which attributes changed from what to what at INFO level via tflog | MEDIUM | Log field-by-field diffs in Read when prior state differs from API response. |
-| Mocked API integration tests for CI (no FlashBlade required) | Enables fast feedback in CI pipelines where real FlashBlade access is unavailable or expensive | HIGH | HTTP mock server (e.g., `net/http/httptest`) implementing FlashBlade API responses. |
-| Full policy family coverage in v1 | Competitors ship partial policy support, forcing click-ops fallback | HIGH | All 6 policy types: NFS export, SMB share, snapshot, object store access, network access, quota. |
-| Composite import IDs for policy rules | Policy rules have no standalone ID — naive import breaks | MEDIUM | Convention: `policy_name:rule_index` or `policy_name:rule_name`. |
-| Quota policy resource with hard/soft limits | Storage quota enforcement is a top ops requirement | MEDIUM | `flashblade_quota_policy` and `flashblade_quota_policy_rule` with `quota_limit`, `hard_limit_enabled` |
-| Object Lock configuration on buckets | Compliance/WORM requirements | HIGH | Map `retention_lock` enum, `object_lock_config.default_retention_mode` |
-| Eradication config management | Controls how quickly destroyed resources are permanently deleted | MEDIUM | `eradication_config.eradication_delay` on filesystem/bucket resources. |
-| Destroyed state lifecycle (soft delete) | FlashBlade buckets/filesystems support `destroyed=true` before permanent deletion | HIGH | Two-phase delete: PATCH `destroyed=true`, then DELETE. |
-
-### Anti-Features (Commonly Requested, Often Problematic)
-
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Performance metrics resources | "We want dashboards in Terraform" | Time-series data, not configuration state. Every plan shows spurious diffs. | Datadog FlashBlade integration or Prometheus purestorage-exporter. |
-| Snapshot management as resources | "We want on-demand snapshots via Terraform" | Snapshots are operational artifacts, not declarative infrastructure. | Snapshot policies declare the schedule; execution is API-driven. |
-| Multi-array management in one provider block | "We have 5 FlashBlades" | Provider is a single API client; mixing breaks state isolation. | Terraform `provider` alias pattern. |
-| Automatic resource name generation | "Let the provider generate unique names" | Generated names = unstable state. | User supplies names. |
-| Hardware management (blades, drives) | "I see `/api/2.22/blades` in the API" | Hardware state is read-only observation, not declarative configuration. | Out of scope. |
-| Session/client management | "We want to manage active sessions" | Sessions are ephemeral runtime state. | Operational runbooks, not IaC. |
-
----
-
-## Feature Dependencies (full provider)
-
-```
-flashblade_object_store_account
-    └──required by──> flashblade_bucket
-                          └──required by──> flashblade_object_store_access_key (via account)
-                          └──optional──> flashblade_object_store_access_policy
-
-flashblade_nfs_export_policy
-    └──optional attachment──> flashblade_file_system (via policy reference)
-
-flashblade_smb_share_policy
-    └──optional attachment──> flashblade_file_system (via policy reference)
-
-flashblade_snapshot_policy
-    └──optional attachment──> flashblade_file_system (via policy attachment)
-
-flashblade_quota_policy
-    └──optional attachment──> flashblade_file_system (via qos_policy reference)
-
-flashblade_network_access_policy
-    └──optional attachment──> flashblade_bucket (via policy reference)
-    └──optional attachment──> flashblade_file_system (via policy reference)
-
-flashblade_network_interface (NEW — v2.1.1)
-    └──references──> subnet (pre-existing, by name)
-    └──references──> flashblade_server (via attached_servers, optional)
-
-flashblade_array_dns / flashblade_array_ntp / flashblade_array_smtp
-    └──singleton resources──> no dependencies, managed independently
-```
+Module assignment is the primary mapping decision; wrong assignment is a breaking change requiring `Aliases`.
 
 ---
 
 ## Sources
 
-- FlashBlade REST API 2.22 reference (`FLASHBLADE_API.md` in repo root)
-- Existing provider implementation: `internal/provider/server_resource.go`, `internal/provider/object_store_virtual_host_resource.go`
-- [HashiCorp Terraform Provider Best Practices](https://developer.hashicorp.com/terraform/plugin/best-practices)
-- [terraform-plugin-framework Resources](https://developer.hashicorp.com/terraform/plugin/framework/resources)
-- [Plan Modification — terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework/resources/plan-modification)
+- `pulumi-bridge.md` in repo root (consolidated bridge research, April 2026)
+- [`pulumi/pulumi-terraform-bridge` — `pkg/pf/README.md`](https://github.com/pulumi/pulumi-terraform-bridge/blob/main/pkg/pf/README.md)
+- [`pkg/tfbridge/info.go` — ResourceInfo / SchemaInfo](https://github.com/pulumi/pulumi-terraform-bridge/blob/main/pkg/tfbridge/info.go)
+- [Pulumi Write-Only Fields](https://www.pulumi.com/docs/iac/concepts/secrets/write-only-fields/)
+- [`pulumi/pulumi-random`](https://github.com/pulumi/pulumi-random) — canonical pf reference provider
+- [`pulumi/pulumi-cloudflare`](https://github.com/pulumi/pulumi-cloudflare) — Makefile + CI patterns
+- Bridge issues: #744, #956, #1028, #1652, #1667, #2272, #2428
 
 ---
-*Feature research for: Terraform provider for Pure Storage FlashBlade — network interface (VIP) milestone v2.1.1*
-*Researched: 2026-03-30*
+*Feature research for: Pulumi bridge alpha — pulumi-2.22.3 milestone (Python + Go, private distribution)*
+*Researched: 2026-04-21*

@@ -1,8 +1,331 @@
 # Stack Research
 
 **Domain:** Terraform Provider (Go) — REST API wrapping, storage infrastructure
-**Researched:** 2026-03-26 (base stack) / 2026-03-30 (milestone v2.1.1 — network interfaces)
+**Researched:** 2026-03-26 (base stack) / 2026-03-30 (milestone v2.1.1 — network interfaces) / 2026-04-21 (milestone pulumi-2.22.3 — Pulumi bridge)
 **Confidence:** HIGH — all versions verified against official scaffolding go.mod (March 2026) and pkg.go.dev
+
+---
+
+## Milestone pulumi-2.22.3 Addendum: Pulumi Bridge Layer
+
+> This section covers **only the new `./pulumi/` sub-directory stack**.
+> The base provider stack (terraform-plugin-framework, golangci-lint, GoReleaser) is unchanged.
+> Scope: Python + Go SDKs only. TypeScript, C#, Java — explicitly out of scope.
+
+### Core Bridge Libraries
+
+The bridge layer lives in `./pulumi/provider/go.mod` — a separate Go module from the root provider.
+
+| Technology | Pinned Version | Purpose | Why |
+|------------|---------------|---------|-----|
+| `github.com/pulumi/pulumi-terraform-bridge/v3` | `v3.127.0` | Core bridge engine: `pkg/pf/tfgen` (build-time schema introspection) + `pkg/pf/tfbridge` (runtime gRPC server) | Only official bridge for terraform-plugin-framework providers. Must use `pkg/pf/*` — not the SDK v2 shim path. v3.127.0 verified on pkg.go.dev 2026-04-21. Canonical reference `pulumi-random` uses this version. |
+| `github.com/pulumi/pulumi/sdk/v3` | `v3.231.0` | Pulumi Go SDK — `resource.PropertyMap`, `resource.ID`, tokens, secrets | Direct dependency of bridge; must be co-versioned with the bridge. v3.231.0 latest as of 2026-04-16. `pulumi-random` uses v3.228.0; use v3.231.0 for freshest release. |
+| `github.com/pulumi/pulumi/pkg/v3` | `v3.231.0` | Pulumi package schema types (used by tfgen for `schema.json` generation) | Co-versioned with sdk/v3 — always bump both together on bridge upgrades. |
+| `github.com/hashicorp/terraform-plugin-go` | `v0.31.0` | Low-level TF plugin protocol (indirect dep of bridge) | Pulled in transitively; explicit pin avoids surprises on `go mod tidy`. Go 1.25 required — matches our toolchain. |
+
+**Version note:** Pre-existing research in `pulumi-bridge.md` cited bridge v3.126.0 and sdk v3.220.0. Live verification on 2026-04-21 shows bridge at v3.127.0 (published same day) and sdk at v3.231.0. Always match against `pulumi-random/provider/go.mod` as the canonical source.
+
+### Mandatory Replace Directives
+
+The bridge requires a `replace` directive for the Pulumi-maintained fork of the HashiCorp plugin SDK. Without it, the build fails — the standard HashiCorp SDK and the fork diverge at the protocol level.
+
+```
+# ./pulumi/provider/go.mod
+require (
+    github.com/hashicorp/terraform-plugin-sdk/v2 v2.0.0-20260318212141-5525259d096b
+    github.com/pulumi/pulumi-terraform-bridge/v3 v3.127.0
+    github.com/pulumi/pulumi/sdk/v3 v3.231.0
+    github.com/pulumi/pulumi/pkg/v3 v3.231.0
+)
+
+replace (
+    # Pulumi fork of the TF plugin SDK — mandatory, matches bridge go.mod
+    github.com/hashicorp/terraform-plugin-sdk/v2 => github.com/pulumi/terraform-plugin-sdk/v2 v2.0.0-20260318212141-5525259d096b
+
+    # Local path to the upstream TF provider (avoids publishing a new version on every change)
+    github.com/soulkyu/terraform-provider-flashblade => ../
+
+    # Local path to generated Go SDK (needed during development / Makefile build)
+    github.com/soulkyu/pulumi-flashblade/sdk/go => ../sdk/go
+)
+```
+
+**SHA hygiene:** The fork SHA `20260318212141-5525259d096b` was verified against both `pulumi-random` and `pulumi-cloudflare` go.mod files on 2026-04-21. This SHA changes with each bridge release. After every `go get github.com/pulumi/pulumi-terraform-bridge/v3@latest`, run:
+```bash
+grep "terraform-plugin-sdk" pulumi/provider/go.mod
+```
+and update the replace SHA to match what the bridge declares in its own go.mod.
+
+### Python SDK Tooling
+
+| Tool | Version | Purpose | Why Needed |
+|------|---------|---------|-----------|
+| `pulumictl` | `v0.0.50` | Computes semantic version string for LDFLAGS and Python package metadata (`pulumictl get version`) | All canonical Pulumi providers use this in Makefile. Without it, `$(VERSION)` in LDFLAGS and `setup.py`'s version field must be manually scripted. Binary: download from GitHub releases. |
+| `build` (Python) | `1.2.1` | `python -m build` packages `sdk/python/` into a `.whl` | PEP 517-compliant build frontend. Used verbatim by `pulumi-cloudflare`'s `build_python` target. Replaces `setup.py bdist_wheel`. Produces the installable private `.whl` artifact. |
+
+**pulumictl installation (CI + local):**
+```bash
+# Linux amd64
+curl -sL https://github.com/pulumi/pulumictl/releases/download/v0.0.50/pulumictl-v0.0.50-linux-amd64.tar.gz \
+  | tar xz -C ~/.local/bin
+```
+
+**Python build (called by `make build_python`):**
+```bash
+cd sdk/python && python3 -m venv venv && venv/bin/pip install build==1.2.1 && venv/bin/python -m build
+```
+
+**What `pulumictl get version` returns:** A semver string derived from the nearest git tag — e.g., `0.1.0-alpha.1+dev` for dev builds, `0.1.0` for release tags. This becomes the Python package version in `setup.py` and the Go `-X ...Version=` ldflags value.
+
+### Go SDK Distribution (Private)
+
+Go SDK distribution uses Git tags — no package registry required.
+
+| Concern | Mechanism | Detail |
+|---------|-----------|--------|
+| Module path | `github.com/soulkyu/pulumi-flashblade/sdk/go` | Declared in `sdk/go/go.mod`; consumers import this path |
+| Tag convention | `sdk/go/v0.1.0` | Separate tag from provider tag `v0.1.0` — required by Go module system for sub-directory modules |
+| Private access | `GOPRIVATE=github.com/soulkyu/*` | Set in consumer environments; bypasses GOPROXY/GOSUM for this org |
+| Sum DB bypass | `GONOSUMCHECK=github.com/soulkyu/*` | Needed alongside GOPRIVATE when the sum DB cannot reach private repos |
+| CI build | `replace` directive in `pulumi/provider/go.mod` | Local path `../sdk/go` during build; no remote fetch needed in CI |
+
+**Tag workflow (after goreleaser release):**
+```bash
+git tag sdk/go/v0.1.0
+git push origin sdk/go/v0.1.0
+```
+
+**`sdk/go/go.mod`** (minimal — consumers import only pulumi/sdk):
+```
+module github.com/soulkyu/pulumi-flashblade/sdk/go
+
+go 1.25
+
+require (
+    github.com/pulumi/pulumi/sdk/v3 v3.231.0
+)
+```
+
+**Consumer go.mod** (for internal teams using the Go SDK):
+```
+require github.com/soulkyu/pulumi-flashblade/sdk/go v0.1.0
+
+# Plus in environment:
+# export GOPRIVATE=github.com/soulkyu/*
+# export GONOSUMCHECK=github.com/soulkyu/*
+```
+
+### Python SDK Distribution (Private)
+
+No PyPI required. Private distribution via GitHub release assets.
+
+| Concern | Mechanism |
+|---------|-----------|
+| Package format | `.whl` built by `python -m build` from `sdk/python/` |
+| Distribution | Attached to GitHub release as asset by goreleaser `extra_files` |
+| Consumer install | `pip install https://github.com/soulkyu/pulumi-flashblade/releases/download/v0.1.0/pulumi_flashblade-0.1.0-py3-none-any.whl` |
+| Package name | `pulumi-flashblade` (generated by tfgen from `ProviderInfo.Name = "flashblade"`) |
+| No Twine | Not needed for private distribution |
+
+### GoReleaser Configuration for Bridge
+
+The bridge needs its own goreleaser config at `./pulumi/.goreleaser.yml`. The existing root `.goreleaser.yml` handles the Terraform provider binary — keep them separate.
+
+**Archive naming convention** (Pulumi CLI requirement for `pulumi plugin install`):
+```
+pulumi-resource-{provider}-v{VERSION}-{os}-{arch}.tar.gz
+```
+Example: `pulumi-resource-flashblade-v0.1.0-linux-amd64.tar.gz`
+
+**Minimal `./pulumi/.goreleaser.yml`:**
+```yaml
+project_name: pulumi-flashblade
+
+before:
+  hooks:
+    - make -C . tfgen   # schema + bridge-metadata generated before binary build
+
+builds:
+  - id: pulumi-resource-flashblade
+    dir: provider
+    main: ./cmd/pulumi-resource-flashblade
+    binary: pulumi-resource-flashblade
+    ldflags:
+      - -X github.com/soulkyu/pulumi-flashblade/provider/pkg/version.Version={{.Version}}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: archive
+    builds: [pulumi-resource-flashblade]
+    name_template: "{{ .Binary }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+signs:
+  - cmd: cosign
+    artifacts: all
+    args:
+      - sign-blob
+      - --output-certificate=${certificate}
+      - --output-signature=${signature}
+      - ${artifact}
+      - --yes
+
+release:
+  github:
+    owner: soulkyu
+    name: pulumi-flashblade
+  draft: false
+  prerelease: auto
+  extra_files:
+    - glob: sdk/python/dist/*.whl   # attach Python wheel to release
+```
+
+**`pluginDownloadURL` in `resources.go`:**
+```go
+PluginDownloadURL: "github://api.github.com/soulkyu",
+```
+Pulumi CLI 3.56.0+ understands this `github://` scheme and fetches the binary from GitHub releases of the named org. This is the correct private distribution mechanism — no Pulumi Registry needed.
+
+### Go Module Layout for `./pulumi/`
+
+```
+./pulumi/
+├── provider/
+│   ├── go.mod          # module github.com/soulkyu/pulumi-flashblade/provider
+│   ├── go.sum
+│   ├── resources.go    # ProviderInfo, ShimProvider wiring, mappings, overrides
+│   ├── pkg/version/version.go   # ldflags -X injection target
+│   └── cmd/
+│       ├── pulumi-tfgen-flashblade/main.go        # pf/tfgen.Main entry
+│       └── pulumi-resource-flashblade/
+│           ├── main.go                             # pf/tfbridge.Main entry
+│           ├── schema.json                         # generated + committed (for CI diff)
+│           ├── schema-embed.json                   # generated + committed (//go:embed)
+│           └── bridge-metadata.json                # generated + committed (//go:embed)
+└── sdk/
+    ├── go/
+    │   ├── go.mod      # module github.com/soulkyu/pulumi-flashblade/sdk/go
+    │   └── flashblade/ # generated by tfgen go subcommand
+    └── python/
+        ├── setup.py    # generated by tfgen python subcommand
+        ├── pyproject.toml
+        └── pulumi_flashblade/
+```
+
+**Why `schema.json` AND `schema-embed.json`:** `schema.json` is committed for human-readable CI diffs on PR. `schema-embed.json` is embedded via `//go:embed` into the runtime binary — this enables `pulumi plugin install` to introspect the schema without running tfgen. Both must be committed; both are regenerated by `make tfgen`.
+
+**Why three separate `go.mod` files:**
+- Root `go.mod` — the Terraform provider (unchanged)
+- `pulumi/provider/go.mod` — bridge + binaries (depends on bridge/v3, our TF provider via replace)
+- `pulumi/sdk/go/go.mod` — consumer-facing Go SDK (depends only on pulumi/sdk/v3, no bridge dep)
+
+Keeping the SDK module lean avoids forcing bridge transitive deps on end users.
+
+### Wiring: PF Bridge Entry Points
+
+`provider/cmd/pulumi-tfgen-flashblade/main.go`:
+```go
+package main
+
+import (
+    "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/pf/tfgen"
+    flashblade "github.com/soulkyu/pulumi-flashblade/provider"
+)
+
+func main() {
+    // Note: no version parameter — PF tfgen differs from SDK v2 tfgen here
+    tfgen.Main("flashblade", flashblade.Provider())
+}
+```
+
+`provider/cmd/pulumi-resource-flashblade/main.go`:
+```go
+package main
+
+import (
+    "context"
+    _ "embed"
+
+    pftfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/pf/tfbridge"
+    flashblade "github.com/soulkyu/pulumi-flashblade/provider"
+)
+
+//go:embed schema-embed.json
+var schema []byte
+
+//go:embed bridge-metadata.json
+var metadata []byte
+
+func main() {
+    meta := pftfbridge.ProviderMetadata{PackageSchema: schema}
+    pftfbridge.Main(context.Background(), "flashblade", flashblade.Provider(), meta)
+}
+```
+
+Key differences from SDK v2 bridge: `context.Context` is required in `tfbridge.Main`, `Version` and `MetadataInfo` are mandatory in `ProviderInfo`, and `pf.ShimProvider(...)` replaces `shimv2.NewProvider(...)`.
+
+### Tools Summary
+
+| Tool | Version | Purpose | Notes |
+|------|---------|---------|-------|
+| `pulumictl` | v0.0.50 | Version injection | Download binary from GitHub releases |
+| `python build` | 1.2.1 | Python wheel packaging | Install inside virtualenv per `make build_python` |
+| `golangci-lint` | existing (reuse) | Lint `./pulumi/provider/...` | Same binary, run separately from root |
+| `pulumi` CLI | compatible with sdk v3.231.0 | ProgramTest + smoke tests | Install in CI alongside Go toolchain |
+| `tfplugindocs` | N/A — NOT used | Terraform docs tool | Pulumi uses tfgen for its docs, not tfplugindocs |
+
+### Alternatives Considered
+
+| Recommended | Alternative | Why Not |
+|-------------|-------------|---------|
+| `pkg/pf/tfgen` + `pkg/pf/tfbridge` | `pkg/tfgen` + `pkg/tfbridge` (SDK v2 shim) | Our provider is terraform-plugin-framework. SDK v2 shim would require `muxer` wrapping — extra complexity, no benefit. `pkg/pf/*` is the correct and supported path. |
+| `pulumictl` for version | Manual `git describe --tags` | `pulumictl` handles pre-release semver suffixes (`+dev`, `-alpha.1`) consistently across all Makefile targets. Manual scripting is fragile at edge cases (no tags, dirty tree). |
+| `./pulumi/` monorepo sub-dir | Separate repository (`github.com/soulkyu/pulumi-flashblade`) | Avoids maintaining two repos; `replace` directive can point to `../` for the TF provider instead of requiring a published release. Correct for private/alpha stage. |
+| GitHub releases (private) | Pulumi Registry (public) | Out of scope per milestone. Registry requires `pulumi/pulumi-package-publisher` action and public schema publication. |
+| Single `.whl` attached to release | PyPI / TestPyPI | Private distribution requirement — no public index needed. |
+
+### What NOT to Use (Bridge-Specific)
+
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `pkg/tfgen` (non-pf path) | SDK v2 shim — wrong for terraform-plugin-framework providers | `pkg/pf/tfgen` |
+| `shimv2.NewProvider(...)` | SDK v2 constructor | `pf.ShimProvider(fb.New(version.Version)())` |
+| TypeScript/C#/Java SDK targets in Makefile | Out of scope; adds build time and CI complexity with no consumer | Python + Go only; comment out or omit `generate_nodejs`, `generate_dotnet`, `generate_java` |
+| `GONOSUMDB` (wrong env var) | Different from GONOSUMCHECK | Use `GONOSUMCHECK=github.com/soulkyu/*` (or `GONOSUMDB` depending on Go version — check `go env` output) |
+| Attaching the Go SDK as a binary artifact | Go SDK is consumed via Git tag + GOPRIVATE, not as a .tar.gz | Tag `sdk/go/vX.Y.Z` and push; consumers `go get` directly |
+
+### Version Compatibility Matrix
+
+| Component | Version | Compatible With |
+|-----------|---------|-----------------|
+| `pulumi-terraform-bridge/v3` | v3.127.0 | terraform-plugin-framework v1.19.0, pulumi/sdk v3.228+ |
+| `pulumi/sdk/v3` + `pulumi/pkg/v3` | v3.231.0 | bridge v3.127.0 (bridge declares min SDK in its go.mod) |
+| `terraform-plugin-framework` | v1.19.0 (indirect) | Provider already on v1.19.0 (from base stack) — no upgrade needed |
+| `terraform-plugin-go` | v0.31.0 | Go 1.25 required — matches our toolchain exactly |
+| `pulumictl` | v0.0.50 | Stateless CLI; no Go/framework coupling |
+| Go toolchain | 1.25 (existing) | Bridge v3.127.0 requires Go 1.22+ — Go 1.25 fully compatible |
+
+### Sources (Bridge Addendum)
+
+- `pkg.go.dev/github.com/pulumi/pulumi-terraform-bridge/v3` — v3.127.0 verified 2026-04-21 (HIGH)
+- `pkg.go.dev/github.com/pulumi/pulumi/sdk/v3` — v3.231.0 verified 2026-04-16 (HIGH)
+- `pkg.go.dev/github.com/pulumi/pulumi/pkg/v3` — v3.231.0 verified 2026-04-16 (HIGH)
+- `pkg.go.dev/github.com/hashicorp/terraform-plugin-go` — v0.31.0 verified 2026-03-10 (HIGH)
+- `pkg.go.dev/github.com/pulumi/pulumi-terraform-bridge/v3/pkg/pf` — pf package GA, ShimProvider interface marked unstable (HIGH)
+- `github.com/pulumi/pulumictl/releases` — v0.0.50 latest (HIGH)
+- `github.com/pulumi/pulumi-random/provider/go.mod` — canonical PF reference provider; bridge v3.127.0, sdk v3.228.0, tfp-framework v1.19.0, replace SHA `20260318212141-5525259d096b` (HIGH)
+- `github.com/pulumi/pulumi-cloudflare/provider/go.mod` — bridge v3.125.0, sdk v3.226.0, same replace SHA + local replace pattern (HIGH)
+- `github.com/pulumi/pulumi-cloudflare/Makefile` — `build_python` target using `build==1.2.1` (HIGH)
+- `pulumi-bridge.md` (repo root) — pre-existing consolidated research; versions updated, architecture validated (MEDIUM-HIGH; now upgraded with live verification)
+- WebSearch/WebFetch: archive naming `pulumi-resource-{name}-v{version}-{os}-{arch}.tar.gz` — pattern consistent across pulumi-consul, pulumi-random observed releases (MEDIUM)
+- `github.com/pulumi/pulumi/issues/8944`, `#9007` — `github://api.github.com/<org>` pluginDownloadURL support for private releases (HIGH — merged, available since Pulumi CLI 3.56.0)
 
 ---
 
@@ -267,4 +590,4 @@ Layer this transport under the auth RoundTripper via composition.
 
 ---
 *Stack research for: Terraform Provider for Pure Storage FlashBlade*
-*Researched: 2026-03-26 (base) / 2026-03-30 (v2.1.1 network interfaces addendum)*
+*Researched: 2026-03-26 (base) / 2026-03-30 (v2.1.1 network interfaces addendum) / 2026-04-21 (pulumi-2.22.3 bridge addendum)*

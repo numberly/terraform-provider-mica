@@ -560,3 +560,517 @@ Phase implementing the network interface client model (this milestone, before wr
 *Pitfalls research for: Terraform provider for Pure Storage FlashBlade (REST API v2.22, terraform-plugin-framework)*
 *Researched: 2026-03-26*
 *Updated: 2026-03-30 — Added VIP milestone pitfalls V1–V7 for network interface resource (v2.1.1)*
+
+---
+
+## Pulumi Bridge Milestone Pitfalls (pulumi-2.22.3 — Pulumi Bridge Alpha)
+
+These pitfalls are specific to bridging THIS provider to Pulumi via `pkg/pf`. They enrich
+pulumi-bridge.md Section 10 with provider-specific failure modes at the intersection of bridge
+bugs and our concrete code patterns. Do not duplicate generic bridge advice already in Section 10.
+
+---
+
+### Pitfall PB1: Bucket/Filesystem `delete` Timeout Silent Truncation at 5 Minutes
+
+**What goes wrong:**
+`flashblade_bucket.Delete` and `flashblade_filesystem.Delete` use a 30-minute timeout from the TF
+`timeouts` block (`data.Timeouts.Delete(ctx, 30*time.Minute)`). The Pulumi bridge default delete
+timeout is 5 minutes (bridge issue [#1652](https://github.com/pulumi/pulumi-terraform-bridge/issues/1652)).
+Without an explicit `DeleteTimeout` in `ResourceInfo`, Pulumi's context is cancelled after 5 minutes.
+The `pollUntilGone` loop inside `DestroyAndEradicateBucket` receives a cancelled context, returns an
+error, and Pulumi marks the resource as failed — leaving a tombstoned bucket in the array. A
+subsequent `pulumi up` will fail with a name-collision conflict (the array returns 409 because the
+bucket name is already in use in soft-deleted state).
+
+**Why it happens:**
+The TF `timeouts` block is stripped from the Pulumi schema (`Fields["timeouts"].Omit = true`). Without
+it, there is no per-operation timeout visible to Pulumi users. The bridge falls back to its own default
+of 5 minutes — far below the 30-minute eradication window the API may need on large buckets.
+
+**How to avoid:**
+In `resources.go`, for every resource that uses soft-delete (bucket, filesystem) and any other resource
+with a delete timeout > 5 minutes, set `DeleteTimeout` explicitly in `ResourceInfo`:
+
+```go
+"flashblade_bucket": {
+    Tok: tfbridge.MakeResource(mainPkg, "bucket", "Bucket"),
+    DeleteTimeout: 30 * time.Minute,
+    Fields: map[string]*tfbridge.SchemaInfo{
+        "timeouts": {Omit: true},
+    },
+},
+"flashblade_filesystem": {
+    Tok: tfbridge.MakeResource(mainPkg, "filesystem", "Filesystem"),
+    DeleteTimeout: 30 * time.Minute,
+    Fields: map[string]*tfbridge.SchemaInfo{
+        "timeouts": {Omit: true},
+    },
+},
+```
+
+Also set `CreateTimeout: 20*time.Minute` and `UpdateTimeout: 20*time.Minute` on all resources to
+match the TF defaults. Document `customTimeouts` in the SDK examples for bucket destroy.
+
+**Warning signs:**
+- `pulumi destroy` on a bucket fails after ~5 minutes with "context deadline exceeded" or "context
+  canceled" inside `pollUntilGone`.
+- The array still shows the bucket in `destroyed=true` state after the Pulumi destroy fails.
+- No `DeleteTimeout` set in `ResourceInfo` for any resource.
+
+**Phase to address:**
+Phase 1 (ProviderInfo scaffold + POC 3 resources). Every resource in `resources.go` must have explicit
+`DeleteTimeout`/`CreateTimeout`/`UpdateTimeout`. Add a `resources_test.go` assertion that verifies
+`DeleteTimeout >= 25*time.Minute` for soft-delete resources.
+
+---
+
+### Pitfall PB2: Composite ID `ComputeID` Asymmetry Breaks `pulumi import`
+
+**What goes wrong:**
+Three resource families use composite IDs:
+- `flashblade_object_store_access_policy_rule`: TF ID = `policy_name/rule_name` (slash separator,
+  synthetic, set in `readIntoState` as `policyName + "/" + ruleName`).
+- `flashblade_bucket_access_policy_rule` and `flashblade_network_access_policy_rule`: same pattern.
+- `flashblade_management_access_policy_directory_service_role_membership`: TF ID = `role_name/policy_name`
+  (role FIRST — because built-in policy names contain colons like `pure:policy/array_admin`).
+
+The bridge's `ComputeID` callback builds the Pulumi resource ID from output state properties. If
+`ComputeID` builds `policy_name + ":" + rule_index` (an integer-based key from pulumi-bridge.md
+Section 10.3) but the TF provider's actual `id` attribute contains `policy_name + "/" + rule_name`
+(a string-based key from the actual code), the IDs are mismatched. Bridge issue
+[#2272](https://github.com/pulumi/pulumi-terraform-bridge/issues/2272) surfaces this as "inputs to
+import do not match" — `pulumi import` fails or imports with wrong ID that can never be refreshed.
+
+**Why it happens:**
+pulumi-bridge.md Section 10.3 uses `policy_name:rule_index` as an example. The actual provider code
+uses `policy_name/rule_name` (string name, slash separator). The membership resource uses
+`role_name/policy_name` with role FIRST to avoid ambiguity with colon-containing policy names.
+Copying the example verbatim produces a `ComputeID` that diverges from the actual TF ID in state.
+
+**How to avoid:**
+In `resources.go`, `ComputeID` must mirror exactly how the TF resource sets `data.ID` in its `Read`
+function. Read the actual `readIntoState` / `mapXxxToModel` code before writing `ComputeID`:
+
+```go
+// flashblade_object_store_access_policy_rule: ID = "policyName/ruleName"
+"flashblade_object_store_access_policy_rule": {
+    ComputeID: func(ctx context.Context, state resource.PropertyMap) (resource.ID, error) {
+        policy := state["policyName"].StringValue()
+        rule   := state["name"].StringValue()
+        return resource.ID(policy + "/" + rule), nil
+    },
+},
+
+// flashblade_management_access_policy_directory_service_role_membership: ID = "role/policy"
+"flashblade_management_access_policy_directory_service_role_membership": {
+    ComputeID: func(ctx context.Context, state resource.PropertyMap) (resource.ID, error) {
+        role   := state["role"].StringValue()
+        policy := state["policy"].StringValue()
+        return resource.ID(role + "/" + policy), nil
+    },
+},
+```
+
+Verify the separator by reading `readIntoState` for each resource — never infer from the schema
+description alone. Add a `ProgramTest` or `resources_test.go` round-trip: create -> `pulumi import`
+with the same ID -> `pulumi preview` shows 0 diff.
+
+**Warning signs:**
+- `pulumi import flashblade:policy:AccessPolicyRule my-rule "mypolicy:0"` succeeds but subsequent
+  `pulumi preview` shows replace.
+- `ComputeID` uses an integer `ruleIndex` but the TF `id` attribute is a string containing the rule
+  name.
+- `pulumi import` error: "inputs to import do not match state".
+
+**Phase to address:**
+Phase 1 (POC — target, remote_credentials, bucket). Phase 2 (full coverage of all composite-ID
+resources). Each resource with a composite ID must have an explicit `ComputeID` AND a `pulumi import`
+round-trip test verifying symmetry.
+
+---
+
+### Pitfall PB3: `secret_access_key` Secret-ness Lost in Bridge State
+
+**What goes wrong:**
+`flashblade_object_store_remote_credentials` has `secret_access_key` marked `Sensitive: true` in the
+TF schema. The bridge auto-promotes TF sensitive fields to Pulumi secrets. However, bridge issue
+[#1028](https://github.com/pulumi/pulumi-terraform-bridge/issues/1028) documents that secret-ness can
+be lost when the bridge writes state between operations — specifically, the field may appear as
+plaintext in the Pulumi state file after an `update` operation that does not re-emit the secret flag.
+
+Additionally, `secret_access_key` is a write-once field: the FlashBlade API returns it on POST but
+never on GET. After the first Read, the value in TF state is whatever was set in config (the provider
+reads from state, not from the API, for write-once fields). This means `AdditionalSecretOutputs` is
+the only guaranteed defense — the bridge's auto-promotion from `Sensitive: true` may not survive
+state round-trips.
+
+**How to avoid:**
+Belt-and-braces approach for ALL sensitive write-once fields:
+
+1. `Fields["secret_access_key"].Secret = tfbridge.True()` in `resources.go`.
+2. `AdditionalSecretOutputs: []string{"secretAccessKey"}` in the `ResourceInfo` (camelCase Pulumi name).
+3. Adopt the Pulumi Write-Only Fields model for `secretAccessKey` per
+   [Pulumi Write-Only Fields docs](https://www.pulumi.com/docs/iac/concepts/secrets/write-only-fields/).
+
+Apply the same pattern to:
+- `flashblade_object_store_remote_credentials.secret_access_key` and `access_key_id`
+- `flashblade_directory_service.bind_password` (LDAP bind credential)
+- `flashblade_certificate.private_key` and `private_key_passphrase`
+- Any field with `Sensitive: true` in the TF schema — audit ALL 28 resources systematically.
+
+**Warning signs:**
+- `pulumi stack export` shows a `secretAccessKey` value in plaintext (not `[secret]`).
+- A `pulumi up` that updates an unrelated field on `remote_credentials` drops the secret flag.
+- `AdditionalSecretOutputs` not set in any `ResourceInfo`.
+
+**Phase to address:**
+Phase 1 (POC — remote_credentials). Write a `resources_test.go` assertion that verifies
+`AdditionalSecretOutputs` is set for every resource containing a sensitive field. Run `pulumi stack
+export` after a `ProgramTest` and grep for any known-sensitive value in plaintext.
+
+---
+
+### Pitfall PB4: State Upgrader `RawState` Distortion for `server` (v0->v1->v2)
+
+**What goes wrong:**
+`flashblade_server` has SchemaVersion 2 with upgraders v0->v1 and v1->v2. When Pulumi reads old TF
+state (e.g., from a stack that was originally managed with the TF provider), the bridge processes the
+raw state through its own schema-aware transformation BEFORE passing it to `UpgradeState`. Bridge
+issue [#1667](https://github.com/pulumi/pulumi-terraform-bridge/issues/1667) documents that this
+pre-transformation can corrupt `RawState` when list attributes (like `dns`, `network_interfaces`,
+`directory_services` — all `types.List` in the server schema) are present. The upgrader receives a
+`req.State` that does not match the `PriorSchema` shape, causing `req.State.Get(ctx, &old)` to fail
+with a type mismatch diagnostic.
+
+This is highest risk for `flashblade_server` (v0->v1->v2, lists at every version) and
+`flashblade_object_store_remote_credentials` (v0->v1, simpler but still has the timeouts block).
+`flashblade_directory_service_role` (v1, fixed in Phase 50.1) is also in scope.
+
+**How to avoid:**
+- Write a `pulumi refresh` round-trip test for each resource with a state upgrader. The test must:
+  1. Create a fake Pulumi state snapshot at the prior schema version (JSON).
+  2. Run `pulumi refresh` with the new provider binary.
+  3. Verify the state upgrades without errors and the resource plan shows 0 diff.
+- If [#1667](https://github.com/pulumi/pulumi-terraform-bridge/issues/1667) is not yet fixed in the
+  pinned bridge version, add explicit `TransformFromState` callbacks in `ResourceInfo` to normalize
+  list fields before the bridge passes them to the TF upgrader.
+- Check the pinned `pulumi-terraform-bridge` version's changelog for #1667 fix status before
+  shipping — if unfixed, flag in release notes.
+
+**Warning signs:**
+- `pulumi refresh` on a stack with an older server state fails with "value is not a valid object type".
+- `req.State.Get(ctx, &old)` in the v0->v1 upgrader returns diagnostics with type errors.
+- The bridge version in `pulumi/go.mod` predates the #1667 fix.
+
+**Phase to address:**
+Phase 2 (full resource coverage). For each resource with SchemaVersion > 0, add a state-snapshot
+based `pulumi refresh` test. High-risk resources: `flashblade_server` (v2), `flashblade_directory_service_role` (v1).
+
+---
+
+### Pitfall PB5: `destroy_eradicate_on_delete` Bool Omitted from Pulumi UX Path
+
+**What goes wrong:**
+`flashblade_bucket` has `destroy_eradicate_on_delete: Optional+Computed, default false`. This is a
+Terraform-specific control attribute — it controls provider behavior, not an API field. When bridged,
+it appears in the Pulumi schema as a normal boolean input. Pulumi users who omit it get `false`
+(safe default). But the risk is user confusion: `pulumi destroy` appears to succeed, but the bucket
+is only soft-deleted. Recreation of a same-named bucket via `pulumi up` will fail 409 until the
+FlashBlade eradication timer expires — typically hours to days depending on array configuration.
+
+**Why it happens:**
+Pulumi does not prompt for confirmation on destroy the way Terraform's `-target` flow does. Users
+may not realize the resource lingers in soft-deleted state on the array.
+
+**How to avoid:**
+- Document `destroyEradicateOnDelete` prominently in the Python/Go SDK generated docs and the
+  hand-written `examples/bucket-py` example.
+- In the `ResourceInfo` for bucket, add a `Docs` override with a warning about soft-delete semantics:
+  "By default, `pulumi destroy` soft-deletes the bucket. Set `destroyEradicateOnDelete=True` to
+  eradicate immediately. Recreation of a soft-deleted bucket with the same name will fail until the
+  array's eradication timer expires."
+- Add a `ProgramTest` that: creates bucket -> destroys -> immediately tries to create same-named
+  bucket -> verifies it fails with a clear 409 error (not a silent hang or timeout).
+
+**Warning signs:**
+- No mention of `destroyEradicateOnDelete` in the generated Python/Go SDK docs.
+- `pulumi destroy` + `pulumi up` with same bucket name fails with 409 and users file a bug.
+- The hand-written `examples/bucket-py` does not show `destroy_eradicate_on_delete=True` as an option.
+
+**Phase to address:**
+Phase 1 (POC — bucket). Add the `Docs` override in Phase 1. Add the recreation smoke test in Phase 2.
+
+---
+
+### Pitfall PB6: `pulumi import` Passes Name as ID — Must Not Pass UUID
+
+**What goes wrong:**
+All FlashBlade `ImportState` implementations identify resources by NAME, not UUID. `req.ID` is the
+name string. The TF UUID (stored as `id` in state) is an array-internal identifier that users never
+see. When the bridge surfaces `pulumi import`, the Pulumi ID becomes the TF ID. The risk is that
+auto-generated SDK documentation says "import using the resource ID" — which users may interpret as
+the UUID from `pulumi stack export`, not the name. They run `pulumi import flashblade:bucket:Bucket
+my-bucket <uuid>` and the `ImportState` handler passes the UUID to `GetBucket(ctx, uuid)` which
+returns 404 (the API's `?names=` filter requires a name, not a UUID).
+
+**How to avoid:**
+Override `DocInfo.ImportDetails` for every resource to explicitly state that the import ID is the
+resource name:
+
+```go
+"flashblade_target": {
+    Tok: tfbridge.MakeResource(mainPkg, "index", "Target"),
+    Docs: &tfbridge.DocInfo{
+        ImportDetails: "Import using the target name: `$ pulumi import flashblade:index:Target my-target my-target-name`",
+    },
+},
+```
+
+Verify that `pulumi import flashblade:index:Target my-target my-target-name` (passing the name as
+both the Pulumi resource name AND the TF import ID) correctly calls `ImportState` with the name.
+Test this for the POC resources: `target`, `bucket`, `remote_credentials`.
+
+**Warning signs:**
+- `pulumi import` using a UUID fails with a "not found" error inside `ImportState`.
+- Generated SDK docs say "Import using the resource ID" without specifying name vs UUID.
+- No `ImportDetails` override in any `ResourceInfo`.
+
+**Phase to address:**
+Phase 1 (POC — target, remote_credentials, bucket). Phase 2 (full coverage): add `ImportDetails`
+to all 28 resources.
+
+---
+
+### Pitfall PB7: `**NamedReference` PATCH Null — Pulumi Null Treated as Omit
+
+**What goes wrong:**
+Several resources use `**NamedReference` in their PATCH structs to distinguish "omit" from "set to
+null" from "set value". In TF, clearing an optional reference means assigning the outer pointer
+non-nil and the inner pointer nil (sends `"ca_cert_group": null` in JSON body). In Pulumi, a user
+who sets the attribute to `None` (Python) or `nil` (Go) triggers an update.
+
+The pitfall: if the bridge translates a Pulumi `null` input as "omit the field" rather than "set to
+null", the PATCH body omits the field entirely (outer pointer stays nil), and the reference is NOT
+cleared on the array — silent no-op. The `pkg/pf` path's handling of `null` vs. absent is less
+tested than the SDK v2 path (bridge issue [#744](https://github.com/pulumi/pulumi-terraform-bridge/issues/744)
+pf epic, general maturity concern).
+
+**How to avoid:**
+- Write a `ProgramTest` for any resource with nullable reference fields that: (1) sets the ref on
+  create, (2) sets it to `None`/`null` on update, (3) reads back and verifies the ref is cleared.
+- If the test fails (null treated as omit), override the field in `ResourceInfo` with a custom
+  `SchemaInfo` that forces the bridge to transmit the null.
+- Priority resources: `flashblade_target` (CA cert group ref), `flashblade_bucket_replica_link`
+  (remote credentials ref), any resource with `Optional: true` `NamedReference` fields.
+
+**Warning signs:**
+- Setting a reference field to `None` in Python SDK causes no change on the array.
+- `pulumi preview` shows the field changing to `null` but `pulumi up` leaves the old value.
+- No `ProgramTest` covers the null-update path for any nullable reference resource.
+
+**Phase to address:**
+Phase 2 (full resource coverage). Identify all resources with `**NamedReference` PATCH fields via
+inspection of `internal/client/models_*.go` and add null-update tests for each affected resource.
+
+---
+
+### Pitfall PB8: `timeouts` Block Leaks into Pulumi Schema or Fails `tfgen` Validation
+
+**What goes wrong:**
+Every FlashBlade resource has a `timeouts` block from `terraform-plugin-framework-timeouts`. The
+bridge's `tfgen` step introspects this as a regular schema attribute. Two failure modes:
+1. `tfgen` emits the `timeouts` block as a Pulumi input attribute (type: object with `create`,
+   `update`, `delete`, `read` string fields). Users see a confusing `timeouts` input in the Python/Go
+   SDK that does nothing at the Pulumi level — Pulumi uses `customTimeouts` option instead.
+2. In some bridge versions, the `timeouts` block's schema shape (complex nested object with duration
+   strings) fails `tfgen` validation, producing a build error that blocks all SDK generation.
+
+**How to avoid:**
+Apply `Fields["timeouts"].Omit = true` in `ResourceInfo` for ALL 28 resources — not just bucket.
+This must be done systematically via a helper, not discovered resource by resource:
+
+```go
+func omitTimeouts() map[string]*tfbridge.SchemaInfo {
+    return map[string]*tfbridge.SchemaInfo{
+        "timeouts": {Omit: true},
+    }
+}
+// Then in each ResourceInfo:
+"flashblade_target": {Fields: omitTimeouts()},
+"flashblade_server": {Fields: omitTimeouts()},
+// etc.
+```
+
+Verify by running `make tfgen` and asserting:
+```bash
+jq '[.resources | to_entries[] | select(.value.inputProperties.timeouts != null)] | length' schema.json
+# must output: 0
+```
+
+Add this assertion to `resources_test.go`.
+
+**Warning signs:**
+- `schema.json` contains `"timeouts"` as an input property on any resource.
+- `make tfgen` exits with a validation error mentioning duration string parsing.
+- Python SDK generates a `timeouts` parameter on any resource constructor.
+
+**Phase to address:**
+Phase 1 (ProviderInfo scaffold — before first `make tfgen` run). The `omitTimeouts()` helper must
+exist before any `ResourceInfo` is written to prevent the "fix it resource by resource" trap.
+
+---
+
+### Pitfall PB9: Python SDK Name Collision on `target` and `server` Module Tokens
+
+**What goes wrong:**
+`flashblade_target` and `flashblade_server` are mapped to module tokens by `MustComputeTokens`. If
+the default tokenization assigns them to modules named `target` and `server`, the Python SDK generates:
+
+```python
+# sdk/python/pulumi_flashblade/target/target.py  — module name == class name
+from pulumi_flashblade import target
+target.Target(...)
+```
+
+This is a Python anti-pattern where the module and the class share the same name. In Python, after
+`from pulumi_flashblade import target`, the name `target` refers to the module — importing the class
+requires `target.Target(...)`, which works, but user code that does `import target` collides with a
+common local variable name. Additionally, `server.Server` has the same issue.
+
+**How to avoid:**
+- Use `KnownModules` with differentiated module names, or place singleton/ambiguous resources into
+  the flat `"index"` module:
+  - `flashblade_target` -> `flashblade:index:Target` (flat index, no module collision)
+  - `flashblade_server` -> `flashblade:index:Server`
+- After first `make generate_python`, inspect `sdk/python/pulumi_flashblade/` for directories where
+  `__init__.py` exports a class with the same name as the directory.
+- Token structure changes are breaking changes for SDK users — lock the structure in Phase 1 before
+  any alpha release.
+
+**Warning signs:**
+- `sdk/python/pulumi_flashblade/target/` directory contains `target.py`.
+- `sdk/python/pulumi_flashblade/server/` directory contains `server.py`.
+- `make generate_python` does not warn about this — inspection is manual.
+
+**Phase to address:**
+Phase 1 (ProviderInfo scaffold — `MustComputeTokens` configuration). Token structure must be locked
+before any SDK generation or alpha release.
+
+---
+
+### Pitfall PB10: Stale `bridge-metadata.json` Embedded After `resources.go` Changes
+
+**What goes wrong:**
+`bridge-metadata.json` is generated by `make tfgen`, committed to the repo, and embedded via
+`//go:embed` in the runtime binary. It encodes schema mapping metadata (tokens, aliases, computed
+IDs). If a developer changes `resources.go` (adds a resource, modifies a `ComputeID`, changes a
+token) but does not re-run `make tfgen` before committing, the embedded metadata is stale. The
+runtime plugin uses the old metadata to serve resource RPCs:
+- New resources are unavailable in Pulumi programs.
+- Modified `ComputeID` callbacks are ignored (old ID format used).
+- SDK users get an old `schema.json` that does not match the live provider binary.
+
+This is a CI consistency problem — it bites during development when PRs are merged without running
+`make tfgen`.
+
+**How to avoid:**
+- Add a CI gate in `pull-request.yml` that runs `make tfgen` then:
+  ```bash
+  git diff --exit-code provider/cmd/pulumi-resource-flashblade/schema.json
+  git diff --exit-code provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
+  ```
+  Fail the PR if either file has uncommitted changes.
+- The `prerequisites.yml` workflow generated by `ci-mgmt` already does this — ensure it is not
+  bypassed via `[skip ci]` or direct pushes to main.
+- Add to the local `Makefile`: `check-schema: make tfgen && git diff --exit-code ...` target.
+- Never run `go build ./provider/cmd/pulumi-resource-flashblade/...` without `make tfgen` first.
+
+**Warning signs:**
+- `schema.json` in the repo has a different resource count than `resources.go` has entries.
+- `pulumi plugin inspect flashblade` shows an old resource list after `make provider`.
+- A new resource added to `resources.go` is not visible in the Python SDK after `make build_sdks`.
+
+**Phase to address:**
+Phase 1 (CI setup — `prerequisites.yml` and Makefile). Must be enforced before any resource coverage
+work, or the stale-embed trap will be hit on every PR in Phase 2.
+
+---
+
+## Pulumi Bridge — Technical Debt Patterns
+
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| `timeouts` omit only on bucket | Saves 30 seconds | All other 27 resources leak a useless `timeouts` input to SDK users | Never — apply via helper to all resources |
+| Copy `policy_name:rule_index` from pulumi-bridge.md Section 10.3 | Fast `ComputeID` draft | Mismatches actual ID format (`policy_name/rule_name`); `pulumi import` fails | Never — read `readIntoState` first |
+| Skip `AdditionalSecretOutputs`, rely on `Sensitive: true` auto-promotion only | No extra code | Secret-ness lost on state update (#1028); credentials in plaintext state | Never for write-once secrets |
+| Skip `DeleteTimeout`, rely on user setting `customTimeouts` | Simpler `resources.go` | Default 5-minute context kills bucket eradication polling; obscure "context canceled" error | Never for soft-delete resources |
+| Build SDKs without running `make tfgen` first | Faster local iteration | Stale schema embedded in binary; divergence caught only at runtime | Never in CI |
+| Use same module name as resource class (e.g., `target.Target`) | Auto-tokenization default | Python import confusion; token changes are breaking SDK changes if caught late | Never — use differentiated or flat index tokens |
+
+---
+
+## Pulumi Bridge — Integration Gotchas
+
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| `pulumi import` for FlashBlade resources | Pass UUID as import ID | FlashBlade `ImportState` uses resource NAME — pass the name as the Pulumi import ID; override `DocInfo.ImportDetails` |
+| Soft-delete + `pulumi destroy` | Trust Pulumi 5-minute destroy timeout | Set `DeleteTimeout: 30*time.Minute` in `ResourceInfo`; document `customTimeouts` for extra-large buckets |
+| `ComputeID` for policy rules | Copy the `:` separator from generic bridge docs | Actual TF ID uses `/` separator (`policy_name/rule_name`); membership uses `role_name/policy_name` (role FIRST) |
+| `bridge-metadata.json` in CI | Build provider binary directly | Always run `make tfgen` before `make provider`; CI must diff schema + metadata files |
+| Nullable reference fields (`**NamedReference`) | Trust Pulumi null propagates to TF null PATCH | Verify with a `ProgramTest` that sets ref then sets to null; `pkg/pf` null handling is less tested than SDK v2 |
+| Python SDK module naming | Accept `MustComputeTokens` defaults | Inspect `sdk/python/` after first `make generate_python` for `target/target.py`-style collisions |
+
+---
+
+## Pulumi Bridge — "Looks Done But Isn't" Checklist
+
+- [ ] **All 28 resources have `timeouts` omitted:** Verify with `jq '[.resources | to_entries[] | select(.value.inputProperties.timeouts != null)] | length == 0' schema.json`.
+- [ ] **All soft-delete resources have `DeleteTimeout: 30*time.Minute`:** `resources_test.go` asserts `DeleteTimeout >= 25m` for `flashblade_bucket` and `flashblade_filesystem`.
+- [ ] **All composite-ID resources have `ComputeID`:** `resources_test.go` asserts no resource with a `/`-composite TF ID is missing a `ComputeID` override.
+- [ ] **All sensitive fields have `AdditionalSecretOutputs`:** `resources_test.go` scans all resources for `Sensitive: true` TF fields and asserts corresponding camelCase Pulumi name appears in `AdditionalSecretOutputs`.
+- [ ] **`bridge-metadata.json` is fresh:** CI `git diff --exit-code` gate passes on every PR.
+- [ ] **`pulumi import` works for POC resources:** ProgramTest or manual test verifies create -> import -> preview (0 diff) for `target`, `remote_credentials`, `bucket`.
+- [ ] **`pulumi destroy` on bucket completes within DeleteTimeout:** ProgramTest includes a bucket with `destroyEradicateOnDelete=true` and verifies destroy completes without timeout error.
+- [ ] **State upgraders survive `pulumi refresh`:** For `flashblade_server` (v2) and `flashblade_directory_service_role` (v1), a fake prior-version state snapshot is tested via `pulumi refresh` without errors.
+- [ ] **Python SDK has no `module.Module` naming collision:** `sdk/python/pulumi_flashblade/` inspected for directories where the class name equals the directory name.
+- [ ] **Nullable ref fields cleared correctly:** For each resource with `**NamedReference` PATCH fields, a test verifies setting to `null` in Pulumi actually clears the ref on the array (not a no-op).
+
+---
+
+## Pulumi Bridge — Pitfall-to-Phase Mapping
+
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| PB1: Bucket delete timeout truncation | Phase 1 — ProviderInfo scaffold | `resources_test.go`: `DeleteTimeout >= 25m` for soft-delete resources |
+| PB2: Composite ID asymmetry | Phase 1 (POC 3 resources); Phase 2 (full coverage) | `pulumi import` round-trip test per composite-ID resource |
+| PB3: `secret_access_key` secret-ness lost | Phase 1 — POC (remote_credentials) | `pulumi stack export` grep for plaintext sensitive values |
+| PB4: State upgrader RawState distortion | Phase 2 — full resource coverage | `pulumi refresh` with prior-version state snapshot for server + dsr_role |
+| PB5: Soft-delete UX confusion in Pulumi | Phase 1 (bucket POC); Phase 2 (docs) | Hand-written bucket example shows `destroyEradicateOnDelete`; ProgramTest recreates same-name bucket |
+| PB6: Import ID = name, not UUID | Phase 1 (POC); Phase 2 (all 28 resources) | `DocInfo.ImportDetails` on every resource; import test for POC 3 + all 28 |
+| PB7: Nullable ref null treated as omit | Phase 2 — full coverage | ProgramTest: set ref -> update to null -> verify array cleared |
+| PB8: `timeouts` block in Pulumi schema | Phase 1 — before first `make tfgen` | `jq` assertion on `schema.json` + `resources_test.go` |
+| PB9: Python `target.Target` name collision | Phase 1 — `MustComputeTokens` config | Inspect `sdk/python/` directory structure after first `make generate_python` |
+| PB10: Stale `bridge-metadata.json` | Phase 1 — CI setup | CI `git diff --exit-code` on schema + metadata files on every PR |
+
+---
+
+## Sources (Pulumi Bridge additions)
+
+- [pulumi-terraform-bridge #1652 — timeout propagation bugs](https://github.com/pulumi/pulumi-terraform-bridge/issues/1652) — MEDIUM confidence (issue open, workaround = explicit `DeleteTimeout`)
+- [pulumi-terraform-bridge #1028 — secret bits lost in nested structs](https://github.com/pulumi/pulumi-terraform-bridge/issues/1028) — MEDIUM confidence
+- [pulumi-terraform-bridge #1667 — RawState distortion in `pkg/pf`](https://github.com/pulumi/pulumi-terraform-bridge/issues/1667) — MEDIUM confidence
+- [pulumi-terraform-bridge #2272 — import input mismatch](https://github.com/pulumi/pulumi-terraform-bridge/issues/2272) — MEDIUM confidence
+- [pulumi-terraform-bridge #2428 — SchemaVersion handling](https://github.com/pulumi/pulumi-terraform-bridge/issues/2428) — MEDIUM confidence (noted as fixed; verify in pinned version)
+- [Pulumi Write-Only Fields](https://www.pulumi.com/docs/iac/concepts/secrets/write-only-fields/) — HIGH confidence (official docs)
+- [Pulumi customTimeouts option](https://www.pulumi.com/docs/iac/concepts/resources/options/customtimeouts/) — HIGH confidence (official docs)
+- `internal/provider/bucket_resource.go` — actual Delete timeout = 30 min; two-phase via `DestroyAndEradicateBucket` with `pollUntilGone`
+- `internal/provider/remote_credentials_resource.go` — `secret_access_key` Sensitive=true; v0->v1 upgrader adds `target_name`
+- `internal/provider/object_store_access_policy_rule_resource.go` — ID = `policyName + "/" + ruleName` (slash, not colon)
+- `internal/provider/management_access_policy_directory_service_role_membership_resource.go` — ID = `role_name + "/" + policy_name` (role FIRST; policy names contain colons)
+- `internal/provider/server_resource.go` — SchemaVersion 2; upgraders v0->v1->v2; list attributes (`dns`, `network_interfaces`, `directory_services`) at every version
+- `pulumi-bridge.md` Section 10 — source of known bridge issues; this section enriches with provider-specific incidents and corrects the `:` vs `/` composite ID example
+
+---
+
+*Updated: 2026-04-21 — Added Pulumi Bridge milestone pitfalls PB1-PB10 for pulumi-2.22.3*
