@@ -108,49 +108,47 @@
 
 ## Traceability
 
-*(Populated by gsd-roadmapper when ROADMAP.md is created.)*
-
 | REQ-ID | Phase | Status | Commit(s) |
 |---|---|---|---|
-| BRIDGE-01 | — | pending | — |
-| BRIDGE-02 | — | pending | — |
-| BRIDGE-03 | — | pending | — |
-| BRIDGE-04 | — | pending | — |
-| BRIDGE-05 | — | pending | — |
-| MAPPING-01 | — | pending | — |
-| MAPPING-02 | — | pending | — |
-| MAPPING-03 | — | pending | — |
-| MAPPING-04 | — | pending | — |
-| MAPPING-05 | — | pending | — |
-| COMPOSITE-01 | — | pending | — |
-| COMPOSITE-02 | — | pending | — |
-| COMPOSITE-03 | — | pending | — |
-| COMPOSITE-04 | — | pending | — |
-| SECRETS-01 | — | pending | — |
-| SECRETS-02 | — | pending | — |
-| SECRETS-03 | — | pending | — |
-| SOFTDELETE-01 | — | pending | — |
-| SOFTDELETE-02 | — | pending | — |
-| SOFTDELETE-03 | — | pending | — |
-| UPGRADE-01 | — | pending | — |
-| UPGRADE-02 | — | pending | — |
-| UPGRADE-03 | — | pending | — |
-| SDK-01 | — | pending | — |
-| SDK-02 | — | pending | — |
-| SDK-03 | — | pending | — |
-| SDK-04 | — | pending | — |
-| CI-01 | — | pending | — |
-| CI-02 | — | pending | — |
-| CI-03 | — | pending | — |
-| RELEASE-01 | — | pending | — |
-| RELEASE-02 | — | pending | — |
-| RELEASE-03 | — | pending | — |
-| TEST-01 | — | pending | — |
-| TEST-02 | — | pending | — |
-| TEST-03 | — | pending | — |
-| DOCS-01 | — | pending | — |
-| DOCS-02 | — | pending | — |
-| DOCS-03 | — | pending | — |
-| DOCS-04 | — | pending | — |
+| BRIDGE-01 | Phase 54 | pending | — |
+| BRIDGE-02 | Phase 54 | pending | — |
+| BRIDGE-03 | Phase 54 | pending | — |
+| BRIDGE-04 | Phase 54 | pending | — |
+| BRIDGE-05 | Phase 54 | pending | — |
+| MAPPING-01 | Phase 55 | pending | — |
+| MAPPING-02 | Phase 54 | pending | — |
+| MAPPING-03 | Phase 54 | pending | — |
+| MAPPING-04 | Phase 55 | pending | — |
+| MAPPING-05 | Phase 54 | pending | — |
+| COMPOSITE-01 | Phase 54 | pending | — |
+| COMPOSITE-02 | Phase 55 | pending | — |
+| COMPOSITE-03 | Phase 55 | pending | — |
+| COMPOSITE-04 | Phase 55 | pending | — |
+| SECRETS-01 | Phase 54 | pending | — |
+| SECRETS-02 | Phase 54 | pending | — |
+| SECRETS-03 | Phase 55 | pending | — |
+| SOFTDELETE-01 | Phase 54 | pending | — |
+| SOFTDELETE-02 | Phase 55 | pending | — |
+| SOFTDELETE-03 | Phase 55 | pending | — |
+| UPGRADE-01 | Phase 55 | pending | — |
+| UPGRADE-02 | Phase 55 | pending | — |
+| UPGRADE-03 | Phase 55 | pending | — |
+| SDK-01 | Phase 56 | pending | — |
+| SDK-02 | Phase 56 | pending | — |
+| SDK-03 | Phase 56 | pending | — |
+| SDK-04 | Phase 56 | pending | — |
+| CI-01 | Phase 57 | pending | — |
+| CI-02 | Phase 57 | pending | — |
+| CI-03 | Phase 57 | pending | — |
+| RELEASE-01 | Phase 58 | pending | — |
+| RELEASE-02 | Phase 58 | pending | — |
+| RELEASE-03 | Phase 58 | pending | — |
+| TEST-01 | Phase 54 | pending | — |
+| TEST-02 | Phase 58 | pending | — |
+| TEST-03 | Phase 58 | pending | — |
+| DOCS-01 | Phase 58 | pending | — |
+| DOCS-02 | Phase 58 | pending | — |
+| DOCS-03 | Phase 58 | pending | — |
+| DOCS-04 | Phase 58 | pending | — |
 
-**Total: 39 requirements across 10 categories.**
+**Total: 39 requirements across 10 categories — 100% mapped (0 orphans).**

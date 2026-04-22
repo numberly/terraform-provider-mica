@@ -16,6 +16,7 @@
 - ✅ v2.22.1 Directory Service – Array Management (Phases 49-49) -- shipped 2026-04-17 — [archive](milestones/v2.22.1-ROADMAP.md)
 - ✅ v2.22.2 Directory Service Roles & Role Mappings (Phases 50, 50.1) -- shipped 2026-04-17 — [archive](milestones/v2.22.2-ROADMAP.md)
 - ✅ v2.22.3 Convention Compliance (Phases 51-53) -- shipped 2026-04-20 — [archive](milestones/v2.22.3-ROADMAP.md)
+- pulumi-2.22.3 Pulumi Bridge Alpha (Phases 54-58) -- in progress
 
 ## Phases
 
@@ -775,6 +776,97 @@ Full details archived at [milestones/v2.22.2-ROADMAP.md](milestones/v2.22.2-ROAD
 
 ---
 
+<details>
+<summary>✅ v2.22.3 Convention Compliance (Phases 51-53) — SHIPPED 2026-04-20</summary>
+
+Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROADMAP.md).
+
+- [x] Phase 51: Critical Pointer & Schema Fixes (completed 2026-04-20)
+- [x] Phase 52: Important Conformance (completed 2026-04-20)
+- [x] Phase 53: Cosmetic Hygiene (completed 2026-04-20)
+</details>
+
 ---
 
-_Last updated: 2026-04-20 — milestone v2.22.3 shipped_
+<details>
+<summary>pulumi-2.22.3 Pulumi Bridge Alpha (Phases 54-58) — IN PROGRESS</summary>
+
+## Phase Details
+
+### Phase 54: Bridge Bootstrap + POC (3 Resources)
+**Goal**: The Pulumi bridge scaffold compiles and the full chain — `pf.ShimProvider` → `make tfgen` → schema emission → `resources_test.go` green — is validated on 3 representative resources (target, remote_credentials, bucket)
+**Depends on**: Phase 53 (v2.22.3 complete, 779 tests baseline)
+**Requirements**: BRIDGE-01, BRIDGE-02, BRIDGE-03, BRIDGE-04, BRIDGE-05, COMPOSITE-01, SECRETS-01, SECRETS-02 (partial: 3 POC resources), SOFTDELETE-01, MAPPING-02, MAPPING-03, MAPPING-05, TEST-01
+**Success Criteria** (what must be TRUE):
+  1. `cd pulumi/provider && go build ./...` and `cd pulumi/sdk/go && go build ./...` exit 0 — both modules compile with pinned bridge v3.127.0 + replace directives
+  2. `make tfgen` runs to completion and emits `schema.json`, `schema-embed.json`, `bridge-metadata.json` in `pulumi/provider/cmd/pulumi-resource-flashblade/`; no `MISSING` token warnings for target, remote_credentials, or bucket
+  3. `resources_test.go` assertions pass: bucket `DeleteTimeout >= 25*time.Minute`, no `timeouts` input in any resource schema, `api_token` is secret in provider config
+  4. `pulumi import flashblade:index:ObjectStoreAccessPolicyRule my-rule 'mypolicy/myrulename'` round-trip succeeds (COMPOSITE-01 validation)
+  5. `pulumi stack export` for a remote_credentials resource shows `secret_access_key` value is secret (not plaintext)
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 55: Full Mapping — 28 Resources + 21 Data Sources
+**Goal**: All 49 TF resources and data sources have valid Pulumi tokens, all 4 composite-ID overrides are in place, full secrets coverage is applied, and state-upgrader smoke tests pass for the 3 affected resources
+**Depends on**: Phase 54 (bridge compiles, POC pattern validated)
+**Requirements**: MAPPING-01, MAPPING-04, COMPOSITE-02, COMPOSITE-03, COMPOSITE-04, SECRETS-02 (complete), SECRETS-03, SOFTDELETE-02, SOFTDELETE-03, UPGRADE-01, UPGRADE-02, UPGRADE-03
+**Success Criteria** (what must be TRUE):
+  1. `make tfgen` reports zero `MISSING` tokens across all 28 resources + 21 data sources; `MustComputeTokens` + `KnownModules` covers ~90% automatically
+  2. `resources_test.go` asserts `len(Resources) == 28` and `len(DataSources) == 21`; every field with `Sensitive: true` in the TF schema maps to a Pulumi Secret (SECRETS-03 auto-mapping test)
+  3. `pulumi import` round-trip succeeds for all 4 composite-ID resources using `/`-separated IDs, including a test with a colon-containing policy name (`pure:policy/array_admin`)
+  4. `pulumi refresh` smoke tests pass for `flashblade_server` (v0→v1→v2), `flashblade_directory_service_role` (v0→v1), and `flashblade_remote_credentials` (v0→v1) using pre-captured v0/v1 state snapshots
+  5. `schema.json`, `schema-embed.json`, `bridge-metadata.json` are committed; `git diff --exit-code` on these 3 files exits 0 after `make tfgen`
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 56: SDK Generation — Python + Go
+**Goal**: A working Python wheel and a compilable Go SDK module are generated from the committed schema, with CI artifact flow wired
+**Depends on**: Phase 55 (all tokens valid, schema committed)
+**Requirements**: SDK-01, SDK-02, SDK-03, SDK-04
+**Success Criteria** (what must be TRUE):
+  1. `make generate_python` produces `pulumi/sdk/python/` with `pulumi_flashblade` import path; `python -m build` exits 0 and emits a `.whl` file
+  2. `make generate_go` produces `pulumi/sdk/go/` under `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`; `cd pulumi/sdk/go && go build ./...` exits 0
+  3. `schema.json` and `schema-embed.json` are the committed files — SDK gen does not regenerate them (CI diff gate confirms 0 changes)
+  4. No `generate_nodejs`, `generate_dotnet`, or `generate_java` Makefile targets exist (TypeScript/C#/Java explicitly out of scope)
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 57: CI Pipeline
+**Goal**: A `pulumi-ci.yml` workflow runs automatically on PRs touching `./pulumi/**`, enforces the schema drift gate, and does not touch any existing TF provider workflows
+**Depends on**: Phase 56 (SDK gen targets exist and work)
+**Requirements**: CI-01, CI-02, CI-03
+**Success Criteria** (what must be TRUE):
+  1. A PR modifying any file under `./pulumi/` triggers `pulumi-ci.yml`; the workflow runs `make tfgen`, uploads schema-embed.json as artifact, then builds provider + SDKs in parallel jobs
+  2. Introducing a manual edit to `schema.json` in a PR causes `pulumi-ci.yml` to fail with a non-zero exit on the `git diff --exit-code` step (schema drift gate enforced)
+  3. Merging a TF-provider-only PR (touching `./internal/**` only) does NOT trigger `pulumi-ci.yml`; the existing TF CI workflow still passes unchanged
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 58: Release Pipeline + Docs
+**Goal**: The `pulumi-2.22.3` tag produces cosign-signed plugin binaries and a Python wheel on GitHub Releases; consumer onboarding is documented; 6 ProgramTest examples exist
+**Depends on**: Phase 57 (CI pipeline green)
+**Requirements**: RELEASE-01, RELEASE-02, RELEASE-03, TEST-02, TEST-03, DOCS-01, DOCS-02, DOCS-03, DOCS-04
+**Success Criteria** (what must be TRUE):
+  1. Pushing tag `pulumi-2.22.3` triggers `pulumi-release.yml`; GitHub Release `pulumi-2.22.3` contains 5 signed platform archives (`pulumi-resource-flashblade-v2.22.3-{os}-{arch}.tar.gz`) and a `.whl` file; cosign signatures are attached
+  2. `pulumi plugin install resource flashblade v2.22.3 --server github://api.github.com/numberly` succeeds from a consumer machine with no local build; `pulumi up` on a Python consumer program referencing `pulumi_flashblade` imports and runs
+  3. `git tag sdk/go/v2.22.3` exists and `go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3` resolves (with `GOPRIVATE=github.com/numberly/*`)
+  4. `./pulumi/examples/` contains 6 working directories (`target-py/`, `target-go/`, `remote_credentials-py/`, `remote_credentials-go/`, `bucket-py/`, `bucket-go/`), each with a valid `Pulumi.yaml` and main program
+  5. `./pulumi/README.md` documents GOPRIVATE setup, plugin install URL, wheel install URL, `customTimeouts` for soft-delete, and composite ID import syntax
+**Plans**: TBD
+**UI hint**: no
+
+</details>
+
+## Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 54. Bridge Bootstrap + POC (3 Resources) | 0/? | Not started | - |
+| 55. Full Mapping — 28 Resources + 21 Data Sources | 0/? | Not started | - |
+| 56. SDK Generation — Python + Go | 0/? | Not started | - |
+| 57. CI Pipeline | 0/? | Not started | - |
+| 58. Release Pipeline + Docs | 0/? | Not started | - |
+
+---
+
+_Last updated: 2026-04-21 — milestone pulumi-2.22.3 roadmap created (Phases 54-58, 39 requirements)_

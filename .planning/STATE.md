@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: pulumi-2.22.3
 milestone_name: "Pulumi Bridge Alpha"
-status: "defining-requirements"
-stopped_at: "Milestone pulumi-2.22.3 started"
+status: "roadmap-ready"
+stopped_at: "Phase 54 — Bridge Bootstrap + POC (3 Resources)"
 last_updated: "2026-04-21T00:00:00.000Z"
-last_activity: 2026-04-21 — Milestone pulumi-2.22.3 started (defining requirements)
+last_activity: 2026-04-21 — Roadmap created (5 phases, 39 requirements, 100% coverage)
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,15 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-21)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** pulumi-2.22.3 — Bridge the FlashBlade TF provider to Pulumi (Python + Go, private distribution).
+**Current focus:** pulumi-2.22.3 — Bridge the FlashBlade TF provider to Pulumi (Python + Go, private distribution via GitHub Releases).
 
 ## Current Position
 
 Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha)
-Phase: Not started (defining requirements)
+Phase: 54 — Bridge Bootstrap + POC (3 Resources)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-21 — Milestone pulumi-2.22.3 started
+Status: Not started
+Last activity: 2026-04-21 — Roadmap created
+
+Progress: [░░░░░░░░░░] 0% (0/5 phases)
 
 ## Recent Milestones
 
@@ -39,18 +41,31 @@ Last activity: 2026-04-21 — Milestone pulumi-2.22.3 started
 
 ## Accumulated Context
 
-### Key Decisions
+### Key Decisions (pulumi-2.22.3)
 
-Full project decision log in `.planning/PROJECT.md`. Highlights across recent milestones:
+- **Module path:** `github.com/numberly/opentofu-provider-flashblade` (TF provider root). Bridge modules: `./pulumi/provider/` and `./pulumi/sdk/go/` each with own `go.mod`; TF provider wired via `replace ../../`.
+- **Bridge versions:** `pulumi-terraform-bridge/v3 v3.127.0`, `pulumi/sdk/v3 v3.231.0`, `pulumi/pkg/v3 v3.231.0`. Replace SHA: `v2.0.0-20260318212141-5525259d096b`.
+- **Schema commit policy:** `schema.json`, `schema-embed.json`, `bridge-metadata.json` committed to git. CI enforces `git diff --exit-code` after `make tfgen`.
+- **Secrets pattern:** `Secret: tfbridge.True()` + `AdditionalSecretOutputs` belt-and-braces (Write-Only Fields pattern deferred).
+- **Composite IDs:** All 4 composite resources use `/` separator with string IDs (NOT colon + integer). Verified against `readIntoState` in `internal/provider/`.
+- **No SetAutonaming:** Storage names are operational identifiers — no random suffix.
+- **Soft-delete defense:** `DeleteTimeout: 30*time.Minute` on bucket + filesystem (bridge default 5min kills `pollUntilGone`).
+- **SDK scope:** Python + Go only. No TS, C#, Java. No PyPI, npm, NuGet, Pulumi Registry.
+- **Distribution:** GitHub Releases private. Go SDK via git tag `sdk/go/vX.Y.Z` + `GOPRIVATE`. Python SDK via `.whl` attached to release.
 
-- v2.22.3: CONVENTIONS.md §Pointer rules formalized with three exception classes (POST `*bool`/`*int64` for non-zero API defaults, `*[]T` for PATCH slices, "always send" carve-out for `NetworkInterfacePatch`). `doublePointerRefForPatch` helper becomes the canonical pattern for all `**NamedReference` PATCH call sites. Identity state upgraders (`type(oldState)` conversion) are the standard when only wire format changes.
-- v2.22.2: DSR name user-supplied via `?names=` (D-03 superseded post-50.1); composite ID for DSRM membership uses `/` not `:` because role names can contain `:` (e.g. `pure:policy/array_admin`).
-- v2.22.1: Directory Service Management is a singleton resource; `bind_password` Sensitive write-only; Delete is full-reset PATCH (no DELETE endpoint).
+### Critical Pitfalls (pre-mitigated by phase design)
+
+- **PB1 (CRITICAL):** Default 5-min `DeleteTimeout` kills `pollUntilGone` → mitigated in Phase 54 (SOFTDELETE-01) and Phase 55 (SOFTDELETE-02/03).
+- **PB2 (CRITICAL):** Wrong composite ID separator → all `ComputeID` implementations must read `readIntoState` first. `/` separator, string rule names.
+- **PB3 (HIGH):** Secret-ness lost on state update → `Secret: tfbridge.True()` + `AdditionalSecretOutputs` on all 6 sensitive fields.
+- **PB4 (MEDIUM):** Replace SHA coupled to bridge version → must re-verify SHA on every bridge bump.
+- **PB5 (HIGH):** Go SDK `go get` requires `sdk/go/vX.Y.Z` tag in addition to release tag → post-goreleaser step in `pulumi-release.yml`.
+- **PB7 (MEDIUM):** `timeouts {}` leaks into SDK → `omitTimeoutsOnAll` helper applied BEFORE first `make tfgen`.
 
 ### Open Blockers
 
-_(none)_
+_(none — 3 open questions from research resolved via REQUIREMENTS.md decisions: module path = numberly, schema committed, Write-Only Fields deferred)_
 
 ## Next Steps
 
-Research (4 parallel agents) → REQUIREMENTS.md → ROADMAP.md → `/gsd:discuss-phase [N]` on first phase.
+Run `/gsd:plan-phase 54` to plan the Bridge Bootstrap + POC phase.
