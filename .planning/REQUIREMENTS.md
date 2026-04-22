@@ -81,15 +81,15 @@
 
 ### RELEASE — Private release pipeline
 
-- [ ] **RELEASE-01**: `./pulumi/.goreleaser.pulumi.yml` builds `pulumi-resource-flashblade` for 6 platforms (linux/darwin/windows × amd64/arm64), signs with cosign (reusing the existing cosign pattern), and emits archives named `pulumi-resource-flashblade-v{VERSION}-{os}-{arch}.tar.gz` (required by Pulumi CLI plugin install).
-- [ ] **RELEASE-02**: `./.github/workflows/pulumi-release.yml` triggers on `pulumi-*` git tag push, runs the full pipeline (`make tfgen` → goreleaser → Python wheel build → attach wheel as release asset), and in a post-release step creates + pushes a `sdk/go/vX.Y.Z` tag matching the Pulumi release version (required for `go get` resolution on the Go SDK sub-module).
-- [ ] **RELEASE-03**: Release `pulumi-2.22.3` (or chosen alpha tag) is published with cosign-signed plugin binaries, `.whl` Python SDK, and `sdk/go/v2.22.3` tag pushed. Smoke test from an external project succeeds: `pulumi plugin install resource flashblade v2.22.3 --server github://api.github.com/numberly` + Python + Go consumer code compiles.
+- [x] **RELEASE-01**: `./pulumi/.goreleaser.pulumi.yml` builds `pulumi-resource-flashblade` for 6 platforms (linux/darwin/windows × amd64/arm64), signs with cosign (reusing the existing cosign pattern), and emits archives named `pulumi-resource-flashblade-v{VERSION}-{os}-{arch}.tar.gz` (required by Pulumi CLI plugin install).
+- [x] **RELEASE-02**: `./.github/workflows/pulumi-release.yml` triggers on `pulumi-*` git tag push, runs the full pipeline (`make tfgen` → goreleaser → Python wheel build → attach wheel as release asset), and in a post-release step creates + pushes a `sdk/go/vX.Y.Z` tag matching the Pulumi release version (required for `go get` resolution on the Go SDK sub-module).
+- [x] **RELEASE-03**: Release `pulumi-2.22.3` (or chosen alpha tag) is published with cosign-signed plugin binaries, `.whl` Python SDK, and `sdk/go/v2.22.3` tag pushed. Smoke test from an external project succeeds: `pulumi plugin install resource flashblade v2.22.3 --server github://api.github.com/numberly` + Python + Go consumer code compiles.
 
 ### TEST — Bridge layer tests
 
 - [x] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 28`); (b) every TF data source is mapped (`len(DataSources) == 21`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) soft-delete resources are registered (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
 - [ ] **TEST-02**: ProgramTest examples pass against a real FlashBlade for 3 representative resources: `target` (auto-tokenization baseline), `remote_credentials` (secrets), `bucket` (soft-delete + 30-min timeout). One example per target language (so: `target-py`, `target-go`, `remote_credentials-py`, `remote_credentials-go`, `bucket-py`, `bucket-go` — 6 examples total).
-- [ ] **TEST-03**: `pulumi import` round-trip test passes for each composite-ID resource (see COMPOSITE-01/02/03/04). Tests written as ProgramTests or standalone scripts invoking `pulumi import` + `pulumi refresh` + assert no drift.
+- [x] **TEST-03**: `pulumi import` round-trip test passes for each composite-ID resource (see COMPOSITE-01/02/03/04). Tests written as ProgramTests or standalone scripts invoking `pulumi import` + `pulumi refresh` + assert no drift.
 
 ### DOCS — Documentation + examples
 
@@ -142,12 +142,12 @@
 | CI-01 | Phase 57 | Complete | 7ceb2cf |
 | CI-02 | Phase 57 | Complete | 7ceb2cf |
 | CI-03 | Phase 57 | Complete | 7ceb2cf |
-| RELEASE-01 | Phase 58 | pending | — |
-| RELEASE-02 | Phase 58 | pending | — |
-| RELEASE-03 | Phase 58 | pending | — |
+| RELEASE-01 | Phase 58 | Complete | — |
+| RELEASE-02 | Phase 58 | Complete | — |
+| RELEASE-03 | Phase 58 | Complete | — |
 | TEST-01 | Phase 54 | Complete | — |
 | TEST-02 | Phase 58 | pending | — |
-| TEST-03 | Phase 58 | pending | — |
+| TEST-03 | Phase 58 | Complete | — |
 | DOCS-01 | Phase 58 | pending | — |
 | DOCS-02 | Phase 58 | pending | — |
 | DOCS-03 | Phase 58 | pending | — |

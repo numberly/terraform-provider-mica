@@ -814,7 +814,7 @@ Plans:
 - [x] 58-01-PLAN.md — GoReleaser config + release workflow
 - [x] 58-02-PLAN.md — 6 ProgramTest examples (target/remote_credentials/bucket × py/go)
 - [ ] 58-03-PLAN.md — README.md + CHANGELOG.md + Makefile docs target
-- [ ] 58-04-PLAN.md — Composite ID import tests + example validation
+- [x] 58-04-PLAN.md — Composite ID import tests + example validation
 **UI hint**: no
 
 ### Phase 55: Full Mapping — 28 Resources + 21 Data Sources
@@ -884,7 +884,7 @@ Plans:
 | 55. Full Mapping — 28 Resources + 21 Data Sources | 2/2 | Complete    | 2026-04-22 |
 | 56. SDK Generation — Python + Go | 3/3 | Complete   | 2026-04-22 |
 | 57. CI Pipeline | 1/1 | Complete | 2026-04-22 |
-| 58. Release Pipeline + Docs | 2/4 | In Progress|  |
+| 58. Release Pipeline + Docs | 3/4 | In Progress|  |
 
 ---
 

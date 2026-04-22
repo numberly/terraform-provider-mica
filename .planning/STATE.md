@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-22T15:23:18.575Z"
+last_updated: "2026-04-22T15:26:59.327Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
   percent: 100
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-21)
 
 Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha)
 Phase: 58 (release-pipeline-docs) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-22
 
