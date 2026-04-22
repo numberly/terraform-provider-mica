@@ -1,9 +1,11 @@
 package provider
 
 import (
+	"context"
 	"testing"
 
 	tfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 )
 
 // Expected counts. Matches TF provider registrations (54 resources, 40 data sources).
@@ -173,6 +175,191 @@ func TestProviderInfo_AllPocResourcesPresent(t *testing.T) {
 	for _, name := range pocResources {
 		if _, ok := prov.Resources[name]; !ok {
 			t.Errorf("POC resource %q not in Resources (D-05)", name)
+		}
+	}
+}
+
+// ---- SECRETS-03: All sensitive fields promoted ----
+
+// TestProviderInfo_AllSensitiveFieldsPromoted verifies every TF field with Sensitive:true
+// has an explicit Secret:tfbridge.True() mark in resources.go (SECRETS-03).
+// Exception: flashblade_array_connection_key.id uses False() — acknowledged ID exposure.
+func TestProviderInfo_AllSensitiveFieldsPromoted(t *testing.T) {
+	prov := Provider()
+	sensitiveFields := map[string][]string{
+		"flashblade_array_connection":                {"connection_key"},
+		"flashblade_array_connection_key":            {"connection_key"},
+		"flashblade_certificate":                     {"passphrase", "private_key"},
+		"flashblade_object_store_access_key":         {"secret_access_key"},
+		"flashblade_object_store_remote_credentials": {"secret_access_key"},
+		"flashblade_directory_service_management":    {"bind_password"},
+	}
+	for resName, fields := range sensitiveFields {
+		r, ok := prov.Resources[resName]
+		if !ok {
+			t.Errorf("resource %q not in Resources", resName)
+			continue
+		}
+		for _, f := range fields {
+			info, ok := r.Fields[f]
+			if !ok || info == nil || info.Secret == nil || !*info.Secret {
+				t.Errorf("resource %q field %q must have Secret=true (SECRETS-03)", resName, f)
+			}
+		}
+	}
+}
+
+// TestProviderInfo_ArrayConnectionKeySecrets verifies the dual-override on array_connection_key:
+// id must be False() (not True()) and connection_key must be True().
+func TestProviderInfo_ArrayConnectionKeySecrets(t *testing.T) {
+	prov := Provider()
+	r, ok := prov.Resources["flashblade_array_connection_key"]
+	if !ok {
+		t.Fatalf("flashblade_array_connection_key not in Resources")
+	}
+	idInfo, ok := r.Fields["id"]
+	if !ok || idInfo == nil || idInfo.Secret == nil || *idInfo.Secret {
+		t.Errorf("flashblade_array_connection_key.id must have Secret=false")
+	}
+	ckInfo, ok := r.Fields["connection_key"]
+	if !ok || ckInfo == nil || ckInfo.Secret == nil || !*ckInfo.Secret {
+		t.Errorf("flashblade_array_connection_key.connection_key must have Secret=true")
+	}
+}
+
+// ---- SOFTDELETE-03: Soft-delete resources registered ----
+
+// TestProviderInfo_SoftDeleteResourcesRegistered verifies both soft-delete resources are registered.
+// Bridge v3.127.0 has no DeleteTimeout on ResourceInfo; TF timeouts defaults (30m) are inherited via shim.
+func TestProviderInfo_SoftDeleteResourcesRegistered(t *testing.T) {
+	prov := Provider()
+	softDeleteResources := []string{
+		"flashblade_bucket",
+		"flashblade_file_system",
+	}
+	for _, name := range softDeleteResources {
+		if _, ok := prov.Resources[name]; !ok {
+			t.Errorf("soft-delete resource %q not in Resources (SOFTDELETE-03)", name)
+		}
+	}
+}
+
+// ---- COMPOSITE-02/03/04: ComputeID closures ----
+
+// TestProviderInfo_AllCompositeIDsPresent verifies all 4 composite-ID resources have ComputeID set.
+func TestProviderInfo_AllCompositeIDsPresent(t *testing.T) {
+	prov := Provider()
+	compositeResources := []string{
+		"flashblade_object_store_access_policy_rule",
+		"flashblade_bucket_access_policy_rule",
+		"flashblade_network_access_policy_rule",
+		"flashblade_management_access_policy_directory_service_role_membership",
+	}
+	for _, name := range compositeResources {
+		r, ok := prov.Resources[name]
+		if !ok {
+			t.Errorf("composite-ID resource %q not in Resources", name)
+			continue
+		}
+		if r.ComputeID == nil {
+			t.Errorf("composite-ID resource %q must have ComputeID set", name)
+		}
+	}
+}
+
+// TestProviderInfo_ComputeID_BucketAccessPolicyRule invokes the COMPOSITE-02 closure
+// with sample PropertyMap data and asserts the returned ID (COMPOSITE-02).
+func TestProviderInfo_ComputeID_BucketAccessPolicyRule(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_bucket_access_policy_rule"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_bucket_access_policy_rule")
+	}
+	state := resource.PropertyMap{
+		"bucketName": resource.NewStringProperty("my-bucket"),
+		"name":       resource.NewStringProperty("rule1"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	if string(id) != "my-bucket/rule1" {
+		t.Errorf("expected 'my-bucket/rule1', got %q", id)
+	}
+}
+
+// TestProviderInfo_ComputeID_NetworkAccessPolicyRule invokes the COMPOSITE-03 closure
+// with sample PropertyMap data and asserts the returned ID (COMPOSITE-03).
+func TestProviderInfo_ComputeID_NetworkAccessPolicyRule(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_network_access_policy_rule"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_network_access_policy_rule")
+	}
+	state := resource.PropertyMap{
+		"policyName": resource.NewStringProperty("nap-policy"),
+		"name":       resource.NewStringProperty("rule2"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	if string(id) != "nap-policy/rule2" {
+		t.Errorf("expected 'nap-policy/rule2', got %q", id)
+	}
+}
+
+// TestProviderInfo_ComputeID_ManagementAccessPolicyDSRMembership invokes the COMPOSITE-04
+// closure including the colon edge case for built-in policy names like pure:policy/array_admin (COMPOSITE-04).
+func TestProviderInfo_ComputeID_ManagementAccessPolicyDSRMembership(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_management_access_policy_directory_service_role_membership"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_management_access_policy_directory_service_role_membership")
+	}
+
+	// Normal case.
+	state := resource.PropertyMap{
+		"role":   resource.NewStringProperty("ops-admin"),
+		"policy": resource.NewStringProperty("custom-policy"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	if string(id) != "ops-admin/custom-policy" {
+		t.Errorf("expected 'ops-admin/custom-policy', got %q", id)
+	}
+
+	// COMPOSITE-04: colon-containing built-in policy name.
+	stateColon := resource.PropertyMap{
+		"role":   resource.NewStringProperty("array-admin-role"),
+		"policy": resource.NewStringProperty("pure:policy/array_admin"),
+	}
+	idColon, err := r.ComputeID(context.Background(), stateColon)
+	if err != nil {
+		t.Fatalf("ComputeID error with colon policy: %v", err)
+	}
+	if string(idColon) != "array-admin-role/pure:policy/array_admin" {
+		t.Errorf("expected 'array-admin-role/pure:policy/array_admin', got %q", idColon)
+	}
+}
+
+// ---- UPGRADE-01/02/03: State upgrader resource registration ----
+
+// TestProviderInfo_StateUpgraderResourcesRegistered verifies the 3 resources with TF state
+// upgraders are registered in the bridge (UPGRADE-01/02/03). Bridge delegates state upgrades
+// to the TF provider via the shim. Full pulumi refresh smoke tests are deferred to Phase 58.
+func TestProviderInfo_StateUpgraderResourcesRegistered(t *testing.T) {
+	prov := Provider()
+	upgraderResources := []string{
+		"flashblade_server",                           // v0→v1→v2 (UPGRADE-01)
+		"flashblade_directory_service_role",            // v0→v1 (UPGRADE-02)
+		"flashblade_object_store_remote_credentials",   // v0→v1 (UPGRADE-03)
+	}
+	for _, name := range upgraderResources {
+		if _, ok := prov.Resources[name]; !ok {
+			t.Errorf("state-upgrader resource %q not in Resources (UPGRADE)", name)
 		}
 	}
 }
