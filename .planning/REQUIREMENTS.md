@@ -75,9 +75,9 @@
 
 ### CI — CI pipeline
 
-- [ ] **CI-01**: `./.github/workflows/pulumi-ci.yml` runs on PR touching `./pulumi/**`. Jobs: `prerequisites` (`make tfgen` + `upload-artifact schema-embed.json`) → `build_provider` (goreleaser build --snapshot) + `generate_sdk_python` + `generate_sdk_go` (matrix, download-artifact). Runs `go test ./pulumi/...` and `golangci-lint run ./pulumi/...`.
-- [ ] **CI-02**: `./.github/workflows/pulumi-ci.yml` enforces schema drift gate via `git diff --exit-code` on the 3 committed schema files after `make tfgen`.
-- [ ] **CI-03**: Existing `./.github/workflows/*.yml` (TF provider CI) and `./.goreleaser.yml` (TF release) are not modified. Pulumi pipeline is fully isolated.
+- [x] **CI-01**: `./.github/workflows/pulumi-ci.yml` runs on PR touching `./pulumi/**`. Jobs: `prerequisites` (`make tfgen` + `upload-artifact schema-embed.json`) → `build_provider` (goreleaser build --snapshot) + `generate_sdk_python` + `generate_sdk_go` (matrix, download-artifact). Runs `go test ./pulumi/...` and `golangci-lint run ./pulumi/...`.
+- [x] **CI-02**: `./.github/workflows/pulumi-ci.yml` enforces schema drift gate via `git diff --exit-code` on the 3 committed schema files after `make tfgen`.
+- [x] **CI-03**: Existing `./.github/workflows/*.yml` (TF provider CI) and `./.goreleaser.yml` (TF release) are not modified. Pulumi pipeline is fully isolated.
 
 ### RELEASE — Private release pipeline
 
@@ -139,9 +139,9 @@
 | SDK-02 | Phase 56 | Complete | — |
 | SDK-03 | Phase 56 | Complete | — |
 | SDK-04 | Phase 56 | Complete | — |
-| CI-01 | Phase 57 | pending | — |
-| CI-02 | Phase 57 | pending | — |
-| CI-03 | Phase 57 | pending | — |
+| CI-01 | Phase 57 | Complete | 7ceb2cf |
+| CI-02 | Phase 57 | Complete | 7ceb2cf |
+| CI-03 | Phase 57 | Complete | 7ceb2cf |
 | RELEASE-01 | Phase 58 | pending | — |
 | RELEASE-02 | Phase 58 | pending | — |
 | RELEASE-03 | Phase 58 | pending | — |

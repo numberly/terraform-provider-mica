@@ -793,7 +793,7 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
 - [x] Phase 54: Bridge Bootstrap + POC (3 Resources) (completed 2026-04-22)
 - [x] Phase 55: Full Mapping — 28 Resources + 21 Data Sources (completed 2026-04-22)
 - [x] Phase 56: SDK Generation — Python + Go (completed 2026-04-22)
-- [ ] Phase 57: CI Pipeline
+- [x] Phase 57: CI Pipeline (completed 2026-04-22)
 - [ ] Phase 58: Release Pipeline + Docs
 
 ## Phase Details
@@ -871,9 +871,9 @@ Plans:
 | 54. Bridge Bootstrap + POC (3 Resources) | 6/6 | Complete    | 2026-04-22 |
 | 55. Full Mapping — 28 Resources + 21 Data Sources | 2/2 | Complete    | 2026-04-22 |
 | 56. SDK Generation — Python + Go | 3/3 | Complete   | 2026-04-22 |
-| 57. CI Pipeline | 0/? | Not started | - |
+| 57. CI Pipeline | 1/1 | Complete | 2026-04-22 |
 | 58. Release Pipeline + Docs | 0/? | Not started | - |
 
 ---
 
-_Last updated: 2026-04-22 — Phase 55 success criteria narrowed (SOFTDELETE-02/03, UPGRADE-01/02/03, COMPOSITE-02/03/04 adjusted for bridge v3.127.0 constraints)_
+_Last updated: 2026-04-22 — Phase 57 completed (pulumi-ci.yml + .goreleaser.pulumi.yml)_
