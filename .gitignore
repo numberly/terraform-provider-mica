@@ -5,3 +5,6 @@ opentofu-provider-flashblade
 .desloppify/
 .claude/worktrees
 flashblade-resource-builder.zip
+pulumi-resource-flashblade
+pulumi-tfgen-flashblade
+.gstack/

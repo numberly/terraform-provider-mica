@@ -31,3 +31,5 @@ linters:
       - linters:
           - gosec
         path: "_test\\.go"
+    paths:
+      - pulumi/

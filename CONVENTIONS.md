@@ -1,8 +1,6 @@
 # CONVENTIONS.md — Terraform Provider FlashBlade
 
-AI-oriented coding conventions. This document is the single source of truth
-for how code MUST be written in this provider. Every new resource, data source,
-or modification MUST follow these rules. No exceptions.
+Single source of truth for code conventions. Every resource/data source/modification MUST follow these rules. Code examples: see `flashblade-resource-builder` skill or referenced files.
 
 ## File Structure
 
@@ -34,128 +32,43 @@ Three structs per resource in `internal/client/models_<domain>.go`:
 
 ### Pointer rules
 
-- **GET struct**: No pointers on scalars. Use `NamedReference` for refs, `*NamedReference` for optional refs.
-- **POST struct**: No pointers on scalars, with two narrow exceptions:
-  - `*bool` is REQUIRED when the API default is `true` (or any non-zero value). Example: `Enabled *bool` on policy POST bodies — the swagger documents `"If not specified, defaults to true"`. A plain `bool` with `omitempty` would drop `false` from the JSON body, so the API would silently keep the default. Check the swagger `description` for the default before choosing.
-  - `*int64` / `*string` are REQUIRED when the zero value is a semantically valid user choice that must be transmitted (e.g. `VLAN=0` for untagged). Without the pointer, `omitempty` strips the field and the API applies its own default.
-  - Pointers on **nested structs** (`*NFSConfig`, `*EradicationConfig`) and on **optional refs** (`*NamedReference`) are also allowed and expected — `omitempty` does not omit value-type structs, so a pointer is the only way to keep the field out of the body when unset.
-  - Name field is never in the body (goes via `?names=` query param).
-- **PATCH struct**: Every field is a pointer. `nil` = omit from JSON. Non-nil = send.
-  - `*string` for scalar fields
-  - `**NamedReference` for reference fields (outer nil = omit, outer non-nil + inner nil = set to null, outer non-nil + inner non-nil = set value). This is the only way to clear an optional reference via PATCH — a single `*NamedReference` cannot distinguish "omit" from "set to null".
-  - `*NestedConfig` (single pointer) is acceptable for nested config blocks that are atomic (the whole block is replaced, not cleared to null).
-  - `*[]T` (pointer to slice) for list fields with `omitempty`: `nil` = omit, `&[]T{}` = clear (send `"field": []`), `&[...]` = set. Resource `Update()` call sites must assign `&slice` so an empty `ElementsAs` result still transmits the empty list.
+- **GET**: No pointers on scalars. `NamedReference` for refs, `*NamedReference` for optional refs.
+- **POST**: No pointers on scalars except: `*bool` when API default is `true`/non-zero (omitempty drops `false`); `*int64`/`*string` when zero is a valid user choice (e.g. `VLAN=0`). Pointers on nested structs (`*NFSConfig`) and optional refs (`*NamedReference`) are expected. Name field: `json:"-"` (goes via `?names=` query param).
+- **PATCH**: Every field is a pointer. `nil` = omit, non-nil = send.
+  - `*string` for scalars
+  - `**NamedReference` for refs (outer nil = omit, outer non-nil + inner nil = clear to null, both non-nil = set value)
+  - `*NestedConfig` for atomic config blocks
+  - `*[]T` with `omitempty` for lists: `nil` = omit, `&[]T{}` = clear, `&[...]` = set. `Update()` must assign `&slice` so empty `ElementsAs` transmits `[]`.
 
-#### Exception — "always send" list fields
-
-Some FlashBlade API endpoints treat an absent list key and an empty list as distinct: the only way to clear the list is to send `"field": []` in the JSON body, and any `omitempty` on the JSON tag would wrongly drop that empty slice. For these endpoints, the PATCH struct field MUST be a plain `[]T` **without** `omitempty` — the normal `*[]T`+`omitempty` pattern does not apply.
-
-Known exceptions (do not migrate):
-
-- `NetworkInterfacePatch.Services` (`internal/client/models_network.go`)
-- `NetworkInterfacePatch.AttachedServers` (`internal/client/models_network.go`)
-
-When adding a new PATCH struct, default to `*[]T` with `omitempty`. Only fall back to plain `[]T` (no `omitempty`) when the API is verified to reject absent keys as "no change" semantics that differ from an explicit empty list.
+**Exception — "always send" lists**: When API treats absent key ≠ empty list, use plain `[]T` without `omitempty`. Known: `NetworkInterfacePatch.Services`, `NetworkInterfacePatch.AttachedServers` (`models_network.go`). Default to `*[]T`+`omitempty` for new fields.
 
 ### JSON tags
 
-- Present field: `json:"field_name"`
-- Optional/omittable: `json:"field_name,omitempty"`
-- Name field excluded from body: `json:"-"` (name goes via query param)
+`json:"field_name"` | `json:"field_name,omitempty"` | `json:"-"` (name excluded from body)
 
-Reference: `internal/client/models_storage.go` — Target structs.
+Reference: `internal/client/models_storage.go`.
 
 ## Client CRUD Methods
 
-One file per resource: `internal/client/<resource>.go`
+One file per resource. Signatures: `Get/Post/Patch/Delete` on `*FlashBladeClient`, always `(ctx, name, [body])` → `(*Xxx, error)` or `error`.
 
-### Function signatures
+**Rules**: GET uses `getOneByName[T]` (never hand-roll). Name via `?names=` + `url.QueryEscape`. No API version prefix in paths (added by `client.do()`). Return `APIError` directly — no `fmt.Errorf` wrapping. Always propagate caller `ctx`.
 
-```go
-func (c *FlashBladeClient) GetXxx(ctx context.Context, name string) (*Xxx, error)
-func (c *FlashBladeClient) PostXxx(ctx context.Context, name string, body XxxPost) (*Xxx, error)
-func (c *FlashBladeClient) PatchXxx(ctx context.Context, name string, body XxxPatch) (*Xxx, error)
-func (c *FlashBladeClient) DeleteXxx(ctx context.Context, name string) error
-```
+**List shapes** (pick one, do not invent a fourth):
 
-### Rules
+| Shape | When | Example |
+|-------|------|---------|
+| `ListXxxOpts` struct | API has filters/pagination | `ListBuckets(ctx, opts)` |
+| Plain string parent | Sub-collection scoped to parent | `ListNfsExportPolicyRules(ctx, policyName)` |
+| No args beyond `ctx` | Global flat set | `ListSubnets(ctx)` |
 
-- **GET**: Use `getOneByName[T]` generic helper — never hand-roll list+filter logic.
-- **POST/PATCH/DELETE**: Name goes via `?names=` query param with `url.QueryEscape(name)`.
-- **Endpoint path**: No API version prefix — `"/targets?names=..."` not `"/api/2.22/targets?names=..."`. Version is added by `client.do()`.
-- **Error wrapping**: Return the underlying `APIError` directly — it is self-describing (HTTP status + message). Do not wrap with `fmt.Errorf("FuncName: %w", err)` in CRUD wrappers unless extra context is genuinely added.
-- **Context**: Always propagate caller `ctx` — never use `context.Background()`.
-
-### List method shapes
-
-`ListXxx` uses one of three canonical shapes — pick by what the API supports:
-
-1. **Opts struct** (`ListXxxOpts`): the API exposes filters/pagination for the collection. Use for top-level resources where callers may need `FilterID`, `ContinuationToken`, etc. Example: `ListBuckets(ctx, ListBucketsOpts{...})`.
-2. **Plain string parent key**: the endpoint is a sub-collection scoped to exactly one parent. The first positional argument is the parent name. Example: `ListNfsExportPolicyRules(ctx, policyName)`.
-3. **No arguments** beyond `ctx`: the collection is a global, flat set with no filter surface. Example: `ListSubnets(ctx)`.
-
-Do not invent a fourth shape. If a new filter is needed on a shape-3 method, migrate it to shape 1 with an `Opts` struct.
-
-Reference: `internal/client/remote_credentials.go`, `internal/client/targets.go`.
+Reference: `internal/client/targets.go`.
 
 ## Mock Handlers
 
-One file per resource: `internal/testmock/handlers/<resource>.go`
+One file per resource. Store struct: `sync.Mutex` + `byName map[string]*client.Xxx` + `nextID int`. `RegisterXxxHandlers(mux)` returns `*xxxStore` (for `Seed()`). Path includes API version: `/api/2.22/...`.
 
-### Store struct pattern
-
-```go
-type xxxStore struct {
-    mu     sync.Mutex
-    byName map[string]*client.Xxx
-    nextID int
-}
-```
-
-- Always `sync.Mutex` — mock server is used concurrently.
-- Always `byName` map keyed by resource name.
-- `nextID int` for generating synthetic IDs (`fmt.Sprintf("xxx-%d", s.nextID)`).
-
-### Registration
-
-```go
-func RegisterXxxHandlers(mux *http.ServeMux) *xxxStore {
-    store := &xxxStore{byName: make(map[string]*client.Xxx), nextID: 1}
-    mux.HandleFunc("/api/2.22/<endpoint>", store.handle)
-    return store
-}
-```
-
-- Returns `*xxxStore` so tests can call `Seed()`.
-- Path includes API version: `/api/2.22/...` (mock is hit directly, not through client URL builder).
-
-### Seed method
-
-```go
-func (s *xxxStore) Seed(item *client.Xxx) {
-    s.mu.Lock()
-    defer s.mu.Unlock()
-    s.byName[item.Name] = item
-}
-```
-
-### GET handler — critical rule
-
-When `?names=` filter matches nothing: **return empty list with HTTP 200**, NOT 404.
-
-```go
-if namesFilter != "" {
-    item, ok := s.byName[namesFilter]
-    if ok {
-        items = append(items, *item)
-    }
-}
-// falls through to WriteJSONListResponse(w, http.StatusOK, items)
-```
-
-This matches real FlashBlade API behavior and lets `getOneByName[T]` handle not-found detection.
-
-### Other handlers
+**Critical GET rule**: `?names=` matches nothing → **return empty list with HTTP 200**, NOT 404. This matches real API and lets `getOneByName[T]` detect not-found.
 
 | Method | Success | Name exists | Name missing | Body invalid |
 |--------|---------|-------------|--------------|--------------|
@@ -163,396 +76,117 @@ This matches real FlashBlade API behavior and lets `getOneByName[T]` handle not-
 | PATCH | 200 + item | Apply non-nil fields | 404 Not Found | 400 Bad Request |
 | DELETE | 200 (empty) | Remove from store | 404 Not Found | — |
 
-### Shared helpers (from `handlers/helpers.go`)
+**Shared helpers** (`handlers/helpers.go`): `ValidateQueryParams`, `RequireQueryParam`, `WriteJSONListResponse`, `WriteJSONError`.
 
-- `ValidateQueryParams(w, r, []string{"allowed", "params"})` — reject unknown params
-- `RequireQueryParam(w, r, "names")` — 400 if missing
-- `WriteJSONListResponse(w, statusCode, items)` — wrap in `{"items": [...]}`
-- `WriteJSONError(w, statusCode, "message")` — standard error envelope
-
-Reference: `internal/testmock/handlers/remote_credentials.go`, `internal/testmock/handlers/targets.go`.
+Reference: `internal/testmock/handlers/targets.go`.
 
 ## Resource Implementation
 
-One file per resource: `internal/provider/<resource>_resource.go`
+One file per resource. **All 4 interfaces mandatory**: `Resource`, `ResourceWithConfigure`, `ResourceWithImportState`, `ResourceWithUpgradeState`. Schema `Version` starts at 0.
 
-### Interface assertions (top of file)
+### Plan modifiers
 
-```go
-var _ resource.Resource = &xxxResource{}
-var _ resource.ResourceWithConfigure = &xxxResource{}
-var _ resource.ResourceWithImportState = &xxxResource{}
-var _ resource.ResourceWithUpgradeState = &xxxResource{}
-```
+| Field type | Modifier |
+|------------|----------|
+| `id`, `created` (computed, stable) | `UseStateForUnknown()` |
+| `name` (required, immutable) | `RequiresReplace()` |
+| volatile (`status`, `lag`, `recovery_point`, etc.) | **NONE** — masks drift |
 
-All four interfaces are mandatory for every resource.
+### Timeouts
 
-### Schema
+All 4 operations enabled. Defaults: Create 20m, Read 5m, Update 20m, Delete 30m.
 
-- `Version`: Start at `0`. Increment when adding/changing/renaming attributes.
-- `Description`: One sentence describing the resource.
+### Drift detection — mandatory
 
-### Plan modifiers — critical rules
-
-| Field type | Modifier | Example |
-|------------|----------|---------|
-| `id` (computed, stable) | `UseStateForUnknown()` | Never changes after creation |
-| `created` (computed, stable) | `UseStateForUnknown()` | Never changes after creation |
-| `name` (required, immutable) | `RequiresReplace()` | Forces new resource on change |
-| `status`, `status_details` (volatile) | **NONE** | Changes outside Terraform |
-| `lag`, `recovery_point`, `backlog` (volatile) | **NONE** | Changes outside Terraform |
-
-**DO**: `UseStateForUnknown()` on computed fields that never change after creation.
-**DO NOT**: `UseStateForUnknown()` on any field that can change outside Terraform. This masks drift.
-
-### Timeouts (standard values)
-
-```go
-"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
-    Create: true, Read: true, Update: true, Delete: true,
-})
-```
-
-| Operation | Default |
-|-----------|---------|
-| Create | `20 * time.Minute` |
-| Read | `5 * time.Minute` |
-| Update | `20 * time.Minute` |
-| Delete | `30 * time.Minute` |
-
-### Configure
-
-```go
-func (r *xxxResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-    if req.ProviderData == nil { return }
-    c, ok := req.ProviderData.(*client.FlashBladeClient)
-    if !ok {
-        resp.Diagnostics.AddError("Unexpected Provider Data Type", "...")
-        return
-    }
-    r.client = c
-}
-```
-
-### Drift detection in Read — mandatory
-
-Every mutable or computed field MUST be checked and logged:
-
-```go
-if data.Address.ValueString() != apiObj.Address {
-    tflog.Debug(ctx, "drift detected", map[string]any{
-        "resource": name,
-        "field":    "address",
-        "was":      data.Address.ValueString(),
-        "now":      apiObj.Address,
-    })
-}
-```
-
-- Use `tflog.Debug` (not Info, not Warn).
-- Keys: `resource`, `field`, `was`, `now`.
-- Log only — never error on drift.
+Every mutable/computed field: `tflog.Debug(ctx, "drift detected", map[string]any{"resource": name, "field": "xxx", "was": old, "now": new})`. Log only, never error.
 
 ### ImportState
 
-```go
-func (r *xxxResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-    name := req.ID
-    obj, err := r.client.GetXxx(ctx, name)
-    // handle error...
-    var data xxxModel
-    data.Timeouts = nullTimeoutsValue()   // always initialize timeouts
-    mapXxxToModel(obj, &data)
-    // set write-once fields to null/empty (SecretAccessKey, TargetName, etc.)
-    resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-```
-
-- Import by **name**, not UUID.
-- Always call `nullTimeoutsValue()` — import has no plan to read timeouts from.
-- Set write-once/sensitive fields to null or empty string.
+Import by **name** (not UUID). Always call `nullTimeoutsValue()`. Set write-once/sensitive fields to null.
 
 ### Soft-delete (buckets, filesystems only)
 
-Two-phase destroy: PATCH `destroyed=true`, then optional eradication with `pollUntilGone[T]`.
-Only applies to resources with the `destroy_eradicate_on_delete` attribute.
+Two-phase: PATCH `destroyed=true` → `pollUntilGone[T]`. Only for resources with `destroy_eradicate_on_delete`.
 
-Reference: `internal/provider/remote_credentials_resource.go`, `internal/provider/target_resource.go`, `internal/provider/bucket_resource.go` (soft-delete).
+Reference: `internal/provider/target_resource.go`, `internal/provider/bucket_resource.go` (soft-delete).
 
 ## Data Source Implementation
 
-One file per data source: `internal/provider/<resource>_data_source.go`
+One file per data source. **2 interfaces only**: `DataSource`, `DataSourceWithConfigure`. No timeouts, no plan modifiers. `name` = Required, all others = Computed. Not-found → `AddError` (not `RemoveResource`). Inline field mapping is fine for simple schemas.
 
-### Interface assertions
-
-```go
-var _ datasource.DataSource = &xxxDataSource{}
-var _ datasource.DataSourceWithConfigure = &xxxDataSource{}
-```
-
-Only two interfaces — no ImportState, no UpgradeState.
-
-### Schema differences from resource
-
-- **No timeouts block.**
-- **No plan modifiers** (no UseStateForUnknown, no RequiresReplace).
-- `name`: Required (lookup key).
-- All other fields: Computed.
-
-### Read pattern
-
-```go
-func (d *xxxDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-    var config xxxDataSourceModel
-    resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-
-    name := config.Name.ValueString()
-    obj, err := d.client.GetXxx(ctx, name)
-    if err != nil {
-        if client.IsNotFound(err) {
-            resp.Diagnostics.AddError("Xxx not found", fmt.Sprintf("No xxx named %q", name))
-        } else {
-            resp.Diagnostics.AddError("Error reading xxx", err.Error())
-        }
-        return
-    }
-    // map fields inline — no helper needed for simple data sources
-    config.ID = types.StringValue(obj.ID)
-    // ...
-    resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
-}
-```
-
-- No timeout wrapping (uses context directly).
-- Not-found produces `AddError`, not `RemoveResource` (data sources don't exist in state).
-- Field mapping can be inline for simple schemas — no `mapXxxToModel` helper required.
-
-Reference: `internal/provider/target_data_source.go`, `internal/provider/remote_credentials_data_source.go`.
+Reference: `internal/provider/target_data_source.go`.
 
 ## State Upgraders
 
-### When to bump SchemaVersion
+Bump `SchemaVersion` when adding/changing/renaming attributes. Naming: `xxxV0Model`, `xxxV1Model`; current = `xxxModel` (no suffix). `PriorSchema` must be exact copy of that version's schema. New fields → `types.StringNull()` / `types.ListNull(...)`. Chain runs sequentially (0→1→2). Entry key = prior version number. Empty map when version is 0.
 
-Increment `Version` in `Schema()` when:
-- Adding a new attribute
-- Changing an attribute type
-- Renaming an attribute
-
-### Pattern
-
-1. **Define intermediate model struct** for the prior version:
-
-```go
-type xxxV0Model struct {
-    ID       types.String   `tfsdk:"id"`
-    Name     types.String   `tfsdk:"name"`
-    // ... v0 fields only
-    Timeouts timeouts.Value `tfsdk:"timeouts"`
-}
-```
-
-- Naming: `xxxV0Model`, `xxxV1Model`, etc.
-- Current version model has NO version suffix (just `xxxModel`).
-
-2. **Add upgrader to UpgradeState chain:**
-
-```go
-func (r *xxxResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
-    return map[int64]resource.StateUpgrader{
-        0: {
-            PriorSchema: &schema.Schema{
-                // EXACT copy of v0 schema as it existed
-                Attributes: map[string]schema.Attribute{...},
-            },
-            StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-                var old xxxV0Model
-                resp.Diagnostics.Append(req.State.Get(ctx, &old)...)
-                if resp.Diagnostics.HasError() { return }
-
-                newState := xxxModel{
-                    // copy existing fields from old
-                    ID:       old.ID,
-                    Name:     old.Name,
-                    // initialize new fields
-                    NewField: types.StringNull(),
-                    Timeouts: old.Timeouts,
-                }
-                resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
-            },
-        },
-    }
-}
-```
-
-### Rules
-
-- **PriorSchema**: Must be an exact copy of the schema at that version. Include timeouts with `timeouts.Attributes(ctx, ...)`.
-- **New fields**: Initialize to `types.StringNull()`, `types.ListNull(...)`, or appropriate zero value.
-- **Chain**: Upgraders run sequentially (0→1, 1→2). Each entry key is the **prior** version number.
-- **SchemaVersion** in `Schema()` must equal `len(UpgradeState) + initial version`.
-- **Empty map** when version is 0: `return map[int64]resource.StateUpgrader{}`
-
-Reference: `internal/provider/server_resource.go` (v0→v1→v2), `internal/provider/remote_credentials_resource.go` (v0→v1).
+Reference: `internal/provider/server_resource.go` (v0→v1→v2).
 
 ## Test Conventions
 
-### Naming — mandatory prefix
+### Naming — mandatory
 
-```
-TestUnit_<Resource>_<Operation>[_<Variant>]
-```
+`TestUnit_<Resource>_<Operation>[_<Variant>]` — e.g. `TestUnit_Target_Get_Found`, `TestUnit_TargetResource_Lifecycle`, `TestUnit_TargetDataSource_Basic`.
 
-Examples:
-- `TestUnit_Target_Get_Found`
-- `TestUnit_Target_Post`
-- `TestUnit_Target_Patch_Address`
-- `TestUnit_Target_Patch_CACertGroup`
-- `TestUnit_Target_Delete`
-- `TestUnit_TargetResource_Lifecycle`
-- `TestUnit_TargetResource_Import`
-- `TestUnit_TargetResource_DriftDetection`
-- `TestUnit_TargetDataSource_Basic`
-- `TestUnit_RemoteCredentials_StateUpgrade_V0toV1`
+### Client tests
 
-**DO NOT**: Use `TestGetTarget_found`, `TestTargetResource_lifecycle`, or any other convention.
+`httptest.NewServer()`, mock `/api/login` for `x-auth-token`, use `newTestClient(t, srv)`. One test per CRUD + edge cases.
 
-### Client tests (`internal/client/<resource>_test.go`)
+### Provider tests
 
-- Use `httptest.NewServer()` with inline handler OR mock handler package.
-- Mock `/api/login` to return `x-auth-token` header.
-- Use shared `newTestClient(t, srv)` helper.
-- One test per CRUD operation + edge cases (not-found, conflict).
-
-### Provider resource tests (`internal/provider/<resource>_resource_test.go`)
-
-Required helpers per resource:
-
-```go
-func newTestXxxResource(t *testing.T, ms *testmock.MockServer) *xxxResource     // wired client
-func xxxResourceSchema(t *testing.T) resource.SchemaResponse                     // parsed schema
-func buildXxxType() tftypes.Object                                               // tftypes for raw values
-func nullXxxConfig() map[string]tftypes.Value                                    // all-null baseline
-func xxxPlanWith(t *testing.T, ...) tfsdk.Plan                                  // plan builder
-```
-
-Test setup:
-```go
-ms := testmock.NewMockServer()
-defer ms.Close()
-store := handlers.RegisterXxxHandlers(ms.Mux)
-r := newTestXxxResource(t, ms)
-s := xxxResourceSchema(t).Schema
-```
-
-### Provider data source tests (`internal/provider/<resource>_data_source_test.go`)
-
-Same pattern with `datasource.*` types:
-
-```go
-func newTestXxxDataSource(t *testing.T, ms *testmock.MockServer) *xxxDataSource
-func xxxDSSchema(t *testing.T) datasource.SchemaResponse
-func buildXxxDSType() tftypes.Object
-func nullXxxDSConfig() map[string]tftypes.Value
-```
+5 required helpers per resource: `newTestXxxResource`, `xxxResourceSchema`, `buildXxxType`, `nullXxxConfig`, `xxxPlanWith`. DS tests: same pattern with `datasource.*` types + 4 helpers (`newTestXxxDataSource`, `xxxDSSchema`, `buildXxxDSType`, `nullXxxDSConfig`).
 
 ### Assertions
 
-- Use `t.Fatalf` for setup failures that block the rest of the test.
-- Use `t.Errorf` for assertion failures that should continue checking other fields.
-- String comparison: `if got.Name != "expected" { t.Errorf("expected %q, got %q", "expected", got.Name) }`
-- Not-found check: `if !client.IsNotFound(err) { t.Errorf(...) }`
+`t.Fatalf` for setup failures, `t.Errorf` for assertion failures.
 
 ## Test Coverage
 
-### Minimum tests per component
+| Component | Minimum tests |
+|-----------|---------------|
+| Client CRUD | 4 (Get_Found, Get_NotFound, Post, Patch, Delete) |
+| Resource | 3 (Lifecycle, Import, DriftDetection) |
+| Data source | 1 (Basic) |
+| State upgrader | 1 per version bump |
 
-| Component | Minimum | Tests |
-|-----------|---------|-------|
-| Client CRUD | 4 | Get_Found, Get_NotFound, Post, Patch (one variant), Delete |
-| Resource | 3 | Lifecycle (create→read→update→delete), Import, DriftDetection |
-| Data source | 1 | Basic (seed + read + verify all fields) |
-| State upgrader | 1 per version bump | V0toV1, V1toV2, etc. |
-
-### Coverage rules
-
-- **Total test count MUST NOT decrease.** Current baseline: **752 tests**.
-- Every new resource adds at minimum **8 tests** (4 client + 3 resource + 1 data source).
-- Every state upgrader adds at minimum **1 test**.
-- Run `make test` and `make lint` before every commit. Both must be clean.
-- Update the baseline count in this document when adding tests.
+**Baseline: 818 tests.** Must not decrease. New resource adds ≥8 tests. Run `make test` + `make lint` before every commit.
 
 ## Provider Registration
 
-When adding a new resource or data source, register it in `internal/provider/provider.go`:
-
-- Append `NewXxxResource` to the `Resources()` method return slice.
-- Append `NewXxxDataSource` to the `DataSources()` method return slice.
-
-Factory functions are defined in the resource/data source files:
-```go
-func NewXxxResource() resource.Resource { return &xxxResource{} }
-func NewXxxDataSource() datasource.DataSource { return &xxxDataSource{} }
-```
+Register in `internal/provider/provider.go`: append `NewXxxResource` to `Resources()`, `NewXxxDataSource` to `DataSources()`.
 
 ## Documentation
 
-### Generated docs
-
-- Run `make docs` after any schema change. This invokes `tfplugindocs`.
-- Output goes to `docs/resources/<resource>.md` and `docs/data-sources/<resource>.md`.
-- **Never edit files in `docs/` manually.** They are overwritten by `make docs`.
-
-### HCL examples
-
-Every resource needs:
-- `examples/resources/flashblade_<resource>/resource.tf` — minimal working config
-- `examples/resources/flashblade_<resource>/import.sh` — import command
-
-Every data source needs:
-- `examples/data-sources/flashblade_<resource>/data-source.tf` — lookup example
-
-Import uses the resource **name** (not UUID):
-```bash
-terraform import flashblade_target.example my-target
-```
-
-### ROADMAP.md
-
-When implementing a new resource, update `ROADMAP.md` in the same commit:
-1. Move entry from "Not Implemented" to "Implemented"
-2. Update header counters
-3. Update `Last updated` date
+`make docs` after any schema change (never edit `docs/` manually). Every resource needs `resource.tf` + `import.sh` examples. Every data source needs `data-source.tf`. Import by **name** (not UUID). Update `ROADMAP.md` in same commit as new resource.
 
 ## Checklist — New Resource
 
-Before considering a new resource complete, every item must be done:
-
 1. [ ] Model structs (Get/Post/Patch) in `models_<domain>.go`
-2. [ ] Client CRUD in `<resource>.go` using `getOneByName[T]`
-3. [ ] Mock handler in `handlers/<resource>.go` with Seed, empty-list GET, shared helpers
+2. [ ] Client CRUD using `getOneByName[T]`
+3. [ ] Mock handler with Seed, empty-list GET, shared helpers
 4. [ ] Client tests (≥4) with `TestUnit_` prefix
 5. [ ] Resource with all 4 interfaces, schema version 0, correct plan modifiers
-6. [ ] Drift detection on all mutable/computed fields in Read
+6. [ ] Drift detection on all mutable/computed fields
 7. [ ] ImportState with `nullTimeoutsValue()`
 8. [ ] Resource tests (≥3): Lifecycle, Import, DriftDetection
 9. [ ] Data source with Configure + Read
 10. [ ] Data source test (≥1): Basic
-11. [ ] Registration in `provider.go` (Resources + DataSources)
+11. [ ] Registration in `provider.go`
 12. [ ] HCL examples (`resource.tf`, `import.sh`, `data-source.tf`)
 13. [ ] `make docs` regenerated
 14. [ ] `make test` passes, total count ≥ 818 baseline
-15. [ ] `make lint` clean (0 issues)
+15. [ ] `make lint` clean
 16. [ ] ROADMAP.md updated
 
 ## Checklist — Modify Existing Resource
 
 1. [ ] Schema version incremented
-2. [ ] State upgrader added with PriorSchema + intermediate model
+2. [ ] State upgrader with PriorSchema + intermediate model
 3. [ ] State upgrader test (≥1) with `TestUnit_` prefix
-4. [ ] New fields initialized to null in upgrader
+4. [ ] New fields → null in upgrader
 5. [ ] ImportState updated for new fields
-6. [ ] Drift detection added for new mutable/computed fields
-7. [ ] Plan modifiers correct (UseStateForUnknown only on stable computed fields)
-8. [ ] `make test` passes, total count ≥ previous baseline
+6. [ ] Drift detection for new mutable/computed fields
+7. [ ] Plan modifiers correct (UseStateForUnknown only on stable computed)
+8. [ ] `make test` passes, count ≥ previous baseline
 9. [ ] `make lint` clean
 10. [ ] `make docs` regenerated if schema changed
