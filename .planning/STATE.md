@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-22T11:05:00.000Z"
+last_updated: "2026-04-22T09:35:32.687Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
-  percent: 40
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-21)
 
 Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha)
 Phase: 54 (bridge-bootstrap-poc-3-resources) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-22
 
-Progress: [████░░░░░░] 40% (2/5 plans)
+Progress: [██████░░░░] 60% (3/5 plans)
 
 ## Recent Milestones
 
@@ -50,6 +50,7 @@ Progress: [████░░░░░░] 40% (2/5 plans)
 - **No SetAutonaming:** Storage names are operational identifiers — no random suffix.
 - **Soft-delete defense:** `DeleteTimeout: 30*time.Minute` on bucket + filesystem (bridge default 5min kills `pollUntilGone`). NOTE: `DeleteTimeout` field does NOT exist on `ResourceInfo` in bridge v3.127.0 — TF timeouts defaults (30m for bucket/filesystem) inherited via shim.
 - **ShimProvider import:** `pftfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/pf/tfbridge"` — the constructor lives here, not in `pkg/pf` which only defines the interface.
+- **pftfbridge.Main signature (v3.127.0):** `Main(ctx, pkg, ProviderInfo, ProviderMetadata)` — no error return (void, calls os.Exit). Plan template's error-check pattern was dropped.
 - **SDK scope:** Python + Go only. No TS, C#, Java. No PyPI, npm, NuGet, Pulumi Registry.
 - **Distribution:** GitHub Releases private. Go SDK via git tag `sdk/go/vX.Y.Z` + `GOPRIVATE`. Python SDK via `.whl` attached to release.
 
@@ -68,9 +69,10 @@ _(none — 3 open questions from research resolved via REQUIREMENTS.md decisions
 
 ## Next Steps
 
-Execute plan 03: `cmd/pulumi-tfgen-flashblade/main.go` and `cmd/pulumi-resource-flashblade/main.go` consuming `Provider()`.
+Execute plan 04: `make tfgen` run to generate schema.json + schema-embed.json + bridge-metadata.json.
 
 ## Session Log
 
 - 2026-04-22T09:15Z — Plan 54-01 completed: pulumi/ module skeleton (3 go.mod files, Makefile, .gitignore)
 - 2026-04-22T11:05Z — Plan 54-02 completed: resources.go ProviderInfo + pftfbridge.ShimProvider, go.sum resolved, bridge API gaps documented
+- 2026-04-22T09:35Z — Plan 54-03 completed: both cmd/main.go entry points, placeholder embed files, both binaries build (tfgen 101.5MB, resource 95.7MB)

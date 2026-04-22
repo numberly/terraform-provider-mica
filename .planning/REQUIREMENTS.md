@@ -30,7 +30,7 @@
 - [ ] **BRIDGE-01**: Create `./pulumi/` directory layout (`provider/`, `provider/cmd/pulumi-tfgen-flashblade/`, `provider/cmd/pulumi-resource-flashblade/`, `provider/pkg/version/`, `sdk/`, `examples/`, `Makefile`) following the pulumi-tf-provider-boilerplate pattern adapted for framework bridges.
 - [x] **BRIDGE-02**: `./pulumi/provider/go.mod` pins `pulumi-terraform-bridge/v3 v3.127.0`, `pulumi/sdk/v3 v3.231.0`, `pulumi/pkg/v3 v3.231.0`, declares the TF provider dependency, and includes the required `replace github.com/hashicorp/terraform-plugin-sdk/v2 => github.com/pulumi/terraform-plugin-sdk/v2 v2.0.0-20260318212141-5525259d096b` directive plus `replace github.com/numberly/opentofu-provider-flashblade => ../../`.
 - [x] **BRIDGE-03**: `./pulumi/sdk/go/go.mod` is a lean consumer SDK module depending only on `pulumi/sdk/v3 v3.231.0` (no bridge transitive deps exposed).
-- [ ] **BRIDGE-04**: `./pulumi/provider/cmd/pulumi-tfgen-flashblade/main.go` and `./pulumi/provider/cmd/pulumi-resource-flashblade/main.go` use `pkg/pf/tfgen` and `pkg/pf/tfbridge` respectively (NOT the SDK v2 shim). Runtime plugin embeds `schema-embed.json` and `bridge-metadata.json` via `//go:embed`.
+- [x] **BRIDGE-04**: `./pulumi/provider/cmd/pulumi-tfgen-flashblade/main.go` and `./pulumi/provider/cmd/pulumi-resource-flashblade/main.go` use `pkg/pf/tfgen` and `pkg/pf/tfbridge` respectively (NOT the SDK v2 shim). Runtime plugin embeds `schema-embed.json` and `bridge-metadata.json` via `//go:embed`.
 - [x] **BRIDGE-05**: `./pulumi/provider/resources.go` declares `ProviderInfo` with `P: pf.ShimProvider(provider.New(version.Version)())`, `Name: "flashblade"`, `Version` wired via ldflags, `Publisher: "numberly"`, `PluginDownloadURL: "github://api.github.com/numberly"`, Apache-2.0 license.
 
 ### MAPPING — Resource / data source tokenization
@@ -113,7 +113,7 @@
 | BRIDGE-01 | Phase 54 | pending | — |
 | BRIDGE-02 | Phase 54 | Complete | — |
 | BRIDGE-03 | Phase 54 | Complete | — |
-| BRIDGE-04 | Phase 54 | pending | — |
+| BRIDGE-04 | Phase 54 | Complete | — |
 | BRIDGE-05 | Phase 54 | Complete | — |
 | MAPPING-01 | Phase 55 | pending | — |
 | MAPPING-02 | Phase 54 | Complete | — |
