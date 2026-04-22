@@ -364,5 +364,123 @@ func TestProviderInfo_StateUpgraderResourcesRegistered(t *testing.T) {
 	}
 }
 
+// ---- TEST-03: Import syntax validation ----
+// These tests document the correct `pulumi import` command for each composite-ID
+// resource and validate the ID format produced by ComputeID. Full round-trip tests
+// (pulumi import + pulumi refresh + assert no drift) are deferred to live testing.
+
+// TestProviderInfo_ImportSyntax_ObjectStoreAccessPolicyRule validates the import
+// command format for the object_store_access_policy_rule composite ID.
+func TestProviderInfo_ImportSyntax_ObjectStoreAccessPolicyRule(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_object_store_access_policy_rule"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_object_store_access_policy_rule")
+	}
+	state := resource.PropertyMap{
+		"policyName": resource.NewStringProperty("mypolicy"),
+		"name":       resource.NewStringProperty("myrulename"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	expected := "mypolicy/myrulename"
+	if string(id) != expected {
+		t.Errorf("expected %q, got %q", expected, id)
+	}
+	// Document the import command:
+	// pulumi import flashblade:index:ObjectStoreAccessPolicyRule my-rule mypolicy/myrulename
+}
+
+// TestProviderInfo_ImportSyntax_BucketAccessPolicyRule validates the import
+// command format for the bucket_access_policy_rule composite ID.
+func TestProviderInfo_ImportSyntax_BucketAccessPolicyRule(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_bucket_access_policy_rule"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_bucket_access_policy_rule")
+	}
+	state := resource.PropertyMap{
+		"bucketName": resource.NewStringProperty("mybucket"),
+		"name":       resource.NewStringProperty("myrulename"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	expected := "mybucket/myrulename"
+	if string(id) != expected {
+		t.Errorf("expected %q, got %q", expected, id)
+	}
+	// Document the import command:
+	// pulumi import flashblade:index:BucketAccessPolicyRule my-rule mybucket/myrulename
+}
+
+// TestProviderInfo_ImportSyntax_NetworkAccessPolicyRule validates the import
+// command format for the network_access_policy_rule composite ID.
+func TestProviderInfo_ImportSyntax_NetworkAccessPolicyRule(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_network_access_policy_rule"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_network_access_policy_rule")
+	}
+	state := resource.PropertyMap{
+		"policyName": resource.NewStringProperty("mypolicy"),
+		"name":       resource.NewStringProperty("myrulename"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	expected := "mypolicy/myrulename"
+	if string(id) != expected {
+		t.Errorf("expected %q, got %q", expected, id)
+	}
+	// Document the import command:
+	// pulumi import flashblade:index:NetworkAccessPolicyRule my-rule mypolicy/myrulename
+}
+
+// TestProviderInfo_ImportSyntax_ManagementAccessPolicyDSRMembership validates the
+// import command format for the management_access_policy_directory_service_role_membership
+// composite ID, including the role-first ordering.
+func TestProviderInfo_ImportSyntax_ManagementAccessPolicyDSRMembership(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_management_access_policy_directory_service_role_membership"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_management_access_policy_directory_service_role_membership")
+	}
+
+	// Normal case.
+	state := resource.PropertyMap{
+		"role":   resource.NewStringProperty("myrole"),
+		"policy": resource.NewStringProperty("mypolicy"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	expected := "myrole/mypolicy"
+	if string(id) != expected {
+		t.Errorf("expected %q, got %q", expected, id)
+	}
+
+	// Colon-containing policy name (built-in policies like pure:policy/array_admin).
+	stateColon := resource.PropertyMap{
+		"role":   resource.NewStringProperty("array-admin-role"),
+		"policy": resource.NewStringProperty("pure:policy/array_admin"),
+	}
+	idColon, err := r.ComputeID(context.Background(), stateColon)
+	if err != nil {
+		t.Fatalf("ComputeID error with colon policy: %v", err)
+	}
+	expectedColon := "array-admin-role/pure:policy/array_admin"
+	if string(idColon) != expectedColon {
+		t.Errorf("expected %q, got %q", expectedColon, idColon)
+	}
+	// Document the import command:
+	// pulumi import flashblade:index:ManagementAccessPolicyDirectoryServiceRoleMembership my-membership myrole/mypolicy
+}
+
 // Silence unused-import warning if tfbridge types are not referenced directly.
 var _ = tfbridge.True
