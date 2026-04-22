@@ -68,10 +68,10 @@
 
 ### SDK — SDK generation (Python + Go)
 
-- [ ] **SDK-01**: `make generate_python` produces a working `./pulumi/sdk/python/` package with `pulumi_flashblade` import path. `python -m build` builds a `.whl` installable via `pip install`.
-- [ ] **SDK-02**: `make generate_go` produces a working `./pulumi/sdk/go/` package under `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`. Dependency surface limited to `pulumi/sdk/v3`.
-- [ ] **SDK-03**: `schema.json`, `schema-embed.json`, `bridge-metadata.json` are committed to git. CI `git diff --exit-code` after `make tfgen` detects drift and fails the build.
-- [ ] **SDK-04**: No TypeScript, C#, or Java SDK is generated (explicit scope boundary). `Makefile` does not define `generate_nodejs`, `generate_dotnet`, or `generate_java` targets.
+- [x] **SDK-01**: `make generate_python` produces a working `./pulumi/sdk/python/` package with `pulumi_flashblade` import path. `python -m build` builds a `.whl` installable via `pip install`.
+- [x] **SDK-02**: `make generate_go` produces a working `./pulumi/sdk/go/` package under `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`. Dependency surface limited to `pulumi/sdk/v3`.
+- [x] **SDK-03**: `schema.json`, `schema-embed.json`, `bridge-metadata.json` are committed to git. CI `git diff --exit-code` after `make tfgen` detects drift and fails the build.
+- [x] **SDK-04**: No TypeScript, C#, or Java SDK is generated (explicit scope boundary). `Makefile` does not define `generate_nodejs`, `generate_dotnet`, or `generate_java` targets.
 
 ### CI — CI pipeline
 
@@ -135,10 +135,10 @@
 | UPGRADE-01 | Phase 55 | Complete | — |
 | UPGRADE-02 | Phase 55 | Complete | — |
 | UPGRADE-03 | Phase 55 | Complete | — |
-| SDK-01 | Phase 56 | pending | — |
-| SDK-02 | Phase 56 | pending | — |
-| SDK-03 | Phase 56 | pending | — |
-| SDK-04 | Phase 56 | pending | — |
+| SDK-01 | Phase 56 | Complete | — |
+| SDK-02 | Phase 56 | Complete | — |
+| SDK-03 | Phase 56 | Complete | — |
+| SDK-04 | Phase 56 | Complete | — |
 | CI-01 | Phase 57 | pending | — |
 | CI-02 | Phase 57 | pending | — |
 | CI-03 | Phase 57 | pending | — |
