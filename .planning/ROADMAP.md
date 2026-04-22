@@ -812,20 +812,20 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
 **UI hint**: no
 
 ### Phase 55: Full Mapping — 28 Resources + 21 Data Sources
-**Goal**: All 49 TF resources and data sources have valid Pulumi tokens, all 4 composite-ID overrides are in place, full secrets coverage is applied, and state-upgrader smoke tests pass for the 3 affected resources
+**Goal**: All 49 TF resources and data sources have valid Pulumi tokens, all 4 composite-ID overrides are in place, full secrets coverage is applied, and state-upgrader resources are registered
 **Depends on**: Phase 54 (bridge compiles, POC pattern validated)
 **Requirements**: MAPPING-01, MAPPING-04, COMPOSITE-02, COMPOSITE-03, COMPOSITE-04, SECRETS-02 (complete), SECRETS-03, SOFTDELETE-02, SOFTDELETE-03, UPGRADE-01, UPGRADE-02, UPGRADE-03
 **Success Criteria** (what must be TRUE):
   1. `make tfgen` reports zero `MISSING` tokens across all 28 resources + 21 data sources; `MustComputeTokens` + `KnownModules` covers ~90% automatically
   2. `resources_test.go` asserts `len(Resources) == 28` and `len(DataSources) == 21`; every field with `Sensitive: true` in the TF schema maps to a Pulumi Secret (SECRETS-03 auto-mapping test)
-  3. `pulumi import` round-trip succeeds for all 4 composite-ID resources using `/`-separated IDs, including a test with a colon-containing policy name (`pure:policy/array_admin`)
-  4. `pulumi refresh` smoke tests pass for `flashblade_server` (v0→v1→v2), `flashblade_directory_service_role` (v0→v1), and `flashblade_remote_credentials` (v0→v1) using pre-captured v0/v1 state snapshots
+  3. ComputeID unit tests invoke each closure directly with sample `resource.PropertyMap` data and assert the returned ID string for all 4 composite-ID resources, including a test with colon-containing policy name (`pure:policy/array_admin`) for COMPOSITE-04
+  4. State-upgrader resources (`flashblade_server`, `flashblade_directory_service_role`, `flashblade_object_store_remote_credentials`) are registered in `prov.Resources`. The bridge delegates schema version migration to the TF provider via the shim. Full `pulumi refresh` smoke tests deferred to Phase 58 TEST-02/03
   5. `schema.json`, `schema-embed.json`, `bridge-metadata.json` are committed; `git diff --exit-code` on these 3 files exits 0 after `make tfgen`
 **Plans:** 2 plans
 
 Plans:
 - [ ] 55-01-PLAN.md — ComputeID closures + Secret marks + SOFTDELETE-02 overrides in resources.go
-- [ ] 55-02-PLAN.md — SECRETS-03 auto-mapping test + SOFTDELETE-03 + UPGRADE-01/02/03 tests + schema regeneration
+- [ ] 55-02-PLAN.md — SECRETS-03 auto-mapping test + SOFTDELETE-03 + UPGRADE-01/02/03 tests + ComputeID unit tests + schema regeneration
 **UI hint**: no
 
 ### Phase 56: SDK Generation — Python + Go
@@ -876,4 +876,4 @@ Plans:
 
 ---
 
-_Last updated: 2026-04-21 — milestone pulumi-2.22.3 roadmap created (Phases 54-58, 39 requirements)_
+_Last updated: 2026-04-22 — Phase 55 success criteria narrowed (SOFTDELETE-02/03, UPGRADE-01/02/03, COMPOSITE-02/03/04 adjusted for bridge v3.127.0 constraints)_

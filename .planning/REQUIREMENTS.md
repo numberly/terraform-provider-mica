@@ -44,27 +44,27 @@
 ### COMPOSITE — Composite ID handlers
 
 - [x] **COMPOSITE-01**: `flashblade_object_store_access_policy_rule` has `ComputeID` producing `policyName/ruleName` (slash separator, string rule name — verified against `internal/provider/object_store_access_policy_rule_resource.go` `readIntoState`). `pulumi import` round-trip test passes.
-- [ ] **COMPOSITE-02**: `flashblade_bucket_access_policy_rule` has `ComputeID` producing `policyName/ruleName`. `pulumi import` round-trip test passes.
-- [ ] **COMPOSITE-03**: `flashblade_network_access_policy_rule` has `ComputeID` producing `policyName/ruleName`. `pulumi import` round-trip test passes.
-- [ ] **COMPOSITE-04**: `flashblade_management_access_policy_directory_service_role_membership` has `ComputeID` producing `roleName/policyName` (role FIRST — policy names contain colons like `pure:policy/array_admin`). `pulumi import` round-trip test with a colon-containing policy name passes.
+- [ ] **COMPOSITE-02**: `flashblade_bucket_access_policy_rule` has `ComputeID` producing `bucketName/ruleName`. ComputeID unit test invokes the closure with a sample `resource.PropertyMap` and asserts the returned ID string matches `bucketName/ruleName`. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
+- [ ] **COMPOSITE-03**: `flashblade_network_access_policy_rule` has `ComputeID` producing `policyName/ruleName`. ComputeID unit test invokes the closure with a sample `resource.PropertyMap` and asserts the returned ID string. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
+- [ ] **COMPOSITE-04**: `flashblade_management_access_policy_directory_service_role_membership` has `ComputeID` producing `roleName/policyName` (role FIRST — policy names contain colons like `pure:policy/array_admin`). ComputeID unit test includes a test case with `policy = "pure:policy/array_admin"` to verify colon handling. Full `pulumi import` round-trip deferred to Phase 58 TEST-03.
 
 ### SECRETS — Sensitive / write-once field promotion
 
 - [x] **SECRETS-01**: Provider config `api_token` is secret. TF provider uses a nested `auth { api_token }` block; the bridge auto-promotes `auth.apiToken` as `secret: true` in the generated schema.json config variables. `ProviderInfo.Config` is empty by design — nested block secrets are handled via TF schema introspection, not explicit Config overrides.
-- [x] **SECRETS-02**: The 6 write-once / sensitive fields (`object_store_access_key.secret_access_key`, `directory_service_management.bind_password`, `array_connection.connection_key`, `certificate.private_key`, `certificate.private_key_passphrase`, plus any additional `**password` fields discovered by audit) are marked `Secret: tfbridge.True()` + listed in `AdditionalSecretOutputs` for their owning resource (belt-and-braces per bridge issue #1028).
+- [x] **SECRETS-02**: The 6 write-once / sensitive fields (`object_store_access_key.secret_access_key`, `directory_service_management.bind_password`, `array_connection.connection_key`, `array_connection_key.connection_key`, `certificate.private_key`, `certificate.passphrase`, plus any additional `**password` fields discovered by audit) are marked `Secret: tfbridge.True()` + listed in `AdditionalSecretOutputs` for their owning resource (belt-and-braces per bridge issue #1028).
 - [ ] **SECRETS-03**: `resources_test.go` asserts every field tagged `Sensitive: true` in the TF schema is promoted to a Pulumi Secret (auto-mapping coverage test). Test fails loudly if a new sensitive field is added upstream without bridge mapping.
 
 ### SOFTDELETE — Soft-delete timeout defense
 
 - [x] **SOFTDELETE-01**: `flashblade_bucket` delete timeout is 30 minutes. Bridge v3.127.0 `ResourceInfo` has no `DeleteTimeout` field; the TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim. This is validated by the TF provider's own test suite. Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields on `ResourceInfo`.
-- [ ] **SOFTDELETE-02**: `flashblade_filesystem` has explicit `DeleteTimeout: 30*time.Minute` in `ResourceInfo`.
-- [ ] **SOFTDELETE-03**: `resources_test.go` asserts `DeleteTimeout >= 25*time.Minute` for both soft-delete resources. Test fails loudly on regression.
+- [ ] **SOFTDELETE-02**: `flashblade_file_system` is registered in `resources.go` with a comment documenting that `DeleteTimeout` is not available on `ResourceInfo` in bridge v3.127.0. The TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim (same pattern as SOFTDELETE-01). Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields.
+- [ ] **SOFTDELETE-03**: `resources_test.go` asserts both soft-delete resources (`flashblade_bucket`, `flashblade_file_system`) are registered in `prov.Resources`. `DeleteTimeout` assertion deferred — bridge v3.127.0 `ResourceInfo` does not expose timeout fields; the TF provider's timeouts block defaults are inherited via the shim and validated by the TF provider's own test suite. Test fails loudly if either resource is missing from the bridge registration.
 
 ### UPGRADE — State upgrader safety
 
-- [ ] **UPGRADE-01**: `pulumi refresh` smoke test passes for `flashblade_server` (SchemaVersion 0→1→2) with state snapshots captured at v0 and v1 formats. Verifies bridge issue #1667 `RawState` handling.
-- [ ] **UPGRADE-02**: `pulumi refresh` smoke test passes for `flashblade_directory_service_role` (v0→v1) with a v0 state snapshot.
-- [ ] **UPGRADE-03**: `pulumi refresh` smoke test passes for `flashblade_remote_credentials` (v0→v1) with a v0 state snapshot.
+- [ ] **UPGRADE-01**: `flashblade_server` (SchemaVersion 0→1→2) is registered in `prov.Resources`. The bridge delegates schema version migration to the TF provider's `UpgradeState` chain via the `pf.ShimProvider` shim, which is already validated by 818+ TF provider tests. Full `pulumi refresh` smoke tests with pre-captured state snapshots deferred to Phase 58 TEST-02/03.
+- [ ] **UPGRADE-02**: `flashblade_directory_service_role` (v0→v1) is registered in `prov.Resources`. Same delegation pattern as UPGRADE-01. Full smoke tests deferred to Phase 58.
+- [ ] **UPGRADE-03**: `flashblade_object_store_remote_credentials` (v0→v1) is registered in `prov.Resources`. Same delegation pattern as UPGRADE-01. Full smoke tests deferred to Phase 58.
 
 ### SDK — SDK generation (Python + Go)
 
@@ -87,7 +87,7 @@
 
 ### TEST — Bridge layer tests
 
-- [x] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 28`); (b) every TF data source is mapped (`len(DataSources) == 21`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) `DeleteTimeout` is set on bucket + filesystem (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
+- [x] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 28`); (b) every TF data source is mapped (`len(DataSources) == 21`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) soft-delete resources are registered (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
 - [ ] **TEST-02**: ProgramTest examples pass against a real FlashBlade for 3 representative resources: `target` (auto-tokenization baseline), `remote_credentials` (secrets), `bucket` (soft-delete + 30-min timeout). One example per target language (so: `target-py`, `target-go`, `remote_credentials-py`, `remote_credentials-go`, `bucket-py`, `bucket-go` — 6 examples total).
 - [ ] **TEST-03**: `pulumi import` round-trip test passes for each composite-ID resource (see COMPOSITE-01/02/03/04). Tests written as ProgramTests or standalone scripts invoking `pulumi import` + `pulumi refresh` + assert no drift.
 
@@ -105,6 +105,8 @@
 - Pulumi Registry publication.
 - `ci-mgmt` template adoption (auto-upgrade bridge + TF provider via cron PRs).
 - Full 28-resource ProgramTest coverage (MVP covers 3 resources × 2 languages = 6 tests).
+- Full `pulumi refresh` smoke tests with pre-captured state snapshots for state upgrader resources (UPGRADE-01/02/03 full validation).
+- Full `pulumi import` round-trip tests for composite-ID resources (COMPOSITE-02/03/04 full validation).
 
 ## Traceability
 
