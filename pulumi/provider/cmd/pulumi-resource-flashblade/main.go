@@ -9,7 +9,7 @@ import (
 	flashblade "github.com/numberly/opentofu-provider-flashblade/pulumi/provider"
 )
 
-//go:embed schema-embed.json
+//go:embed schema.json
 var pulumiSchema []byte
 
 //go:embed bridge-metadata.json

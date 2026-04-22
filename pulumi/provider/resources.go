@@ -40,38 +40,26 @@ func Provider() tfbridge.ProviderInfo {
 		PluginDownloadURL: "github://api.github.com/numberly",
 
 		// Config — mirrors the TF provider schema 1:1 (D-01).
-		// The TF provider uses nested blocks: auth.api_token, auth.oauth2.client_id, etc.
-		// Fields already marked Sensitive in TF schema are auto-promoted to Pulumi Secrets
-		// by the bridge. The entries below add belt-and-braces explicit Secret marks
-		// on the top-level config attributes (SECRETS-01).
-		Config: map[string]*tfbridge.SchemaInfo{
-			"api_token": {
-				Secret: tfbridge.True(),
-			},
-			"oauth2_client_secret": {
-				Secret: tfbridge.True(),
-			},
-			"ca_certificate": {
-				Secret: tfbridge.True(),
-			},
-		},
+		// The TF provider uses a nested `auth` block containing api_token and oauth2 sub-block.
+		// Top-level attributes: endpoint, ca_cert, ca_cert_file, insecure_skip_verify, max_retries.
+		// Sensitive fields (auth.api_token, auth.oauth2.client_id, auth.oauth2.key_id) are
+		// already marked Sensitive in the TF schema — the bridge auto-promotes them to Pulumi
+		// Secrets. No explicit Config overrides are needed since all sensitive fields are
+		// already handled by TF schema introspection (SECRETS-01).
+		Config: map[string]*tfbridge.SchemaInfo{},
 
 		MetadataInfo: tfbridge.NewProviderMetadata(nil),
 	}
 
-	// ---- Auto-tokenization across all 49 TF resources + data sources (D-02) ----
-	// Module assignment driven by resource name prefix.
-	prov.MustComputeTokens(tokens.KnownModules(
+	// ---- Auto-tokenization across all TF resources + data sources (D-02) ----
+	// SingleModule places every resource and data source in the `index` module.
+	// This avoids the KnownModules limitation where resource names equal to a module
+	// prefix (e.g. `flashblade_bucket` → name="" → error) and resources that don't
+	// match any known prefix fall through to default.
+	// Token form: flashblade:index:Bucket, flashblade:index:FileSystem, etc.
+	prov.MustComputeTokens(tokens.SingleModule(
 		"flashblade_", // TF resource prefix
-		"index",       // default module
-		[]string{
-			"bucket",
-			"filesystem",
-			"policy",
-			"objectstore",
-			"array",
-			"network",
-		},
+		"index",       // single module
 		tokens.MakeStandard(mainPkg),
 	))
 
@@ -95,6 +83,24 @@ func Provider() tfbridge.ProviderInfo {
 	// coverage is provided by the TF provider's existing timeouts block defaults.
 	if _, ok := prov.Resources["flashblade_target"]; !ok {
 		panic("flashblade_target resource not found after MustComputeTokens")
+	}
+
+	// flashblade_array_connection_key — the `id` attribute is sensitive in the TF schema
+	// (it holds the connection key value itself). The bridge requires explicit acknowledgment
+	// that the ID will be exposed in Pulumi state (IDs cannot be encrypted in state).
+	// Setting Secret: tfbridge.False() is the correct opt-in per bridge check_test.go
+	// TestSensitiveIDWithOverride ("false" case passes, "true" case is a no-op that still fails).
+	// NOTE: The error message in the bridge says "set Secret = tfbridge.True()" but that is
+	// incorrect per the test suite — False() is required.
+	if r, ok := prov.Resources["flashblade_array_connection_key"]; ok {
+		if r.Fields == nil {
+			r.Fields = map[string]*tfbridge.SchemaInfo{}
+		}
+		r.Fields["id"] = &tfbridge.SchemaInfo{
+			Secret: tfbridge.False(),
+		}
+	} else {
+		panic("flashblade_array_connection_key resource not found after MustComputeTokens")
 	}
 
 	// flashblade_object_store_remote_credentials — write-once secret (SECRETS-02, PB3).
@@ -122,10 +128,10 @@ func Provider() tfbridge.ProviderInfo {
 		panic("flashblade_bucket resource not found after MustComputeTokens")
 	}
 
-	// flashblade_filesystem — same soft-delete pattern as bucket (SOFTDELETE-01).
+	// flashblade_file_system — same soft-delete pattern as bucket (SOFTDELETE-01).
 	// Same note: DeleteTimeout not available; TF default 30m inherited via shim.
-	if _, ok := prov.Resources["flashblade_filesystem"]; !ok {
-		panic("flashblade_filesystem resource not found after MustComputeTokens")
+	if _, ok := prov.Resources["flashblade_file_system"]; !ok {
+		panic("flashblade_file_system resource not found after MustComputeTokens")
 	}
 
 	// flashblade_object_store_access_policy_rule — composite ID with "/" separator,

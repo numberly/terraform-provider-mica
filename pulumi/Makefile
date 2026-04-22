@@ -21,8 +21,7 @@ tfgen_build:
 # + schema-embed.json into the --out directory.
 tfgen: tfgen_build
 	$(TFGEN_BIN) schema --out $(SCHEMA_DIR)
-	@test -s $(SCHEMA_DIR)/schema.json        || (echo "schema.json empty" && exit 1)
-	@test -s $(SCHEMA_DIR)/schema-embed.json  || (echo "schema-embed.json empty" && exit 1)
+	@test -s $(SCHEMA_DIR)/schema.json          || (echo "schema.json empty" && exit 1)
 	@test -s $(SCHEMA_DIR)/bridge-metadata.json || (echo "bridge-metadata.json empty" && exit 1)
 
 # Build runtime provider binary with ldflags-injected VERSION and real embedded schema.
@@ -35,4 +34,4 @@ test:
 
 clean:
 	rm -f $(TFGEN_BIN) $(RUNTIME_BIN)
-	rm -f $(SCHEMA_DIR)/schema.json $(SCHEMA_DIR)/schema-embed.json $(SCHEMA_DIR)/bridge-metadata.json
+	rm -f $(SCHEMA_DIR)/schema.json $(SCHEMA_DIR)/bridge-metadata.json

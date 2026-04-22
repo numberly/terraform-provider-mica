@@ -1,1 +1,556 @@
-{}
+{
+    "auto-aliasing": {
+        "resources": {
+            "flashblade_array_connection": {
+                "current": "flashblade:index/arrayConnection:ArrayConnection",
+                "fields": {
+                    "replication_addresses": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_array_connection_key": {
+                "current": "flashblade:index/arrayConnectionKey:ArrayConnectionKey"
+            },
+            "flashblade_array_dns": {
+                "current": "flashblade:index/arrayDns:ArrayDns",
+                "fields": {
+                    "nameservers": {
+                        "maxItemsOne": false
+                    },
+                    "services": {
+                        "maxItemsOne": false
+                    },
+                    "sources": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_array_ntp": {
+                "current": "flashblade:index/arrayNtp:ArrayNtp",
+                "fields": {
+                    "ntp_servers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_array_smtp": {
+                "current": "flashblade:index/arraySmtp:ArraySmtp",
+                "fields": {
+                    "alert_watchers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_audit_object_store_policy": {
+                "current": "flashblade:index/auditObjectStorePolicy:AuditObjectStorePolicy",
+                "fields": {
+                    "log_targets": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_audit_object_store_policy_member": {
+                "current": "flashblade:index/auditObjectStorePolicyMember:AuditObjectStorePolicyMember"
+            },
+            "flashblade_bucket": {
+                "current": "flashblade:index/bucket:Bucket"
+            },
+            "flashblade_bucket_access_policy": {
+                "current": "flashblade:index/bucketAccessPolicy:BucketAccessPolicy"
+            },
+            "flashblade_bucket_access_policy_rule": {
+                "current": "flashblade:index/bucketAccessPolicyRule:BucketAccessPolicyRule",
+                "fields": {
+                    "actions": {
+                        "maxItemsOne": false
+                    },
+                    "principals": {
+                        "maxItemsOne": false
+                    },
+                    "resources": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_bucket_audit_filter": {
+                "current": "flashblade:index/bucketAuditFilter:BucketAuditFilter",
+                "fields": {
+                    "actions": {
+                        "maxItemsOne": false
+                    },
+                    "s3_prefixes": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_bucket_replica_link": {
+                "current": "flashblade:index/bucketReplicaLink:BucketReplicaLink"
+            },
+            "flashblade_certificate": {
+                "current": "flashblade:index/certificate:Certificate",
+                "fields": {
+                    "subject_alternative_names": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_certificate_group": {
+                "current": "flashblade:index/certificateGroup:CertificateGroup",
+                "fields": {
+                    "realms": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_certificate_group_member": {
+                "current": "flashblade:index/certificateGroupMember:CertificateGroupMember"
+            },
+            "flashblade_directory_service_management": {
+                "current": "flashblade:index/directoryServiceManagement:DirectoryServiceManagement",
+                "fields": {
+                    "services": {
+                        "maxItemsOne": false
+                    },
+                    "uris": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_directory_service_role": {
+                "current": "flashblade:index/directoryServiceRole:DirectoryServiceRole",
+                "fields": {
+                    "management_access_policies": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_file_system": {
+                "current": "flashblade:index/fileSystem:FileSystem"
+            },
+            "flashblade_file_system_export": {
+                "current": "flashblade:index/fileSystemExport:FileSystemExport"
+            },
+            "flashblade_lifecycle_rule": {
+                "current": "flashblade:index/lifecycleRule:LifecycleRule"
+            },
+            "flashblade_log_target_object_store": {
+                "current": "flashblade:index/logTargetObjectStore:LogTargetObjectStore"
+            },
+            "flashblade_management_access_policy_directory_service_role_membership": {
+                "current": "flashblade:index/managementAccessPolicyDirectoryServiceRoleMembership:ManagementAccessPolicyDirectoryServiceRoleMembership"
+            },
+            "flashblade_network_access_policy": {
+                "current": "flashblade:index/networkAccessPolicy:NetworkAccessPolicy"
+            },
+            "flashblade_network_access_policy_rule": {
+                "current": "flashblade:index/networkAccessPolicyRule:NetworkAccessPolicyRule",
+                "fields": {
+                    "interfaces": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_network_interface": {
+                "current": "flashblade:index/networkInterface:NetworkInterface",
+                "fields": {
+                    "attached_servers": {
+                        "maxItemsOne": false
+                    },
+                    "realms": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_nfs_export_policy": {
+                "current": "flashblade:index/nfsExportPolicy:NfsExportPolicy"
+            },
+            "flashblade_nfs_export_policy_rule": {
+                "current": "flashblade:index/nfsExportPolicyRule:NfsExportPolicyRule",
+                "fields": {
+                    "security": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_object_store_access_key": {
+                "current": "flashblade:index/objectStoreAccessKey:ObjectStoreAccessKey"
+            },
+            "flashblade_object_store_access_policy": {
+                "current": "flashblade:index/objectStoreAccessPolicy:ObjectStoreAccessPolicy"
+            },
+            "flashblade_object_store_access_policy_rule": {
+                "current": "flashblade:index/objectStoreAccessPolicyRule:ObjectStoreAccessPolicyRule",
+                "fields": {
+                    "actions": {
+                        "maxItemsOne": false
+                    },
+                    "resources": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_object_store_account": {
+                "current": "flashblade:index/objectStoreAccount:ObjectStoreAccount"
+            },
+            "flashblade_object_store_account_export": {
+                "current": "flashblade:index/objectStoreAccountExport:ObjectStoreAccountExport"
+            },
+            "flashblade_object_store_remote_credentials": {
+                "current": "flashblade:index/objectStoreRemoteCredentials:ObjectStoreRemoteCredentials"
+            },
+            "flashblade_object_store_user": {
+                "current": "flashblade:index/objectStoreUser:ObjectStoreUser"
+            },
+            "flashblade_object_store_user_policy": {
+                "current": "flashblade:index/objectStoreUserPolicy:ObjectStoreUserPolicy"
+            },
+            "flashblade_object_store_virtual_host": {
+                "current": "flashblade:index/objectStoreVirtualHost:ObjectStoreVirtualHost",
+                "fields": {
+                    "attached_servers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_qos_policy": {
+                "current": "flashblade:index/qosPolicy:QosPolicy"
+            },
+            "flashblade_qos_policy_member": {
+                "current": "flashblade:index/qosPolicyMember:QosPolicyMember"
+            },
+            "flashblade_quota_group": {
+                "current": "flashblade:index/quotaGroup:QuotaGroup"
+            },
+            "flashblade_quota_user": {
+                "current": "flashblade:index/quotaUser:QuotaUser"
+            },
+            "flashblade_s3_export_policy": {
+                "current": "flashblade:index/s3ExportPolicy:S3ExportPolicy"
+            },
+            "flashblade_s3_export_policy_rule": {
+                "current": "flashblade:index/s3ExportPolicyRule:S3ExportPolicyRule",
+                "fields": {
+                    "actions": {
+                        "maxItemsOne": false
+                    },
+                    "resources": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_server": {
+                "current": "flashblade:index/server:Server",
+                "fields": {
+                    "cascade_delete": {
+                        "maxItemsOne": false
+                    },
+                    "directory_services": {
+                        "maxItemsOne": false
+                    },
+                    "dns": {
+                        "maxItemsOne": false
+                    },
+                    "network_interfaces": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_smb_client_policy": {
+                "current": "flashblade:index/smbClientPolicy:SmbClientPolicy"
+            },
+            "flashblade_smb_client_policy_rule": {
+                "current": "flashblade:index/smbClientPolicyRule:SmbClientPolicyRule"
+            },
+            "flashblade_smb_share_policy": {
+                "current": "flashblade:index/smbSharePolicy:SmbSharePolicy"
+            },
+            "flashblade_smb_share_policy_rule": {
+                "current": "flashblade:index/smbSharePolicyRule:SmbSharePolicyRule"
+            },
+            "flashblade_snapshot_policy": {
+                "current": "flashblade:index/snapshotPolicy:SnapshotPolicy"
+            },
+            "flashblade_snapshot_policy_rule": {
+                "current": "flashblade:index/snapshotPolicyRule:SnapshotPolicyRule"
+            },
+            "flashblade_subnet": {
+                "current": "flashblade:index/subnet:Subnet",
+                "fields": {
+                    "interfaces": {
+                        "maxItemsOne": false
+                    },
+                    "services": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_syslog_server": {
+                "current": "flashblade:index/syslogServer:SyslogServer",
+                "fields": {
+                    "services": {
+                        "maxItemsOne": false
+                    },
+                    "sources": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_target": {
+                "current": "flashblade:index/target:Target"
+            },
+            "flashblade_tls_policy": {
+                "current": "flashblade:index/tlsPolicy:TlsPolicy",
+                "fields": {
+                    "disabled_tls_ciphers": {
+                        "maxItemsOne": false
+                    },
+                    "enabled_tls_ciphers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_tls_policy_member": {
+                "current": "flashblade:index/tlsPolicyMember:TlsPolicyMember"
+            }
+        },
+        "datasources": {
+            "flashblade_array_connection": {
+                "current": "flashblade:index/getArrayConnection:getArrayConnection",
+                "fields": {
+                    "replication_addresses": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_array_dns": {
+                "current": "flashblade:index/getArrayDns:getArrayDns",
+                "fields": {
+                    "nameservers": {
+                        "maxItemsOne": false
+                    },
+                    "services": {
+                        "maxItemsOne": false
+                    },
+                    "sources": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_array_ntp": {
+                "current": "flashblade:index/getArrayNtp:getArrayNtp",
+                "fields": {
+                    "ntp_servers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_array_smtp": {
+                "current": "flashblade:index/getArraySmtp:getArraySmtp",
+                "fields": {
+                    "alert_watchers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_audit_object_store_policy": {
+                "current": "flashblade:index/getAuditObjectStorePolicy:getAuditObjectStorePolicy",
+                "fields": {
+                    "log_targets": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_bucket": {
+                "current": "flashblade:index/getBucket:getBucket"
+            },
+            "flashblade_bucket_access_policy": {
+                "current": "flashblade:index/getBucketAccessPolicy:getBucketAccessPolicy"
+            },
+            "flashblade_bucket_audit_filter": {
+                "current": "flashblade:index/getBucketAuditFilter:getBucketAuditFilter",
+                "fields": {
+                    "actions": {
+                        "maxItemsOne": false
+                    },
+                    "s3_prefixes": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_bucket_replica_link": {
+                "current": "flashblade:index/getBucketReplicaLink:getBucketReplicaLink"
+            },
+            "flashblade_certificate": {
+                "current": "flashblade:index/getCertificate:getCertificate",
+                "fields": {
+                    "subject_alternative_names": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_certificate_group": {
+                "current": "flashblade:index/getCertificateGroup:getCertificateGroup",
+                "fields": {
+                    "realms": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_directory_service_management": {
+                "current": "flashblade:index/getDirectoryServiceManagement:getDirectoryServiceManagement",
+                "fields": {
+                    "services": {
+                        "maxItemsOne": false
+                    },
+                    "uris": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_directory_service_role": {
+                "current": "flashblade:index/getDirectoryServiceRole:getDirectoryServiceRole",
+                "fields": {
+                    "management_access_policies": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_file_system": {
+                "current": "flashblade:index/getFileSystem:getFileSystem"
+            },
+            "flashblade_file_system_export": {
+                "current": "flashblade:index/getFileSystemExport:getFileSystemExport"
+            },
+            "flashblade_lifecycle_rule": {
+                "current": "flashblade:index/getLifecycleRule:getLifecycleRule"
+            },
+            "flashblade_link_aggregation_group": {
+                "current": "flashblade:index/getLinkAggregationGroup:getLinkAggregationGroup",
+                "fields": {
+                    "ports": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_log_target_object_store": {
+                "current": "flashblade:index/getLogTargetObjectStore:getLogTargetObjectStore"
+            },
+            "flashblade_network_access_policy": {
+                "current": "flashblade:index/getNetworkAccessPolicy:getNetworkAccessPolicy"
+            },
+            "flashblade_network_interface": {
+                "current": "flashblade:index/getNetworkInterface:getNetworkInterface",
+                "fields": {
+                    "attached_servers": {
+                        "maxItemsOne": false
+                    },
+                    "realms": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_nfs_export_policy": {
+                "current": "flashblade:index/getNfsExportPolicy:getNfsExportPolicy"
+            },
+            "flashblade_object_store_access_key": {
+                "current": "flashblade:index/getObjectStoreAccessKey:getObjectStoreAccessKey"
+            },
+            "flashblade_object_store_access_policy": {
+                "current": "flashblade:index/getObjectStoreAccessPolicy:getObjectStoreAccessPolicy"
+            },
+            "flashblade_object_store_account": {
+                "current": "flashblade:index/getObjectStoreAccount:getObjectStoreAccount"
+            },
+            "flashblade_object_store_account_export": {
+                "current": "flashblade:index/getObjectStoreAccountExport:getObjectStoreAccountExport"
+            },
+            "flashblade_object_store_remote_credentials": {
+                "current": "flashblade:index/getObjectStoreRemoteCredentials:getObjectStoreRemoteCredentials"
+            },
+            "flashblade_object_store_user": {
+                "current": "flashblade:index/getObjectStoreUser:getObjectStoreUser"
+            },
+            "flashblade_object_store_virtual_host": {
+                "current": "flashblade:index/getObjectStoreVirtualHost:getObjectStoreVirtualHost",
+                "fields": {
+                    "attached_servers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_qos_policy": {
+                "current": "flashblade:index/getQosPolicy:getQosPolicy"
+            },
+            "flashblade_quota_group": {
+                "current": "flashblade:index/getQuotaGroup:getQuotaGroup"
+            },
+            "flashblade_quota_user": {
+                "current": "flashblade:index/getQuotaUser:getQuotaUser"
+            },
+            "flashblade_s3_export_policy": {
+                "current": "flashblade:index/getS3ExportPolicy:getS3ExportPolicy"
+            },
+            "flashblade_server": {
+                "current": "flashblade:index/getServer:getServer",
+                "fields": {
+                    "directory_services": {
+                        "maxItemsOne": false
+                    },
+                    "dns": {
+                        "maxItemsOne": false
+                    },
+                    "network_interfaces": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_smb_client_policy": {
+                "current": "flashblade:index/getSmbClientPolicy:getSmbClientPolicy"
+            },
+            "flashblade_smb_share_policy": {
+                "current": "flashblade:index/getSmbSharePolicy:getSmbSharePolicy"
+            },
+            "flashblade_snapshot_policy": {
+                "current": "flashblade:index/getSnapshotPolicy:getSnapshotPolicy"
+            },
+            "flashblade_subnet": {
+                "current": "flashblade:index/getSubnet:getSubnet",
+                "fields": {
+                    "interfaces": {
+                        "maxItemsOne": false
+                    },
+                    "services": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_syslog_server": {
+                "current": "flashblade:index/getSyslogServer:getSyslogServer",
+                "fields": {
+                    "services": {
+                        "maxItemsOne": false
+                    },
+                    "sources": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_target": {
+                "current": "flashblade:index/getTarget:getTarget"
+            },
+            "flashblade_tls_policy": {
+                "current": "flashblade:index/getTlsPolicy:getTlsPolicy",
+                "fields": {
+                    "disabled_tls_ciphers": {
+                        "maxItemsOne": false
+                    },
+                    "enabled_tls_ciphers": {
+                        "maxItemsOne": false
+                    }
+                }
+            }
+        }
+    },
+    "auto-settings": {}
+}
