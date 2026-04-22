@@ -93,10 +93,10 @@
 
 ### DOCS — Documentation + examples
 
-- [ ] **DOCS-01**: `PULUMI_CONVERT=1` converts the existing `./examples/resources/flashblade_*/resource.tf` HCL snippets to Pulumi Python + Go at `make tfgen` time. Failures are captured in a translation report under `./pulumi/.coverage/` (non-blocking for MVP).
+- [x] **DOCS-01**: `PULUMI_CONVERT=1` converts the existing `./examples/resources/flashblade_*/resource.tf` HCL snippets to Pulumi Python + Go at `make tfgen` time. Failures are captured in a translation report under `./pulumi/.coverage/` (non-blocking for MVP).
 - [ ] **DOCS-02**: Hand-written ProgramTest-style examples in `./pulumi/examples/`: `bucket-py/`, `bucket-go/`, `target-py/`, `target-go/`, `remote_credentials-py/`, `remote_credentials-go/`. Each with working `Pulumi.yaml` + `__main__.py` or `main.go`.
-- [ ] **DOCS-03**: `./pulumi/README.md` covers private installation: `GOPRIVATE=github.com/numberly/*` setup, `pulumi plugin install resource flashblade vX.Y.Z --server github://api.github.com/numberly`, Python wheel install via release asset URL, `customTimeouts` for soft-delete, composite ID import syntax.
-- [ ] **DOCS-04**: `./pulumi/CHANGELOG.md` created and populated with the `pulumi-2.22.3` alpha entry (features delivered, known limitations, upgrade notes from "no Pulumi" to "alpha").
+- [x] **DOCS-03**: `./pulumi/README.md` covers private installation: `GOPRIVATE=github.com/numberly/*` setup, `pulumi plugin install resource flashblade vX.Y.Z --server github://api.github.com/numberly`, Python wheel install via release asset URL, `customTimeouts` for soft-delete, composite ID import syntax.
+- [x] **DOCS-04**: `./pulumi/CHANGELOG.md` created and populated with the `pulumi-2.22.3` alpha entry (features delivered, known limitations, upgrade notes from "no Pulumi" to "alpha").
 
 ### Future Requirements (deferred — not in pulumi-2.22.3)
 
@@ -148,9 +148,9 @@
 | TEST-01 | Phase 54 | Complete | — |
 | TEST-02 | Phase 58 | pending | — |
 | TEST-03 | Phase 58 | Complete | — |
-| DOCS-01 | Phase 58 | pending | — |
+| DOCS-01 | Phase 58 | Complete | — |
 | DOCS-02 | Phase 58 | pending | — |
-| DOCS-03 | Phase 58 | pending | — |
-| DOCS-04 | Phase 58 | pending | — |
+| DOCS-03 | Phase 58 | Complete | — |
+| DOCS-04 | Phase 58 | Complete | — |
 
 **Total: 39 requirements across 10 categories — 100% mapped (0 orphans).**
