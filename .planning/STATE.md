@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-last_updated: "2026-04-22T13:52:22.572Z"
+status: executing
+last_updated: "2026-04-22T15:23:18.575Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 15
+  completed_plans: 13
   percent: 100
 ---
 
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-21)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** Phase 56 — sdk-generation-python-go
+**Current focus:** Phase 58 — release-pipeline-docs
 
 ## Current Position
 
 Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha)
-Phase: 56 (sdk-generation-python-go) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 58 (release-pipeline-docs) — EXECUTING
+Plan: 3 of 4
+Status: Ready to execute
 Last activity: 2026-04-22
 
 Progress: [██████████] 100% (8/8 plans)
