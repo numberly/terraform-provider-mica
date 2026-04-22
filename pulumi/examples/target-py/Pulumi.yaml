@@ -1,0 +1,3 @@
+name: flashblade-target-py
+description: FlashBlade target resource example in Python
+runtime: python

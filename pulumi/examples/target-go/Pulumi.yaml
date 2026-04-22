@@ -1,0 +1,3 @@
+name: flashblade-target-go
+description: FlashBlade target resource example in Go
+runtime: go
