@@ -31,32 +31,32 @@
 - [x] **BRIDGE-02**: `./pulumi/provider/go.mod` pins `pulumi-terraform-bridge/v3 v3.127.0`, `pulumi/sdk/v3 v3.231.0`, `pulumi/pkg/v3 v3.231.0`, declares the TF provider dependency, and includes the required `replace github.com/hashicorp/terraform-plugin-sdk/v2 => github.com/pulumi/terraform-plugin-sdk/v2 v2.0.0-20260318212141-5525259d096b` directive plus `replace github.com/numberly/opentofu-provider-flashblade => ../../`.
 - [x] **BRIDGE-03**: `./pulumi/sdk/go/go.mod` is a lean consumer SDK module depending only on `pulumi/sdk/v3 v3.231.0` (no bridge transitive deps exposed).
 - [ ] **BRIDGE-04**: `./pulumi/provider/cmd/pulumi-tfgen-flashblade/main.go` and `./pulumi/provider/cmd/pulumi-resource-flashblade/main.go` use `pkg/pf/tfgen` and `pkg/pf/tfbridge` respectively (NOT the SDK v2 shim). Runtime plugin embeds `schema-embed.json` and `bridge-metadata.json` via `//go:embed`.
-- [ ] **BRIDGE-05**: `./pulumi/provider/resources.go` declares `ProviderInfo` with `P: pf.ShimProvider(provider.New(version.Version)())`, `Name: "flashblade"`, `Version` wired via ldflags, `Publisher: "numberly"`, `PluginDownloadURL: "github://api.github.com/numberly"`, Apache-2.0 license.
+- [x] **BRIDGE-05**: `./pulumi/provider/resources.go` declares `ProviderInfo` with `P: pf.ShimProvider(provider.New(version.Version)())`, `Name: "flashblade"`, `Version` wired via ldflags, `Publisher: "numberly"`, `PluginDownloadURL: "github://api.github.com/numberly"`, Apache-2.0 license.
 
 ### MAPPING — Resource / data source tokenization
 
 - [ ] **MAPPING-01**: All 28 resources + 21 data sources are tokenized via `MustComputeTokens` + `KnownModules(["bucket", "filesystem", "policy", "objectstore", "array", "network", "index"], ...)` + `MustApplyAutoAliases()`. Post-`make tfgen` output reports zero `MISSING` tokens.
-- [ ] **MAPPING-02**: `Fields["timeouts"].Omit = true` is applied to every resource via a helper (`omitTimeoutsOnAll`) invoked in `resources.go` **after `MustComputeTokens` populates `prov.Resources`** and before returning the `ProviderInfo` — iterating an empty Resources map before tokenization is a no-op. Verified by schema inspection (no `timeouts` input in generated SDKs) and `resources_test.go`.
-- [ ] **MAPPING-03**: Explicit `Create/Update/DeleteTimeout` values on every `ResourceInfo`, matching the TF timeouts block defaults (Create 20min, Update 20min, Delete 30min for bucket/filesystem; defaults otherwise).
+- [x] **MAPPING-02**: `Fields["timeouts"].Omit = true` is applied to every resource via a helper (`omitTimeoutsOnAll`) invoked in `resources.go` **after `MustComputeTokens` populates `prov.Resources`** and before returning the `ProviderInfo` — iterating an empty Resources map before tokenization is a no-op. Verified by schema inspection (no `timeouts` input in generated SDKs) and `resources_test.go`.
+- [x] **MAPPING-03**: Explicit `Create/Update/DeleteTimeout` values on every `ResourceInfo`, matching the TF timeouts block defaults (Create 20min, Update 20min, Delete 30min for bucket/filesystem; defaults otherwise).
 - [ ] **MAPPING-04**: Reserved Pulumi identifiers (`id`, `urn`, `provider`) are renamed where they collide with existing field names. Python token collisions (e.g. `target`) are validated against first `make tfgen` output.
-- [ ] **MAPPING-05**: `SetAutonaming` is **not called** — storage names are operational identifiers. Consumer must supply `name` explicitly (documented in examples).
+- [x] **MAPPING-05**: `SetAutonaming` is **not called** — storage names are operational identifiers. Consumer must supply `name` explicitly (documented in examples).
 
 ### COMPOSITE — Composite ID handlers
 
-- [ ] **COMPOSITE-01**: `flashblade_object_store_access_policy_rule` has `ComputeID` producing `policyName/ruleName` (slash separator, string rule name — verified against `internal/provider/object_store_access_policy_rule_resource.go` `readIntoState`). `pulumi import` round-trip test passes.
+- [x] **COMPOSITE-01**: `flashblade_object_store_access_policy_rule` has `ComputeID` producing `policyName/ruleName` (slash separator, string rule name — verified against `internal/provider/object_store_access_policy_rule_resource.go` `readIntoState`). `pulumi import` round-trip test passes.
 - [ ] **COMPOSITE-02**: `flashblade_bucket_access_policy_rule` has `ComputeID` producing `policyName/ruleName`. `pulumi import` round-trip test passes.
 - [ ] **COMPOSITE-03**: `flashblade_network_access_policy_rule` has `ComputeID` producing `policyName/ruleName`. `pulumi import` round-trip test passes.
 - [ ] **COMPOSITE-04**: `flashblade_management_access_policy_directory_service_role_membership` has `ComputeID` producing `roleName/policyName` (role FIRST — policy names contain colons like `pure:policy/array_admin`). `pulumi import` round-trip test with a colon-containing policy name passes.
 
 ### SECRETS — Sensitive / write-once field promotion
 
-- [ ] **SECRETS-01**: Provider config `api_token` is marked `Secret: tfbridge.True()` in `ProviderInfo.Config`.
-- [ ] **SECRETS-02**: The 6 write-once / sensitive fields (`object_store_access_key.secret_access_key`, `directory_service_management.bind_password`, `array_connection.connection_key`, `certificate.private_key`, `certificate.private_key_passphrase`, plus any additional `**password` fields discovered by audit) are marked `Secret: tfbridge.True()` + listed in `AdditionalSecretOutputs` for their owning resource (belt-and-braces per bridge issue #1028).
+- [x] **SECRETS-01**: Provider config `api_token` is marked `Secret: tfbridge.True()` in `ProviderInfo.Config`.
+- [x] **SECRETS-02**: The 6 write-once / sensitive fields (`object_store_access_key.secret_access_key`, `directory_service_management.bind_password`, `array_connection.connection_key`, `certificate.private_key`, `certificate.private_key_passphrase`, plus any additional `**password` fields discovered by audit) are marked `Secret: tfbridge.True()` + listed in `AdditionalSecretOutputs` for their owning resource (belt-and-braces per bridge issue #1028).
 - [ ] **SECRETS-03**: `resources_test.go` asserts every field tagged `Sensitive: true` in the TF schema is promoted to a Pulumi Secret (auto-mapping coverage test). Test fails loudly if a new sensitive field is added upstream without bridge mapping.
 
 ### SOFTDELETE — Soft-delete timeout defense
 
-- [ ] **SOFTDELETE-01**: `flashblade_bucket` has explicit `DeleteTimeout: 30*time.Minute` in `ResourceInfo` (bridge default is 5 min — kills `pollUntilGone`, bridge issue #1652).
+- [x] **SOFTDELETE-01**: `flashblade_bucket` has explicit `DeleteTimeout: 30*time.Minute` in `ResourceInfo` (bridge default is 5 min — kills `pollUntilGone`, bridge issue #1652).
 - [ ] **SOFTDELETE-02**: `flashblade_filesystem` has explicit `DeleteTimeout: 30*time.Minute` in `ResourceInfo`.
 - [ ] **SOFTDELETE-03**: `resources_test.go` asserts `DeleteTimeout >= 25*time.Minute` for both soft-delete resources. Test fails loudly on regression.
 
@@ -114,20 +114,20 @@
 | BRIDGE-02 | Phase 54 | Complete | — |
 | BRIDGE-03 | Phase 54 | Complete | — |
 | BRIDGE-04 | Phase 54 | pending | — |
-| BRIDGE-05 | Phase 54 | pending | — |
+| BRIDGE-05 | Phase 54 | Complete | — |
 | MAPPING-01 | Phase 55 | pending | — |
-| MAPPING-02 | Phase 54 | pending | — |
-| MAPPING-03 | Phase 54 | pending | — |
+| MAPPING-02 | Phase 54 | Complete | — |
+| MAPPING-03 | Phase 54 | Complete | — |
 | MAPPING-04 | Phase 55 | pending | — |
-| MAPPING-05 | Phase 54 | pending | — |
-| COMPOSITE-01 | Phase 54 | pending | — |
+| MAPPING-05 | Phase 54 | Complete | — |
+| COMPOSITE-01 | Phase 54 | Complete | — |
 | COMPOSITE-02 | Phase 55 | pending | — |
 | COMPOSITE-03 | Phase 55 | pending | — |
 | COMPOSITE-04 | Phase 55 | pending | — |
-| SECRETS-01 | Phase 54 | pending | — |
-| SECRETS-02 | Phase 54 | pending | — |
+| SECRETS-01 | Phase 54 | Complete | — |
+| SECRETS-02 | Phase 54 | Complete | — |
 | SECRETS-03 | Phase 55 | pending | — |
-| SOFTDELETE-01 | Phase 54 | pending | — |
+| SOFTDELETE-01 | Phase 54 | Complete | — |
 | SOFTDELETE-02 | Phase 55 | pending | — |
 | SOFTDELETE-03 | Phase 55 | pending | — |
 | UPGRADE-01 | Phase 55 | pending | — |
