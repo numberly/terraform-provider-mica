@@ -87,7 +87,7 @@
 
 ### TEST — Bridge layer tests
 
-- [ ] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 28`); (b) every TF data source is mapped (`len(DataSources) == 21`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) `DeleteTimeout` is set on bucket + filesystem (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
+- [x] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 28`); (b) every TF data source is mapped (`len(DataSources) == 21`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) `DeleteTimeout` is set on bucket + filesystem (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
 - [ ] **TEST-02**: ProgramTest examples pass against a real FlashBlade for 3 representative resources: `target` (auto-tokenization baseline), `remote_credentials` (secrets), `bucket` (soft-delete + 30-min timeout). One example per target language (so: `target-py`, `target-go`, `remote_credentials-py`, `remote_credentials-go`, `bucket-py`, `bucket-go` — 6 examples total).
 - [ ] **TEST-03**: `pulumi import` round-trip test passes for each composite-ID resource (see COMPOSITE-01/02/03/04). Tests written as ProgramTests or standalone scripts invoking `pulumi import` + `pulumi refresh` + assert no drift.
 
@@ -143,7 +143,7 @@
 | RELEASE-01 | Phase 58 | pending | — |
 | RELEASE-02 | Phase 58 | pending | — |
 | RELEASE-03 | Phase 58 | pending | — |
-| TEST-01 | Phase 54 | pending | — |
+| TEST-01 | Phase 54 | Complete | — |
 | TEST-02 | Phase 58 | pending | — |
 | TEST-03 | Phase 58 | pending | — |
 | DOCS-01 | Phase 58 | pending | — |

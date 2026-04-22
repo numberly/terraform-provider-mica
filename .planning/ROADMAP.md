@@ -790,7 +790,7 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
 
 ## 🚧 pulumi-2.22.3 Pulumi Bridge Alpha (Phases 54-58) — IN PROGRESS
 
-- [ ] Phase 54: Bridge Bootstrap + POC (3 Resources)
+- [x] Phase 54: Bridge Bootstrap + POC (3 Resources) (completed 2026-04-22)
 - [ ] Phase 55: Full Mapping — 28 Resources + 21 Data Sources
 - [ ] Phase 56: SDK Generation — Python + Go
 - [ ] Phase 57: CI Pipeline
@@ -864,7 +864,7 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 54. Bridge Bootstrap + POC (3 Resources) | 4/5 | In Progress|  |
+| 54. Bridge Bootstrap + POC (3 Resources) | 5/5 | Complete   | 2026-04-22 |
 | 55. Full Mapping — 28 Resources + 21 Data Sources | 0/? | Not started | - |
 | 56. SDK Generation — Python + Go | 0/? | Not started | - |
 | 57. CI Pipeline | 0/? | Not started | - |
