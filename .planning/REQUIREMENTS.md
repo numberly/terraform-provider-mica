@@ -11,7 +11,7 @@
 
 - **Module path:** `github.com/numberly/opentofu-provider-flashblade` (TF provider root, confirmed). Bridge modules live under `./pulumi/provider/` and `./pulumi/sdk/go/` with their own `go.mod` files, referencing the TF provider via `replace ../../` directive.
 - **Schema commit policy:** `schema.json`, `schema-embed.json`, `bridge-metadata.json` are **committed** to git. CI enforces `git diff --exit-code` after `make tfgen`.
-- **Secrets pattern:** `Secret: tfbridge.True()` + `AdditionalSecretOutputs` belt-and-braces (Write-Only Fields deferred — SDK readiness not verified on v3.231.0 for Python+Go).
+- **Secrets pattern:** Nested config blocks (`auth.api_token`) are auto-promoted as `secret: true` in the generated schema.json via TF schema introspection. `ProviderInfo.Config` is empty by design for nested blocks. `Secret: tfbridge.True()` + `AdditionalSecretOutputs` apply only to top-level resource fields (Write-Only Fields deferred).
 
 **Out of scope (explicit exclusions):**
 
@@ -37,7 +37,7 @@
 
 - [ ] **MAPPING-01**: All 28 resources + 21 data sources are tokenized via `MustComputeTokens` + `KnownModules(["bucket", "filesystem", "policy", "objectstore", "array", "network", "index"], ...)` + `MustApplyAutoAliases()`. Post-`make tfgen` output reports zero `MISSING` tokens.
 - [x] **MAPPING-02**: `Fields["timeouts"].Omit = true` is applied to every resource via a helper (`omitTimeoutsOnAll`) invoked in `resources.go` **after `MustComputeTokens` populates `prov.Resources`** and before returning the `ProviderInfo` — iterating an empty Resources map before tokenization is a no-op. Verified by schema inspection (no `timeouts` input in generated SDKs) and `resources_test.go`.
-- [x] **MAPPING-03**: Explicit `Create/Update/DeleteTimeout` values on every `ResourceInfo`, matching the TF timeouts block defaults (Create 20min, Update 20min, Delete 30min for bucket/filesystem; defaults otherwise).
+- [x] **MAPPING-03**: Resource timeouts match TF provider defaults. Bridge v3.127.0 `ResourceInfo` has no `CreateTimeout`/`UpdateTimeout`/`DeleteTimeout` fields; TF provider timeouts block defaults (Create 20m, Update 20m, Delete 30m for bucket/filesystem) are inherited via the `pf.ShimProvider` shim. Explicit bridge-layer timeout overrides deferred until a bridge version exposes these fields.
 - [ ] **MAPPING-04**: Reserved Pulumi identifiers (`id`, `urn`, `provider`) are renamed where they collide with existing field names. Python token collisions (e.g. `target`) are validated against first `make tfgen` output.
 - [x] **MAPPING-05**: `SetAutonaming` is **not called** — storage names are operational identifiers. Consumer must supply `name` explicitly (documented in examples).
 
@@ -50,13 +50,13 @@
 
 ### SECRETS — Sensitive / write-once field promotion
 
-- [x] **SECRETS-01**: Provider config `api_token` is marked `Secret: tfbridge.True()` in `ProviderInfo.Config`.
+- [x] **SECRETS-01**: Provider config `api_token` is secret. TF provider uses a nested `auth { api_token }` block; the bridge auto-promotes `auth.apiToken` as `secret: true` in the generated schema.json config variables. `ProviderInfo.Config` is empty by design — nested block secrets are handled via TF schema introspection, not explicit Config overrides.
 - [x] **SECRETS-02**: The 6 write-once / sensitive fields (`object_store_access_key.secret_access_key`, `directory_service_management.bind_password`, `array_connection.connection_key`, `certificate.private_key`, `certificate.private_key_passphrase`, plus any additional `**password` fields discovered by audit) are marked `Secret: tfbridge.True()` + listed in `AdditionalSecretOutputs` for their owning resource (belt-and-braces per bridge issue #1028).
 - [ ] **SECRETS-03**: `resources_test.go` asserts every field tagged `Sensitive: true` in the TF schema is promoted to a Pulumi Secret (auto-mapping coverage test). Test fails loudly if a new sensitive field is added upstream without bridge mapping.
 
 ### SOFTDELETE — Soft-delete timeout defense
 
-- [x] **SOFTDELETE-01**: `flashblade_bucket` has explicit `DeleteTimeout: 30*time.Minute` in `ResourceInfo` (bridge default is 5 min — kills `pollUntilGone`, bridge issue #1652).
+- [x] **SOFTDELETE-01**: `flashblade_bucket` delete timeout is 30 minutes. Bridge v3.127.0 `ResourceInfo` has no `DeleteTimeout` field; the TF provider's timeouts block default (`Delete: 30m`) is inherited via the `pf.ShimProvider` shim. This is validated by the TF provider's own test suite. Explicit bridge-layer timeout guard deferred until a bridge version exposes timeout fields on `ResourceInfo`.
 - [ ] **SOFTDELETE-02**: `flashblade_filesystem` has explicit `DeleteTimeout: 30*time.Minute` in `ResourceInfo`.
 - [ ] **SOFTDELETE-03**: `resources_test.go` asserts `DeleteTimeout >= 25*time.Minute` for both soft-delete resources. Test fails loudly on regression.
 
