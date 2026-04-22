@@ -1,0 +1,121 @@
+version: 2
+
+project_name: pulumi-resource-flashblade
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
+    ldflags:
+      - "-s -w -X github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version.Version={{.Version}}"
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    binary: "pulumi-resource-flashblade"
+    dir: "provider"
+    main: "./cmd/pulumi-resource-flashblade"
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: "pulumi-resource-flashblade-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    files:
+      - src: "provider/cmd/pulumi-resource-flashblade/schema.json"
+        dst: "schema.json"
+        strip_parent: true
+      - src: "provider/cmd/pulumi-resource-flashblade/bridge-metadata.json"
+        dst: "bridge-metadata.json"
+        strip_parent: true
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
+  algorithm: sha256
+
+signs:
+  - cmd: cosign
+    stdin: "{{ .Env.COSIGN_PASSWORD }}"
+    args:
+      - "sign-blob"
+      - "--yes"
+      - "--output-signature"
+      - "${artifact}.sig"
+      - "--output-certificate"
+      - "${artifact}.pem"
+      - "${artifact}"
+    artifacts: all
+
+release:
+  draft: false
+  name_template: "{{ .Tag }}"
+  header: |
+    ## {{ .Tag }}
+
+    ### Installation
+
+    ```bash
+    pulumi plugin install resource flashblade {{ .Version }} --server github://api.github.com/numberly
+    ```
+
+    ### Python SDK
+
+    Install the wheel from the release assets:
+
+    ```bash
+    pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/{{ .Tag }}/pulumi_flashblade-{{ .Version }}-py3-none-any.whl
+    ```
+
+    ### Go SDK
+
+    ```bash
+    export GOPRIVATE="github.com/numberly/*"
+    go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v{{ .Version }}
+    ```
+
+    ### Checksums
+
+    All artifacts are signed with [Cosign](https://docs.sigstore.dev/cosign/overview/) (keyless, Sigstore).
+    Verify with:
+
+    ```bash
+    cosign verify-blob \
+      --signature {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.sig \
+      --certificate {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.pem \
+      --certificate-identity-regexp "https://github.com/numberly/opentofu-provider-flashblade" \
+      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+      {{ .ProjectName }}_{{ .Version }}_SHA256SUMS
+    ```
+
+changelog:
+  use: github-native
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Documentation
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Other
+      order: 999
+  filters:
+    exclude:
+      - "^chore"
+      - "^test"
+      - "^ci"
+      - "^refactor"
