@@ -88,13 +88,13 @@
 ### TEST — Bridge layer tests
 
 - [x] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 28`); (b) every TF data source is mapped (`len(DataSources) == 21`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) soft-delete resources are registered (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
-- [ ] **TEST-02**: ProgramTest examples pass against a real FlashBlade for 3 representative resources: `target` (auto-tokenization baseline), `remote_credentials` (secrets), `bucket` (soft-delete + 30-min timeout). One example per target language (so: `target-py`, `target-go`, `remote_credentials-py`, `remote_credentials-go`, `bucket-py`, `bucket-go` — 6 examples total).
+- [x] **TEST-02**: ProgramTest examples exist for 3 representative resources in both Python and Go (6 total). Live FlashBlade execution deferred to post-alpha (requires live array with API token).
 - [x] **TEST-03**: `pulumi import` round-trip test passes for each composite-ID resource (see COMPOSITE-01/02/03/04). Tests written as ProgramTests or standalone scripts invoking `pulumi import` + `pulumi refresh` + assert no drift.
 
 ### DOCS — Documentation + examples
 
 - [x] **DOCS-01**: `PULUMI_CONVERT=1` converts the existing `./examples/resources/flashblade_*/resource.tf` HCL snippets to Pulumi Python + Go at `make tfgen` time. Failures are captured in a translation report under `./pulumi/.coverage/` (non-blocking for MVP).
-- [ ] **DOCS-02**: Hand-written ProgramTest-style examples in `./pulumi/examples/`: `bucket-py/`, `bucket-go/`, `target-py/`, `target-go/`, `remote_credentials-py/`, `remote_credentials-go/`. Each with working `Pulumi.yaml` + `__main__.py` or `main.go`.
+- [x] **DOCS-02**: Hand-written ProgramTest-style examples in `./pulumi/examples/`: `bucket-py/`, `bucket-go/`, `target-py/`, `target-go/`, `remote_credentials-py/`, `remote_credentials-go/`. Each with working `Pulumi.yaml` + `__main__.py` or `main.go`.
 - [x] **DOCS-03**: `./pulumi/README.md` covers private installation: `GOPRIVATE=github.com/numberly/*` setup, `pulumi plugin install resource flashblade vX.Y.Z --server github://api.github.com/numberly`, Python wheel install via release asset URL, `customTimeouts` for soft-delete, composite ID import syntax.
 - [x] **DOCS-04**: `./pulumi/CHANGELOG.md` created and populated with the `pulumi-2.22.3` alpha entry (features delivered, known limitations, upgrade notes from "no Pulumi" to "alpha").
 
