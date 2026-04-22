@@ -8,7 +8,7 @@ TFGEN_BIN   := $(PROVIDER_DIR)/cmd/pulumi-tfgen-flashblade/pulumi-tfgen-flashbla
 RUNTIME_BIN := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade/pulumi-resource-flashblade
 SCHEMA_DIR  := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade
 
-.PHONY: version tfgen_build tfgen provider test clean
+.PHONY: version tfgen_build tfgen provider test clean generate_python generate_go test_python_sdk test_go_sdk
 
 version:
 	@echo $(VERSION)
@@ -29,6 +29,45 @@ tfgen: tfgen_build
 # Build runtime provider binary with ldflags-injected VERSION and real embedded schema.
 provider: tfgen
 	cd $(PROVIDER_DIR) && go build $(LDFLAGS) -o cmd/pulumi-resource-flashblade/pulumi-resource-flashblade ./cmd/pulumi-resource-flashblade
+
+# SDK Generation Scope Boundary (SDK-04):
+# Only Python and Go SDKs are generated. NodeJS, .NET, and Java are explicitly
+# out of scope for this provider.
+
+PYTHON_SDK_DIR := sdk/python
+GO_SDK_DIR     := sdk/go
+
+# Generate Python SDK from committed schema.
+generate_python: tfgen
+	@echo "Generating Python SDK..."
+	@rm -rf $(PYTHON_SDK_DIR)
+	@mkdir -p $(PYTHON_SDK_DIR)
+	$(TFGEN_BIN) python --out $(PYTHON_SDK_DIR) --skip-docs --skip-examples
+	@echo "Python SDK generated in $(PYTHON_SDK_DIR)"
+
+# Generate Go SDK from committed schema. Preserves existing go.mod.
+generate_go: tfgen
+	@echo "Generating Go SDK..."
+	@rm -rf $(GO_SDK_DIR)/*.go $(GO_SDK_DIR)/*/
+	@cp $(GO_SDK_DIR)/go.mod $(GO_SDK_DIR)/go.mod.bak
+	$(TFGEN_BIN) go --out $(GO_SDK_DIR) --skip-docs --skip-examples
+	@mv $(GO_SDK_DIR)/go.mod.bak $(GO_SDK_DIR)/go.mod
+	@echo "Go SDK generated in $(GO_SDK_DIR)"
+
+# Test Python SDK build (produces .whl).
+test_python_sdk: generate_python
+	@echo "Testing Python SDK build..."
+	cd $(PYTHON_SDK_DIR) && python -m pip install build wheel
+	cd $(PYTHON_SDK_DIR) && python -m build
+	@test -f $(PYTHON_SDK_DIR)/dist/*.whl || (echo "Python wheel not found" && exit 1)
+	@echo "Python SDK build verified"
+
+# Test Go SDK compilation.
+test_go_sdk: generate_go
+	@echo "Testing Go SDK build..."
+	cd $(GO_SDK_DIR) && go mod tidy
+	cd $(GO_SDK_DIR) && go build ./...
+	@echo "Go SDK build verified"
 
 # Unit tests for the bridge ProviderInfo (plan 05).
 test:
