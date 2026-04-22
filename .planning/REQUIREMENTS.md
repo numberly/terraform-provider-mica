@@ -36,7 +36,7 @@
 ### MAPPING — Resource / data source tokenization
 
 - [ ] **MAPPING-01**: All 28 resources + 21 data sources are tokenized via `MustComputeTokens` + `KnownModules(["bucket", "filesystem", "policy", "objectstore", "array", "network", "index"], ...)` + `MustApplyAutoAliases()`. Post-`make tfgen` output reports zero `MISSING` tokens.
-- [ ] **MAPPING-02**: `Fields["timeouts"].Omit = true` is applied to every resource via a helper (`omitTimeoutsOnAll`) invoked in `resources.go` before any `MustComputeTokens` call. Verified by schema inspection — no `timeouts` input in generated SDKs.
+- [ ] **MAPPING-02**: `Fields["timeouts"].Omit = true` is applied to every resource via a helper (`omitTimeoutsOnAll`) invoked in `resources.go` **after `MustComputeTokens` populates `prov.Resources`** and before returning the `ProviderInfo` — iterating an empty Resources map before tokenization is a no-op. Verified by schema inspection (no `timeouts` input in generated SDKs) and `resources_test.go`.
 - [ ] **MAPPING-03**: Explicit `Create/Update/DeleteTimeout` values on every `ResourceInfo`, matching the TF timeouts block defaults (Create 20min, Update 20min, Delete 30min for bucket/filesystem; defaults otherwise).
 - [ ] **MAPPING-04**: Reserved Pulumi identifiers (`id`, `urn`, `provider`) are renamed where they collide with existing field names. Python token collisions (e.g. `target`) are validated against first `make tfgen` output.
 - [ ] **MAPPING-05**: `SetAutonaming` is **not called** — storage names are operational identifiers. Consumer must supply `name` explicitly (documented in examples).
