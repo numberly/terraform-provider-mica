@@ -1,0 +1,3 @@
+name: flashblade-bucket-go
+description: FlashBlade bucket resource example in Go
+runtime: go
