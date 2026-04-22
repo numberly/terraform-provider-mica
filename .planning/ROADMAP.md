@@ -788,8 +788,13 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
 
 ---
 
-<details>
-<summary>pulumi-2.22.3 Pulumi Bridge Alpha (Phases 54-58) — IN PROGRESS</summary>
+## 🚧 pulumi-2.22.3 Pulumi Bridge Alpha (Phases 54-58) — IN PROGRESS
+
+- [ ] Phase 54: Bridge Bootstrap + POC (3 Resources)
+- [ ] Phase 55: Full Mapping — 28 Resources + 21 Data Sources
+- [ ] Phase 56: SDK Generation — Python + Go
+- [ ] Phase 57: CI Pipeline
+- [ ] Phase 58: Release Pipeline + Docs
 
 ## Phase Details
 
@@ -854,8 +859,6 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
   5. `./pulumi/README.md` documents GOPRIVATE setup, plugin install URL, wheel install URL, `customTimeouts` for soft-delete, and composite ID import syntax
 **Plans**: TBD
 **UI hint**: no
-
-</details>
 
 ## Progress Table
 
