@@ -10,3 +10,6 @@
 # Output of go coverage
 coverage.out
 *.cover
+
+# Backup from generate_go target
+go.mod.bak

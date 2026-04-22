@@ -57,12 +57,15 @@ generate_go: tfgen
 	@mv $(GO_SDK_DIR)/go.mod.bak $(GO_SDK_DIR)/go.mod
 	@echo "Go SDK generated in $(GO_SDK_DIR)"
 
-# Test Python SDK build (produces .whl).
+# Test Python SDK build (produces .whl). Uses an isolated venv to avoid
+# PEP 668 "externally-managed-environment" errors on system Python.
 test_python_sdk: generate_python
 	@echo "Testing Python SDK build..."
-	cd $(PYTHON_SDK_DIR) && python -m pip install build wheel
-	cd $(PYTHON_SDK_DIR) && python -m build
+	cd $(PYTHON_SDK_DIR) && python -m venv .venv
+	cd $(PYTHON_SDK_DIR) && .venv/bin/pip install build wheel
+	cd $(PYTHON_SDK_DIR) && .venv/bin/python -m build
 	@test -f $(PYTHON_SDK_DIR)/dist/*.whl || (echo "Python wheel not found" && exit 1)
+	@rm -rf $(PYTHON_SDK_DIR)/.venv
 	@echo "Python SDK build verified"
 
 # Test Go SDK compilation.
