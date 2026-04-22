@@ -821,7 +821,11 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
   3. `pulumi import` round-trip succeeds for all 4 composite-ID resources using `/`-separated IDs, including a test with a colon-containing policy name (`pure:policy/array_admin`)
   4. `pulumi refresh` smoke tests pass for `flashblade_server` (v0→v1→v2), `flashblade_directory_service_role` (v0→v1), and `flashblade_remote_credentials` (v0→v1) using pre-captured v0/v1 state snapshots
   5. `schema.json`, `schema-embed.json`, `bridge-metadata.json` are committed; `git diff --exit-code` on these 3 files exits 0 after `make tfgen`
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 55-01-PLAN.md — ComputeID closures + Secret marks + SOFTDELETE-02 overrides in resources.go
+- [ ] 55-02-PLAN.md — SECRETS-03 auto-mapping test + SOFTDELETE-03 + UPGRADE-01/02/03 tests + schema regeneration
 **UI hint**: no
 
 ### Phase 56: SDK Generation — Python + Go
@@ -865,7 +869,7 @@ Full details archived at [milestones/v2.22.3-ROADMAP.md](milestones/v2.22.3-ROAD
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 54. Bridge Bootstrap + POC (3 Resources) | 6/6 | Complete    | 2026-04-22 |
-| 55. Full Mapping — 28 Resources + 21 Data Sources | 0/? | Not started | - |
+| 55. Full Mapping — 28 Resources + 21 Data Sources | 0/2 | Planning complete | - |
 | 56. SDK Generation — Python + Go | 0/? | Not started | - |
 | 57. CI Pipeline | 0/? | Not started | - |
 | 58. Release Pipeline + Docs | 0/? | Not started | - |
