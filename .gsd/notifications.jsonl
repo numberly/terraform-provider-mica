@@ -1,0 +1,2 @@
+{"id":"c9959fb9-5610-413e-aef0-8646541362a1","ts":"2026-04-23T09:44:54.535Z","severity":"warning","message":"Web search: Set BRAVE_API_KEY or use an Anthropic model for built-in search","source":"notify","read":false}
+{"id":"e92417da-cbb9-472f-ba31-f4949b392efb","ts":"2026-04-23T09:44:54.538Z","severity":"info","message":"Model: kimi/kimi-k2.6","source":"notify","read":false}

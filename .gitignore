@@ -7,4 +7,6 @@ opentofu-provider-flashblade
 flashblade-resource-builder.zip
 pulumi-resource-flashblade
 pulumi-tfgen-flashblade
+pulumi/examples/*-go/*-go
+swagger-*.json
 .gstack/

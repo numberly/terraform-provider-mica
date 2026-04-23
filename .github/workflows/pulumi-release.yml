@@ -92,6 +92,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sign checksums with Cosign (keyless)
+        run: |
+          VERSION="${GITHUB_REF_NAME#pulumi-}"
+          cosign sign-blob --yes \
+            --output-signature "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.sig" \
+            --output-certificate "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.pem" \
+            "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS"
+
+      - name: Upload signatures to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#pulumi-}"
+          gh release upload "${GITHUB_REF_NAME}" \
+            "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.sig" \
+            "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.pem" \
+            --clobber
+
   release_python_sdk:
     name: Release Python SDK
     needs: prerequisites
@@ -99,6 +117,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -117,6 +137,12 @@ jobs:
           name: schema
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
 
+      - name: Download bridge-metadata.json artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bridge-metadata
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+
       - name: Generate Python SDK
         working-directory: pulumi
         run: make generate_python
@@ -129,7 +155,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${GITHUB_REF_NAME#pulumi-}"
           WHEEL_FILE=$(ls pulumi/sdk/python/dist/pulumi_flashblade-*.whl | head -n1)
           if [ -z "$WHEEL_FILE" ]; then
             echo "Wheel file not found"

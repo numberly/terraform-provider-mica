@@ -1,6 +1,6 @@
 module github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go
 
-go 1.25.8
+go 1.22
 
 require (
 	github.com/blang/semver v3.5.1+incompatible

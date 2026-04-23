@@ -44,19 +44,6 @@ checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
 
-signs:
-  - cmd: cosign
-    stdin: "{{ .Env.COSIGN_PASSWORD }}"
-    args:
-      - "sign-blob"
-      - "--yes"
-      - "--output-signature"
-      - "${artifact}.sig"
-      - "--output-certificate"
-      - "${artifact}.pem"
-      - "${artifact}"
-    artifacts: all
-
 release:
   draft: false
   name_template: "{{ .Tag }}"

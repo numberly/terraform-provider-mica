@@ -19,7 +19,7 @@
 - **Sensitive field promotion** — 7 sensitive fields are marked as Pulumi secrets (auto-promoted from TF schema + explicit overrides).
 - **Soft-delete defense** — Bucket and filesystem resources inherit 30-minute delete timeout from the TF provider for two-phase destroy + eradication polling.
 - **State upgrader delegation** — TF state upgraders for `flashblade_server`, `flashblade_directory_service_role`, and `flashblade_object_store_remote_credentials` are delegated through the bridge.
-- **Schema drift gate** — CI enforces that `schema.json`, `schema-embed.json`, and `bridge-metadata.json` are committed and unchanged after `make tfgen`.
+- **Schema drift gate** — CI enforces that `schema.json` and `bridge-metadata.json` are committed and unchanged after `make tfgen`.
 - **No autonaming** — Resource names are operational identifiers; consumers must supply explicit `name` values.
 
 ### Upgrade Notes

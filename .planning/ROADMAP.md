@@ -884,7 +884,7 @@ Plans:
 | 55. Full Mapping — 28 Resources + 21 Data Sources | 2/2 | Complete    | 2026-04-22 |
 | 56. SDK Generation — Python + Go | 3/3 | Complete   | 2026-04-22 |
 | 57. CI Pipeline | 1/1 | Complete | 2026-04-22 |
-| 58. Release Pipeline + Docs | 4/4 | Complete   | 2026-04-22 |
+| 58. Release Pipeline + Docs | 4/4 | Complete    | 2026-04-22 |
 
 ---
 
