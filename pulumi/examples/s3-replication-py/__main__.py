@@ -39,7 +39,7 @@ pa7_server_name = config.require("pa7_server_name")
 account_name = config.require("account_name")
 bucket_name = config.require("bucket_name")
 bucket_quota_bytes = config.get_int("bucket_quota_bytes")
-fqdn = config.require("fqdn")
+fqdn = config.get("fqdn") or ""
 
 # Optional features
 enable_s3_target_replication = config.get_bool("enable_s3_target_replication") or False
@@ -438,6 +438,11 @@ replica_link_pa7_to_par5 = flashblade.BucketReplicaLink("pa7_to_par5",
 # Step 11b: Optional S3 target replication
 # ---------------------------------------------------------------------------
 if enable_s3_target_replication:
+    if not flashblade_target_par5_sees_pa7 or not flashblade_target_pa7_sees_par5:
+        raise ValueError(
+            "flashblade_target_par5_sees_pa7 and flashblade_target_pa7_sees_par5 "
+            "must be set when enable_s3_target_replication is true"
+        )
     remote_creds_par5_to_pa7_s3 = flashblade.ObjectStoreRemoteCredentials("par5_to_pa7_s3",
         name=f"{flashblade_target_par5_sees_pa7}/{bucket_name}-creds",
         access_key_id=replication_key_pa7.access_key_id,
@@ -534,6 +539,7 @@ pulumi.export("par5_bucket_id", bucket_par5.id)
 pulumi.export("pa7_bucket_id", bucket_pa7.id)
 pulumi.export("par5_replica_status", replica_link_par5_to_pa7.status)
 pulumi.export("pa7_replica_status", replica_link_pa7_to_par5.status)
+pulumi.export("fqdn", fqdn)
 
 # Per-user access key IDs
 pulumi.export("user_access_key_ids", {

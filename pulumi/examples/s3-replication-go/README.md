@@ -35,8 +35,10 @@ pulumi config set par5_server_name "server-par5"
 pulumi config set pa7_server_name "server-pa7"
 pulumi config set account_name "my-account"
 pulumi config set bucket_name "my-replicated-bucket"
-pulumi config set fqdn "s3.example.com"
 pulumi up
+```
+
+> `fqdn` is optional. Set it if you plan to wire Vault secrets (used as output only).
 ```
 
 ## Go
@@ -55,15 +57,21 @@ pulumi config set par5ServerName "server-par5"
 pulumi config set pa7ServerName "server-pa7"
 pulumi config set accountName "my-account"
 pulumi config set bucketName "my-replicated-bucket"
-pulumi config set fqdn "s3.example.com"
 pulumi up
 ```
+
+> `fqdn` is optional. Set it if you plan to wire Vault secrets (used as output only).
 
 ## Optional config
 
 ```bash
 # Bucket quota (bytes)
 pulumi config set bucket_quota_bytes 107374182400
+
+# Lifecycle rules (durations in milliseconds; keep_current_version_until is a timestamp in ms)
+pulumi config set --path lifecycle_rules.default.keep_previous_version_for 2592000000
+pulumi config set --path lifecycle_rules.default.keep_current_version_for 2592000000
+pulumi config set --path lifecycle_rules.default.abort_incomplete_multipart_uploads_after 604800000
 
 # S3 target replication (instead of array-to-array)
 pulumi config set enable_s3_target_replication true

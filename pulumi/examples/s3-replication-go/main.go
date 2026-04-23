@@ -44,7 +44,7 @@ func main() {
 		accountName := cfg.Require("accountName")
 		bucketName := cfg.Require("bucketName")
 		bucketQuotaBytes := cfg.GetInt("bucketQuotaBytes")
-		fqdn := cfg.Require("fqdn")
+		fqdn := cfg.Get("fqdn")
 
 		enableS3TargetReplication := cfg.GetBool("enableS3TargetReplication")
 		flashbladeTargetPar5SeesPa7 := cfg.Get("flashbladeTargetPar5SeesPa7")
@@ -64,12 +64,12 @@ func main() {
 		cfg.GetObject("users", &users)
 
 		var lifecycleRules map[string]struct {
-			Prefix                           string  `json:"prefix"`
-			Enabled                          bool    `json:"enabled"`
-			KeepPreviousVersionFor           *int    `json:"keep_previous_version_for"`
-			KeepCurrentVersionFor            *int    `json:"keep_current_version_for"`
-			KeepCurrentVersionUntil          *string `json:"keep_current_version_until"`
-			AbortIncompleteMultipartUploadsAfter *int  `json:"abort_incomplete_multipart_uploads_after"`
+			Prefix                           string `json:"prefix"`
+			Enabled                          bool   `json:"enabled"`
+			KeepPreviousVersionFor           *int   `json:"keep_previous_version_for"`
+			KeepCurrentVersionFor            *int   `json:"keep_current_version_for"`
+			KeepCurrentVersionUntil          *int   `json:"keep_current_version_until"`
+			AbortIncompleteMultipartUploadsAfter *int `json:"abort_incomplete_multipart_uploads_after"`
 		}
 		if err := cfg.GetObject("lifecycleRules", &lifecycleRules); err != nil || len(lifecycleRules) == 0 {
 			lifecycleRules = map[string]struct {
@@ -77,7 +77,7 @@ func main() {
 				Enabled                          bool   `json:"enabled"`
 				KeepPreviousVersionFor           *int   `json:"keep_previous_version_for"`
 				KeepCurrentVersionFor            *int   `json:"keep_current_version_for"`
-				KeepCurrentVersionUntil          string `json:"keep_current_version_until"`
+				KeepCurrentVersionUntil          *int   `json:"keep_current_version_until"`
 				AbortIncompleteMultipartUploadsAfter *int `json:"abort_incomplete_multipart_uploads_after"`
 			}{
 				"default": {
@@ -101,8 +101,8 @@ func main() {
 		// ------------------------------------------------------------------
 		providerPar5, err := flashblade.NewProvider(ctx, "par5", &flashblade.ProviderArgs{
 			Endpoint: pulumi.String(par5Endpoint),
-			Auth: pulumi.StringMap{
-				"api_token": par5Token,
+			Auth: &flashblade.ProviderAuthArgs{
+				ApiToken: par5Token,
 			},
 		})
 		if err != nil {
@@ -111,8 +111,8 @@ func main() {
 
 		providerPa7, err := flashblade.NewProvider(ctx, "pa7", &flashblade.ProviderArgs{
 			Endpoint: pulumi.String(pa7Endpoint),
-			Auth: pulumi.StringMap{
-				"api_token": pa7Token,
+			Auth: &flashblade.ProviderAuthArgs{
+				ApiToken: pa7Token,
 			},
 		})
 		if err != nil {
@@ -123,14 +123,14 @@ func main() {
 		// Step 1: Array connections (data sources)
 		// ------------------------------------------------------------------
 		par5SeesPa7, err := flashblade.LookupArrayConnection(ctx, &flashblade.LookupArrayConnectionArgs{
-			RemoteName: pulumi.String(pa7ArrayName),
+			RemoteName: pa7ArrayName,
 		}, pulumi.Provider(providerPar5))
 		if err != nil {
 			return err
 		}
 
 		pa7SeesPar5, err := flashblade.LookupArrayConnection(ctx, &flashblade.LookupArrayConnectionArgs{
-			RemoteName: pulumi.String(par5ArrayName),
+			RemoteName: par5ArrayName,
 		}, pulumi.Provider(providerPa7))
 		if err != nil {
 			return err
@@ -140,14 +140,14 @@ func main() {
 		// Step 2: Servers
 		// ------------------------------------------------------------------
 		par5Server, err := flashblade.LookupServer(ctx, &flashblade.LookupServerArgs{
-			Name: pulumi.String(par5ServerName),
+			Name: par5ServerName,
 		}, pulumi.Provider(providerPar5))
 		if err != nil {
 			return err
 		}
 
 		pa7Server, err := flashblade.LookupServer(ctx, &flashblade.LookupServerArgs{
-			Name: pulumi.String(pa7ServerName),
+			Name: pa7ServerName,
 		}, pulumi.Provider(providerPa7))
 		if err != nil {
 			return err
@@ -288,7 +288,7 @@ func main() {
 			Name:                    pulumi.String(bucketName),
 			Account:                 accountPar5.Name,
 			Versioning:              pulumi.String("enabled"),
-			QuotaLimit:              pulumi.IntPtr(quotaLimit),
+			QuotaLimit:              pulumi.IntPtrFromPtr(quotaLimit),
 			HardLimitEnabled:        pulumi.Bool(hardLimit),
 			DestroyEradicateOnDelete: pulumi.Bool(false),
 		}, pulumi.Provider(providerPar5), pulumi.Timeouts(&pulumi.CustomTimeouts{
@@ -304,7 +304,7 @@ func main() {
 			Name:                    pulumi.String(bucketName),
 			Account:                 accountPa7.Name,
 			Versioning:              pulumi.String("enabled"),
-			QuotaLimit:              pulumi.IntPtr(quotaLimit),
+			QuotaLimit:              pulumi.IntPtrFromPtr(quotaLimit),
 			HardLimitEnabled:        pulumi.Bool(hardLimit),
 			DestroyEradicateOnDelete: pulumi.Bool(false),
 		}, pulumi.Provider(providerPa7), pulumi.Timeouts(&pulumi.CustomTimeouts{
@@ -604,10 +604,10 @@ func main() {
 				RuleId:                            pulumi.String(ruleID),
 				Prefix:                            pulumi.String(ruleCfg.Prefix),
 				Enabled:                           pulumi.Bool(ruleCfg.Enabled),
-				KeepPreviousVersionFor:            pulumi.IntPtr(ruleCfg.KeepPreviousVersionFor),
-				KeepCurrentVersionFor:             pulumi.IntPtr(ruleCfg.KeepCurrentVersionFor),
-				KeepCurrentVersionUntil:           pulumi.StringPtr(ruleCfg.KeepCurrentVersionUntil),
-				AbortIncompleteMultipartUploadsAfter: pulumi.IntPtr(ruleCfg.AbortIncompleteMultipartUploadsAfter),
+				KeepPreviousVersionFor:            pulumi.IntPtrFromPtr(ruleCfg.KeepPreviousVersionFor),
+				KeepCurrentVersionFor:             pulumi.IntPtrFromPtr(ruleCfg.KeepCurrentVersionFor),
+				KeepCurrentVersionUntil:           pulumi.IntPtrFromPtr(ruleCfg.KeepCurrentVersionUntil),
+				AbortIncompleteMultipartUploadsAfter: pulumi.IntPtrFromPtr(ruleCfg.AbortIncompleteMultipartUploadsAfter),
 			}, pulumi.Provider(providerPar5))
 			if err != nil {
 				return err
@@ -618,10 +618,10 @@ func main() {
 				RuleId:                            pulumi.String(ruleID),
 				Prefix:                            pulumi.String(ruleCfg.Prefix),
 				Enabled:                           pulumi.Bool(ruleCfg.Enabled),
-				KeepPreviousVersionFor:            pulumi.IntPtr(ruleCfg.KeepPreviousVersionFor),
-				KeepCurrentVersionFor:             pulumi.IntPtr(ruleCfg.KeepCurrentVersionFor),
-				KeepCurrentVersionUntil:           pulumi.StringPtr(ruleCfg.KeepCurrentVersionUntil),
-				AbortIncompleteMultipartUploadsAfter: pulumi.IntPtr(ruleCfg.AbortIncompleteMultipartUploadsAfter),
+				KeepPreviousVersionFor:            pulumi.IntPtrFromPtr(ruleCfg.KeepPreviousVersionFor),
+				KeepCurrentVersionFor:             pulumi.IntPtrFromPtr(ruleCfg.KeepCurrentVersionFor),
+				KeepCurrentVersionUntil:           pulumi.IntPtrFromPtr(ruleCfg.KeepCurrentVersionUntil),
+				AbortIncompleteMultipartUploadsAfter: pulumi.IntPtrFromPtr(ruleCfg.AbortIncompleteMultipartUploadsAfter),
 			}, pulumi.Provider(providerPa7))
 			if err != nil {
 				return err
@@ -660,8 +660,8 @@ func main() {
 			_, err := flashblade.NewQosPolicy(ctx, "this", &flashblade.QosPolicyArgs{
 				Name:                  pulumi.String(fmt.Sprintf("%s-qos", accountName)),
 				Enabled:               pulumi.Bool(true),
-				MaxTotalBytesPerSec:   pulumi.IntPtr(qos.MaxTotalBytesPerSec),
-				MaxTotalOpsPerSec:     pulumi.IntPtr(qos.MaxTotalOpsPerSec),
+				MaxTotalBytesPerSec:   pulumi.IntPtrFromPtr(qos.MaxTotalBytesPerSec),
+				MaxTotalOpsPerSec:     pulumi.IntPtrFromPtr(qos.MaxTotalOpsPerSec),
 			}, pulumi.Provider(providerPar5))
 			if err != nil {
 				return err
@@ -677,6 +677,7 @@ func main() {
 		ctx.Export("pa7BucketId", bucketPa7.ID())
 		ctx.Export("par5ReplicaStatus", replicaLinkPar5ToPa7.Status)
 		ctx.Export("pa7ReplicaStatus", replicaLinkPa7ToPar5.Status)
+		ctx.Export("fqdn", pulumi.String(fqdn))
 
 		// Per-user access key IDs
 		userKeyIDs := make(map[string]pulumi.StringOutput)
