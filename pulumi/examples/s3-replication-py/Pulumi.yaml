@@ -1,0 +1,3 @@
+name: flashblade-s3-replication-py
+runtime: python
+description: FlashBlade S3 bucket with dual-array bidirectional replication (Python)

@@ -1,0 +1,4 @@
+# Install the FlashBlade SDK from the local wheel built by make build_python
+# pip install ../../../sdk/python/dist/pulumi_flashblade-*.whl
+pulumi>=3.231.0
+pulumi-vault>=6.0.0
