@@ -4,8 +4,12 @@ import (
 	"context"
 	"testing"
 
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
 	tfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
+
+	fb "github.com/numberly/opentofu-provider-flashblade/internal/provider"
+	"github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version"
 )
 
 // Expected counts. Matches TF provider registrations (54 resources, 40 data sources).
@@ -181,29 +185,70 @@ func TestProviderInfo_AllPocResourcesPresent(t *testing.T) {
 
 // ---- SECRETS-03: All sensitive fields promoted ----
 
+// collectUpstreamSensitiveFields introspects the terraform-plugin-framework provider schema
+// and returns every top-level attribute whose Sensitive flag is true, keyed by TF resource
+// type name (e.g. "flashblade_array_connection_key" → {"connection_key", "id"}).
+//
+// This replaces the previous static map so that newly-added Sensitive fields upstream
+// are caught automatically, satisfying REQUIREMENTS.md SECRETS-03.
+func collectUpstreamSensitiveFields(t *testing.T) map[string][]string {
+	t.Helper()
+	ctx := context.Background()
+
+	// Instantiate the raw framework provider (same path as resources.go ShimProvider call).
+	fwProvider := fb.New(version.Version)()
+
+	result := make(map[string][]string)
+	for _, resFunc := range fwProvider.Resources(ctx) {
+		res := resFunc()
+
+		var metaResp fwresource.MetadataResponse
+		res.Metadata(ctx, fwresource.MetadataRequest{ProviderTypeName: "flashblade"}, &metaResp)
+
+		var schemaResp fwresource.SchemaResponse
+		res.Schema(ctx, fwresource.SchemaRequest{}, &schemaResp)
+
+		for attrName, attr := range schemaResp.Schema.Attributes {
+			if attr.IsSensitive() {
+				result[metaResp.TypeName] = append(result[metaResp.TypeName], attrName)
+			}
+		}
+	}
+	return result
+}
+
 // TestProviderInfo_AllSensitiveFieldsPromoted verifies every TF field with Sensitive:true
-// has an explicit Secret:tfbridge.True() mark in resources.go (SECRETS-03).
-// Exception: flashblade_array_connection_key.id uses False() — acknowledged ID exposure.
+// has an explicit Secret override (True or False) in resources.go (SECRETS-03).
+//
+// The check accepts both Secret:tfbridge.True() and Secret:tfbridge.False() as "covered":
+//   - True()  = encrypt in Pulumi state (normal sensitive credential)
+//   - False() = acknowledged ID exposure (e.g. flashblade_array_connection_key.id —
+//     IDs cannot be encrypted in Pulumi state; False() is the correct bridge override)
+//
+// If a new Sensitive field is added upstream without a corresponding bridge override,
+// this test fails with a clear message directing the contributor to resources.go.
 func TestProviderInfo_AllSensitiveFieldsPromoted(t *testing.T) {
 	prov := Provider()
-	sensitiveFields := map[string][]string{
-		"flashblade_array_connection":                {"connection_key"},
-		"flashblade_array_connection_key":            {"connection_key"},
-		"flashblade_certificate":                     {"passphrase", "private_key"},
-		"flashblade_object_store_access_key":         {"secret_access_key"},
-		"flashblade_object_store_remote_credentials": {"access_key_id", "secret_access_key"},
-		"flashblade_directory_service_management":    {"bind_password"},
+	upstreamSensitive := collectUpstreamSensitiveFields(t)
+
+	if len(upstreamSensitive) == 0 {
+		t.Fatal("collectUpstreamSensitiveFields returned empty map — introspection broken")
 	}
-	for resName, fields := range sensitiveFields {
+
+	for resName, fields := range upstreamSensitive {
 		r, ok := prov.Resources[resName]
 		if !ok {
-			t.Errorf("resource %q not in Resources", resName)
+			// Resource not registered in bridge — skip (separate coverage test handles counts).
 			continue
 		}
 		for _, f := range fields {
-			info, ok := r.Fields[f]
-			if !ok || info == nil || info.Secret == nil || !*info.Secret {
-				t.Errorf("resource %q field %q must have Secret=true (SECRETS-03)", resName, f)
+			info, exists := r.Fields[f]
+			if !exists || info == nil || info.Secret == nil {
+				t.Errorf(
+					"new Sensitive field upstream not mapped in bridge: %s.%s — "+
+						"add Fields[%q].Secret = tfbridge.True() (or False() for ID fields) in resources.go (SECRETS-03)",
+					resName, f, f,
+				)
 			}
 		}
 	}
