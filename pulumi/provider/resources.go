@@ -137,60 +137,19 @@ func Provider() tfbridge.ProviderInfo {
 		panic("flashblade_file_system resource not found after MustComputeTokens")
 	}
 
-	// flashblade_s3_export_policy_rule — composite ID with "/" separator.
-	// The TF provider does not return a stable ID, so we compute it from policyName + name.
-	if r, ok := prov.Resources["flashblade_s3_export_policy_rule"]; ok {
-		r.ComputeID = func(
-			ctx context.Context,
-			state resource.PropertyMap,
-		) (resource.ID, error) {
-			policyName, ok1 := state["policyName"]
-			ruleName, ok2 := state["name"]
-			if !ok1 || !ok2 {
-				return "", fmt.Errorf(
-					"s3_export_policy_rule: missing policyName or name in state (got keys %v)",
-					mapKeys(state),
-				)
-			}
-			ps, psOk := policyName.V.(string)
-			rs, rsOk := ruleName.V.(string)
-			if !psOk || !rsOk {
-				return "", fmt.Errorf(
-					"s3_export_policy_rule: policyName and name must be strings",
-				)
-			}
-			return resource.ID(ps + "/" + rs), nil
-		}
-	} else {
+	// flashblade_s3_export_policy_rule — TF data.ID is rule.ID (UUID from the API).
+	// No ComputeID override: the bridge uses the TF "id" attribute directly via the shim.
+	// A ComputeID producing "policyName/ruleName" would diverge from the UUID and break
+	// pulumi import / pulumi refresh round-trips (I1).
+	if _, ok := prov.Resources["flashblade_s3_export_policy_rule"]; !ok {
 		panic("flashblade_s3_export_policy_rule resource not found after MustComputeTokens")
 	}
 
-	// flashblade_object_store_access_policy_rule — composite ID with "/" separator,
-	// string rule name (COMPOSITE-01, verified against
-	// internal/provider/object_store_access_policy_rule_resource.go:361-387).
-	if r, ok := prov.Resources["flashblade_object_store_access_policy_rule"]; ok {
-		r.ComputeID = func(
-			ctx context.Context,
-			state resource.PropertyMap,
-		) (resource.ID, error) {
-			policyName, ok1 := state["policyName"]
-			ruleName, ok2 := state["name"]
-			if !ok1 || !ok2 {
-				return "", fmt.Errorf(
-					"object_store_access_policy_rule: missing policyName or name in state (got keys %v)",
-					mapKeys(state),
-				)
-			}
-			ps, psOk := policyName.V.(string)
-			rs, rsOk := ruleName.V.(string)
-			if !psOk || !rsOk {
-				return "", fmt.Errorf(
-					"object_store_access_policy_rule: policyName and name must be strings",
-				)
-			}
-			return resource.ID(ps + "/" + rs), nil
-		}
-	} else {
+	// flashblade_object_store_access_policy_rule — TF data.ID uses compositeID(policyName, ruleName)
+	// = "policyName/ruleName". The TF "id" attribute is Computed and exposed in schema, so the
+	// bridge picks it up via the shim without a ComputeID override. A redundant ComputeID would
+	// create a second source of truth that could silently diverge if the TF helper changes (COMPOSITE-01).
+	if _, ok := prov.Resources["flashblade_object_store_access_policy_rule"]; !ok {
 		panic("flashblade_object_store_access_policy_rule resource not found after MustComputeTokens")
 	}
 
@@ -220,29 +179,11 @@ func Provider() tfbridge.ProviderInfo {
 		panic("flashblade_bucket_access_policy_rule resource not found after MustComputeTokens")
 	}
 
-	// ---- COMPOSITE-03: flashblade_network_access_policy_rule ComputeID ----
-	// Composite ID: policyName/ruleName (verified against
-	// internal/provider/network_access_policy_rule_resource.go model — policy_name → policyName, name → name).
-	if r, ok := prov.Resources["flashblade_network_access_policy_rule"]; ok {
-		r.ComputeID = func(ctx context.Context, state resource.PropertyMap) (resource.ID, error) {
-			policyName, ok1 := state["policyName"]
-			ruleName, ok2 := state["name"]
-			if !ok1 || !ok2 {
-				return "", fmt.Errorf(
-					"network_access_policy_rule: missing policyName or name in state (got keys %v)",
-					mapKeys(state),
-				)
-			}
-			ps, psOk := policyName.V.(string)
-			rs, rsOk := ruleName.V.(string)
-			if !psOk || !rsOk {
-				return "", fmt.Errorf(
-					"network_access_policy_rule: policyName and name must be strings",
-				)
-			}
-			return resource.ID(ps + "/" + rs), nil
-		}
-	} else {
+	// flashblade_network_access_policy_rule — TF data.ID is rule.ID (UUID from the API).
+	// No ComputeID override: the bridge uses the TF "id" attribute directly via the shim.
+	// The prior ComputeID producing "policyName/ruleName" diverged from the UUID and would
+	// have broken pulumi import / pulumi refresh round-trips (I1, COMPOSITE-03 corrected).
+	if _, ok := prov.Resources["flashblade_network_access_policy_rule"]; !ok {
 		panic("flashblade_network_access_policy_rule resource not found after MustComputeTokens")
 	}
 

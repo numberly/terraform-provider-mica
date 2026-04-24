@@ -139,14 +139,18 @@ func TestProviderInfo_PocSensitiveFieldsPromoted(t *testing.T) {
 	}
 }
 
-func TestProviderInfo_PolicyRuleComputeIDPresent(t *testing.T) {
+// TestProviderInfo_ObjectStoreAccessPolicyRuleRegistered verifies the resource is registered.
+// Its TF data.ID uses compositeID(policyName, ruleName) — exposed as the "id" attribute in schema.
+// The bridge picks it up via the shim; no ComputeID override is needed (COMPOSITE-01 corrected).
+func TestProviderInfo_ObjectStoreAccessPolicyRuleRegistered(t *testing.T) {
 	prov := Provider()
 	r, ok := prov.Resources["flashblade_object_store_access_policy_rule"]
 	if !ok {
 		t.Fatalf("flashblade_object_store_access_policy_rule not in Resources")
 	}
-	if r.ComputeID == nil {
-		t.Errorf("flashblade_object_store_access_policy_rule.ComputeID must be set (COMPOSITE-01)")
+	// ComputeID must NOT be set — TF "id" attribute flows through the shim directly.
+	if r.ComputeID != nil {
+		t.Errorf("flashblade_object_store_access_policy_rule.ComputeID must be nil (bridge uses TF id attr)")
 	}
 }
 
@@ -295,13 +299,22 @@ func TestProviderInfo_SoftDeleteResourcesRegistered(t *testing.T) {
 
 // ---- COMPOSITE-02/03/04: ComputeID closures ----
 
-// TestProviderInfo_AllCompositeIDsPresent verifies all 4 composite-ID resources have ComputeID set.
+// TestProviderInfo_AllCompositeIDsPresent verifies resources that require a bridge ComputeID have it set.
+//
+// Only resources where the TF schema does NOT expose an "id" attribute need ComputeID:
+//   - flashblade_bucket_access_policy_rule: no "id" in TF schema, bridge cannot infer it.
+//   - flashblade_management_access_policy_directory_service_role_membership: id is composite role/policy.
+//
+// Resources where TF already exposes a computed "id" attribute do NOT need ComputeID:
+//   - flashblade_object_store_access_policy_rule: TF id = compositeID(policyName, ruleName).
+//   - flashblade_network_access_policy_rule: TF id = rule.ID (UUID from API).
+//   - flashblade_s3_export_policy_rule: TF id = rule.ID (UUID from API).
+//   - flashblade_snapshot_policy_rule: TF id = compositeID(policyName, ruleName).
 func TestProviderInfo_AllCompositeIDsPresent(t *testing.T) {
 	prov := Provider()
+	// Resources requiring explicit ComputeID (no "id" attribute in TF schema).
 	compositeResources := []string{
-		"flashblade_object_store_access_policy_rule",
 		"flashblade_bucket_access_policy_rule",
-		"flashblade_network_access_policy_rule",
 		"flashblade_management_access_policy_directory_service_role_membership",
 	}
 	for _, name := range compositeResources {
@@ -312,6 +325,22 @@ func TestProviderInfo_AllCompositeIDsPresent(t *testing.T) {
 		}
 		if r.ComputeID == nil {
 			t.Errorf("composite-ID resource %q must have ComputeID set", name)
+		}
+	}
+	// Resources that must NOT have ComputeID (TF "id" attribute flows through shim).
+	noComputeIDResources := []string{
+		"flashblade_object_store_access_policy_rule",
+		"flashblade_network_access_policy_rule",
+		"flashblade_s3_export_policy_rule",
+	}
+	for _, name := range noComputeIDResources {
+		r, ok := prov.Resources[name]
+		if !ok {
+			t.Errorf("resource %q not in Resources", name)
+			continue
+		}
+		if r.ComputeID != nil {
+			t.Errorf("resource %q must NOT have ComputeID set (TF id attr used directly)", name)
 		}
 	}
 }
@@ -337,24 +366,18 @@ func TestProviderInfo_ComputeID_BucketAccessPolicyRule(t *testing.T) {
 	}
 }
 
-// TestProviderInfo_ComputeID_NetworkAccessPolicyRule invokes the COMPOSITE-03 closure
-// with sample PropertyMap data and asserts the returned ID (COMPOSITE-03).
-func TestProviderInfo_ComputeID_NetworkAccessPolicyRule(t *testing.T) {
+// TestProviderInfo_NetworkAccessPolicyRuleNoComputeID verifies that
+// flashblade_network_access_policy_rule does NOT have a ComputeID override.
+// TF data.ID = rule.ID (UUID from API) — the bridge uses the TF "id" attribute
+// directly via the shim. A ComputeID producing "policyName/ruleName" would diverge (I1).
+func TestProviderInfo_NetworkAccessPolicyRuleNoComputeID(t *testing.T) {
 	prov := Provider()
-	r := prov.Resources["flashblade_network_access_policy_rule"]
-	if r == nil || r.ComputeID == nil {
-		t.Fatalf("ComputeID not set on flashblade_network_access_policy_rule")
+	r, ok := prov.Resources["flashblade_network_access_policy_rule"]
+	if !ok {
+		t.Fatalf("flashblade_network_access_policy_rule not in Resources")
 	}
-	state := resource.PropertyMap{
-		"policyName": resource.NewStringProperty("nap-policy"),
-		"name":       resource.NewStringProperty("rule2"),
-	}
-	id, err := r.ComputeID(context.Background(), state)
-	if err != nil {
-		t.Fatalf("ComputeID error: %v", err)
-	}
-	if string(id) != "nap-policy/rule2" {
-		t.Errorf("expected 'nap-policy/rule2', got %q", id)
+	if r.ComputeID != nil {
+		t.Errorf("flashblade_network_access_policy_rule must NOT have ComputeID (TF id = UUID, I1)")
 	}
 }
 
@@ -418,28 +441,20 @@ func TestProviderInfo_StateUpgraderResourcesRegistered(t *testing.T) {
 // resource and validate the ID format produced by ComputeID. Full round-trip tests
 // (pulumi import + pulumi refresh + assert no drift) are deferred to live testing.
 
-// TestProviderInfo_ImportSyntax_ObjectStoreAccessPolicyRule validates the import
-// command format for the object_store_access_policy_rule composite ID.
+// TestProviderInfo_ImportSyntax_ObjectStoreAccessPolicyRule documents the import format.
+// TF data.ID = compositeID(policyName, ruleName) = "policyName/ruleName".
+// The bridge uses the TF "id" attribute directly (no ComputeID needed).
+// Import command: pulumi import flashblade:index:ObjectStoreAccessPolicyRule my-rule mypolicy/myrulename
 func TestProviderInfo_ImportSyntax_ObjectStoreAccessPolicyRule(t *testing.T) {
 	prov := Provider()
-	r := prov.Resources["flashblade_object_store_access_policy_rule"]
-	if r == nil || r.ComputeID == nil {
-		t.Fatalf("ComputeID not set on flashblade_object_store_access_policy_rule")
+	r, ok := prov.Resources["flashblade_object_store_access_policy_rule"]
+	if !ok {
+		t.Fatalf("flashblade_object_store_access_policy_rule not in Resources")
 	}
-	state := resource.PropertyMap{
-		"policyName": resource.NewStringProperty("mypolicy"),
-		"name":       resource.NewStringProperty("myrulename"),
+	// No ComputeID — import ID is the TF "id" attribute value: "policyName/ruleName".
+	if r.ComputeID != nil {
+		t.Errorf("flashblade_object_store_access_policy_rule must NOT have ComputeID (TF id attr used)")
 	}
-	id, err := r.ComputeID(context.Background(), state)
-	if err != nil {
-		t.Fatalf("ComputeID error: %v", err)
-	}
-	expected := "mypolicy/myrulename"
-	if string(id) != expected {
-		t.Errorf("expected %q, got %q", expected, id)
-	}
-	// Document the import command:
-	// pulumi import flashblade:index:ObjectStoreAccessPolicyRule my-rule mypolicy/myrulename
 }
 
 // TestProviderInfo_ImportSyntax_BucketAccessPolicyRule validates the import
@@ -466,28 +481,19 @@ func TestProviderInfo_ImportSyntax_BucketAccessPolicyRule(t *testing.T) {
 	// pulumi import flashblade:index:BucketAccessPolicyRule my-rule mybucket/myrulename
 }
 
-// TestProviderInfo_ImportSyntax_NetworkAccessPolicyRule validates the import
-// command format for the network_access_policy_rule composite ID.
+// TestProviderInfo_ImportSyntax_NetworkAccessPolicyRule documents the import format.
+// TF data.ID = rule.ID (UUID from API). The bridge uses the TF "id" attribute directly.
+// Import command: pulumi import flashblade:index:NetworkAccessPolicyRule my-rule <uuid>
 func TestProviderInfo_ImportSyntax_NetworkAccessPolicyRule(t *testing.T) {
 	prov := Provider()
-	r := prov.Resources["flashblade_network_access_policy_rule"]
-	if r == nil || r.ComputeID == nil {
-		t.Fatalf("ComputeID not set on flashblade_network_access_policy_rule")
+	r, ok := prov.Resources["flashblade_network_access_policy_rule"]
+	if !ok {
+		t.Fatalf("flashblade_network_access_policy_rule not in Resources")
 	}
-	state := resource.PropertyMap{
-		"policyName": resource.NewStringProperty("mypolicy"),
-		"name":       resource.NewStringProperty("myrulename"),
+	// No ComputeID — import ID is the UUID returned by the API (TF data.ID = rule.ID).
+	if r.ComputeID != nil {
+		t.Errorf("flashblade_network_access_policy_rule must NOT have ComputeID (TF id = UUID, I1)")
 	}
-	id, err := r.ComputeID(context.Background(), state)
-	if err != nil {
-		t.Fatalf("ComputeID error: %v", err)
-	}
-	expected := "mypolicy/myrulename"
-	if string(id) != expected {
-		t.Errorf("expected %q, got %q", expected, id)
-	}
-	// Document the import command:
-	// pulumi import flashblade:index:NetworkAccessPolicyRule my-rule mypolicy/myrulename
 }
 
 // TestProviderInfo_ImportSyntax_ManagementAccessPolicyDSRMembership validates the
