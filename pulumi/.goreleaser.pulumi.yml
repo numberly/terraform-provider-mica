@@ -11,9 +11,14 @@ project_name: pulumi-resource-flashblade
 
 before:
   hooks:
-    # Run with dir so 'go mod tidy' targets the provider's go.mod, not whatever
-    # go.mod lives at the cwd (goreleaser-action runs from pulumi/).
-    - cmd: go mod tidy
+    # Read-only module prep: download + verify. go mod tidy is NOT run here
+    # because it mutates go.mod/go.sum — we'd sign artifacts built from
+    # tampered source. Tidy-drift is enforced upstream in the prerequisites
+    # workflow: if `go mod tidy` would produce a diff, the release fails
+    # before this hook runs.
+    - cmd: go mod download
+      dir: provider
+    - cmd: go mod verify
       dir: provider
 
 builds:
