@@ -91,11 +91,15 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
-          args: release --clean --config pulumi/.goreleaser.pulumi.yml
+          # workdir=pulumi so `dir: provider` in the config resolves to
+          # pulumi/provider. Goreleaser writes artifacts to pulumi/dist/.
+          workdir: pulumi
+          args: release --clean --config .goreleaser.pulumi.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sign checksums with Cosign (keyless)
+        working-directory: pulumi
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           cosign sign-blob --yes \
@@ -104,6 +108,7 @@ jobs:
             "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS"
 
       - name: Upload signatures to release
+        working-directory: pulumi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

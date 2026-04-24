@@ -11,7 +11,10 @@ project_name: pulumi-resource-flashblade
 
 before:
   hooks:
-    - go mod tidy
+    # Run with dir so 'go mod tidy' targets the provider's go.mod, not whatever
+    # go.mod lives at the cwd (goreleaser-action runs from pulumi/).
+    - cmd: go mod tidy
+      dir: provider
 
 builds:
   - env:

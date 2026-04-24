@@ -89,7 +89,8 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
-          args: check --config pulumi/.goreleaser.pulumi.yml
+          workdir: pulumi
+          args: check --config .goreleaser.pulumi.yml
 
   generate_sdk_python:
     name: Generate Python SDK
