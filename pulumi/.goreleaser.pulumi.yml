@@ -2,6 +2,13 @@ version: 2
 
 project_name: pulumi-resource-flashblade
 
+# Strip the "pulumi-" prefix from tags like "pulumi-2.22.3" so that .Version
+# resolves to "2.22.3". Without this, GoReleaser v2 (which only strips a
+# leading "v") would produce .Version = "pulumi-2.22.3", breaking archive
+# names, checksum filenames, the cosign upload step, and `pulumi plugin install`.
+git:
+  tag_prefix: "pulumi-"
+
 before:
   hooks:
     - go mod tidy
