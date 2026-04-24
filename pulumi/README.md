@@ -15,23 +15,23 @@ A Pulumi package for managing Pure Storage FlashBlade resources. This provider i
 Install the provider binary from GitHub Releases:
 
 ```bash
-pulumi plugin install resource flashblade v2.22.3 --server github://api.github.com/numberly
+pulumi plugin install resource flashblade 2.22.3-pulumi.alpha --server github://api.github.com/numberly
 ```
 
-For a specific version, replace `v2.22.3` with the desired tag (without the `pulumi-` prefix).
+Pulumi bridge releases are tagged `v{X.Y.Z}-pulumi[.suffix]` (valid SemVer prerelease). Replace `2.22.3-pulumi.alpha` with any published version, dropping the leading `v`.
 
 ### Python SDK
 
 Install the wheel from the GitHub Release asset:
 
 ```bash
-pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/pulumi-2.22.3/pulumi_flashblade-2.22.3-py3-none-any.whl
+pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
 ```
 
 Or add to your `requirements.txt`:
 
 ```
-pulumi_flashblade @ https://github.com/numberly/opentofu-provider-flashblade/releases/download/pulumi-2.22.3/pulumi_flashblade-2.22.3-py3-none-any.whl
+pulumi_flashblade @ https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
 ```
 
 ### Go SDK
@@ -45,10 +45,10 @@ export GOPRIVATE="github.com/numberly/*"
 Then fetch the SDK:
 
 ```bash
-go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3
+go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3-pulumi.alpha
 ```
 
-The Go module tag follows the pattern `sdk/go/vX.Y.Z` (e.g., `sdk/go/v2.22.3`).
+The Go module tag follows the pattern `sdk/go/v{X.Y.Z}-pulumi[.suffix]` (e.g., `sdk/go/v2.22.3-pulumi.alpha`).
 
 ## Provider Configuration
 

@@ -5,6 +5,9 @@ on:
   push:
     tags:
       - "v*"
+      # Exclude Pulumi bridge tags (e.g. v2.22.3-pulumi.alpha) — those are
+      # handled by pulumi-release.yml.
+      - "!v*-pulumi*"
 
 permissions:
   contents: write

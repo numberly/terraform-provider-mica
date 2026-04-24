@@ -4,7 +4,10 @@ name: Pulumi Release
 on:
   push:
     tags:
-      - "pulumi-*"
+      # Pulumi bridge releases use SemVer tags with a "-pulumi[.suffix]" prerelease
+      # identifier, e.g. v2.22.3-pulumi.alpha. This keeps GoReleaser OSS happy
+      # (valid SemVer) while distinguishing from TF provider tags ("v2.22.3").
+      - "v*-pulumi*"
 
 permissions:
   contents: write
@@ -84,9 +87,6 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
-      - name: Extract version from tag
-        run: echo "VERSION=${GITHUB_REF_NAME#pulumi-}" >> "$GITHUB_ENV"
-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -94,11 +94,10 @@ jobs:
           args: release --clean --config pulumi/.goreleaser.pulumi.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ env.VERSION }}
 
       - name: Sign checksums with Cosign (keyless)
         run: |
-          VERSION="${GITHUB_REF_NAME#pulumi-}"
+          VERSION="${GITHUB_REF_NAME#v}"
           cosign sign-blob --yes \
             --output-signature "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.sig" \
             --output-certificate "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.pem" \
@@ -108,7 +107,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${GITHUB_REF_NAME#pulumi-}"
+          VERSION="${GITHUB_REF_NAME#v}"
           gh release upload "${GITHUB_REF_NAME}" \
             "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.sig" \
             "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.pem" \
@@ -179,8 +178,9 @@ jobs:
 
       - name: Push Go SDK tag
         run: |
-          VERSION="${GITHUB_REF_NAME#pulumi-}"
-          GO_TAG="sdk/go/v${VERSION}"
+          # GITHUB_REF_NAME is "v2.22.3-pulumi.alpha" — Go SDK tag keeps the "v"
+          # and drops nothing, giving "sdk/go/v2.22.3-pulumi.alpha".
+          GO_TAG="sdk/go/${GITHUB_REF_NAME}"
           if git ls-remote --tags origin "refs/tags/${GO_TAG}" | grep -q .; then
             echo "Tag ${GO_TAG} already exists on remote — skipping (idempotent rerun)"
             exit 0

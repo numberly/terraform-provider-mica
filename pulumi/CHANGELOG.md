@@ -1,6 +1,6 @@
 # Changelog
 
-## pulumi-2.22.3 (Alpha)
+## v2.22.3-pulumi.alpha
 
 **Status:** Alpha — functional but not production-hardened.
 
@@ -28,18 +28,18 @@ These upgrade notes cover moving from "no Pulumi" to alpha:
 
 1. Install the provider plugin:
    ```bash
-   pulumi plugin install resource flashblade v2.22.3 --server github://api.github.com/numberly
+   pulumi plugin install resource flashblade 2.22.3-pulumi.alpha --server github://api.github.com/numberly
    ```
 
 2. Install the Python SDK:
    ```bash
-   pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/pulumi-2.22.3/pulumi_flashblade-2.22.3-py3-none-any.whl
+   pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
    ```
 
 3. Or fetch the Go SDK:
    ```bash
    export GOPRIVATE="github.com/numberly/*"
-   go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3
+   go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3-pulumi.alpha
    ```
 
 4. Configure the provider in your Pulumi program (see `README.md` for examples).
