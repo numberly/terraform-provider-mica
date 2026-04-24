@@ -2,6 +2,7 @@ version: 2
 
 builds:
   - dir: pulumi/provider
+    main: ./cmd/pulumi-resource-flashblade
     env:
       - CGO_ENABLED=0
     mod_timestamp: "{{ .CommitTimestamp }}"
