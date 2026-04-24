@@ -16,10 +16,10 @@ before:
     # tampered source. Tidy-drift is enforced upstream in the prerequisites
     # workflow: if `go mod tidy` would produce a diff, the release fails
     # before this hook runs.
-    - cmd: go mod download
-      dir: provider
-    - cmd: go mod verify
-      dir: provider
+    # NB: GoReleaser v2.15.4 OSS rejects the `cmd:/dir:` map form in
+    # before.hooks ("cannot unmarshal !!map into string"), so we inline `cd`.
+    - sh -c "cd provider && go mod download"
+    - sh -c "cd provider && go mod verify"
 
 builds:
   - env:
