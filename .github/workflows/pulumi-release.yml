@@ -7,6 +7,11 @@ on:
       # Pulumi bridge releases use SemVer tags with a "-pulumi[.suffix]" prerelease
       # identifier, e.g. v2.22.3-pulumi.alpha. This keeps GoReleaser OSS happy
       # (valid SemVer) while distinguishing from TF provider tags ("v2.22.3").
+      #
+      # The Pulumi Go SDK is versioned independently (major v0 — see
+      # pulumi/sdk/go/VERSION). This release tag drives the provider binary
+      # and Python wheel, while the Go SDK tag is derived as
+      # sdk/go/v{VERSION}-pulumi[.suffix] inside the tag_go_sdk job.
       - "v*-pulumi*"
 
 permissions:
@@ -142,14 +147,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Push Go SDK tag
         run: |
-          # GITHUB_REF_NAME is "v2.22.3-pulumi.alpha" — Go SDK tag keeps the "v"
-          # and drops nothing, giving "sdk/go/v2.22.3-pulumi.alpha".
-          GO_TAG="sdk/go/${GITHUB_REF_NAME}"
+          # Go SDK is versioned independently from the provider (major v0 for
+          # now — the module path has no /v2 suffix, so Go's semantic import
+          # versioning rejects tags at v2+). The SDK version lives in
+          # pulumi/sdk/go/VERSION; the release tag contributes only the
+          # "-pulumi[.suffix]" prerelease portion, so:
+          #   VERSION=0.1.0 + tag v2.22.3-pulumi.alpha -> sdk/go/v0.1.0-pulumi.alpha
+          #   VERSION=0.1.0 + tag v2.22.3-pulumi       -> sdk/go/v0.1.0-pulumi
+          SDK_VERSION="$(tr -d '[:space:]' < pulumi/sdk/go/VERSION)"
+          if ! [[ "${SDK_VERSION}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::pulumi/sdk/go/VERSION must be MAJOR.MINOR.PATCH, got: ${SDK_VERSION}"
+            exit 1
+          fi
+          if [ "${BASH_REMATCH[1]}" != "0" ]; then
+            echo "::error::SDK MAJOR must be 0 (module path has no /vN suffix), got: ${SDK_VERSION}"
+            exit 1
+          fi
+
+          # SUFFIX = everything after "-pulumi" in the release tag.
+          #   v2.22.3-pulumi.alpha -> ".alpha"
+          #   v2.22.3-pulumi       -> ""
+          SUFFIX="${GITHUB_REF_NAME#*-pulumi}"
+
+          GO_TAG="sdk/go/v${SDK_VERSION}-pulumi${SUFFIX}"
+          echo "Go SDK tag: ${GO_TAG}"
+
           if git ls-remote --tags origin "refs/tags/${GO_TAG}" | grep -q .; then
             echo "Tag ${GO_TAG} already exists on remote — skipping (idempotent rerun)"
             exit 0

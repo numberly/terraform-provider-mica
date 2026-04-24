@@ -81,9 +81,13 @@ release:
 
     ### Go SDK
 
+    The Go SDK is versioned independently (major v0). See the matching
+    `sdk/go/v{SDK_VERSION}-pulumi[.suffix]` tag for the exact version:
+
     ```bash
     export GOPRIVATE="github.com/numberly/*"
-    go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v{{ .Version }}
+    # Example — replace with the sdk/go/... tag from this release's companion tag
+    go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v0.1.0-pulumi.alpha
     ```
 
     ### Checksums

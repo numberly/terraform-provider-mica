@@ -9,7 +9,7 @@
 - **Bridge scaffold** — Full `pulumi-terraform-bridge/v3` integration with `pkg/pf/tfbridge` and `pkg/pf/tfgen`.
 - **54 resources + 40 data sources** — All Terraform resources and data sources bridged with auto-tokenization via `SingleModule` (token form: `flashblade:index:*`).
 - **Python SDK** — Generated `pulumi_flashblade` package, installable as a wheel from GitHub Releases.
-- **Go SDK** — Generated Go module at `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`, fetchable via `go get` with `GOPRIVATE`.
+- **Go SDK** — Generated Go module at `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`, fetchable via `go get` with `GOPRIVATE`. Versioned independently on major v0 (see `pulumi/sdk/go/VERSION`); the first alpha tag is `sdk/go/v0.1.0-pulumi.alpha`.
 - **Cosign-signed binaries** — Multi-platform plugin archives (`linux/darwin/windows` x `amd64/arm64`) signed with keyless Sigstore.
 - **Composite ID support** — Import works for all 4 composite-ID resources using `/` separator:
   - `flashblade_object_store_access_policy_rule`
@@ -36,10 +36,10 @@ These upgrade notes cover moving from "no Pulumi" to alpha:
    pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
    ```
 
-3. Or fetch the Go SDK:
+3. Or fetch the Go SDK (independent v0 versioning — use the SDK tag, not the provider tag):
    ```bash
    export GOPRIVATE="github.com/numberly/*"
-   go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3-pulumi.alpha
+   go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v0.1.0-pulumi.alpha
    ```
 
 4. Configure the provider in your Pulumi program (see `README.md` for examples).

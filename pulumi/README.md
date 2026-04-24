@@ -36,19 +36,27 @@ pulumi_flashblade @ https://github.com/numberly/opentofu-provider-flashblade/rel
 
 ### Go SDK
 
-The Go SDK is distributed as a Go module via git tags. Because the repository is private, configure `GOPRIVATE`:
+The Go SDK is distributed as a Go module via git tags. It is **versioned
+independently** from the provider binary (the provider is at v2.x, but the
+Go SDK stays on major v0 so the module path does not need a `/vN` suffix).
+The SDK version lives in `pulumi/sdk/go/VERSION`.
+
+Because the repository is private, configure `GOPRIVATE`:
 
 ```bash
 export GOPRIVATE="github.com/numberly/*"
 ```
 
-Then fetch the SDK:
+Then fetch the SDK (use the Go SDK tag, not the provider tag):
 
 ```bash
-go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v2.22.3-pulumi.alpha
+go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v0.1.0-pulumi.alpha
 ```
 
-The Go module tag follows the pattern `sdk/go/v{X.Y.Z}-pulumi[.suffix]` (e.g., `sdk/go/v2.22.3-pulumi.alpha`).
+The Go module tag follows the pattern `sdk/go/v{SDK_VERSION}-pulumi[.suffix]`
+(e.g., `sdk/go/v0.1.0-pulumi.alpha`). Each provider release tag
+`v{X.Y.Z}-pulumi[.suffix]` triggers a matching Go SDK tag that reuses the
+same `-pulumi[.suffix]` prerelease portion.
 
 ## Provider Configuration
 
