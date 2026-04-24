@@ -120,6 +120,24 @@ clean:
 	rm -f $(TFGEN_BIN) $(RUNTIME_BIN)
 	rm -f $(SCHEMA_DIR)/schema.json $(SCHEMA_DIR)/bridge-metadata.json $(SCHEMA_DIR)/schema-embed.json
 
+# Dry-run the goreleaser release locally in the exact CI container image.
+# Skips publish/sign — just validates config, hooks, build, archive, checksum.
+# Catches template errors, YAML quirks, and build failures before pushing a tag.
+# Clean up dist/ afterwards with: make release-snapshot-clean
+GORELEASER_IMAGE := goreleaser/goreleaser:v2.15.4
+.PHONY: release-snapshot release-snapshot-clean
+release-snapshot:
+	docker run --rm \
+		-v "$(CURDIR)/..:/work" \
+		-w /work/pulumi \
+		-e GOFLAGS=-buildvcs=false \
+		$(GORELEASER_IMAGE) \
+		release --snapshot --skip=publish --skip=sign --clean \
+		        --config .goreleaser.pulumi.yml
+
+release-snapshot-clean:
+	docker run --rm -v "$(CURDIR):/work" -w /work alpine rm -rf dist
+
 # DOCS-01: PULUMI_CONVERT translation report.
 # Running tfgen with PULUMI_CONVERT=1 causes the bridge to attempt converting
 # TF HCL examples to Pulumi Python + Go. Failures are captured but non-blocking.
