@@ -112,6 +112,9 @@ func Provider() tfbridge.ProviderInfo {
 		if r.Fields == nil {
 			r.Fields = map[string]*tfbridge.SchemaInfo{}
 		}
+		r.Fields["access_key_id"] = &tfbridge.SchemaInfo{
+			Secret: tfbridge.True(),
+		}
 		r.Fields["secret_access_key"] = &tfbridge.SchemaInfo{
 			Secret: tfbridge.True(),
 		}

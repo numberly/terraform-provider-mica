@@ -109,12 +109,12 @@ func TestProviderInfo_PocSensitiveFieldsPromoted(t *testing.T) {
 	prov := Provider()
 	// Known Sensitive TF fields in the POC resources (from internal/provider/*_resource.go):
 	// flashblade_target: none (endpoint / CA bundle are not marked Sensitive in TF schema)
-	// flashblade_object_store_remote_credentials: secret_access_key
+	// flashblade_object_store_remote_credentials: access_key_id, secret_access_key
 	// flashblade_bucket: none
 	// flashblade_object_store_access_policy_rule: none
 	// Adjust this map if the TF provider adds Sensitive fields.
 	expectedSecrets := map[string][]string{
-		"flashblade_object_store_remote_credentials": {"secret_access_key"},
+		"flashblade_object_store_remote_credentials": {"access_key_id", "secret_access_key"},
 	}
 	for resName, fields := range expectedSecrets {
 		r, ok := prov.Resources[resName]
@@ -191,7 +191,7 @@ func TestProviderInfo_AllSensitiveFieldsPromoted(t *testing.T) {
 		"flashblade_array_connection_key":            {"connection_key"},
 		"flashblade_certificate":                     {"passphrase", "private_key"},
 		"flashblade_object_store_access_key":         {"secret_access_key"},
-		"flashblade_object_store_remote_credentials": {"secret_access_key"},
+		"flashblade_object_store_remote_credentials": {"access_key_id", "secret_access_key"},
 		"flashblade_directory_service_management":    {"bind_password"},
 	}
 	for resName, fields := range sensitiveFields {
