@@ -1,7 +1,7 @@
 # Requirements — Milestone pulumi-2.22.3 (Pulumi Bridge Alpha)
 
 **Started:** 2026-04-21
-**Goal:** Bridge the existing Terraform FlashBlade provider (v2.22.3, 28 resources + 21 data sources) to Pulumi via `pulumi/pulumi-terraform-bridge/v3 pkg/pf/*`, with Python + Go SDKs distributed privately via GitHub Releases.
+**Goal:** Bridge the existing Terraform FlashBlade provider (v2.22.3, 54 resources + 40 data sources) to Pulumi via `pulumi/pulumi-terraform-bridge/v3 pkg/pf/*`, with Python + Go SDKs distributed privately via GitHub Releases.
 
 **Source:** Consolidated research in `.planning/research/` (STACK, FEATURES, ARCHITECTURE, PITFALLS, SUMMARY) built on `pulumi-bridge.md` (12 sections, 8 pitfalls).
 
@@ -35,7 +35,7 @@
 
 ### MAPPING — Resource / data source tokenization
 
-- [x] **MAPPING-01**: All 28 resources + 21 data sources are tokenized via `MustComputeTokens` + `KnownModules(["bucket", "filesystem", "policy", "objectstore", "array", "network", "index"], ...)` + `MustApplyAutoAliases()`. Post-`make tfgen` output reports zero `MISSING` tokens.
+- [x] **MAPPING-01**: All 54 resources + 40 data sources are tokenized via `MustComputeTokens` + `SingleModule(...)` + `MustApplyAutoAliases()`. `KnownModules` is unusable here because resource names collide with module prefixes (e.g. `flashblade_bucket` under module `bucket`); `SingleModule` maps all tokens to `flashblade:index/*`. Post-`make tfgen` output reports zero `MISSING` tokens.
 - [x] **MAPPING-02**: `Fields["timeouts"].Omit = true` is applied to every resource via a helper (`omitTimeoutsOnAll`) invoked in `resources.go` **after `MustComputeTokens` populates `prov.Resources`** and before returning the `ProviderInfo` — iterating an empty Resources map before tokenization is a no-op. Verified by schema inspection (no `timeouts` input in generated SDKs) and `resources_test.go`.
 - [x] **MAPPING-03**: Resource timeouts match TF provider defaults. Bridge v3.127.0 `ResourceInfo` has no `CreateTimeout`/`UpdateTimeout`/`DeleteTimeout` fields; TF provider timeouts block defaults (Create 20m, Update 20m, Delete 30m for bucket/filesystem) are inherited via the `pf.ShimProvider` shim. Explicit bridge-layer timeout overrides deferred until a bridge version exposes these fields.
 - [x] **MAPPING-04**: Reserved Pulumi identifiers (`id`, `urn`, `provider`) are renamed where they collide with existing field names. Python token collisions (e.g. `target`) are validated against first `make tfgen` output.
@@ -69,7 +69,7 @@
 ### SDK — SDK generation (Python + Go)
 
 - [x] **SDK-01**: `make generate_python` produces a working `./pulumi/sdk/python/` package with `pulumi_flashblade` import path. `python -m build` builds a `.whl` installable via `pip install`.
-- [x] **SDK-02**: `make generate_go` produces a working `./pulumi/sdk/go/` package under `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`. Dependency surface limited to `pulumi/sdk/v3`.
+- [x] **SDK-02**: `make generate_go` produces a working `./pulumi/sdk/go/` package under `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`. Direct dependency limited to `pulumi/sdk/v3` (transitive deps from sdk/v3's own closure are expected — no leak of `pulumi-terraform-bridge` or its dependencies).
 - [x] **SDK-03**: `schema.json`, `schema-embed.json`, `bridge-metadata.json` are committed to git. CI `git diff --exit-code` after `make tfgen` detects drift and fails the build.
 - [x] **SDK-04**: No TypeScript, C#, or Java SDK is generated (explicit scope boundary). `Makefile` does not define `generate_nodejs`, `generate_dotnet`, or `generate_java` targets.
 
@@ -81,13 +81,13 @@
 
 ### RELEASE — Private release pipeline
 
-- [x] **RELEASE-01**: `./pulumi/.goreleaser.pulumi.yml` builds `pulumi-resource-flashblade` for 6 platforms (linux/darwin/windows × amd64/arm64), signs with cosign (reusing the existing cosign pattern), and emits archives named `pulumi-resource-flashblade-v{VERSION}-{os}-{arch}.tar.gz` (required by Pulumi CLI plugin install).
+- [x] **RELEASE-01**: `./pulumi/.goreleaser.pulumi.yml` builds `pulumi-resource-flashblade` for 5 platforms (linux/darwin/windows × amd64/arm64, excluding windows/arm64 — no GitHub Actions runner available for that target), signs with cosign (reusing the existing cosign pattern), and emits archives named `pulumi-resource-flashblade-v{VERSION}-{os}-{arch}.tar.gz` (required by Pulumi CLI plugin install).
 - [x] **RELEASE-02**: `./.github/workflows/pulumi-release.yml` triggers on `pulumi-*` git tag push, runs the full pipeline (`make tfgen` → goreleaser → Python wheel build → attach wheel as release asset), and in a post-release step creates + pushes a `sdk/go/vX.Y.Z` tag matching the Pulumi release version (required for `go get` resolution on the Go SDK sub-module).
 - [x] **RELEASE-03**: Release `pulumi-2.22.3` (or chosen alpha tag) is published with cosign-signed plugin binaries, `.whl` Python SDK, and `sdk/go/v2.22.3` tag pushed. Smoke test from an external project succeeds: `pulumi plugin install resource flashblade v2.22.3 --server github://api.github.com/numberly` + Python + Go consumer code compiles.
 
 ### TEST — Bridge layer tests
 
-- [x] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 28`); (b) every TF data source is mapped (`len(DataSources) == 21`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) soft-delete resources are registered (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
+- [x] **TEST-01**: `./pulumi/provider/resources_test.go` asserts: (a) every TF resource name has a mapped Pulumi token (`len(Resources) == 54`); (b) every TF data source is mapped (`len(DataSources) == 40`); (c) every `Sensitive` field is promoted (see SECRETS-03); (d) soft-delete resources are registered (see SOFTDELETE-03); (e) no `timeouts` input appears in any resource schema (see MAPPING-02).
 - [x] **TEST-02**: ProgramTest examples exist for 3 representative resources in both Python and Go (6 total). Live FlashBlade execution deferred to post-alpha (requires live array with API token).
 - [x] **TEST-03**: `pulumi import` round-trip test passes for each composite-ID resource (see COMPOSITE-01/02/03/04). Tests written as ProgramTests or standalone scripts invoking `pulumi import` + `pulumi refresh` + assert no drift.
 
@@ -144,12 +144,12 @@
 | CI-03 | Phase 57 | Complete | 7ceb2cf |
 | RELEASE-01 | Phase 58 | Complete | — |
 | RELEASE-02 | Phase 58 | Complete | — |
-| RELEASE-03 | Phase 58 | Complete | — |
+| RELEASE-03 | Phase 58 | pending | — |
 | TEST-01 | Phase 54 | Complete | — |
-| TEST-02 | Phase 58 | pending | — |
+| TEST-02 | Phase 58 | Complete | — |
 | TEST-03 | Phase 58 | Complete | — |
 | DOCS-01 | Phase 58 | Complete | — |
-| DOCS-02 | Phase 58 | pending | — |
+| DOCS-02 | Phase 58 | Complete | — |
 | DOCS-03 | Phase 58 | Complete | — |
 | DOCS-04 | Phase 58 | Complete | — |
 
