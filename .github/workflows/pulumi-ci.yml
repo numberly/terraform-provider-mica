@@ -22,37 +22,7 @@ on:
 jobs:
   prerequisites:
     name: Prerequisites
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: pulumi/provider/go.mod
-          cache: true
-
-      - name: Run provider unit tests
-        working-directory: pulumi
-        run: make test
-
-      - name: Generate schema artifacts
-        working-directory: pulumi
-        run: make tfgen
-
-      - name: Schema drift gate
-        run: |
-          git diff --exit-code \
-            pulumi/provider/cmd/pulumi-resource-flashblade/schema.json \
-            pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json \
-            pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
-
-      - name: Upload schema-embed.json artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: schema-embed
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json
+    uses: ./.github/workflows/pulumi-prerequisites.yml
 
   lint:
     name: Lint
@@ -111,16 +81,24 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Download schema-embed.json artifact
+      - name: Download schema artifacts
         uses: actions/download-artifact@v4
         with:
-          name: schema-embed
+          pattern: "schema*"
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          merge-multiple: true
+
+      - name: Download bridge-metadata artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bridge-metadata
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
 
-      # generate_python is a Make prerequisite of test_python_sdk — no need to call it separately.
-      - name: Test Python SDK build
+      # SKIP_TFGEN=1 + _from_schema targets consume the downloaded schema
+      # instead of re-running the tfgen schema subcommand.
+      - name: Test Python SDK build (schema pre-fetched)
         working-directory: pulumi
-        run: make test_python_sdk
+        run: make SKIP_TFGEN=1 test_python_sdk_from_schema
 
   generate_sdk_go:
     name: Generate Go SDK
@@ -136,13 +114,19 @@ jobs:
           go-version-file: pulumi/provider/go.mod
           cache: true
 
-      - name: Download schema-embed.json artifact
+      - name: Download schema artifacts
         uses: actions/download-artifact@v4
         with:
-          name: schema-embed
+          pattern: "schema*"
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          merge-multiple: true
+
+      - name: Download bridge-metadata artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bridge-metadata
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
 
-      # generate_go is a Make prerequisite of test_go_sdk — no need to call it separately.
-      - name: Test Go SDK build
+      - name: Test Go SDK build (schema pre-fetched)
         working-directory: pulumi
-        run: make test_go_sdk
+        run: make SKIP_TFGEN=1 test_go_sdk_from_schema

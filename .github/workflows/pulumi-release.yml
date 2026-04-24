@@ -17,44 +17,7 @@ permissions:
 jobs:
   prerequisites:
     name: Prerequisites
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: pulumi/provider/go.mod
-          cache: true
-
-      - name: Run provider unit tests
-        working-directory: pulumi
-        run: make test
-
-      - name: Generate schema artifacts
-        working-directory: pulumi
-        run: make tfgen
-
-      - name: Schema drift gate
-        run: |
-          git diff --exit-code \
-            pulumi/provider/cmd/pulumi-resource-flashblade/schema.json \
-            pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
-
-      - name: Upload schema.json artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: schema
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/schema.json
-
-      - name: Upload bridge-metadata.json artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: bridge-metadata
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
+    uses: ./.github/workflows/pulumi-prerequisites.yml
 
   release_provider:
     name: Release Provider
@@ -72,13 +35,14 @@ jobs:
           go-version-file: pulumi/provider/go.mod
           cache: true
 
-      - name: Download schema.json artifact
+      - name: Download schema artifacts
         uses: actions/download-artifact@v4
         with:
-          name: schema
+          pattern: "schema*"
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          merge-multiple: true
 
-      - name: Download bridge-metadata.json artifact
+      - name: Download bridge-metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: bridge-metadata
@@ -140,25 +104,25 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Download schema.json artifact
+      - name: Download schema artifacts
         uses: actions/download-artifact@v4
         with:
-          name: schema
+          pattern: "schema*"
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          merge-multiple: true
 
-      - name: Download bridge-metadata.json artifact
+      - name: Download bridge-metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: bridge-metadata
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
 
-      - name: Generate Python SDK
+      # SKIP_TFGEN=1 + _from_schema: Python codegen + wheel build in one step
+      # using the downloaded schema. Drops the old "Generate Python SDK"
+      # step — its work is now a Make prereq of test_python_sdk_from_schema.
+      - name: Build Python wheel (schema pre-fetched)
         working-directory: pulumi
-        run: make generate_python
-
-      - name: Build Python wheel
-        working-directory: pulumi
-        run: make test_python_sdk
+        run: make SKIP_TFGEN=1 test_python_sdk_from_schema
 
       - name: Upload wheel to release
         env:
