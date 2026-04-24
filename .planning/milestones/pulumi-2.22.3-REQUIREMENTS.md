@@ -1,3 +1,12 @@
+# Requirements Archive: pulumi-2.22.3 Pulumi Bridge Alpha
+
+**Archived:** 2026-04-24
+**Status:** SHIPPED
+
+For current requirements, see `.planning/REQUIREMENTS.md`.
+
+---
+
 # Requirements — Milestone pulumi-2.22.3 (Pulumi Bridge Alpha)
 
 **Started:** 2026-04-21

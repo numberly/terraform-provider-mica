@@ -1,5 +1,19 @@
 # Terraform Provider FlashBlade
 
+## Current State
+
+**Latest shipped:** pulumi-2.22.3 (Pulumi Bridge Alpha) — 2026-04-24
+**Active milestone:** None — awaiting next milestone planning
+
+**Shipped to date:** 15 milestones, 58 phases
+**TF Provider:** v2.22.3 (54 resources + 40 data sources, 836 tests)
+**Pulumi Bridge:** pulumi-2.22.3 alpha (private distribution via GitHub Releases, Python + Go SDKs)
+
+Next steps: plan the next milestone via `/gsd:new-milestone` — typical candidates:
+- `v2.23.0` (upgrade to FlashBlade API 2.23 when swagger available)
+- `pulumi-2.22.3-beta` (live-test the alpha bridge, fix gaps, publish to Pulumi Registry)
+- Other feature additions
+
 ## What This Is
 
 A Terraform provider for Pure Storage FlashBlade that enables operational teams to manage storage infrastructure as code — file systems, object stores, buckets, policies, and array administration. Built with terraform-plugin-framework for maximum reliability, targeting the FlashBlade REST API v2.22 (Purity//FB 4.6.7). Designed for high-frequency CRUD operations with robust drift detection and audit logging.
@@ -8,7 +22,7 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
 
-## Current Milestone: pulumi-2.22.3 — Pulumi Bridge Alpha
+## Last Completed Milestone: pulumi-2.22.3 — Pulumi Bridge Alpha (shipped 2026-04-24)
 
 **Goal:** Expose the FlashBlade Terraform provider to Pulumi users (Python + Go) via the official `pulumi/pulumi-terraform-bridge` (`pkg/pf/*` for terraform-plugin-framework), in a new `./pulumi/` sub-directory with its own `go.mod`, distributed privately through GitHub releases.
 

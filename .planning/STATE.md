@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: verifying
-last_updated: "2026-04-22T15:41:09.380Z"
-last_activity: 2026-04-22
+milestone: pulumi-2.22.3
+milestone_name: Pulumi Bridge Alpha
+status: completed
+last_updated: "2026-04-24T12:00:00.000Z"
+last_activity: 2026-04-24
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 15
   completed_plans: 15
   percent: 100
@@ -24,16 +24,15 @@ See: .planning/PROJECT.md (updated 2026-04-21)
 
 ## Current Position
 
-Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha)
-Phase: 58
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-22
+Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha) — **COMPLETED 2026-04-24**
+Status: Archived — no active milestone
+Last activity: 2026-04-24
 
-Progress: [██████████] 100% (8/8 plans)
+Progress: [██████████] 100% (5/5 phases, 15/15 plans)
 
 ## Recent Milestones
 
+- ✅ **pulumi-2.22.3** — Pulumi Bridge Alpha (shipped 2026-04-24, 836 TF tests + 23 bridge tests, [archive](milestones/pulumi-2.22.3-ROADMAP.md))
 - ✅ **v2.22.3** — Convention Compliance (shipped 2026-04-20, 779 tests, 12/12 requirements, [archive](milestones/v2.22.3-ROADMAP.md))
 - ✅ **v2.22.2** — Directory Service Roles & Role Mappings (shipped 2026-04-17, 818 tests, [archive](milestones/v2.22.2-ROADMAP.md))
 - ✅ **v2.22.1** — Directory Service – Array Management (shipped 2026-04-17, 798 tests, [archive](milestones/v2.22.1-ROADMAP.md))
