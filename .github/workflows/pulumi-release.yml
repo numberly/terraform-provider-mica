@@ -176,5 +176,9 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#pulumi-}"
           GO_TAG="sdk/go/v${VERSION}"
+          if git ls-remote --tags origin "refs/tags/${GO_TAG}" | grep -q .; then
+            echo "Tag ${GO_TAG} already exists on remote — skipping (idempotent rerun)"
+            exit 0
+          fi
           git tag "${GO_TAG}" "${GITHUB_SHA}"
           git push origin "${GO_TAG}"
