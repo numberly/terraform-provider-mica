@@ -56,6 +56,8 @@ jobs:
 
   lint:
     name: Lint
+    # Depend on prerequisites so lint auto-skips on schema drift failures.
+    needs: prerequisites
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -124,10 +126,7 @@ jobs:
           name: schema-embed
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
 
-      - name: Generate Python SDK
-        working-directory: pulumi
-        run: make generate_python
-
+      # generate_python is a Make prerequisite of test_python_sdk — no need to call it separately.
       - name: Test Python SDK build
         working-directory: pulumi
         run: make test_python_sdk
@@ -152,10 +151,7 @@ jobs:
           name: schema-embed
           path: pulumi/provider/cmd/pulumi-resource-flashblade/
 
-      - name: Generate Go SDK
-        working-directory: pulumi
-        run: make generate_go
-
+      # generate_go is a Make prerequisite of test_go_sdk — no need to call it separately.
       - name: Test Go SDK build
         working-directory: pulumi
         run: make test_go_sdk

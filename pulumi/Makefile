@@ -52,8 +52,9 @@ generate_go: tfgen
 	@rm -rf $(GO_SDK_DIR)/*.go $(GO_SDK_DIR)/*/
 	@cp $(GO_SDK_DIR)/go.mod $(GO_SDK_DIR)/go.mod.bak
 	$(TFGEN_BIN) go --out $(GO_SDK_DIR) --skip-docs --skip-examples
-	@find $(GO_SDK_DIR) -name "*.go" -exec sed -i \
+	@find $(GO_SDK_DIR) -name "*.go" -exec sed -i.bak \
 		's|github.com/numberly/opentofu-provider-flashblade/sdk/go|github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go|g' {} +
+	@find $(GO_SDK_DIR) -name "*.go.bak" -delete
 	@mv $(GO_SDK_DIR)/go.mod.bak $(GO_SDK_DIR)/go.mod
 	@echo "Go SDK generated in $(GO_SDK_DIR)"
 
@@ -62,7 +63,7 @@ generate_go: tfgen
 test_python_sdk: generate_python
 	@echo "Testing Python SDK build..."
 	cd $(PYTHON_SDK_DIR) && python -m venv .venv
-	cd $(PYTHON_SDK_DIR) && .venv/bin/pip install build wheel
+	cd $(PYTHON_SDK_DIR) && .venv/bin/pip install 'build>=1.2.0,<2' 'wheel>=0.43.0,<1'
 	cd $(PYTHON_SDK_DIR) && .venv/bin/python -m build
 	@test -f $(PYTHON_SDK_DIR)/dist/*.whl || (echo "Python wheel not found" && exit 1)
 	@rm -rf $(PYTHON_SDK_DIR)/.venv
