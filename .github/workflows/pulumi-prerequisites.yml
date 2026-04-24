@@ -1,0 +1,78 @@
+---
+# Reusable prerequisites workflow for Pulumi CI and Release pipelines.
+#
+# Runs provider unit tests, generates schema artifacts, and enforces:
+#   - Schema drift gate on schema.json, schema-embed.json, bridge-metadata.json
+#   - `go mod tidy` drift gate (read-only check; tidy must produce no diff)
+#
+# Uploads three artifacts consumed by downstream jobs: schema, schema-embed,
+# bridge-metadata. Called via `uses: ./.github/workflows/pulumi-prerequisites.yml`.
+name: Pulumi Prerequisites
+
+on:
+  workflow_call:
+
+jobs:
+  prerequisites:
+    name: Prerequisites
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: pulumi/provider/go.mod
+          cache: true
+
+      - name: Run provider unit tests
+        working-directory: pulumi
+        run: make test
+
+      - name: go mod tidy drift gate
+        # `go mod tidy` must be a no-op at release time; otherwise goreleaser
+        # would silently rewrite go.mod/go.sum before signing (supply-chain
+        # risk). If this fails, run `go mod tidy` locally and commit the diff.
+        working-directory: pulumi/provider
+        run: |
+          cp go.mod go.mod.bak
+          cp go.sum go.sum.bak
+          go mod tidy
+          if ! diff -q go.mod go.mod.bak >/dev/null || ! diff -q go.sum go.sum.bak >/dev/null; then
+            echo "::error::go mod tidy produced a diff — commit the update before tagging."
+            diff -u go.mod.bak go.mod || true
+            diff -u go.sum.bak go.sum || true
+            exit 1
+          fi
+          rm go.mod.bak go.sum.bak
+
+      - name: Generate schema artifacts
+        working-directory: pulumi
+        run: make tfgen
+
+      - name: Schema drift gate
+        run: |
+          git diff --exit-code \
+            pulumi/provider/cmd/pulumi-resource-flashblade/schema.json \
+            pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json \
+            pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
+
+      - name: Upload schema.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/schema.json
+
+      - name: Upload schema-embed.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-embed
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json
+
+      - name: Upload bridge-metadata.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridge-metadata
+          path: pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
