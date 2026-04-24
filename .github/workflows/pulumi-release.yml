@@ -31,9 +31,28 @@ jobs:
     name: Prerequisites
     uses: ./.github/workflows/pulumi-prerequisites.yml
 
+  changelog_preflight:
+    name: CHANGELOG Preflight
+    needs: prerequisites
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure CHANGELOG entry exists for tag
+        # Fails the release if pulumi/CHANGELOG.md has no header/line
+        # mentioning the tag — forces an explicit changelog update before
+        # every tag push.
+        run: |
+          if ! grep -q "${GITHUB_REF_NAME}" pulumi/CHANGELOG.md; then
+            echo "::error::No CHANGELOG entry for ${GITHUB_REF_NAME} in pulumi/CHANGELOG.md"
+            exit 1
+          fi
+
   release_provider:
     name: Release Provider
-    needs: prerequisites
+    needs: [prerequisites, changelog_preflight]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -141,13 +160,21 @@ jobs:
       - name: Upload wheel to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Asserts exactly one wheel is present — `ls | head -n1` would
+        # silently pick the first of many on a dirty workspace.
         run: |
-          WHEEL_FILE=$(ls pulumi/sdk/python/dist/pulumi_flashblade-*.whl | head -n1)
-          if [ -z "$WHEEL_FILE" ]; then
-            echo "Wheel file not found"
+          shopt -s nullglob
+          wheels=(pulumi/sdk/python/dist/pulumi_flashblade-*.whl)
+          if [ ${#wheels[@]} -eq 0 ]; then
+            echo "::error::No wheel matched pulumi/sdk/python/dist/pulumi_flashblade-*.whl"
             exit 1
           fi
-          gh release upload "${GITHUB_REF_NAME}" "$WHEEL_FILE" --clobber
+          if [ ${#wheels[@]} -gt 1 ]; then
+            echo "::error::Multiple wheels found — expected exactly 1:"
+            printf '  %s\n' "${wheels[@]}"
+            exit 1
+          fi
+          gh release upload "${GITHUB_REF_NAME}" "${wheels[0]}" --clobber
 
   tag_go_sdk:
     name: Tag Go SDK
@@ -189,5 +216,5 @@ jobs:
             echo "Tag ${GO_TAG} already exists on remote — skipping (idempotent rerun)"
             exit 0
           fi
-          git tag "${GO_TAG}" "${GITHUB_SHA}"
+          git tag -a "${GO_TAG}" "${GITHUB_SHA}" -m "Pulumi Go SDK ${GO_TAG#sdk/go/}"
           git push origin "${GO_TAG}"
