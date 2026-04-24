@@ -61,6 +61,11 @@ checksum:
 
 release:
   draft: false
+  # Replace existing assets on conflict instead of failing with 422
+  # already_exists. Makes tag rotations and manual workflow re-runs
+  # idempotent — without this, a rerun against an existing release
+  # aborts after uploading the first asset (see run on 2026-04-24).
+  mode: replace
   name_template: "{{ .Tag }}"
   header: |
     ## {{ .Tag }}
