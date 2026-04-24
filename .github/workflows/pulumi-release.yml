@@ -84,6 +84,9 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
+      - name: Extract version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#pulumi-}" >> "$GITHUB_ENV"
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -91,6 +94,7 @@ jobs:
           args: release --clean --config pulumi/.goreleaser.pulumi.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
 
       - name: Sign checksums with Cosign (keyless)
         run: |

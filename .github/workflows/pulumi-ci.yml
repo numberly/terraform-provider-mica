@@ -90,6 +90,9 @@ jobs:
         with:
           version: "~> v2"
           args: check --config pulumi/.goreleaser.pulumi.yml
+        env:
+          # goreleaser check templates .Env.VERSION — provide a placeholder.
+          VERSION: "0.0.0-ci"
 
   generate_sdk_python:
     name: Generate Python SDK

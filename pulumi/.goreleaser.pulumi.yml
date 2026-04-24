@@ -2,14 +2,12 @@ version: 2
 
 project_name: pulumi-resource-flashblade
 
-# Strip the "pulumi-" prefix from tags like "pulumi-2.22.3" so that .Version
-# resolves to "2.22.3". Without this, GoReleaser v2 (which only strips a
-# leading "v") would produce .Version = "pulumi-2.22.3", breaking archive
-# names, checksum filenames, the cosign upload step, and `pulumi plugin install`.
-# In GoReleaser v2 tag_prefix lives under `monorepo:`, not `git:`.
-monorepo:
-  tag_prefix: "pulumi-"
-  dir: pulumi
+# Tags are shaped like "pulumi-2.22.3" to distinguish them from the TF provider
+# tags ("v2.22.3"). GoReleaser v2 OSS only knows how to strip a leading "v", and
+# its monorepo.tag_prefix feature is Pro-only. To get a clean semver in archive
+# names / checksums / install snippets, the caller (pulumi-release.yml) exports
+# VERSION="${GITHUB_REF_NAME#pulumi-}" and this config uses {{ .Env.VERSION }}
+# everywhere {{ .Version }} would otherwise be needed.
 
 before:
   hooks:
@@ -22,7 +20,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - "-s -w -X github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version.Version={{.Version}}"
+      - "-s -w -X github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version.Version={{.Env.VERSION}}"
     goos:
       - linux
       - darwin
@@ -40,7 +38,7 @@ builds:
 archives:
   - formats:
       - tar.gz
-    name_template: "pulumi-resource-flashblade-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    name_template: "pulumi-resource-flashblade-v{{ .Env.VERSION }}-{{ .Os }}-{{ .Arch }}"
     files:
       - src: "provider/cmd/pulumi-resource-flashblade/schema.json"
         dst: "schema.json"
@@ -50,7 +48,7 @@ archives:
         strip_parent: true
 
 checksum:
-  name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
+  name_template: "{{ .ProjectName }}_{{ .Env.VERSION }}_SHA256SUMS"
   algorithm: sha256
 
 release:
@@ -62,7 +60,7 @@ release:
     ### Installation
 
     ```bash
-    pulumi plugin install resource flashblade {{ .Version }} --server github://api.github.com/numberly
+    pulumi plugin install resource flashblade {{ .Env.VERSION }} --server github://api.github.com/numberly
     ```
 
     ### Python SDK
@@ -70,14 +68,14 @@ release:
     Install the wheel from the release assets:
 
     ```bash
-    pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/{{ .Tag }}/pulumi_flashblade-{{ .Version }}-py3-none-any.whl
+    pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/{{ .Tag }}/pulumi_flashblade-{{ .Env.VERSION }}-py3-none-any.whl
     ```
 
     ### Go SDK
 
     ```bash
     export GOPRIVATE="github.com/numberly/*"
-    go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v{{ .Version }}
+    go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v{{ .Env.VERSION }}
     ```
 
     ### Checksums
@@ -87,11 +85,11 @@ release:
 
     ```bash
     cosign verify-blob \
-      --signature {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.sig \
-      --certificate {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.pem \
+      --signature {{ .ProjectName }}_{{ .Env.VERSION }}_SHA256SUMS.sig \
+      --certificate {{ .ProjectName }}_{{ .Env.VERSION }}_SHA256SUMS.pem \
       --certificate-identity-regexp "https://github.com/numberly/opentofu-provider-flashblade" \
       --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-      {{ .ProjectName }}_{{ .Version }}_SHA256SUMS
+      {{ .ProjectName }}_{{ .Env.VERSION }}_SHA256SUMS
     ```
 
 changelog:
