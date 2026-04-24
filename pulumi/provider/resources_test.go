@@ -14,6 +14,10 @@ import (
 
 // Expected counts. Matches TF provider registrations (54 resources, 40 data sources).
 // Update when TF provider resource set changes.
+//
+// Note: schema.json contains 41 entries under "functions" — the extra entry is
+// "pulumi:providers:flashblade/terraformConfig", a provider-level function
+// injected by the bridge, not a data source. prov.DataSources = 40 is correct.
 const (
 	expectedResources   = 54
 	expectedDataSources = 40

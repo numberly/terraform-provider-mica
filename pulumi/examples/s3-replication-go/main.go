@@ -655,6 +655,8 @@ func main() {
 
 		// ------------------------------------------------------------------
 		// Step 14: QoS policy (optional)
+		// QoS policy is managed centrally on the par5 side for this example.
+		// Mirror on pa7 if dual-sided throttling is required.
 		// ------------------------------------------------------------------
 		if qos != nil {
 			_, err := flashblade.NewQosPolicy(ctx, "this", &flashblade.QosPolicyArgs{

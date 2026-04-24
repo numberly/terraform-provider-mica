@@ -128,6 +128,8 @@ Reference: `internal/provider/server_resource.go` (v0→v1→v2).
 
 `TestUnit_<Resource>_<Operation>[_<Variant>]` — e.g. `TestUnit_Target_Get_Found`, `TestUnit_TargetResource_Lifecycle`, `TestUnit_TargetDataSource_Basic`.
 
+**Exception — bridge tests:** tests under `pulumi/provider/` use the `TestProviderInfo_*` pattern because they test the Pulumi bridge ProviderInfo configuration, not individual TF resource/data source logic. This naming is intentional and approved.
+
 ### Client tests
 
 `httptest.NewServer()`, mock `/api/login` for `x-auth-token`, use `newTestClient(t, srv)`. One test per CRUD + edge cases.

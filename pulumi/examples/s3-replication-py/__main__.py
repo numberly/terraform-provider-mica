@@ -520,6 +520,8 @@ if audit_enabled:
 
 # ---------------------------------------------------------------------------
 # Step 14: QoS policy (optional)
+# QoS policy is managed centrally on the par5 side for this example.
+# Mirror on pa7 if dual-sided throttling is required.
 # ---------------------------------------------------------------------------
 if qos:
     flashblade.QosPolicy("this",
