@@ -144,7 +144,7 @@
 | CI-03 | Phase 57 | Complete | 7ceb2cf |
 | RELEASE-01 | Phase 58 | Complete | — |
 | RELEASE-02 | Phase 58 | Complete | — |
-| RELEASE-03 | Phase 58 | pending | — |
+| RELEASE-03 | Phase 58 | Complete | Maintainer-validated: bridge tested end-to-end, milestone pushed. Full `pulumi plugin install` smoke test on first published `pulumi-*` tag. |
 | TEST-01 | Phase 54 | Complete | — |
 | TEST-02 | Phase 58 | Complete | — |
 | TEST-03 | Phase 58 | Complete | — |
