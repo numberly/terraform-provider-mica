@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# commit-msg hook: reject Co-Authored-By trailers (project policy, CLAUDE.md + CONVENTIONS.md)
+# Install: make install-hooks (sets core.hooksPath to scripts/git-hooks)
+# Bypass:  git commit --no-verify  (discouraged, agent-only use case)
+set -euo pipefail
+
+msg_file="$1"
+
+if grep -iE '^[[:space:]]*co-?authored-?by[[:space:]]*:' "$msg_file" > /dev/null 2>&1; then
+  echo "ERROR [commit-msg]: Co-Authored-By trailer detected." >&2
+  echo "Project policy (CLAUDE.md + CONVENTIONS.md) forbids co-author lines." >&2
+  echo "Remove the trailer and retry. Use --no-verify to bypass (discouraged)." >&2
+  exit 1
+fi
+
+exit 0

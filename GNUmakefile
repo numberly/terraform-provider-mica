@@ -9,7 +9,7 @@ VERSION=dev
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 PLUGIN_DIR=~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(TYPE)/$(VERSION)/$(OS_ARCH)
 
-.PHONY: build test testacc lint generate docs install dev-override clean default
+.PHONY: build test testacc lint generate docs install install-hooks dev-override clean default
 
 default: build
 
@@ -41,6 +41,11 @@ docs: generate
 install: build
 	mkdir -p $(PLUGIN_DIR)
 	cp $(BINARY_NAME) $(PLUGIN_DIR)/terraform-provider-$(TYPE)
+
+install-hooks:
+	@git config core.hooksPath scripts/git-hooks
+	@echo "Git hooks installed (core.hooksPath = scripts/git-hooks)"
+	@echo "commit-msg hook will reject Co-Authored-By trailers."
 
 dev-override:
 	@echo 'Add this to ~/.terraformrc:'
