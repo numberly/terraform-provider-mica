@@ -112,7 +112,8 @@ jobs:
 
   release_python_sdk:
     name: Release Python SDK
-    needs: prerequisites
+    # Depend on release_provider so the GitHub release exists before we upload the wheel.
+    needs: release_provider
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

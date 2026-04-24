@@ -6,8 +6,10 @@ project_name: pulumi-resource-flashblade
 # resolves to "2.22.3". Without this, GoReleaser v2 (which only strips a
 # leading "v") would produce .Version = "pulumi-2.22.3", breaking archive
 # names, checksum filenames, the cosign upload step, and `pulumi plugin install`.
-git:
+# In GoReleaser v2 tag_prefix lives under `monorepo:`, not `git:`.
+monorepo:
   tag_prefix: "pulumi-"
+  dir: pulumi
 
 before:
   hooks:
