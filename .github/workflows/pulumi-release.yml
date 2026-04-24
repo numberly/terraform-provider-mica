@@ -19,6 +19,13 @@ permissions:
   id-token: write
   attestations: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Never cancel a release mid-flight — a partial release leaves the GitHub
+  # Release in an inconsistent state (binaries without signatures, tags
+  # without wheels, etc.).
+  cancel-in-progress: false
+
 jobs:
   prerequisites:
     name: Prerequisites
@@ -28,10 +35,13 @@ jobs:
     name: Release Provider
     needs: prerequisites
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # Full history required so goreleaser's github-native changelog
+          # can walk commits since the previous tag.
           fetch-depth: 0
 
       - name: Setup Go
@@ -92,11 +102,10 @@ jobs:
     # Depend on release_provider so the GitHub release exists before we upload the wheel.
     needs: release_provider
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -144,6 +153,7 @@ jobs:
     name: Tag Go SDK
     needs: release_provider
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
