@@ -12,3 +12,6 @@
 
 # Tooling
 .pulumi/
+
+# goreleaser output
+/dist/
