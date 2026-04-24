@@ -8,23 +8,42 @@ TFGEN_BIN   := $(PROVIDER_DIR)/cmd/pulumi-tfgen-flashblade/pulumi-tfgen-flashbla
 RUNTIME_BIN := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade/pulumi-resource-flashblade
 SCHEMA_DIR  := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade
 
-.PHONY: version tfgen_build tfgen provider test clean generate_python generate_go test_python_sdk test_go_sdk docs
+.PHONY: version tfgen_build tfgen provider test clean generate_python generate_go test_python_sdk test_go_sdk docs \
+	generate_python_from_schema generate_go_from_schema test_python_sdk_from_schema test_go_sdk_from_schema
+
+# CI/Release jobs set SKIP_TFGEN=1 to reuse pre-built schema artifacts
+# downloaded from the prerequisites workflow. Local dev leaves it unset so
+# the normal dependency chain rebuilds schema on demand.
+SKIP_TFGEN ?=
 
 version:
 	@echo $(VERSION)
 
 # Build tfgen binary (no ldflags version injection — tfgen is a build tool).
+# The binary is still required under SKIP_TFGEN=1 because SDK codegen
+# (python/go subcommands) reads the pre-fetched schema.json.
 tfgen_build:
 	cd $(PROVIDER_DIR) && go build -o cmd/pulumi-tfgen-flashblade/pulumi-tfgen-flashblade ./cmd/pulumi-tfgen-flashblade
 
 # Generate schema artifacts. tfgen's `schema` subcommand emits schema.json + bridge-metadata.json
 # into the --out directory. schema-embed.json is derived via jq minification.
+#
+# When SKIP_TFGEN=1 the pre-fetched artifacts on disk are trusted as-is; used
+# by CI/release jobs that download schema artifacts from the prerequisites
+# workflow to avoid redundant rebuilds.
 tfgen: tfgen_build
+ifeq ($(SKIP_TFGEN),)
 	$(TFGEN_BIN) schema --out $(SCHEMA_DIR)
 	@test -s $(SCHEMA_DIR)/schema.json          || (echo "schema.json empty" && exit 1)
 	@test -s $(SCHEMA_DIR)/bridge-metadata.json || (echo "bridge-metadata.json empty" && exit 1)
 	@jq -c . $(SCHEMA_DIR)/schema.json > $(SCHEMA_DIR)/schema-embed.json
 	@test -s $(SCHEMA_DIR)/schema-embed.json    || (echo "schema-embed.json empty" && exit 1)
+else
+	@echo "SKIP_TFGEN=1: reusing pre-built schema artifacts in $(SCHEMA_DIR)"
+	@test -s $(SCHEMA_DIR)/schema.json          || (echo "schema.json missing (SKIP_TFGEN=1 requires pre-fetched artifacts)" && exit 1)
+	@test -s $(SCHEMA_DIR)/schema-embed.json    || (echo "schema-embed.json missing (SKIP_TFGEN=1 requires pre-fetched artifacts)" && exit 1)
+	@test -s $(SCHEMA_DIR)/bridge-metadata.json || (echo "bridge-metadata.json missing (SKIP_TFGEN=1 requires pre-fetched artifacts)" && exit 1)
+endif
 
 # Build runtime provider binary with ldflags-injected VERSION and real embedded schema.
 provider: tfgen
@@ -37,17 +56,27 @@ provider: tfgen
 PYTHON_SDK_DIR := sdk/python
 GO_SDK_DIR     := sdk/go
 
-# Generate Python SDK from committed schema.
-generate_python: tfgen
+# _from_schema variants consume the committed/pre-fetched schema in place
+# without reinvoking the `schema` tfgen subcommand. They depend on tfgen_build
+# (to get the binary for python/go codegen subcommands) and on `tfgen` with
+# SKIP_TFGEN=1 (which asserts the schema artifacts exist on disk but doesn't
+# regenerate them).
+#
+# CI/release set SKIP_TFGEN=1 when invoking these targets after downloading
+# schema artifacts from the prerequisites workflow — this avoids re-running
+# the expensive schema walk in every SDK job.
+
+# Generate Python SDK from the pre-fetched / committed schema.
+generate_python_from_schema: tfgen_build tfgen
 	@echo "Generating Python SDK..."
 	@rm -rf $(PYTHON_SDK_DIR)
 	@mkdir -p $(PYTHON_SDK_DIR)
 	$(TFGEN_BIN) python --out $(PYTHON_SDK_DIR) --skip-docs --skip-examples
 	@echo "Python SDK generated in $(PYTHON_SDK_DIR)"
 
-# Generate Go SDK from committed schema. Preserves existing go.mod.
-# Post-generation: patch import paths to include /pulumi/ prefix.
-generate_go: tfgen
+# Generate Go SDK from the pre-fetched / committed schema. Preserves
+# existing go.mod. Post-generation: patch import paths to include /pulumi/.
+generate_go_from_schema: tfgen_build tfgen
 	@echo "Generating Go SDK..."
 	@rm -rf $(GO_SDK_DIR)/*.go $(GO_SDK_DIR)/*/
 	@cp $(GO_SDK_DIR)/go.mod $(GO_SDK_DIR)/go.mod.bak
@@ -58,9 +87,9 @@ generate_go: tfgen
 	@mv $(GO_SDK_DIR)/go.mod.bak $(GO_SDK_DIR)/go.mod
 	@echo "Go SDK generated in $(GO_SDK_DIR)"
 
-# Test Python SDK build (produces .whl). Uses an isolated venv to avoid
-# PEP 668 "externally-managed-environment" errors on system Python.
-test_python_sdk: generate_python
+# Test Python SDK build from pre-fetched schema. Uses an isolated venv to
+# avoid PEP 668 "externally-managed-environment" errors on system Python.
+test_python_sdk_from_schema: generate_python_from_schema
 	@echo "Testing Python SDK build..."
 	cd $(PYTHON_SDK_DIR) && python -m venv .venv
 	cd $(PYTHON_SDK_DIR) && .venv/bin/pip install 'build>=1.2.0,<2' 'wheel>=0.43.0,<1'
@@ -69,12 +98,19 @@ test_python_sdk: generate_python
 	@rm -rf $(PYTHON_SDK_DIR)/.venv
 	@echo "Python SDK build verified"
 
-# Test Go SDK compilation.
-test_go_sdk: generate_go
+# Test Go SDK compilation from pre-fetched schema.
+test_go_sdk_from_schema: generate_go_from_schema
 	@echo "Testing Go SDK build..."
 	cd $(GO_SDK_DIR) && go mod tidy
 	cd $(GO_SDK_DIR) && go build ./...
 	@echo "Go SDK build verified"
+
+# Local-dev aliases: depend on a fresh `tfgen` (no SKIP_TFGEN) and then
+# fall into the same body as the _from_schema variants.
+generate_python: tfgen generate_python_from_schema
+generate_go:     tfgen generate_go_from_schema
+test_python_sdk: tfgen test_python_sdk_from_schema
+test_go_sdk:     tfgen test_go_sdk_from_schema
 
 # Unit tests for the bridge ProviderInfo (plan 05).
 test:
