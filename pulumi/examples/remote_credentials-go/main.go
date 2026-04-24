@@ -9,7 +9,7 @@ func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 		provider, err := flashblade.NewProvider(ctx, "flashblade", &flashblade.ProviderArgs{
 			Endpoint: pulumi.String("https://flashblade.example.com"),
-			Auth:     pulumi.StringMap{"api_token": pulumi.String("t.abc123")},
+			Auth: &flashblade.ProviderAuthArgs{ApiToken: pulumi.String("t.abc123")},
 		})
 		if err != nil {
 			return err

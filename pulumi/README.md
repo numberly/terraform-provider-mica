@@ -95,7 +95,7 @@ func main() {
     pulumi.Run(func(ctx *pulumi.Context) error {
         provider, err := flashblade.NewProvider(ctx, "flashblade", &flashblade.ProviderArgs{
             Endpoint: pulumi.String("https://flashblade.example.com"),
-            Auth:     pulumi.StringMap{"api_token": pulumi.String("t.abc123")},
+            Auth: &flashblade.ProviderAuthArgs{ApiToken: pulumi.String("t.abc123")},
         })
         if err != nil {
             return err
@@ -188,6 +188,7 @@ See [`examples/`](examples/) for working programs:
 - `target-py/` / `target-go/` — S3 replication target
 - `remote_credentials-py/` / `remote_credentials-go/` — Cross-array credentials
 - `bucket-py/` / `bucket-go/` — Object store bucket with soft-delete
+- `s3-replication-py/` / `s3-replication-go/` — Full dual-array bidirectional replication: accounts, S3 export policies, IAM access policies, S3 users with access keys, versioned buckets, remote credentials, replica links, lifecycle rules, audit filters, and QoS (the most complete end-to-end example)
 
 ## State Upgrades
 
