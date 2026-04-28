@@ -54,7 +54,7 @@ func New(version string) func() provider.Provider {
 
 // Metadata sets the provider type name.
 func (p *FlashBladeProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "mica"
+	resp.TypeName = "flashblade"
 	resp.Version = p.version
 }
 
