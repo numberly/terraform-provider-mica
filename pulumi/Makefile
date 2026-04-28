@@ -1,12 +1,12 @@
-PROJECT_NAME := pulumi-flashblade
+PROJECT_NAME := pulumi-mica
 PROVIDER_PKG := github.com/numberly/terraform-provider-mica/pulumi/provider
 VERSION := $(shell git describe --tags --dirty --always 2>/dev/null || echo dev)
 LDFLAGS := -ldflags "-X $(PROVIDER_PKG)/pkg/version.Version=$(VERSION)"
 
 PROVIDER_DIR := provider
-TFGEN_BIN   := $(PROVIDER_DIR)/cmd/pulumi-tfgen-flashblade/pulumi-tfgen-flashblade
-RUNTIME_BIN := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade/pulumi-resource-flashblade
-SCHEMA_DIR  := $(PROVIDER_DIR)/cmd/pulumi-resource-flashblade
+TFGEN_BIN   := $(PROVIDER_DIR)/cmd/pulumi-tfgen-mica/pulumi-tfgen-mica
+RUNTIME_BIN := $(PROVIDER_DIR)/cmd/pulumi-resource-mica/pulumi-resource-mica
+SCHEMA_DIR  := $(PROVIDER_DIR)/cmd/pulumi-resource-mica
 
 .PHONY: version tfgen_build tfgen provider test clean generate_python generate_go test_python_sdk test_go_sdk docs \
 	generate_python_from_schema generate_go_from_schema test_python_sdk_from_schema test_go_sdk_from_schema
@@ -23,7 +23,7 @@ version:
 # The binary is still required under SKIP_TFGEN=1 because SDK codegen
 # (python/go subcommands) reads the pre-fetched schema.json.
 tfgen_build:
-	cd $(PROVIDER_DIR) && go build -o cmd/pulumi-tfgen-flashblade/pulumi-tfgen-flashblade ./cmd/pulumi-tfgen-flashblade
+	cd $(PROVIDER_DIR) && go build -o cmd/pulumi-tfgen-mica/pulumi-tfgen-mica ./cmd/pulumi-tfgen-mica
 
 # Generate schema artifacts. tfgen's `schema` subcommand emits schema.json + bridge-metadata.json
 # into the --out directory. schema-embed.json is derived via jq minification.
@@ -47,7 +47,7 @@ endif
 
 # Build runtime provider binary with ldflags-injected VERSION and real embedded schema.
 provider: tfgen
-	cd $(PROVIDER_DIR) && go build $(LDFLAGS) -o cmd/pulumi-resource-flashblade/pulumi-resource-flashblade ./cmd/pulumi-resource-flashblade
+	cd $(PROVIDER_DIR) && go build $(LDFLAGS) -o cmd/pulumi-resource-mica/pulumi-resource-mica ./cmd/pulumi-resource-mica
 
 # SDK Generation Scope Boundary (SDK-04):
 # Only Python and Go SDKs are generated. NodeJS, .NET, and Java are explicitly

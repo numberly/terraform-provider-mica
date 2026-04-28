@@ -14,23 +14,23 @@ import (
 )
 
 // mainPkg is the package prefix used by tfgen for generated SDKs.
-const mainPkg = "flashblade"
+const mainPkg = "mica"
 
 // Provider builds the full tfbridge.ProviderInfo with ShimProvider + all overrides.
-// Consumed by both cmd/pulumi-tfgen-flashblade (build time) and
-// cmd/pulumi-resource-flashblade (runtime).
+// Consumed by both cmd/pulumi-tfgen-mica (build time) and
+// cmd/pulumi-resource-mica (runtime).
 func Provider() tfbridge.ProviderInfo {
 	prov := tfbridge.ProviderInfo{
-		Name:    "flashblade",
+		Name:    "mica",
 		Version: version.Version,
 		// pftfbridge.ShimProvider wraps the terraform-plugin-framework provider so the bridge
 		// can introspect its schema and route RPCs through it (BRIDGE-05, BRIDGE-01..03).
 		P: pftfbridge.ShimProvider(fb.New(version.Version)()),
 
-		DisplayName: "FlashBlade",
+		DisplayName: "Mica",
 		Publisher:   "numberly",
 		Description: "A Pulumi package for managing Pure Storage FlashBlade resources.",
-		Keywords:    []string{"pulumi", "flashblade", "pure-storage", "category/infrastructure"},
+		Keywords:    []string{"pulumi", "mica", "flashblade", "pure-storage", "category/infrastructure"},
 		License:     "Apache-2.0",
 		Homepage:    "https://github.com/numberly/terraform-provider-mica",
 		Repository:  "https://github.com/numberly/terraform-provider-mica",
@@ -56,7 +56,7 @@ func Provider() tfbridge.ProviderInfo {
 	// This avoids the KnownModules limitation where resource names equal to a module
 	// prefix (e.g. `flashblade_bucket` → name="" → error) and resources that don't
 	// match any known prefix fall through to default.
-	// Token form: flashblade:index:Bucket, flashblade:index:FileSystem, etc.
+	// Token form: mica:index:Bucket, mica:index:FileSystem, etc.
 	prov.MustComputeTokens(tokens.SingleModule(
 		"flashblade_", // TF resource prefix
 		"index",       // single module

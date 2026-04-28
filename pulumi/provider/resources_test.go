@@ -177,8 +177,8 @@ func TestProviderInfo_NoSetAutonaming(t *testing.T) {
 	// SetAutonaming was deliberately omitted. Enforcement is source-level.
 	// This test documents intent by asserting the provider Name is correct.
 	prov := Provider()
-	if prov.Name != "flashblade" {
-		t.Errorf("ProviderInfo.Name = %q, want \"flashblade\"", prov.Name)
+	if prov.Name != "mica" {
+		t.Errorf("ProviderInfo.Name = %q, want \"mica\"", prov.Name)
 	}
 }
 
