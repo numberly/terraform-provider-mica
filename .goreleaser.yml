@@ -36,6 +36,21 @@ checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
 
+# GPG signature on the checksums file — required by the Terraform Registry.
+# Cosign keyless signing (handled in release.yml) is complementary, not a
+# substitute. The registry validates this .sig against the GPG public key
+# uploaded in the publisher's User Settings.
+signs:
+  - artifacts: checksum
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
 release:
   draft: false
   name_template: "{{ .Tag }}"
@@ -47,7 +62,7 @@ release:
     ```hcl
     terraform {
       required_providers {
-        flashblade = {
+        mica = {
           source  = "numberly/mica"
           version = "{{ .Version }}"
         }
