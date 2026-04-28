@@ -1,4 +1,4 @@
-# FlashBlade REST API 2.22 — AI-Optimized Reference
+# FlashBlade® REST API 2.22 — AI-Optimized Reference
 
 Base: `https://{array}/` | Version: 2.22 | 226 paths | 538 ops | Auth: `x-auth-token` or `api-token` header
 

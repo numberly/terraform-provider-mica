@@ -1,4 +1,4 @@
-# FlashBlade S3 Replication Example
+# FlashBlade® S3 Replication Example
 
 Dual-array bidirectional S3 bucket replication — mirrors the `terraform-flashblade-s3-bucket` Terraform module.
 

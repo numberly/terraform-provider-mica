@@ -44,7 +44,7 @@ new resource scaffolding, and documentation with human review at each phase.
 
 ## Overview
 
-Terraform provider for Pure Storage FlashBlade (REST API v2.22, Purity//FB 4.6.7).
+Terraform provider for Pure Storage FlashBlade® (REST API v2.22, Purity//FB 4.6.7).
 Built with terraform-plugin-framework. Go 1.25+.
 
 ## Architecture

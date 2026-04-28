@@ -1,4 +1,4 @@
-# Pulumi FlashBlade Provider
+# Pulumi FlashBlade® Provider
 
 A Pulumi package for managing Pure Storage FlashBlade resources. This provider is bridged from the existing Terraform provider using `pulumi-terraform-bridge/v3`.
 
@@ -25,13 +25,13 @@ Pulumi bridge releases are tagged `v{X.Y.Z}-pulumi[.suffix]` (valid SemVer prere
 Install the wheel from the GitHub Release asset:
 
 ```bash
-pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_mica-2.22.3-pulumi.alpha-py3-none-any.whl
+pip install https://github.com/numberly/terraform-provider-mica/releases/download/v2.22.3-pulumi.alpha/pulumi_mica-2.22.3-pulumi.alpha-py3-none-any.whl
 ```
 
 Or add to your `requirements.txt`:
 
 ```
-pulumi_mica @ https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_mica-2.22.3-pulumi.alpha-py3-none-any.whl
+pulumi_mica @ https://github.com/numberly/terraform-provider-mica/releases/download/v2.22.3-pulumi.alpha/pulumi_mica-2.22.3-pulumi.alpha-py3-none-any.whl
 ```
 
 ### Go SDK
@@ -50,7 +50,7 @@ export GOPRIVATE="github.com/numberly/*"
 Then fetch the SDK (use the Go SDK tag, not the provider tag):
 
 ```bash
-go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v0.1.0-pulumi.alpha
+go get github.com/numberly/terraform-provider-mica/pulumi/sdk/go@v0.1.0-pulumi.alpha
 ```
 
 The Go module tag follows the pattern `sdk/go/v{SDK_VERSION}-pulumi[.suffix]`
@@ -96,7 +96,7 @@ package main
 
 import (
     "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-    "github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go/mica"
+    "github.com/numberly/terraform-provider-mica/pulumi/sdk/go/mica"
 )
 
 func main() {

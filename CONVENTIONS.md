@@ -1,4 +1,4 @@
-# CONVENTIONS.md — Terraform Provider FlashBlade
+# CONVENTIONS.md — Terraform Provider FlashBlade®
 
 Single source of truth for code conventions. Every resource/data source/modification MUST follow these rules. Code examples: see `flashblade-resource-builder` skill or referenced files.
 
