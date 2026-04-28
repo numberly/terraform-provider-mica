@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.22.4] — 2026-04-28
+
+### Project rebrand
+
+The Pulumi provider for Pure Storage FlashBlade® has been renamed from `pulumi-flashblade` to `pulumi-mica`.
+
+### Changed (breaking)
+
+- Pulumi package name: `pulumi-flashblade` → `pulumi-mica`
+- Resource token namespace: `flashblade:*:*` → `mica:*:*`
+- Go SDK import path: `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go/flashblade` → `github.com/numberly/terraform-provider-mica/pulumi/sdk/go/mica`
+- License: now distributed under **GPL v3**
+
+### Migration
+
+Pulumi does not provide a built-in `replace-provider` equivalent for renamed type tokens. Existing stacks reference `flashblade:*:*` resources by type token in state, and a fresh import is the safest path.
+
+For each existing stack:
+
+1. Export current stack state: `pulumi stack export --file old-state.json`
+2. In `old-state.json`, search-and-replace `"flashblade:` with `"mica:` (this rewrites the resource URN type token).
+3. Also rewrite the Go SDK import paths in your IaC code.
+4. Update Pulumi.yaml or package.json to depend on `pulumi-mica` instead of `pulumi-flashblade`.
+5. Import: `pulumi stack import --file old-state.json`
+6. Run `pulumi preview` to verify no diffs are detected.
+
+If diffs appear, the rename was incomplete — investigate before applying.
+
 ## v2.22.3-pulumi.alpha
 
 **Status:** Alpha — functional but not production-hardened.
