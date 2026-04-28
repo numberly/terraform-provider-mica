@@ -15,3 +15,4 @@
 
 # goreleaser output
 /dist/
+.coverage/
