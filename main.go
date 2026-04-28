@@ -10,7 +10,7 @@ import (
 	"github.com/numberly/terraform-provider-mica/internal/provider"
 )
 
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name flashblade
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name mica
 
 // These are set by goreleaser at build time via ldflags.
 var (
@@ -25,11 +25,11 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/numberly/flashblade",
+		Address: "registry.terraform.io/numberly/mica",
 		Debug:   debug,
 	}
 
-	log.Printf("[INFO] flashblade provider %s (commit=%s, built=%s)", version, commit, date)
+	log.Printf("[INFO] mica provider %s (commit=%s, built=%s)", version, commit, date)
 
 	if err := providerserver.Serve(context.Background(), provider.New(version), opts); err != nil {
 		log.Fatal(err.Error())
