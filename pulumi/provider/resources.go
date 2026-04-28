@@ -31,7 +31,7 @@ func Provider() tfbridge.ProviderInfo {
 		Publisher:   "numberly",
 		Description: "A Pulumi package for managing Pure Storage FlashBlade resources.",
 		Keywords:    []string{"pulumi", "mica", "flashblade", "pure-storage", "category/infrastructure"},
-		License:     "Apache-2.0",
+		License:     "GPL-3.0-only",
 		Homepage:    "https://github.com/numberly/terraform-provider-mica",
 		Repository:  "https://github.com/numberly/terraform-provider-mica",
 		// PluginDownloadURL — required for `pulumi plugin install --server
