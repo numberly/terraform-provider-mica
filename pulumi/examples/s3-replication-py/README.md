@@ -23,7 +23,7 @@ Dual-array bidirectional S3 bucket replication — mirrors the `terraform-flashb
 
 ```bash
 cd s3-replication-py
-pip install ../../../sdk/python/dist/pulumi_flashblade-*.whl
+pip install ../../../sdk/python/dist/pulumi_mica-*.whl
 pulumi stack init dev
 pulumi config set par5_endpoint "https://par5.flashblade.example.com"
 pulumi config set pa7_endpoint "https://pa7.flashblade.example.com"

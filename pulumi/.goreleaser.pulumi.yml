@@ -1,6 +1,6 @@
 version: 2
 
-project_name: pulumi-resource-flashblade
+project_name: pulumi-resource-mica
 
 # Pulumi bridge tags follow the SemVer-compatible convention
 # "v{semver}-pulumi[.suffix]" (e.g. v2.22.3-pulumi.alpha). The "-pulumi.*"
@@ -28,7 +28,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - "-s -w -X github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version.Version={{.Version}}"
+      - "-s -w -X github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version.Version={{.Version}}"
     goos:
       - linux
       - darwin
@@ -39,19 +39,19 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
-    binary: "pulumi-resource-flashblade"
+    binary: "pulumi-resource-mica"
     dir: "provider"
-    main: "./cmd/pulumi-resource-flashblade"
+    main: "./cmd/pulumi-resource-mica"
 
 archives:
   - formats:
       - tar.gz
-    name_template: "pulumi-resource-flashblade-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    name_template: "pulumi-resource-mica-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     files:
-      - src: "provider/cmd/pulumi-resource-flashblade/schema.json"
+      - src: "provider/cmd/pulumi-resource-mica/schema.json"
         dst: "schema.json"
         strip_parent: true
-      - src: "provider/cmd/pulumi-resource-flashblade/bridge-metadata.json"
+      - src: "provider/cmd/pulumi-resource-mica/bridge-metadata.json"
         dst: "bridge-metadata.json"
         strip_parent: true
 
@@ -73,7 +73,7 @@ release:
     ### Installation
 
     ```bash
-    pulumi plugin install resource flashblade {{ .Version }} --server github://api.github.com/numberly
+    pulumi plugin install resource mica {{ .Version }} --server github://api.github.com/numberly
     ```
 
     ### Python SDK
@@ -81,7 +81,7 @@ release:
     Install the wheel from the release assets:
 
     ```bash
-    pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/{{ .Tag }}/pulumi_flashblade-{{ .Version }}-py3-none-any.whl
+    pip install https://github.com/numberly/terraform-provider-mica/releases/download/{{ .Tag }}/pulumi_mica-{{ .Version }}-py3-none-any.whl
     ```
 
     ### Go SDK
@@ -92,7 +92,7 @@ release:
     ```bash
     export GOPRIVATE="github.com/numberly/*"
     # Example — replace with the sdk/go/... tag from this release's companion tag
-    go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v0.1.0-pulumi.alpha
+    go get github.com/numberly/terraform-provider-mica/pulumi/sdk/go@v0.1.0-pulumi.alpha
     ```
 
     ### Checksums
@@ -104,7 +104,7 @@ release:
     cosign verify-blob \
       --signature {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.sig \
       --certificate {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.pem \
-      --certificate-identity-regexp "https://github.com/numberly/opentofu-provider-flashblade" \
+      --certificate-identity-regexp "https://github.com/numberly/terraform-provider-mica" \
       --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
       {{ .ProjectName }}_{{ .Version }}_SHA256SUMS
     ```

@@ -14,7 +14,7 @@ This release renames the project to **Mica** for open-source release. The provid
 
 ### Unchanged
 
-- Terraform resource type names: `flashblade_bucket`, `flashblade_target`, `flashblade_filesystem`, etc.
+- Terraform resource type names: `flashblade_bucket`, `flashblade_target`, `flashblade_file_system`, etc.
 - HCL `provider "flashblade" {}` block syntax (the local alias remains user-controlled)
 - Internal Go identifiers (`FlashBladeClient`, package layout, etc.)
 - All schema fields, behaviors, and acceptance test fixtures
