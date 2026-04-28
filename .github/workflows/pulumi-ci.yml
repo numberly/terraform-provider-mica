@@ -98,14 +98,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: "schema*"
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
           merge-multiple: true
 
       - name: Download bridge-metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: bridge-metadata
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
 
       # SKIP_TFGEN=1 + _from_schema targets consume the downloaded schema
       # instead of re-running the tfgen schema subcommand.
@@ -132,14 +132,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: "schema*"
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
           merge-multiple: true
 
       - name: Download bridge-metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: bridge-metadata
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
 
       - name: Test Go SDK build (schema pre-fetched)
         working-directory: pulumi

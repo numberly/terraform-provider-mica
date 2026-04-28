@@ -55,24 +55,24 @@ jobs:
       - name: Schema drift gate
         run: |
           git diff --exit-code \
-            pulumi/provider/cmd/pulumi-resource-flashblade/schema.json \
-            pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json \
-            pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
+            pulumi/provider/cmd/pulumi-resource-mica/schema.json \
+            pulumi/provider/cmd/pulumi-resource-mica/schema-embed.json \
+            pulumi/provider/cmd/pulumi-resource-mica/bridge-metadata.json
 
       - name: Upload schema.json artifact
         uses: actions/upload-artifact@v4
         with:
           name: schema
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/schema.json
+          path: pulumi/provider/cmd/pulumi-resource-mica/schema.json
 
       - name: Upload schema-embed.json artifact
         uses: actions/upload-artifact@v4
         with:
           name: schema-embed
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/schema-embed.json
+          path: pulumi/provider/cmd/pulumi-resource-mica/schema-embed.json
 
       - name: Upload bridge-metadata.json artifact
         uses: actions/upload-artifact@v4
         with:
           name: bridge-metadata
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/bridge-metadata.json
+          path: pulumi/provider/cmd/pulumi-resource-mica/bridge-metadata.json
