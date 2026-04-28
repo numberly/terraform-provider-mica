@@ -41,7 +41,7 @@
 terraform {
   required_providers {
     flashblade = {
-      source = "numberly/flashblade"
+      source = "numberly/mica"
     }
   }
 }
@@ -125,14 +125,14 @@ variable "encrypted" {
 # --- Providers ---------------------------------------------------------------
 
 provider "flashblade" {
-  alias    = "array_a"
-  endpoint = var.array_a_endpoint
+  alias     = "array_a"
+  endpoint  = var.array_a_endpoint
   api_token = var.array_a_api_token
 }
 
 provider "flashblade" {
-  alias    = "array_b"
-  endpoint = var.array_b_endpoint
+  alias     = "array_b"
+  endpoint  = var.array_b_endpoint
   api_token = var.array_b_api_token
 }
 
@@ -165,15 +165,15 @@ resource "flashblade_certificate_group_member" "array_b_self" {
 
 # Custom certificate (optional — e.g. imported via flashblade_certificate)
 resource "flashblade_certificate_group_member" "array_a_custom" {
-  count    = var.custom_cert_name != "" ? 1 : 0
-  provider = flashblade.array_a
+  count            = var.custom_cert_name != "" ? 1 : 0
+  provider         = flashblade.array_a
   group_name       = flashblade_certificate_group.array_a.name
   certificate_name = var.custom_cert_name
 }
 
 resource "flashblade_certificate_group_member" "array_b_custom" {
-  count    = var.custom_cert_name != "" ? 1 : 0
-  provider = flashblade.array_b
+  count            = var.custom_cert_name != "" ? 1 : 0
+  provider         = flashblade.array_b
   group_name       = flashblade_certificate_group.array_b.name
   certificate_name = var.custom_cert_name
 }

@@ -23,7 +23,7 @@
 terraform {
   required_providers {
     flashblade = {
-      source  = "numberly/flashblade"
+      source  = "numberly/mica"
       version = "~> 2.1"
     }
   }
