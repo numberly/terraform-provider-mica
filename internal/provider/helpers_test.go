@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 func TestUnit_CompositeID(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 // networkInterfaceStore is the thread-safe in-memory state for network interface handlers.

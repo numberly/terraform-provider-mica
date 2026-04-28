@@ -1,10 +1,10 @@
-module github.com/numberly/opentofu-provider-flashblade/pulumi/examples/bucket-go
+module github.com/numberly/terraform-provider-mica/pulumi/examples/bucket-go
 
 go 1.25
 
 require (
-	github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go v0.0.0
+	github.com/numberly/terraform-provider-mica/pulumi/sdk/go v0.0.0
 	github.com/pulumi/pulumi/sdk/v3 v3.231.0
 )
 
-replace github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go => ../../sdk/go
+replace github.com/numberly/terraform-provider-mica/pulumi/sdk/go => ../../sdk/go

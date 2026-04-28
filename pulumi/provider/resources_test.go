@@ -8,8 +8,8 @@ import (
 	tfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 
-	fb "github.com/numberly/opentofu-provider-flashblade/internal/provider"
-	"github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version"
+	fb "github.com/numberly/terraform-provider-mica/internal/provider"
+	"github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version"
 )
 
 // Expected counts. Matches TF provider registrations (54 resources, 40 data sources).

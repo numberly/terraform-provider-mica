@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 var _ resource.Resource = &objectStoreAccessPolicyRuleResource{}

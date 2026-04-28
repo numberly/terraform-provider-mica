@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 // directoryServiceRolesStore is the thread-safe in-memory state for directory service role handlers.

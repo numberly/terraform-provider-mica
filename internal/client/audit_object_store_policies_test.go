@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
+	"github.com/numberly/terraform-provider-mica/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/testmock"
+	"github.com/numberly/terraform-provider-mica/internal/testmock/handlers"
 )
 
 func TestUnit_AuditObjectStorePolicy_Get_Found(t *testing.T) {

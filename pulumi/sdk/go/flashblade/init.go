@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/blang/semver"
-	"github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go/flashblade/internal"
+	"github.com/numberly/terraform-provider-mica/pulumi/sdk/go/flashblade/internal"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 

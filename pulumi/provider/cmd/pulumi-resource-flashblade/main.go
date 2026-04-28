@@ -6,7 +6,7 @@ import (
 
 	pftfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/pf/tfbridge"
 
-	flashblade "github.com/numberly/opentofu-provider-flashblade/pulumi/provider"
+	flashblade "github.com/numberly/terraform-provider-mica/pulumi/provider"
 )
 
 //go:embed schema.json

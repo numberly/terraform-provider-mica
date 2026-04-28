@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
+	"github.com/numberly/terraform-provider-mica/internal/testmock"
+	"github.com/numberly/terraform-provider-mica/internal/testmock/handlers"
 )
 
 // doJSON is a convenience helper for making JSON requests to the mock server.

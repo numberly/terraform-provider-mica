@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 // generateTestCerts generates a self-signed CA and a server certificate signed

@@ -9,8 +9,8 @@ import (
 	"github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge/tokens"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 
-	fb "github.com/numberly/opentofu-provider-flashblade/internal/provider"
-	"github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version"
+	fb "github.com/numberly/terraform-provider-mica/internal/provider"
+	"github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version"
 )
 
 // mainPkg is the package prefix used by tfgen for generated SDKs.
@@ -32,8 +32,8 @@ func Provider() tfbridge.ProviderInfo {
 		Description: "A Pulumi package for managing Pure Storage FlashBlade resources.",
 		Keywords:    []string{"pulumi", "flashblade", "pure-storage", "category/infrastructure"},
 		License:     "Apache-2.0",
-		Homepage:    "https://github.com/numberly/opentofu-provider-flashblade",
-		Repository:  "https://github.com/numberly/opentofu-provider-flashblade",
+		Homepage:    "https://github.com/numberly/terraform-provider-mica",
+		Repository:  "https://github.com/numberly/terraform-provider-mica",
 		// PluginDownloadURL — required for `pulumi plugin install --server
 		// github://api.github.com/numberly ...` to resolve the runtime binary
 		// from GitHub Releases (BRIDGE-05).

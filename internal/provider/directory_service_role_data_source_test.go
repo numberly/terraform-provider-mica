@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
+	"github.com/numberly/terraform-provider-mica/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/testmock"
+	"github.com/numberly/terraform-provider-mica/internal/testmock/handlers"
 )
 
 func newTestDirectoryServiceRoleDataSource(t *testing.T, ms *testmock.MockServer) *directoryServiceRoleDataSource {

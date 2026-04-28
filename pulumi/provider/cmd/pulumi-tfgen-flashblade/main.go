@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/pulumi/pulumi-terraform-bridge/v3/pkg/pf/tfgen"
 
-	flashblade "github.com/numberly/opentofu-provider-flashblade/pulumi/provider"
+	flashblade "github.com/numberly/terraform-provider-mica/pulumi/provider"
 )
 
 func main() {

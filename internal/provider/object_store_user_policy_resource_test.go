@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
+	"github.com/numberly/terraform-provider-mica/internal/testmock"
+	"github.com/numberly/terraform-provider-mica/internal/testmock/handlers"
 )
 
 // setupObjectStoreUserPolicyTest creates a mock server with object store user handlers

@@ -4,7 +4,7 @@
 package config
 
 import (
-	"github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go/flashblade/internal"
+	"github.com/numberly/terraform-provider-mica/pulumi/sdk/go/flashblade/internal"
 )
 
 var _ = internal.GetEnvOrDefault
