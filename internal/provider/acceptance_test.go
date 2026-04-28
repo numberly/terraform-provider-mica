@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock"
-	"github.com/numberly/opentofu-provider-flashblade/internal/testmock/handlers"
+	"github.com/numberly/terraform-provider-mica/internal/testmock"
+	"github.com/numberly/terraform-provider-mica/internal/testmock/handlers"
 )
 
 // setupAcceptanceTest creates a mock server with all required handlers, sets

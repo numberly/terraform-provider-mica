@@ -1,10 +1,27 @@
-# Terraform Provider FlashBlade
+# Mica — Terraform/OpenTofu provider for Pure Storage FlashBlade®
 
-[![CI](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml/badge.svg)](https://github.com/numberly/opentofu-provider-flashblade/actions/workflows/ci.yml)
+> Mica is an open-source Terraform and OpenTofu provider for Pure Storage FlashBlade® scale-out storage arrays.
+>
+> **Mica is independent and is NOT affiliated with, endorsed by, or sponsored by Pure Storage, Inc.**
+
+## Trademarks
+
+Pure Storage®, FlashBlade®, and Purity® are registered trademarks of Pure Storage, Inc. and/or its affiliates. This project uses these names only as nominative descriptive references to identify the target system. See [`NOTICE`](./NOTICE) for full attribution.
+
+## Why the asymmetric naming?
+
+Mica deliberately uses different prefixes between Terraform and Pulumi:
+
+- **Terraform / OpenTofu**: resources are named `flashblade_bucket`, `flashblade_target`, etc. — the prefix describes the target system, following the convention of `aws_*`, `google_*`, `vsphere_*` providers.
+- **Pulumi**: resources are exposed under the `mica:` namespace (`mica.NewBucket(...)` in Go, `mica.Bucket(...)` in Python/TypeScript) — the Pulumi package name is `pulumi-mica`.
+
+This asymmetry exists because the Pulumi package name is itself a published artifact (subject to trademark rules), while the Terraform resource type is a code-internal identifier (descriptive nominative use).
+
+[![CI](https://github.com/numberly/terraform-provider-mica/actions/workflows/ci.yml/badge.svg)](https://github.com/numberly/terraform-provider-mica/actions/workflows/ci.yml)
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/SoulKyu/59bd98f69a5ecbb7e643402fde956fed/raw/coverage.json)
 ![Go Version](https://img.shields.io/badge/go-1.25-00ADD8?logo=go&logoColor=white)
 ![Terraform](https://img.shields.io/badge/terraform-%E2%89%A5_1.0-844FBA?logo=terraform&logoColor=white)
-[![Go Report Card](https://goreportcard.com/badge/github.com/numberly/opentofu-provider-flashblade)](https://goreportcard.com/report/github.com/numberly/opentofu-provider-flashblade)
+[![Go Report Card](https://goreportcard.com/badge/github.com/numberly/terraform-provider-mica)](https://goreportcard.com/report/github.com/numberly/terraform-provider-mica)
 ![Latest Release](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/SoulKyu/59bd98f69a5ecbb7e643402fde956fed/raw/release.json)
 
 Terraform provider for [Pure Storage FlashBlade](https://www.purestorage.com/products/file-and-object/flashblade.html), managing storage resources via the FlashBlade REST API v2.22.
@@ -27,7 +44,7 @@ This provider enables GitOps-driven management of FlashBlade storage: file syste
 terraform {
   required_providers {
     flashblade = {
-      source  = "numberly/flashblade"
+      source = "numberly/mica"
       version = "~> 2.1"
     }
   }
@@ -201,7 +218,7 @@ This provider covers ~61% of IaC-relevant FlashBlade API v2.22 endpoints. See [R
 
 ## Documentation
 
-Generated docs are in the `docs/` directory and published to the [Terraform Registry](https://registry.terraform.io/providers/numberly/flashblade/latest).
+Generated docs are in the `docs/` directory and published to the [Terraform Registry](https://registry.terraform.io/providers/numberly/mica/latest).
 
 ## Contributing
 
@@ -213,4 +230,8 @@ Generated docs are in the `docs/` directory and published to the [Terraform Regi
 
 ## License
 
-See [LICENSE](LICENSE).
+Mica is licensed under the [GNU General Public License v3.0](./LICENSE).
+
+The provider is invoked by Terraform and OpenTofu via gRPC IPC. Your Terraform configurations and infrastructure-as-code do not become subject to GPL v3 simply by using Mica — the IPC boundary is the license boundary, the same way the Linux kernel does not impose GPL on userspace programs.
+
+If you redistribute Mica (binaries or source), you must comply with GPL v3: provide source code or a written offer to provide it, and preserve the LICENSE and NOTICE files.

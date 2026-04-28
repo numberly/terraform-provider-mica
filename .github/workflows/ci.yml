@@ -32,7 +32,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Run unit tests with coverage
-        run: go test -coverpkg=github.com/numberly/opentofu-provider-flashblade/internal/... -coverprofile=coverage.out ./internal/... -count=1 -timeout 5m
+        run: go test -coverpkg=github.com/numberly/terraform-provider-mica/internal/... -coverprofile=coverage.out ./internal/... -count=1 -timeout 5m
 
       - name: Extract coverage percentage
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'

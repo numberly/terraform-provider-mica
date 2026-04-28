@@ -1,4 +1,4 @@
-module github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go
+module github.com/numberly/terraform-provider-mica/pulumi/sdk/go
 
 go 1.25.8
 

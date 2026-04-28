@@ -1,5 +1,7 @@
 version: 2
 
+project_name: terraform-provider-mica
+
 before:
   hooks:
     - go mod tidy
@@ -23,7 +25,7 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
-    binary: "terraform-provider-flashblade_v{{ .Version }}"
+    binary: "terraform-provider-mica_v{{ .Version }}"
 
 archives:
   - formats:
@@ -46,7 +48,7 @@ release:
     terraform {
       required_providers {
         flashblade = {
-          source  = "numberly/flashblade"
+          source  = "numberly/mica"
           version = "{{ .Version }}"
         }
       }
@@ -62,7 +64,7 @@ release:
     cosign verify-blob \
       --signature {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.sig \
       --certificate {{ .ProjectName }}_{{ .Version }}_SHA256SUMS.pem \
-      --certificate-identity-regexp "https://github.com/numberly/opentofu-provider-flashblade" \
+      --certificate-identity-regexp "https://github.com/numberly/terraform-provider-mica" \
       --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
       {{ .ProjectName }}_{{ .Version }}_SHA256SUMS
     ```

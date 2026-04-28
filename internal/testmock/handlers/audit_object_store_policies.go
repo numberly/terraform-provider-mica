@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 // auditObjectStorePolicyStore is the thread-safe in-memory state for audit object store policy handlers.

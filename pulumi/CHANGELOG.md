@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.22.4] — 2026-04-28
+
+### Project rebrand
+
+The Pulumi provider for Pure Storage FlashBlade® has been renamed from `pulumi-flashblade` to `pulumi-mica`.
+
+### Changed (breaking)
+
+- Pulumi package name: `pulumi-flashblade` → `pulumi-mica`
+- Resource token namespace: `flashblade:*:*` → `mica:*:*`
+- Go SDK import path: `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go/flashblade` → `github.com/numberly/terraform-provider-mica/pulumi/sdk/go/mica`
+- License: now distributed under **GPL v3**
+
+### Migration
+
+Pulumi does not provide a built-in `replace-provider` equivalent for renamed type tokens. Existing stacks reference `flashblade:*:*` resources by type token in state, and a fresh import is the safest path.
+
+For each existing stack:
+
+1. Export current stack state: `pulumi stack export --file old-state.json`
+2. In `old-state.json`, search-and-replace `"flashblade:` with `"mica:` (this rewrites the resource URN type token).
+3. Also rewrite the Go SDK import paths in your IaC code.
+4. Update Pulumi.yaml or package.json to depend on `pulumi-mica` instead of `pulumi-flashblade`.
+5. Import: `pulumi stack import --file old-state.json`
+6. Run `pulumi preview` to verify no diffs are detected.
+
+If diffs appear, the rename was incomplete — investigate before applying.
+
 ## v2.22.3-pulumi.alpha
 
 **Status:** Alpha — functional but not production-hardened.
@@ -9,7 +37,7 @@
 - **Bridge scaffold** — Full `pulumi-terraform-bridge/v3` integration with `pkg/pf/tfbridge` and `pkg/pf/tfgen`.
 - **54 resources + 40 data sources** — All Terraform resources and data sources bridged with auto-tokenization via `SingleModule` (token form: `flashblade:index:*`).
 - **Python SDK** — Generated `pulumi_flashblade` package, installable as a wheel from GitHub Releases.
-- **Go SDK** — Generated Go module at `github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go`, fetchable via `go get` with `GOPRIVATE`. Versioned independently on major v0 (see `pulumi/sdk/go/VERSION`); the first alpha tag is `sdk/go/v0.1.0-pulumi.alpha`.
+- **Go SDK** — Generated Go module at `github.com/numberly/terraform-provider-mica/pulumi/sdk/go`, fetchable via `go get` with `GOPRIVATE`. Versioned independently on major v0 (see `pulumi/sdk/go/VERSION`); the first alpha tag is `sdk/go/v0.1.0-pulumi.alpha`.
 - **Cosign-signed binaries** — Multi-platform plugin archives (`linux/darwin/windows` x `amd64/arm64`) signed with keyless Sigstore.
 - **Composite ID support** — Import works for all 4 composite-ID resources using `/` separator:
   - `flashblade_object_store_access_policy_rule`
@@ -33,13 +61,13 @@ These upgrade notes cover moving from "no Pulumi" to alpha:
 
 2. Install the Python SDK:
    ```bash
-   pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
+   pip install https://github.com/numberly/terraform-provider-mica/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
    ```
 
 3. Or fetch the Go SDK (independent v0 versioning — use the SDK tag, not the provider tag):
    ```bash
    export GOPRIVATE="github.com/numberly/*"
-   go get github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go@v0.1.0-pulumi.alpha
+   go get github.com/numberly/terraform-provider-mica/pulumi/sdk/go@v0.1.0-pulumi.alpha
    ```
 
 4. Configure the provider in your Pulumi program (see `README.md` for examples).

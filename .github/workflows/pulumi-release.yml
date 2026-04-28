@@ -72,14 +72,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: "schema*"
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
           merge-multiple: true
 
       - name: Download bridge-metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: bridge-metadata
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
@@ -100,9 +100,9 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           cosign sign-blob --yes \
-            --output-signature "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.sig" \
-            --output-certificate "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.pem" \
-            "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS"
+            --output-signature "dist/pulumi-resource-mica_${VERSION}_SHA256SUMS.sig" \
+            --output-certificate "dist/pulumi-resource-mica_${VERSION}_SHA256SUMS.pem" \
+            "dist/pulumi-resource-mica_${VERSION}_SHA256SUMS"
 
       - name: Upload signatures to release
         working-directory: pulumi
@@ -111,8 +111,8 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           gh release upload "${GITHUB_REF_NAME}" \
-            "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.sig" \
-            "dist/pulumi-resource-flashblade_${VERSION}_SHA256SUMS.pem" \
+            "dist/pulumi-resource-mica_${VERSION}_SHA256SUMS.sig" \
+            "dist/pulumi-resource-mica_${VERSION}_SHA256SUMS.pem" \
             --clobber
 
   release_python_sdk:
@@ -140,14 +140,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: "schema*"
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
           merge-multiple: true
 
       - name: Download bridge-metadata artifact
         uses: actions/download-artifact@v4
         with:
           name: bridge-metadata
-          path: pulumi/provider/cmd/pulumi-resource-flashblade/
+          path: pulumi/provider/cmd/pulumi-resource-mica/
 
       # SKIP_TFGEN=1 + _from_schema: Python codegen + wheel build in one step
       # using the downloaded schema. Drops the old "Generate Python SDK"
@@ -163,9 +163,9 @@ jobs:
         # silently pick the first of many on a dirty workspace.
         run: |
           shopt -s nullglob
-          wheels=(pulumi/sdk/python/dist/pulumi_flashblade-*.whl)
+          wheels=(pulumi/sdk/python/dist/pulumi_mica-*.whl)
           if [ ${#wheels[@]} -eq 0 ]; then
-            echo "::error::No wheel matched pulumi/sdk/python/dist/pulumi_flashblade-*.whl"
+            echo "::error::No wheel matched pulumi/sdk/python/dist/pulumi_mica-*.whl"
             exit 1
           fi
           if [ ${#wheels[@]} -gt 1 ]; then

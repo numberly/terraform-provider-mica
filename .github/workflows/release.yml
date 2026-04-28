@@ -89,7 +89,7 @@ jobs:
           cosign verify-blob \
             --signature "${{ steps.checksums.outputs.path }}.sig" \
             --certificate "${{ steps.checksums.outputs.path }}.pem" \
-            --certificate-identity-regexp "https://github.com/numberly/opentofu-provider-flashblade" \
+            --certificate-identity-regexp "https://github.com/numberly/terraform-provider-mica" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             "${{ steps.checksums.outputs.path }}"
 

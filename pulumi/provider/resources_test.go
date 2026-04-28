@@ -8,8 +8,8 @@ import (
 	tfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 
-	fb "github.com/numberly/opentofu-provider-flashblade/internal/provider"
-	"github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version"
+	fb "github.com/numberly/terraform-provider-mica/internal/provider"
+	"github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version"
 )
 
 // Expected counts. Matches TF provider registrations (54 resources, 40 data sources).
@@ -177,8 +177,8 @@ func TestProviderInfo_NoSetAutonaming(t *testing.T) {
 	// SetAutonaming was deliberately omitted. Enforcement is source-level.
 	// This test documents intent by asserting the provider Name is correct.
 	prov := Provider()
-	if prov.Name != "flashblade" {
-		t.Errorf("ProviderInfo.Name = %q, want \"flashblade\"", prov.Name)
+	if prov.Name != "mica" {
+		t.Errorf("ProviderInfo.Name = %q, want \"mica\"", prov.Name)
 	}
 }
 

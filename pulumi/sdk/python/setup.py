@@ -25,9 +25,9 @@ setup(name='pulumi_flashblade',
       long_description=readme(),
       long_description_content_type='text/markdown',
       keywords='pulumi flashblade pure-storage category/infrastructure',
-      url='https://github.com/numberly/opentofu-provider-flashblade',
+      url='https://github.com/numberly/terraform-provider-mica',
       project_urls={
-          'Repository': 'https://github.com/numberly/opentofu-provider-flashblade'
+          'Repository': 'https://github.com/numberly/terraform-provider-mica'
       },
       license='Apache-2.0',
       packages=find_packages(),

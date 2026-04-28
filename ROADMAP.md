@@ -1,6 +1,6 @@
 # API Coverage Roadmap
 
-FlashBlade REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-flashblade.
+FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
 
 **Last updated:** 2026-04-17
 **Provider version:** v2.22.2

@@ -1,0 +1,48 @@
+Mica
+Copyright (C) 2026 Numberly
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+------------------------------------------------------------------------
+
+TRADEMARK NOTICE
+
+Pure Storage(R), FlashBlade(R), and Purity(R) are registered trademarks
+of Pure Storage, Inc. and/or its affiliates.
+
+This project, "Mica", is independent and is NOT affiliated with,
+endorsed by, sponsored by, or otherwise associated with Pure Storage, Inc.
+
+References to Pure Storage products in this project's documentation are
+nominative descriptive references identifying the target system that
+this software interacts with, and do not imply any endorsement,
+certification, or official status.
+
+For Pure Storage trademark guidelines, see:
+  https://www.purestorage.com/legal/productenduserinfo.html
+
+------------------------------------------------------------------------
+
+THIRD-PARTY COMPONENTS
+
+This software uses third-party libraries, each governed by its own
+license. See go.mod, go.sum, and pulumi/provider/go.mod for the full
+dependency list. Notable upstream components:
+
+- terraform-plugin-framework (Mozilla Public License 2.0)
+- terraform-plugin-docs (Mozilla Public License 2.0)
+- pulumi-terraform-bridge (Apache License 2.0)
+
+The combination of GPL v3 with MPL 2.0 components is permitted per
+Mozilla's official compatibility statement and the Free Software
+Foundation's license list.

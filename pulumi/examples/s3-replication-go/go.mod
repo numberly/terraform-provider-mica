@@ -1,9 +1,9 @@
-module github.com/numberly/opentofu-provider-flashblade/pulumi/examples/s3-replication-go
+module github.com/numberly/terraform-provider-mica/pulumi/examples/s3-replication-go
 
 go 1.25.8
 
 require (
-	github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go v0.0.0
+	github.com/numberly/terraform-provider-mica/pulumi/sdk/go v0.0.0
 	github.com/pulumi/pulumi/sdk/v3 v3.231.0
 )
 
@@ -119,4 +119,4 @@ require (
 	lukechampine.com/frand v1.4.2 // indirect
 )
 
-replace github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go => ../../sdk/go
+replace github.com/numberly/terraform-provider-mica/pulumi/sdk/go => ../../sdk/go

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 // arrayConnectionKeyStore holds at most one connection key (singleton per array).

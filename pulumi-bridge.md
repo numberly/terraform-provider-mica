@@ -1,6 +1,6 @@
-# Pulumi Bridge for terraform-provider-flashblade
+# Pulumi Bridge for terraform-provider-mica
 
-> Recherche consolidée — avril 2026. Cible: bridger le provider Terraform FlashBlade
+> Recherche consolidée — avril 2026. Cible: bridger le provider Terraform FlashBlade®
 > (terraform-plugin-framework, Go 1.25+, ~20 ressources) vers Pulumi multi-langages.
 
 ---
@@ -119,7 +119,7 @@ import (
     "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfbridge"
     "github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 
-    fb "github.com/pure-storage/terraform-provider-flashblade/internal/provider"
+    fb "github.com/pure-storage/terraform-provider-mica/internal/provider"
 )
 
 //go:embed cmd/pulumi-resource-flashblade/bridge-metadata.json

@@ -1,4 +1,4 @@
-module github.com/numberly/opentofu-provider-flashblade
+module github.com/numberly/terraform-provider-mica
 
 go 1.25.0
 

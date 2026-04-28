@@ -1,10 +1,10 @@
 SHELL := /bin/bash
 export PATH := $(PATH):/usr/bin/go
 
-BINARY_NAME=terraform-provider-flashblade
+BINARY_NAME=terraform-provider-mica
 HOSTNAME=registry.terraform.io
 NAMESPACE=numberly
-TYPE=flashblade
+TYPE=mica
 VERSION=dev
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 PLUGIN_DIR=~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(TYPE)/$(VERSION)/$(OS_ARCH)

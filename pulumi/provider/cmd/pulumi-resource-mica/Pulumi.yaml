@@ -1,0 +1,3 @@
+name: mica
+description: A Pulumi resource provider for mica.
+language: schema

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/numberly/opentofu-provider-flashblade/internal/client"
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 // bucketAccessPolicyStore is the thread-safe in-memory state for bucket access policy handlers.
