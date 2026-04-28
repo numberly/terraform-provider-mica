@@ -15,7 +15,7 @@ A Pulumi package for managing Pure Storage FlashBlade resources. This provider i
 Install the provider binary from GitHub Releases:
 
 ```bash
-pulumi plugin install resource flashblade 2.22.3-pulumi.alpha --server github://api.github.com/numberly
+pulumi plugin install resource mica 2.22.3-pulumi.alpha --server github://api.github.com/numberly
 ```
 
 Pulumi bridge releases are tagged `v{X.Y.Z}-pulumi[.suffix]` (valid SemVer prerelease). Replace `2.22.3-pulumi.alpha` with any published version, dropping the leading `v`.
@@ -25,13 +25,13 @@ Pulumi bridge releases are tagged `v{X.Y.Z}-pulumi[.suffix]` (valid SemVer prere
 Install the wheel from the GitHub Release asset:
 
 ```bash
-pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
+pip install https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_mica-2.22.3-pulumi.alpha-py3-none-any.whl
 ```
 
 Or add to your `requirements.txt`:
 
 ```
-pulumi_flashblade @ https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_flashblade-2.22.3-pulumi.alpha-py3-none-any.whl
+pulumi_mica @ https://github.com/numberly/opentofu-provider-flashblade/releases/download/v2.22.3-pulumi.alpha/pulumi_mica-2.22.3-pulumi.alpha-py3-none-any.whl
 ```
 
 ### Go SDK
@@ -64,18 +64,18 @@ The provider accepts the same configuration as the Terraform provider. Set value
 
 | Pulumi Config Key | Environment Variable | Description |
 |---|---|---|
-| `flashblade:endpoint` | `FLASHBLADE_ENDPOINT` | FlashBlade management IP/hostname |
-| `flashblade:auth.apiToken` | `FLASHBLADE_AUTH_API_TOKEN` | API token for authentication |
-| `flashblade:auth.oauth2.clientId` | `FLASHBLADE_AUTH_OAUTH2_CLIENT_ID` | OAuth2 client ID |
-| `flashblade:auth.oauth2.keyId` | `FLASHBLADE_AUTH_OAUTH2_KEY_ID` | OAuth2 key ID |
-| `flashblade:caCert` | `FLASHBLADE_CA_CERT` | CA certificate content |
-| `flashblade:insecureSkipVerify` | `FLASHBLADE_INSECURE_SKIP_VERIFY` | Skip TLS verification |
+| `mica:endpoint` | `FLASHBLADE_ENDPOINT` | FlashBlade management IP/hostname |
+| `mica:auth.apiToken` | `FLASHBLADE_AUTH_API_TOKEN` | API token for authentication |
+| `mica:auth.oauth2.clientId` | `FLASHBLADE_AUTH_OAUTH2_CLIENT_ID` | OAuth2 client ID |
+| `mica:auth.oauth2.keyId` | `FLASHBLADE_AUTH_OAUTH2_KEY_ID` | OAuth2 key ID |
+| `mica:caCert` | `FLASHBLADE_CA_CERT` | CA certificate content |
+| `mica:insecureSkipVerify` | `FLASHBLADE_INSECURE_SKIP_VERIFY` | Skip TLS verification |
 
 ### Python Example
 
 ```python
 import pulumi
-import pulumi_flashblade as flashblade
+import pulumi_mica as flashblade
 
 provider = flashblade.Provider("flashblade",
     endpoint="https://flashblade.example.com",
@@ -96,7 +96,7 @@ package main
 
 import (
     "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-    "github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go/flashblade"
+    "github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go/mica"
 )
 
 func main() {
