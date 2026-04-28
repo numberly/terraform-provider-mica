@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 export PATH := $(PATH):/usr/bin/go
 
-BINARY_NAME=terraform-provider-flashblade
+BINARY_NAME=terraform-provider-mica
 HOSTNAME=registry.terraform.io
 NAMESPACE=numberly
 TYPE=flashblade

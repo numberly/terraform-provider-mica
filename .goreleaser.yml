@@ -1,5 +1,7 @@
 version: 2
 
+project_name: terraform-provider-mica
+
 before:
   hooks:
     - go mod tidy
@@ -23,7 +25,7 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
-    binary: "terraform-provider-flashblade_v{{ .Version }}"
+    binary: "terraform-provider-mica_v{{ .Version }}"
 
 archives:
   - formats:

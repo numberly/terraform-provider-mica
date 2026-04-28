@@ -2,14 +2,14 @@ version: 2
 
 builds:
   - dir: pulumi/provider
-    main: ./cmd/pulumi-resource-flashblade
+    main: ./cmd/pulumi-resource-mica
     env:
       - CGO_ENABLED=0
     mod_timestamp: "{{ .CommitTimestamp }}"
     flags:
       - -trimpath
     ldflags:
-      - "-s -w -X github.com/numberly/opentofu-provider-flashblade/pulumi/provider/pkg/version.Version={{.Version}}"
+      - "-s -w -X github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version.Version={{.Version}}"
     goos:
       - linux
       - darwin
@@ -20,4 +20,4 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
-    binary: "pulumi-resource-flashblade_v{{ .Version }}"
+    binary: "pulumi-resource-mica_v{{ .Version }}"
