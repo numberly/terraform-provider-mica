@@ -10,7 +10,7 @@ import (
 	"github.com/numberly/terraform-provider-mica/internal/provider"
 )
 
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name mica
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name flashblade
 
 // These are set by goreleaser at build time via ldflags.
 var (
