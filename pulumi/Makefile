@@ -1,5 +1,5 @@
 PROJECT_NAME := pulumi-flashblade
-PROVIDER_PKG := github.com/numberly/opentofu-provider-flashblade/pulumi/provider
+PROVIDER_PKG := github.com/numberly/terraform-provider-mica/pulumi/provider
 VERSION := $(shell git describe --tags --dirty --always 2>/dev/null || echo dev)
 LDFLAGS := -ldflags "-X $(PROVIDER_PKG)/pkg/version.Version=$(VERSION)"
 
@@ -82,7 +82,7 @@ generate_go_from_schema: tfgen_build tfgen
 	@cp $(GO_SDK_DIR)/go.mod $(GO_SDK_DIR)/go.mod.bak
 	$(TFGEN_BIN) go --out $(GO_SDK_DIR) --skip-docs --skip-examples
 	@find $(GO_SDK_DIR) -name "*.go" -exec sed -i.bak \
-		's|github.com/numberly/opentofu-provider-flashblade/sdk/go|github.com/numberly/opentofu-provider-flashblade/pulumi/sdk/go|g' {} +
+		's|github.com/numberly/terraform-provider-mica/sdk/go|github.com/numberly/terraform-provider-mica/pulumi/sdk/go|g' {} +
 	@find $(GO_SDK_DIR) -name "*.go.bak" -delete
 	@mv $(GO_SDK_DIR)/go.mod.bak $(GO_SDK_DIR)/go.mod
 	@echo "Go SDK generated in $(GO_SDK_DIR)"
