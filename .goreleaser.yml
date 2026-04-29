@@ -35,6 +35,12 @@ archives:
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
+  # The Terraform Registry requires every uploaded asset to have a SHA256
+  # entry. Include the registry manifest under its release-time name so the
+  # checksum file matches what's actually published.
+  extra_files:
+    - glob: terraform-registry-manifest.json
+      name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
 
 # GPG signature on the checksums file — required by the Terraform Registry.
 # Cosign keyless signing (handled in release.yml) is complementary, not a
