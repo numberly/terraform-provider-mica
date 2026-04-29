@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.22.6-pulumi.beta] — 2026-04-29
+
+First post-rebrand Pulumi release. Distributed via GitHub Releases (no Pulumi Registry publication).
+
+### Added
+
+- Plugin install command: `pulumi plugin install resource mica 2.22.6-pulumi.beta --server github://api.github.com/numberly`
+- Python wheel: `pulumi_mica-2.22.6-py3-none-any.whl` published as a release asset.
+- Go SDK companion tag: `sdk/go/v0.1.0-pulumi.beta`.
+
+### Notes
+
+- Builds against the same provider sources as the Terraform `v2.22.6` release (registry-published manifest fix).
+- No schema, behavior, or token changes vs `[2.22.4]` rebrand baseline — see that entry for the breaking changes from the `pulumi-flashblade` era.
+
 ## [2.22.4] — 2026-04-28
 
 ### Project rebrand
