@@ -54,6 +54,12 @@ signs:
 release:
   draft: false
   name_template: "{{ .Tag }}"
+  # Terraform Registry requires a per-release manifest declaring the supported
+  # provider protocol versions. The file at the repo root is uploaded under the
+  # registry-expected name so the indexer can fetch it during ingestion.
+  extra_files:
+    - glob: terraform-registry-manifest.json
+      name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
   header: |
     ## {{ .Tag }}
 
