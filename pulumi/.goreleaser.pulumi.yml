@@ -73,7 +73,7 @@ release:
     ### Installation
 
     ```bash
-    pulumi plugin install resource mica {{ .Version }} --server github://api.github.com/numberly
+    pulumi plugin install resource mica {{ .Version }} --server github://api.github.com/numberly/terraform-provider-mica
     ```
 
     ### Python SDK

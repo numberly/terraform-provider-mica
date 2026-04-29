@@ -18,7 +18,7 @@ A Pulumi package for managing resources on Pure Storage FlashBlade® arrays. Bri
 Install the provider binary from GitHub Releases:
 
 ```bash
-pulumi plugin install resource mica 2.22.3-pulumi.alpha --server github://api.github.com/numberly
+pulumi plugin install resource mica 2.22.6-pulumi.beta --server github://api.github.com/numberly/terraform-provider-mica
 ```
 
 Pulumi bridge releases are tagged `v{X.Y.Z}-pulumi[.suffix]` (valid SemVer prerelease). Replace `2.22.3-pulumi.alpha` with any published version, dropping the leading `v`.
