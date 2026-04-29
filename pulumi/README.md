@@ -1,6 +1,9 @@
-# Pulumi FlashBlade® Provider
+# Mica — Pulumi provider for Pure Storage FlashBlade®
 
-A Pulumi package for managing Pure Storage FlashBlade resources. This provider is bridged from the existing Terraform provider using `pulumi-terraform-bridge/v3`.
+A Pulumi package for managing resources on Pure Storage FlashBlade® arrays. Bridged from the Mica Terraform provider via `pulumi-terraform-bridge/v3`.
+
+> **Mica is an independent open-source project. It is NOT affiliated with, endorsed by, certified by, or sponsored by Pure Storage, Inc.**
+> Pure Storage®, FlashBlade®, and Purity® are registered trademarks of Pure Storage, Inc. and/or its affiliates and are used here only as nominative descriptive references to identify the target system.
 
 ## Installation
 
@@ -60,29 +63,32 @@ same `-pulumi[.suffix]` prerelease portion.
 
 ## Provider Configuration
 
-The provider accepts the same configuration as the Terraform provider. Set values via Pulumi config or environment variables:
+The provider accepts the same configuration as the Mica Terraform provider. Set values via Pulumi config or environment variables:
 
 | Pulumi Config Key | Environment Variable | Description |
 |---|---|---|
-| `mica:endpoint` | `FLASHBLADE_ENDPOINT` | FlashBlade management IP/hostname |
-| `mica:auth.apiToken` | `FLASHBLADE_AUTH_API_TOKEN` | API token for authentication |
-| `mica:auth.oauth2.clientId` | `FLASHBLADE_AUTH_OAUTH2_CLIENT_ID` | OAuth2 client ID |
-| `mica:auth.oauth2.keyId` | `FLASHBLADE_AUTH_OAUTH2_KEY_ID` | OAuth2 key ID |
-| `mica:caCert` | `FLASHBLADE_CA_CERT` | CA certificate content |
-| `mica:insecureSkipVerify` | `FLASHBLADE_INSECURE_SKIP_VERIFY` | Skip TLS verification |
+| `mica:endpoint` | `FLASHBLADE_HOST` | Array management endpoint URL |
+| `mica:auth.apiToken` | `FLASHBLADE_API_TOKEN` | API token for authentication |
+| `mica:auth.oauth2.clientId` | `FLASHBLADE_OAUTH2_CLIENT_ID` | OAuth2 client ID |
+| `mica:auth.oauth2.issuer` | `FLASHBLADE_OAUTH2_ISSUER` | OAuth2 issuer URL |
+| `mica:auth.oauth2.keyId` | `FLASHBLADE_OAUTH2_KEY_ID` | OAuth2 key ID |
+| `mica:caCert` | — | Inline PEM-encoded CA certificate |
+| `mica:caCertFile` | — | Path to a PEM-encoded CA certificate file |
+| `mica:insecureSkipVerify` | — | Skip TLS verification (development only) |
+| `mica:maxRetries` | — | Retry attempts for 429/5xx (default `3`) |
 
 ### Python Example
 
 ```python
 import pulumi
-import pulumi_mica as flashblade
+import pulumi_mica as mica
 
-provider = flashblade.Provider("flashblade",
-    endpoint="https://flashblade.example.com",
+provider = mica.Provider("mica",
+    endpoint="https://array.example.com",
     auth={"api_token": "t.abc123"},
 )
 
-target = flashblade.Target("primary",
+target = mica.Target("primary",
     name="s3-replication-target",
     address="s3.us-east-1.amazonaws.com",
     opts=pulumi.ResourceOptions(provider=provider),
@@ -95,21 +101,21 @@ target = flashblade.Target("primary",
 package main
 
 import (
-    "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
     "github.com/numberly/terraform-provider-mica/pulumi/sdk/go/mica"
+    "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 func main() {
     pulumi.Run(func(ctx *pulumi.Context) error {
-        provider, err := flashblade.NewProvider(ctx, "flashblade", &flashblade.ProviderArgs{
-            Endpoint: pulumi.String("https://flashblade.example.com"),
-            Auth: &flashblade.ProviderAuthArgs{ApiToken: pulumi.String("t.abc123")},
+        provider, err := mica.NewProvider(ctx, "mica", &mica.ProviderArgs{
+            Endpoint: pulumi.String("https://array.example.com"),
+            Auth:     &mica.ProviderAuthArgs{ApiToken: pulumi.String("t.abc123")},
         })
         if err != nil {
             return err
         }
 
-        target, err := flashblade.NewTarget(ctx, "primary", &flashblade.TargetArgs{
+        target, err := mica.NewTarget(ctx, "primary", &mica.TargetArgs{
             Name:    pulumi.String("s3-replication-target"),
             Address: pulumi.String("s3.us-east-1.amazonaws.com"),
         }, pulumi.Provider(provider))
@@ -125,7 +131,7 @@ func main() {
 
 ## Resource Naming
 
-FlashBlade resource names are operational identifiers. This provider **does not use autonaming** — you must supply an explicit `name` for every resource. Choose names that are stable and meaningful in your infrastructure.
+Array resource names are operational identifiers. This provider **does not use autonaming** — you must supply an explicit `name` for every resource. Choose names that are stable and meaningful in your infrastructure.
 
 ## Soft-Delete Resources
 
@@ -227,10 +233,16 @@ Secret values are encrypted in Pulumi state and masked in CLI output.
 These are the known limitations of this provider:
 
 - **No TypeScript, C#, or Java SDKs** — Python and Go only.
-- **No Pulumi Registry publication** — install via GitHub Releases only.
-- **No PyPI publication** — install the wheel from the release asset URL.
+- **Not published on the Pulumi Registry** — distributed via GitHub Releases only (`pulumi plugin install ... --server github://...`).
+- **No PyPI publication yet** — install the wheel from the release asset URL.
 - **Write-once fields** are secret but not write-only at the SDK layer (deferred to a future milestone).
-- **Delete timeout** is inherited from the Terraform provider (30m for bucket/filesystem). Bridge-level timeout overrides are not available in bridge v3.127.0.
+- **Delete timeout** is inherited from the Mica Terraform provider (30m for bucket/filesystem). Bridge-level timeout overrides are not available in bridge v3.127.0.
+
+## Trademarks
+
+Pure Storage®, FlashBlade®, FlashBlade//EXA®, FlashArray®, Evergreen//One®, Purity®, and related marks are registered trademarks of Pure Storage, Inc. and/or its affiliates. All other trademarks are the property of their respective owners.
+
+This project uses these names solely as nominative descriptive references to identify the target system. See [`../NOTICE`](../NOTICE) for full attribution.
 
 ## License
 
