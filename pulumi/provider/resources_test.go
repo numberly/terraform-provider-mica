@@ -304,11 +304,14 @@ func TestProviderInfo_SoftDeleteResourcesRegistered(t *testing.T) {
 // Only resources where the TF schema does NOT expose an "id" attribute need ComputeID:
 //   - flashblade_bucket_access_policy_rule: no "id" in TF schema, bridge cannot infer it.
 //   - flashblade_management_access_policy_directory_service_role_membership: id is composite role/policy.
+//   - flashblade_s3_export_policy_rule: TF "id" is computed from rule.ID, but the
+//     S3ExportPolicyRule API schema does not expose `id` — TF state.ID is therefore
+//     always empty and the bridge fails Create with "empty resource.ID". Composite
+//     ID matches ImportState format: "policy_name/rule_index" (COMPOSITE-S3RULE).
 //
 // Resources where TF already exposes a computed "id" attribute do NOT need ComputeID:
 //   - flashblade_object_store_access_policy_rule: TF id = compositeID(policyName, ruleName).
 //   - flashblade_network_access_policy_rule: TF id = rule.ID (UUID from API).
-//   - flashblade_s3_export_policy_rule: TF id = rule.ID (UUID from API).
 //   - flashblade_snapshot_policy_rule: TF id = compositeID(policyName, ruleName).
 func TestProviderInfo_AllCompositeIDsPresent(t *testing.T) {
 	prov := Provider()
@@ -316,6 +319,7 @@ func TestProviderInfo_AllCompositeIDsPresent(t *testing.T) {
 	compositeResources := []string{
 		"flashblade_bucket_access_policy_rule",
 		"flashblade_management_access_policy_directory_service_role_membership",
+		"flashblade_s3_export_policy_rule",
 	}
 	for _, name := range compositeResources {
 		r, ok := prov.Resources[name]
@@ -331,7 +335,6 @@ func TestProviderInfo_AllCompositeIDsPresent(t *testing.T) {
 	noComputeIDResources := []string{
 		"flashblade_object_store_access_policy_rule",
 		"flashblade_network_access_policy_rule",
-		"flashblade_s3_export_policy_rule",
 	}
 	for _, name := range noComputeIDResources {
 		r, ok := prov.Resources[name]
@@ -363,6 +366,29 @@ func TestProviderInfo_ComputeID_BucketAccessPolicyRule(t *testing.T) {
 	}
 	if string(id) != "my-bucket/rule1" {
 		t.Errorf("expected 'my-bucket/rule1', got %q", id)
+	}
+}
+
+// TestProviderInfo_ComputeID_S3ExportPolicyRule invokes the COMPOSITE-S3RULE closure
+// with sample PropertyMap data and asserts the returned ID matches the TF ImportState
+// format "policy_name/rule_index" (COMPOSITE-S3RULE).
+func TestProviderInfo_ComputeID_S3ExportPolicyRule(t *testing.T) {
+	prov := Provider()
+	r := prov.Resources["flashblade_s3_export_policy_rule"]
+	if r == nil || r.ComputeID == nil {
+		t.Fatalf("ComputeID not set on flashblade_s3_export_policy_rule")
+	}
+	state := resource.PropertyMap{
+		"policyName": resource.NewStringProperty("my-policy"),
+		"index":      resource.NewNumberProperty(3),
+		"name":       resource.NewStringProperty("rule-3"),
+	}
+	id, err := r.ComputeID(context.Background(), state)
+	if err != nil {
+		t.Fatalf("ComputeID error: %v", err)
+	}
+	if string(id) != "my-policy/3" {
+		t.Errorf("expected 'my-policy/3', got %q", id)
 	}
 }
 

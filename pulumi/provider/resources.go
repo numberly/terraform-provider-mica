@@ -137,11 +137,34 @@ func Provider() tfbridge.ProviderInfo {
 		panic("flashblade_file_system resource not found after MustComputeTokens")
 	}
 
-	// flashblade_s3_export_policy_rule — TF data.ID is rule.ID (UUID from the API).
-	// No ComputeID override: the bridge uses the TF "id" attribute directly via the shim.
-	// A ComputeID producing "policyName/ruleName" would diverge from the UUID and break
-	// pulumi import / pulumi refresh round-trips (I1).
-	if _, ok := prov.Resources["flashblade_s3_export_policy_rule"]; !ok {
+	// ---- COMPOSITE-S3RULE: flashblade_s3_export_policy_rule ComputeID ----
+	// The S3ExportPolicyRule API schema does NOT expose an `id` field (verified
+	// against api_references/2.22.md and FlashBlade swagger). The TF "id" attribute
+	// is Computed and assigned from rule.ID, but the API response leaves it empty,
+	// so the Pulumi bridge fails Create with "empty resource.ID from create".
+	// Composite ID matches the TF ImportState format: "policy_name/rule_index"
+	// (verified against internal/provider/s3_export_policy_rule_resource.go ImportState).
+	if r, ok := prov.Resources["flashblade_s3_export_policy_rule"]; ok {
+		r.ComputeID = func(ctx context.Context, state resource.PropertyMap) (resource.ID, error) {
+			policyName, ok1 := state["policyName"]
+			index, ok2 := state["index"]
+			if !ok1 || !ok2 {
+				return "", fmt.Errorf(
+					"s3_export_policy_rule: missing policyName or index in state (got keys %v)",
+					mapKeys(state),
+				)
+			}
+			ps, psOk := policyName.V.(string)
+			if !psOk {
+				return "", fmt.Errorf("s3_export_policy_rule: policyName must be a string")
+			}
+			idx, idxOk := index.V.(float64)
+			if !idxOk {
+				return "", fmt.Errorf("s3_export_policy_rule: index must be a number")
+			}
+			return resource.ID(fmt.Sprintf("%s/%d", ps, int64(idx))), nil
+		}
+	} else {
 		panic("flashblade_s3_export_policy_rule resource not found after MustComputeTokens")
 	}
 

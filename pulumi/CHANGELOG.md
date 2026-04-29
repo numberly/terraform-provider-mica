@@ -10,10 +10,25 @@ First post-rebrand Pulumi release. Distributed via GitHub Releases (no Pulumi Re
 - Python wheel: `pulumi_mica-2.22.6-py3-none-any.whl` published as a release asset.
 - Go SDK companion tag: `sdk/go/v0.1.0-pulumi.beta`.
 
+### Fixed
+
+- `mica:index:S3ExportPolicyRule` Create no longer fails with `plugin for package
+  'mica' returned empty resource.ID from create`. The FlashBlade
+  `S3ExportPolicyRule` API schema does not expose an `id` field, so the
+  bridge-inherited TF `id` attribute was always empty and Pulumi rejected the
+  resource. A bridge `ComputeID` now derives the Pulumi resource ID from the
+  composite `policyName/index`, matching the TF `ImportState` format
+  (`policy_name/rule_index`). Existing stacks that hit this error during Create
+  must `pulumi destroy --target` the failed URN (or remove it from state) and
+  re-apply.
+- Python SDK package directory regenerated under `pulumi_mica/` to match the
+  v2.22.4 rebrand (the previous beta still shipped the legacy
+  `pulumi_flashblade/` directory).
+
 ### Notes
 
 - Builds against the same provider sources as the Terraform `v2.22.6` release (registry-published manifest fix).
-- No schema, behavior, or token changes vs `[2.22.4]` rebrand baseline — see that entry for the breaking changes from the `pulumi-flashblade` era.
+- No schema or token changes vs `[2.22.4]` rebrand baseline — see that entry for the breaking changes from the `pulumi-flashblade` era.
 
 ## [2.22.4] — 2026-04-28
 
