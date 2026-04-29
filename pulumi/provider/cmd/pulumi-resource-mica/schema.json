@@ -13,7 +13,7 @@
     "license": "GPL-3.0-only",
     "attribution": "This Pulumi package is based on the [`mica` Terraform Provider](https://github.com/terraform-providers/terraform-provider-mica).",
     "repository": "https://github.com/numberly/terraform-provider-mica",
-    "pluginDownloadURL": "github://api.github.com/numberly",
+    "pluginDownloadURL": "github://api.github.com/numberly/terraform-provider-mica",
     "publisher": "numberly",
     "meta": {
         "moduleFormat": "(.*)(?:/[^/]*)"

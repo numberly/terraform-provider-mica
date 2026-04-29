@@ -37,7 +37,11 @@ func Provider() tfbridge.ProviderInfo {
 		// PluginDownloadURL — required for `pulumi plugin install --server
 		// github://api.github.com/numberly ...` to resolve the runtime binary
 		// from GitHub Releases (BRIDGE-05).
-		PluginDownloadURL: "github://api.github.com/numberly",
+		// Two-segment form is required: Pulumi's single-segment
+		// 'github://api.github.com/{owner}' resolves to '{owner}/pulumi-{name}'
+		// (i.e. 'numberly/pulumi-mica') which does not exist. The actual repo
+		// is 'numberly/terraform-provider-mica'.
+		PluginDownloadURL: "github://api.github.com/numberly/terraform-provider-mica",
 
 		// Config — mirrors the TF provider schema 1:1 (D-01).
 		// The TF provider uses a nested `auth` block containing api_token and oauth2 sub-block.

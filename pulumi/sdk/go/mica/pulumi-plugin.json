@@ -1,5 +1,5 @@
 {
   "resource": true,
   "name": "mica",
-  "server": "github://api.github.com/numberly"
+  "server": "github://api.github.com/numberly/terraform-provider-mica"
 }

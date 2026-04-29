@@ -12,6 +12,11 @@ First post-rebrand Pulumi release. Distributed via GitHub Releases (no Pulumi Re
 
 ### Fixed
 
+- `PluginDownloadURL` baked into the schema/SDKs now uses the two-segment form
+  `github://api.github.com/numberly/terraform-provider-mica`. Pulumi's
+  single-segment form derived `numberly/pulumi-mica` (404) instead of the
+  actual repo `numberly/terraform-provider-mica`. This unbreaks automatic
+  plugin resolution from the SDK and matches the docs/goreleaser snippets.
 - `mica:index:S3ExportPolicyRule` Create no longer fails with `plugin for package
   'mica' returned empty resource.ID from create`. The FlashBlade
   `S3ExportPolicyRule` API schema does not expose an `id` field, so the
