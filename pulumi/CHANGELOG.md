@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.22.6-pulumi.beta] — 2026-04-29
+## [v2.22.6-pulumi.beta] — 2026-04-29
 
 First post-rebrand Pulumi release. Distributed via GitHub Releases (no Pulumi Registry publication).
 
