@@ -18,7 +18,7 @@ type directoryServicesStore struct {
 
 // RegisterDirectoryServicesHandlers registers handlers for /api/2.23/directory-services
 // against the provided ServeMux. The store pointer is returned for test setup.
-// Endpoint supports GET + PATCH only (confirmed against api_references/2.22.md line 431 —
+// Endpoint supports GET + PATCH only (confirmed against api_references/2.23.md line 449 —
 // no POST, no DELETE on the directory-services collection).
 func RegisterDirectoryServicesHandlers(mux *http.ServeMux) *directoryServicesStore {
 	store := &directoryServicesStore{

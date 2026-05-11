@@ -80,7 +80,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Errorf("GET /api/api_version: expected 2.22 in versions, got %v", versionResp.Versions)
+		t.Errorf("GET /api/api_version: expected 2.23 in versions, got %v", versionResp.Versions)
 	}
 
 	// Step 3: POST /api/2.23/file-systems?names=test-fs — create file system.
@@ -231,7 +231,7 @@ func TestUnit_MockServer_LoginAndVersion(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Errorf("expected 2.22 in versions, got %v", vr.Versions)
+		t.Errorf("expected 2.23 in versions, got %v", vr.Versions)
 	}
 }
 
