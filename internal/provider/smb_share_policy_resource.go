@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -35,7 +36,17 @@ func NewSmbSharePolicyResource() resource.Resource {
 
 // ---------- model structs ----------------------------------------------------
 
-// smbSharePolicyModel is the top-level model for the flashblade_smb_share_policy resource.
+// smbSharePolicyV0Model is the prior (v0) schema model for state upgrader use.
+type smbSharePolicyV0Model struct {
+	ID         types.String   `tfsdk:"id"`
+	Name       types.String   `tfsdk:"name"`
+	Enabled    types.Bool     `tfsdk:"enabled"`
+	IsLocal    types.Bool     `tfsdk:"is_local"`
+	PolicyType types.String   `tfsdk:"policy_type"`
+	Timeouts   timeouts.Value `tfsdk:"timeouts"`
+}
+
+// smbSharePolicyModel is the top-level model for the flashblade_smb_share_policy resource (v1+).
 // Note: SMB share policy has no Version field (unlike NFS export policy).
 type smbSharePolicyModel struct {
 	ID         types.String   `tfsdk:"id"`
@@ -43,6 +54,7 @@ type smbSharePolicyModel struct {
 	Enabled    types.Bool     `tfsdk:"enabled"`
 	IsLocal    types.Bool     `tfsdk:"is_local"`
 	PolicyType types.String   `tfsdk:"policy_type"`
+	Workload   types.Object   `tfsdk:"workload"`
 	Timeouts   timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -55,7 +67,7 @@ func (r *smbSharePolicyResource) Metadata(_ context.Context, _ resource.Metadata
 // Schema defines the resource schema.
 func (r *smbSharePolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade SMB share policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -89,6 +101,20 @@ func (r *smbSharePolicyResource) Schema(ctx context.Context, _ resource.SchemaRe
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"workload": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The workload unique identifier.",
+					},
+					"name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The workload name.",
+					},
+				},
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -99,10 +125,78 @@ func (r *smbSharePolicyResource) Schema(ctx context.Context, _ resource.SchemaRe
 	}
 }
 
-
 // UpgradeState returns state upgraders for schema migrations.
-func (r *smbSharePolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *smbSharePolicyResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		// PriorSchema verified against smbSharePolicyV0Model fields:
+		//   ID (Computed), Name (Required), Enabled (Optional+Computed),
+		//   IsLocal (Computed), PolicyType (Computed), Timeouts (Optional)
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade SMB share policy.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The unique identifier of the SMB share policy.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						Required:    true,
+						Description: "The name of the SMB share policy. Can be changed in-place via PATCH (rename).",
+					},
+					"enabled": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
+						Description: "If true, the policy is enabled and its rules are enforced.",
+					},
+					"is_local": schema.BoolAttribute{
+						Computed:    true,
+						Description: "If true, the policy is local to this array (not replicated).",
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"policy_type": schema.StringAttribute{
+						Computed:    true,
+						Description: "The type of the policy (e.g. 'smb').",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var prior smbSharePolicyV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				next := smbSharePolicyModel{
+					ID:         prior.ID,
+					Name:       prior.Name,
+					Enabled:    prior.Enabled,
+					IsLocal:    prior.IsLocal,
+					PolicyType: prior.PolicyType,
+					// workload: new computed field in v1 — null until Read hydrates from API.
+					Workload: types.ObjectNull(smbSharePolicyWorkloadAttrTypes()),
+					Timeouts: prior.Timeouts,
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -188,10 +282,22 @@ func (r *smbSharePolicyResource) Read(ctx context.Context, req resource.ReadRequ
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
 			tflog.Debug(ctx, "drift detected on SMB share policy", map[string]any{
-				"resource":    name,
-				"field":       "enabled",
-				"was":         data.Enabled.ValueBool(),
-				"now":           policy.Enabled,
+				"resource": name,
+				"field":    "enabled",
+				"was":      data.Enabled.ValueBool(),
+				"now":      policy.Enabled,
+			})
+		}
+	}
+
+	// Drift detection on workload field.
+	if !data.Workload.IsNull() && !data.Workload.IsUnknown() {
+		if policy.Workload == nil {
+			tflog.Debug(ctx, "drift detected on SMB share policy", map[string]any{
+				"resource": name,
+				"field":    "workload",
+				"was":      data.Workload.String(),
+				"now":      "null",
 			})
 		}
 	}
@@ -320,6 +426,13 @@ func (r *smbSharePolicyResource) readIntoState(ctx context.Context, name string,
 	return diags
 }
 
+// smbSharePolicyWorkloadAttrTypes returns the attribute types for the workload nested object.
+func smbSharePolicyWorkloadAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   types.StringType,
+		"name": types.StringType,
+	}
+}
 
 // mapSMBPolicyToModel maps a client.SmbSharePolicy to an smbSharePolicyModel.
 // It preserves user-managed fields (Timeouts).
@@ -329,4 +442,15 @@ func mapSMBPolicyToModel(policy *client.SmbSharePolicy, data *smbSharePolicyMode
 	data.Enabled = types.BoolValue(policy.Enabled)
 	data.IsLocal = types.BoolValue(policy.IsLocal)
 	data.PolicyType = types.StringValue(policy.PolicyType)
+
+	// Workload — set if present in API response, null otherwise (Computed-only).
+	if policy.Workload != nil {
+		workloadObj, _ := types.ObjectValue(smbSharePolicyWorkloadAttrTypes(), map[string]attr.Value{
+			"id":   types.StringValue(policy.Workload.ID),
+			"name": types.StringValue(policy.Workload.Name),
+		})
+		data.Workload = workloadObj
+	} else {
+		data.Workload = types.ObjectNull(smbSharePolicyWorkloadAttrTypes())
+	}
 }

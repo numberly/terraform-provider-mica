@@ -101,6 +101,7 @@ type SmbSharePolicy struct {
 	IsLocal    bool                        `json:"is_local,omitempty"`
 	PolicyType string                      `json:"policy_type,omitempty"`
 	Rules      []SmbSharePolicyRuleInPolicy `json:"rules,omitempty"`
+	Workload   *NamedReference             `json:"workload,omitempty"`
 }
 
 // SmbSharePolicyPost contains the fields accepted on POST /smb-share-policies.

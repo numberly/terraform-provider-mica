@@ -2,7 +2,7 @@
 
 FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-05-11 (API 2.23 upgrade — nfs_export_policy + smb_client_policy schema v1, adds computed workload field)
+**Last updated:** 2026-05-11 (API 2.23 upgrade — nfs_export_policy + smb_client_policy + smb_share_policy schema v1, adds computed workload field)
 **Provider version:** v2.22.2
 **Total API sections:** 84 | **Covered:** ~44 | **Coverage of IaC-relevant CRUD:** ~75%
 
@@ -47,7 +47,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
 | NFS Export Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
-| SMB Share Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
+| SMB Share Policy + Rules | Yes + Yes | Yes | Done | Full CRUD; schema v1: computed workload (API 2.23) |
 | SMB Client Policy + Rules | Yes + Yes | Yes | Done | Full CRUD; schema v1: computed workload (API 2.23) |
 | Snapshot Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
 | Network Access Policy + Rules | Yes + Yes | Yes | Done | Singleton + rules |
