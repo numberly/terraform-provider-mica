@@ -174,37 +174,66 @@ def _schema_base_name(schema_name: str) -> str:
     return schema_name
 
 
+def _variant_suffix(schema_name: str, base: str) -> str:
+    """Return the suffix ('Post', 'Patch', 'Get') or 'GET' for the base (no suffix)."""
+    if schema_name == base:
+        return "GET"  # the bare base name is the GET response shape
+    return schema_name[len(base):]  # e.g. "Post", "Patch"
+
+
 def _group_modified_schemas(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Group modified schemas by base name (FileSystem + FileSystemPost + FileSystemPatch → FileSystem).
     Merge added/removed/changed fields (union, deduplicated).
+
+    Preserves per-field variant tracking via `field_variants` map:
+      {field_name: set of variant suffixes that saw this field added/removed/changed}
+
+    This is what enables distinguishing "settable" fields (added to Post/Patch) from
+    "read-only computed" fields (added to GET only). Without this, _action_for_modified_schema
+    cannot generate accurate guidance — it would always say "Add to Post/Patch" even when
+    the field is purely a GET response field that should be a Terraform Computed-only
+    attribute.
     """
     groups: dict[str, dict[str, Any]] = {}
     for item in items:
-        base = _schema_base_name(item["schema_name"])
+        schema_name = item["schema_name"]
+        base = _schema_base_name(schema_name)
+        suffix = _variant_suffix(schema_name, base)
         details = item.get("details", {})
+
         if base not in groups:
             groups[base] = {
                 "schema_name": base,
-                "variants": [item["schema_name"]],
+                "variants": [schema_name],
                 "added_fields": list(details.get("added_fields", [])),
                 "removed_fields": list(details.get("removed_fields", [])),
                 "changed_fields": list(details.get("changed_fields", [])),
                 "annotation": item.get("annotation", "needs_verification"),
+                # NEW: track which variants saw each field changed
+                "field_variants": {
+                    "added": {f: {suffix} for f in details.get("added_fields", [])},
+                    "removed": {f: {suffix} for f in details.get("removed_fields", [])},
+                    "changed": {(f["field"] if isinstance(f, dict) else f): {suffix}
+                                for f in details.get("changed_fields", [])},
+                },
             }
         else:
             g = groups[base]
-            g["variants"].append(item["schema_name"])
+            g["variants"].append(schema_name)
             for f in details.get("added_fields", []):
                 if f not in g["added_fields"]:
                     g["added_fields"].append(f)
+                g["field_variants"]["added"].setdefault(f, set()).add(suffix)
             for f in details.get("removed_fields", []):
                 if f not in g["removed_fields"]:
                     g["removed_fields"].append(f)
+                g["field_variants"]["removed"].setdefault(f, set()).add(suffix)
             for f in details.get("changed_fields", []):
+                key = f["field"] if isinstance(f, dict) else f
                 if f not in g["changed_fields"]:
                     g["changed_fields"].append(f)
-            # Promote annotation: real_change > needs_verification > swagger_artifact
+                g["field_variants"]["changed"].setdefault(key, set()).add(suffix)
             if item.get("annotation") == "real_change":
                 g["annotation"] = "real_change"
     return list(groups.values())
@@ -321,20 +350,57 @@ def _is_abstract_base(schema_name: str, all_modified_schemas: list[str], impleme
 
 
 def _action_for_modified_schema(item: dict[str, Any]) -> str:
-    details = item.get("details", {})
-    added = details.get("added_fields", [])
+    """
+    Generate per-field guidance that distinguishes settable fields (added to Post/Patch)
+    from read-only/computed fields (added to GET only).
+
+    Uses `field_variants` populated by _group_modified_schemas to know which variants
+    each field appeared in. Without this, the action would always claim "add to Post/Patch"
+    even for fields that only exist in the GET response shape.
+
+    Output examples:
+      - "Add workload to FileSystem + FileSystemPost + FileSystemPatch — settable (TF: Optional+Computed)"
+      - "Add workload to NfsExportPolicy GET only — read-only (TF: Computed only, no client Post/Patch change)"
+    """
     schema = item.get("schema_name", "Unknown")
+    details = item.get("details", {})
+    field_variants = item.get("field_variants") or {}
+
+    added = details.get("added_fields", [])
     if added:
-        fields_str = ", ".join(added)
-        return f"Add {fields_str} to {schema}Post/Patch structs"
+        parts = []
+        for f in added:
+            variants = sorted(field_variants.get("added", {}).get(f, {"GET"}))
+            settable = any(v in ("Post", "Patch") for v in variants)
+            target_struct_list = ", ".join(
+                f"{schema}{v if v != 'GET' else ''}".rstrip() for v in variants
+            )
+            if settable:
+                parts.append(
+                    f"Add `{f}` to {target_struct_list} (settable — TF: Optional+Computed)"
+                )
+            else:
+                parts.append(
+                    f"Add `{f}` to {schema} GET only (read-only — TF: Computed only, no Post/Patch struct change)"
+                )
+        return " ; ".join(parts)
+
     changed = details.get("changed_fields", [])
     if changed:
-        names = ", ".join(f["field"] for f in changed)
+        names = ", ".join(f["field"] if isinstance(f, dict) else str(f) for f in changed)
         return f"Update field types for {names} in {schema} structs"
+
     removed = details.get("removed_fields", [])
     if removed:
-        fields_str = ", ".join(removed)
-        return f"Remove {fields_str} from {schema} structs (check usage)"
+        parts = []
+        for f in removed:
+            variants = sorted(field_variants.get("removed", {}).get(f, {"GET"}))
+            target_struct_list = ", ".join(
+                f"{schema}{v if v != 'GET' else ''}".rstrip() for v in variants
+            )
+            parts.append(f"Remove `{f}` from {target_struct_list} (check usage)")
+        return " ; ".join(parts)
+
     return f"Review {schema} struct for schema changes"
 
 
@@ -397,6 +463,7 @@ def build_migration_plan(
                     "removed_fields": g["removed_fields"],
                     "changed_fields": g["changed_fields"],
                 },
+                "field_variants": g.get("field_variants", {}),
             })
 
         update_models.append({
