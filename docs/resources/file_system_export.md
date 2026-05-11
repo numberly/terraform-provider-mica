@@ -17,6 +17,9 @@ resource "flashblade_file_system_export" "example" {
   file_system_name = "terraform-fs"
   server_name      = "terraform-server"
   policy_name      = "terraform-nfs-policy"
+
+  # workload is auto-populated by the API when this export is associated with a workload.
+  # It is read-only and cannot be set by the user.
 }
 ```
 
@@ -42,6 +45,7 @@ resource "flashblade_file_system_export" "example" {
 - `name` (String) The combined name of the export (e.g. 'filesystem/export_name').
 - `policy_type` (String) The policy type ('nfs' or 'smb').
 - `status` (String) The status of the export.
+- `workload` (Attributes) The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload. (see [below for nested schema](#nestedatt--workload))
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -52,6 +56,15 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
+
+<a id="nestedatt--workload"></a>
+### Nested Schema for `workload`
+
+Read-Only:
+
+- `id` (String) The workload unique identifier.
+- `name` (String) The workload name.
 
 ## Import
 

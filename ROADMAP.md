@@ -2,7 +2,7 @@
 
 FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-05-11
+**Last updated:** 2026-05-11 (API 2.23 upgrade — file_system_export schema v2)
 **Provider version:** v2.22.2
 **Total API sections:** 84 | **Covered:** ~44 | **Coverage of IaC-relevant CRUD:** ~75%
 
@@ -59,7 +59,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
 | Servers | `flashblade_server` | Yes | Done | DNS, directory_services, network_interfaces |
-| File System Exports | `flashblade_file_system_export` | Yes | Done | NFS export to server |
+| File System Exports | `flashblade_file_system_export` | Yes | Done | NFS export to server; workload back-reference (API 2.23, schema v2) |
 | Account Exports | `flashblade_object_store_account_export` | Yes | Done | S3 export to server |
 | Virtual Hosts | `flashblade_object_store_virtual_host` | Yes | Done | S3 virtual-hosted endpoints |
 
