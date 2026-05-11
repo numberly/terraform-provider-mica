@@ -2,7 +2,7 @@
 
 FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-04-17
+**Last updated:** 2026-05-11
 **Provider version:** v2.22.2
 **Total API sections:** 84 | **Covered:** ~44 | **Coverage of IaC-relevant CRUD:** ~75%
 
@@ -24,7 +24,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
-| File Systems | `flashblade_file_system` | Yes | Done | CRUD + soft-delete + eradication |
+| File Systems | `flashblade_file_system` | Yes | Done | CRUD + soft-delete + eradication; gained `workload` field (API 2.23, schema v1) |
 | Buckets | `flashblade_bucket` | Yes | Done | Versioning, quota, eradication, object lock, public access |
 | Object Store Accounts | `flashblade_object_store_account` | Yes | Done | S3 namespace |
 | Object Store Access Keys | `flashblade_object_store_access_key` | Yes | Done | Cross-array secret sharing |

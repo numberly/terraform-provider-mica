@@ -79,6 +79,10 @@ func buildFileSystemType() tftypes.Object {
 		"id":   tftypes.String,
 		"name": tftypes.String,
 	}}
+	workloadType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
+	}}
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -102,6 +106,7 @@ func buildFileSystemType() tftypes.Object {
 		"multi_protocol":              multiProtocolType,
 		"default_quotas":              defaultQuotasType,
 		"source":                      sourceType,
+		"workload":                    workloadType,
 		"timeouts":                    timeoutsType,
 	}}
 }
@@ -144,6 +149,10 @@ func nullFSConfig() map[string]tftypes.Value {
 		"id":   tftypes.String,
 		"name": tftypes.String,
 	}}
+	workloadType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
+	}}
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
@@ -167,6 +176,7 @@ func nullFSConfig() map[string]tftypes.Value {
 		"multi_protocol":              tftypes.NewValue(multiProtocolType, nil),
 		"default_quotas":              tftypes.NewValue(defaultQuotasType, nil),
 		"source":                      tftypes.NewValue(sourceType, nil),
+		"workload":                    tftypes.NewValue(workloadType, nil),
 		"timeouts":                    tftypes.NewValue(timeoutsType, nil),
 	}
 }
@@ -994,5 +1004,180 @@ func TestUnit_FileSystem_PlanModifiers(t *testing.T) {
 	}
 	if len(psAttr.PlanModifiers) == 0 {
 		t.Error("expected UseStateForUnknown plan modifier on promotion_status attribute")
+	}
+}
+
+// TestUnit_FileSystemResource_StateUpgrade_V0toV1 verifies the v0 -> v1 state upgrader.
+// It feeds raw tftypes state (no workload field) and asserts the upgraded state has
+// workload=null and all other fields preserved.
+func TestUnit_FileSystemResource_StateUpgrade_V0toV1(t *testing.T) {
+	r := &filesystemResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatal("expected state upgrader for version 0")
+	}
+
+	// Build the v0 type — identical to v1 but WITHOUT the workload field.
+	spaceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"data_reduction":      tftypes.Number,
+		"snapshots":           tftypes.Number,
+		"total_physical":      tftypes.Number,
+		"unique":              tftypes.Number,
+		"virtual":             tftypes.Number,
+		"snapshots_effective": tftypes.Number,
+	}}
+	nfsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"enabled":      tftypes.Bool,
+		"v3_enabled":   tftypes.Bool,
+		"v4_1_enabled": tftypes.Bool,
+		"rules":        tftypes.String,
+		"transport":    tftypes.String,
+	}}
+	smbType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"enabled":                         tftypes.Bool,
+		"access_based_enumeration_enabled": tftypes.Bool,
+		"continuous_availability_enabled":  tftypes.Bool,
+		"smb_encryption_enabled":           tftypes.Bool,
+	}}
+	httpType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"enabled": tftypes.Bool,
+	}}
+	multiProtocolType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"access_control_style": tftypes.String,
+		"safeguard_acls":       tftypes.Bool,
+	}}
+	defaultQuotasType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"group_quota": tftypes.Number,
+		"user_quota":  tftypes.Number,
+	}}
+	sourceType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
+	}}
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                          tftypes.String,
+		"name":                        tftypes.String,
+		"provisioned":                 tftypes.Number,
+		"destroyed":                   tftypes.Bool,
+		"destroy_eradicate_on_delete": tftypes.Bool,
+		"time_remaining":              tftypes.Number,
+		"created":                     tftypes.Number,
+		"promotion_status":            tftypes.String,
+		"writable":                    tftypes.Bool,
+		"space":                       spaceType,
+		"nfs":                         nfsType,
+		"smb":                         smbType,
+		"http":                        httpType,
+		"multi_protocol":              multiProtocolType,
+		"default_quotas":              defaultQuotasType,
+		"source":                      sourceType,
+		"timeouts":                    timeoutsType,
+	}}
+
+	v0Raw := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":                          tftypes.NewValue(tftypes.String, "fs-upgrade-id"),
+		"name":                        tftypes.NewValue(tftypes.String, "upgrade-test-fs"),
+		"provisioned":                 tftypes.NewValue(tftypes.Number, int64(1073741824)),
+		"destroyed":                   tftypes.NewValue(tftypes.Bool, false),
+		"destroy_eradicate_on_delete": tftypes.NewValue(tftypes.Bool, true),
+		"time_remaining":              tftypes.NewValue(tftypes.Number, int64(0)),
+		"created":                     tftypes.NewValue(tftypes.Number, int64(1700000000000)),
+		"promotion_status":            tftypes.NewValue(tftypes.String, "promoted"),
+		"writable":                    tftypes.NewValue(tftypes.Bool, true),
+		"space": tftypes.NewValue(spaceType, map[string]tftypes.Value{
+			"data_reduction":      tftypes.NewValue(tftypes.Number, int64(1)),
+			"snapshots":           tftypes.NewValue(tftypes.Number, int64(0)),
+			"total_physical":      tftypes.NewValue(tftypes.Number, int64(0)),
+			"unique":              tftypes.NewValue(tftypes.Number, int64(0)),
+			"virtual":             tftypes.NewValue(tftypes.Number, int64(0)),
+			"snapshots_effective": tftypes.NewValue(tftypes.Number, int64(0)),
+		}),
+		"nfs": tftypes.NewValue(nfsType, map[string]tftypes.Value{
+			"enabled":      tftypes.NewValue(tftypes.Bool, true),
+			"v3_enabled":   tftypes.NewValue(tftypes.Bool, false),
+			"v4_1_enabled": tftypes.NewValue(tftypes.Bool, true),
+			"rules":        tftypes.NewValue(tftypes.String, "*(rw)"),
+			"transport":    tftypes.NewValue(tftypes.String, "tcp"),
+		}),
+		"smb": tftypes.NewValue(smbType, map[string]tftypes.Value{
+			"enabled":                         tftypes.NewValue(tftypes.Bool, false),
+			"access_based_enumeration_enabled": tftypes.NewValue(tftypes.Bool, false),
+			"continuous_availability_enabled":  tftypes.NewValue(tftypes.Bool, false),
+			"smb_encryption_enabled":           tftypes.NewValue(tftypes.Bool, false),
+		}),
+		"http": tftypes.NewValue(httpType, map[string]tftypes.Value{
+			"enabled": tftypes.NewValue(tftypes.Bool, false),
+		}),
+		"multi_protocol": tftypes.NewValue(multiProtocolType, map[string]tftypes.Value{
+			"access_control_style": tftypes.NewValue(tftypes.String, "nfs"),
+			"safeguard_acls":       tftypes.NewValue(tftypes.Bool, false),
+		}),
+		"default_quotas": tftypes.NewValue(defaultQuotasType, map[string]tftypes.Value{
+			"group_quota": tftypes.NewValue(tftypes.Number, int64(0)),
+			"user_quota":  tftypes.NewValue(tftypes.Number, int64(0)),
+		}),
+		"source": tftypes.NewValue(sourceType, nil),
+		"timeouts": tftypes.NewValue(timeoutsType, map[string]tftypes.Value{
+			"create": tftypes.NewValue(tftypes.String, nil),
+			"read":   tftypes.NewValue(tftypes.String, nil),
+			"update": tftypes.NewValue(tftypes.String, nil),
+			"delete": tftypes.NewValue(tftypes.String, nil),
+		}),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Raw,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	// Build v1 schema for the response state.
+	v1Schema := resourceSchema(t).Schema
+
+	upgradeResp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildFileSystemType(), nil), Schema: v1Schema},
+	}
+
+	upgrader.StateUpgrader(context.Background(), resource.UpgradeStateRequest{
+		State: &priorState,
+	}, upgradeResp)
+
+	if upgradeResp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", upgradeResp.Diagnostics)
+	}
+
+	var model filesystemModel
+	if diags := upgradeResp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	// Verify existing fields are preserved.
+	if model.ID.ValueString() != "fs-upgrade-id" {
+		t.Errorf("expected ID=fs-upgrade-id after upgrade, got %q", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "upgrade-test-fs" {
+		t.Errorf("expected Name=upgrade-test-fs after upgrade, got %q", model.Name.ValueString())
+	}
+	if model.Provisioned.ValueInt64() != 1073741824 {
+		t.Errorf("expected Provisioned=1073741824 after upgrade, got %d", model.Provisioned.ValueInt64())
+	}
+	if model.Destroyed.ValueBool() != false {
+		t.Errorf("expected Destroyed=false after upgrade, got %v", model.Destroyed.ValueBool())
+	}
+	if model.PromotionStatus.ValueString() != "promoted" {
+		t.Errorf("expected PromotionStatus=promoted after upgrade, got %q", model.PromotionStatus.ValueString())
+	}
+
+	// Verify new workload field is null (not set in v0 state).
+	if !model.Workload.IsNull() {
+		t.Errorf("expected Workload to be null after v0->v1 upgrade, got %v", model.Workload)
 	}
 }

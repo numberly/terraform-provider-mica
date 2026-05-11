@@ -159,6 +159,7 @@ func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		DefaultQuotas: client.DefaultQuotas{},
 		MultiProtocol: client.MultiProtocol{},
 		Writable:      body.Writable,
+		Workload:      body.Workload,
 	}
 
 	s.byName[fs.Name] = fs
@@ -269,6 +270,16 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fs.SMB = smb
+	}
+
+	if v, ok := rawPatch["workload"]; ok {
+		// workload uses double-pointer semantics: JSON null clears, object sets.
+		var ref *client.NamedReference
+		if err := json.Unmarshal(v, &ref); err != nil {
+			WriteJSONError(w, http.StatusBadRequest, "invalid workload field")
+			return
+		}
+		fs.Workload = ref
 	}
 
 	WriteJSONListResponse(w, http.StatusOK, []client.FileSystem{*fs})

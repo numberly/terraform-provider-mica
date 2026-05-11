@@ -38,43 +38,47 @@ type MultiProtocol struct {
 
 // FileSystem represents a FlashBlade file system object from GET responses.
 type FileSystem struct {
-	ID               string        `json:"id"`
-	Name             string        `json:"name"`
-	Provisioned      int64         `json:"provisioned"`
-	Destroyed        bool          `json:"destroyed"`
-	TimeRemaining    int64         `json:"time_remaining,omitempty"`
-	Created          int64         `json:"created,omitempty"`
-	Space            Space         `json:"space"`
-	NFS              NFSConfig     `json:"nfs"`
-	SMB              SMBConfig     `json:"smb"`
-	HTTP             HTTPConfig    `json:"http"`
-	DefaultQuotas    DefaultQuotas `json:"default_quotas"`
-	MultiProtocol    MultiProtocol `json:"multi_protocol"`
-	PromotionStatus  string        `json:"promotion_status,omitempty"`
-	RequestNumber    int64         `json:"request_number,omitempty"`
+	ID               string          `json:"id"`
+	Name             string          `json:"name"`
+	Provisioned      int64           `json:"provisioned"`
+	Destroyed        bool            `json:"destroyed"`
+	TimeRemaining    int64           `json:"time_remaining,omitempty"`
+	Created          int64           `json:"created,omitempty"`
+	Space            Space           `json:"space"`
+	NFS              NFSConfig       `json:"nfs"`
+	SMB              SMBConfig       `json:"smb"`
+	HTTP             HTTPConfig      `json:"http"`
+	DefaultQuotas    DefaultQuotas   `json:"default_quotas"`
+	MultiProtocol    MultiProtocol   `json:"multi_protocol"`
+	PromotionStatus  string          `json:"promotion_status,omitempty"`
+	RequestNumber    int64           `json:"request_number,omitempty"`
 	Source           *NamedReference `json:"source,omitempty"`
-	Writable         bool          `json:"writable"`
+	Writable         bool            `json:"writable"`
+	Workload         *NamedReference `json:"workload,omitempty"`
 }
 
 // FileSystemPost contains the fields accepted on POST /api/2.23/file-systems.
 // Name is NOT serialised to JSON — the API requires it as a ?names= query parameter.
 type FileSystemPost struct {
-	Name        string     `json:"-"`
-	Provisioned int64      `json:"provisioned,omitempty"`
-	NFS         *NFSConfig `json:"nfs,omitempty"`
-	SMB         *SMBConfig `json:"smb,omitempty"`
-	Writable    bool       `json:"writable,omitempty"`
+	Name        string          `json:"-"`
+	Provisioned int64           `json:"provisioned,omitempty"`
+	NFS         *NFSConfig      `json:"nfs,omitempty"`
+	SMB         *SMBConfig      `json:"smb,omitempty"`
+	Writable    bool            `json:"writable,omitempty"`
+	Workload    *NamedReference `json:"workload,omitempty"`
 }
 
 // FileSystemPatch contains all mutable fields for PATCH /api/2.23/file-systems.
 // Pointer types allow distinguishing "absent" from "false".
+// Workload uses double-pointer: nil = omit, non-nil+inner-nil = clear, both non-nil = set.
 type FileSystemPatch struct {
-	Name        *string    `json:"name,omitempty"`
-	Provisioned *int64     `json:"provisioned,omitempty"`
-	Destroyed   *bool      `json:"destroyed,omitempty"`
-	Writable    *bool      `json:"writable,omitempty"`
-	NFS         *NFSConfig `json:"nfs,omitempty"`
-	SMB         *SMBConfig `json:"smb,omitempty"`
+	Name        *string          `json:"name,omitempty"`
+	Provisioned *int64           `json:"provisioned,omitempty"`
+	Destroyed   *bool            `json:"destroyed,omitempty"`
+	Writable    *bool            `json:"writable,omitempty"`
+	NFS         *NFSConfig       `json:"nfs,omitempty"`
+	SMB         *SMBConfig       `json:"smb,omitempty"`
+	Workload    **NamedReference `json:"workload,omitempty"`
 }
 
 // ObjectStoreAccount represents a FlashBlade object store account from GET responses.
