@@ -210,29 +210,114 @@ def _group_modified_schemas(items: list[dict[str, Any]]) -> list[dict[str, Any]]
     return list(groups.values())
 
 
+def _scan_implemented_in_codebase(project_root: Path) -> dict[str, str | None]:
+    """
+    Scan `internal/client/` and `internal/provider/` to build an authoritative map of
+    schema → TF resource. Replaces the prior ROADMAP-based heuristic which had two
+    failure modes:
+      - column 1 of ROADMAP rows sometimes contains "Yes + Yes" instead of `flashblade_xxx`,
+        producing `terraform_resource: None` for valid implementations (NFS/SMB policies)
+      - substring slug matching wrongly attributed abstract base schemas (e.g. Policy →
+        Object Store User Policy) when the base is actually composed into other schemas
+
+    Method:
+      1. Find every `type <X>Post struct` and `type <X>Patch struct` in `internal/client/models_*.go`
+         → schema is "represented in this provider's client layer" with base name X
+      2. For each such X, find which `internal/provider/*_resource.go` files reference
+         `client.<X>Post` or `client.<X>Patch`
+      3. Return {X (lowercased): resource_name or None}
+
+    Returns dict where:
+      - key = lowercased schema base name (e.g. "nfsexportpolicy")
+      - value = "flashblade_<resource>" if a resource file uses the structs, else None
+        (None means: client has the structs but no TF resource consumes them yet)
+    """
+    result: dict[str, str | None] = {}
+
+    client_dir = project_root / "internal" / "client"
+    provider_dir = project_root / "internal" / "provider"
+    if not client_dir.is_dir() or not provider_dir.is_dir():
+        # Project layout not recognised — fall back to empty map (no false implementations)
+        return result
+
+    # Step 1: schema bases with Post/Patch structs in client layer
+    struct_re = re.compile(r"^type\s+(\w+?)(?:Post|Patch)\s+struct\b", re.MULTILINE)
+    schema_bases: set[str] = set()
+    for go_file in client_dir.glob("models_*.go"):
+        content = go_file.read_text(encoding="utf-8")
+        for match in struct_re.finditer(content):
+            schema_bases.add(match.group(1))
+
+    # Step 2: which resource file uses each schema base
+    # Build (base_name → resource_file_path) by scanning provider files for client.<X>Post/Patch refs
+    resource_files = sorted(provider_dir.glob("*_resource.go"))
+    base_to_resource: dict[str, str] = {}
+    for base in schema_bases:
+        ref_patterns = [f"client.{base}Post", f"client.{base}Patch"]
+        for rfile in resource_files:
+            if rfile.name.endswith("_test.go") or rfile.name.endswith("_data_source.go"):
+                continue
+            content = rfile.read_text(encoding="utf-8")
+            if any(p in content for p in ref_patterns):
+                # Derive TF resource name from filename: foo_resource.go → flashblade_foo
+                resource_stem = rfile.stem.removesuffix("_resource")
+                base_to_resource[base] = f"flashblade_{resource_stem}"
+                break
+
+    # Step 3: populate result with both implemented and client-only bases
+    for base in schema_bases:
+        result[base.lower()] = base_to_resource.get(base)
+
+    return result
+
+
 def _match_implemented(
     schema_base: str,
-    implemented_entries: list[dict[str, str]],
+    implemented_map: dict[str, str | None],
 ) -> dict[str, str] | None:
     """
-    Match a schema base name (e.g. "FileSystem", "QosPolicy") against implemented
-    ROADMAP entries by converting both to slugs and checking for overlap.
+    Look up a schema base name in the codebase-derived implementation map.
+
+    Returns:
+      - {"resource_name": "flashblade_xxx", "api_section": <derived>} if a TF resource exists
+      - {"resource_name": None, "api_section": <derived>} if the client has the structs
+        but no TF resource consumes them yet (client-only — useful signal for orchestrator)
+      - None if the schema has no Post/Patch structs in the client at all
     """
-    # Convert CamelCase to slug: "FileSystem" → "file-system", "QosPolicy" → "qos-policy"
+    key = schema_base.lower()
+    if key not in implemented_map:
+        return None
+
+    resource_name = implemented_map[key]
+    # Derive a stable api_section for downstream display (preserved for compat with old shape)
     slug = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "-", schema_base).lower()
     slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")
+    return {
+        "resource_name": resource_name,  # may be None — means "client-only, no TF resource"
+        "api_section": schema_base,
+        "slug": slug,
+    }
 
-    for entry in implemented_entries:
-        entry_slug = entry["slug"]
-        # Direct slug containment (both directions)
-        if slug in entry_slug or entry_slug in slug:
-            return entry
-        # Word overlap: ≥2 shared words
-        slug_words = set(slug.split("-"))
-        entry_words = set(entry_slug.split("-"))
-        if len(slug_words & entry_words) >= 2:
-            return entry
-    return None
+
+def _is_abstract_base(schema_name: str, all_modified_schemas: list[str], implemented_map: dict[str, str | None]) -> bool:
+    """
+    A schema is an "abstract base" if:
+      - It has no Post/Patch structs in the client (key not in implemented_map), AND
+      - At least one OTHER schema in the same diff has the same name as a suffix
+        (heuristic for OpenAPI allOf composition: e.g. base "Policy" + derived "NfsExportPolicy")
+
+    Marking these as abstract prevents the migration plan from listing redundant work:
+    the base's fields are already covered by the composites that ARE in the diff.
+    """
+    if schema_name.lower() in implemented_map:
+        return False
+    # Look for other diff entries that end with this schema's name (composites)
+    for other in all_modified_schemas:
+        if other == schema_name:
+            continue
+        if other.endswith(schema_name):
+            return True
+    return False
 
 
 def _action_for_modified_schema(item: dict[str, Any]) -> str:
@@ -262,6 +347,7 @@ def build_migration_plan(
     diff: dict[str, Any],
     roadmap_entries: list[dict[str, str]],
     implemented_entries: list[dict[str, str]] | None = None,
+    project_root: Path | None = None,
 ) -> dict[str, Any]:
     """
     Build a 4-category migration plan from a diff.json dict.
@@ -272,9 +358,18 @@ def build_migration_plan(
                        where annotation != swagger_artifact
       deprecated     — removed_endpoints + removed_schemas where annotation != swagger_artifact
       roadmap_gaps   — subset of new_resources matching a ROADMAP.md Candidate/Deferred entry
+
+    `project_root` enables codebase-based implementation detection (replaces the legacy
+    ROADMAP slug-matching). When provided, the script scans `internal/client/` and
+    `internal/provider/` to determine which schemas are actually implemented.
+    `implemented_entries` is retained for back-compat but no longer used when project_root
+    is supplied.
     """
     if implemented_entries is None:
         implemented_entries = []
+
+    # Codebase-based implementation map (authoritative when project_root given)
+    implemented_map = _scan_implemented_in_codebase(project_root) if project_root else {}
 
     # ---- update_models (grouped by base name, cross-referenced) ----
     raw_modified = [
@@ -282,27 +377,38 @@ def build_migration_plan(
         if item.get("annotation") != "swagger_artifact"
     ]
     grouped = _group_modified_schemas(raw_modified)
+    all_modified_names = [g["schema_name"] for g in grouped]
 
     update_models: list[dict[str, Any]] = []
     for g in grouped:
-        impl_match = _match_implemented(g["schema_name"], implemented_entries)
-        action = _action_for_modified_schema({
-            "schema_name": g["schema_name"],
-            "details": {
-                "added_fields": g["added_fields"],
-                "removed_fields": g["removed_fields"],
-                "changed_fields": g["changed_fields"],
-            },
-        })
+        schema_name = g["schema_name"]
+        impl_match = _match_implemented(schema_name, implemented_map)
+        is_abstract = _is_abstract_base(schema_name, all_modified_names, implemented_map)
+
+        if is_abstract:
+            # Don't emit work for abstract bases — their composites are listed separately
+            composites = [n for n in all_modified_names if n != schema_name and n.endswith(schema_name)]
+            action = f"Abstract base schema — work covered by composite(s): {', '.join(composites)}. No direct action needed."
+        else:
+            action = _action_for_modified_schema({
+                "schema_name": schema_name,
+                "details": {
+                    "added_fields": g["added_fields"],
+                    "removed_fields": g["removed_fields"],
+                    "changed_fields": g["changed_fields"],
+                },
+            })
+
         update_models.append({
-            "schema_name": g["schema_name"],
+            "schema_name": schema_name,
             "variants": g["variants"],
             "added_fields": g["added_fields"],
             "removed_fields": g["removed_fields"],
             "changed_fields": g["changed_fields"],
             "annotation": g["annotation"],
-            "implemented": impl_match is not None,
+            "implemented": (impl_match is not None) and (impl_match.get("resource_name") is not None),
             "terraform_resource": impl_match["resource_name"] if impl_match else None,
+            "abstract_base": is_abstract,
             "action": action,
         })
 
@@ -510,6 +616,12 @@ def main() -> int:
     )
     parser.add_argument("diff_json", metavar="diff.json", help="Path to diff JSON produced by diff_swagger.py")
     parser.add_argument("roadmap_md", metavar="ROADMAP.md", help="Path to ROADMAP.md for cross-reference")
+    parser.add_argument(
+        "--project-root",
+        default=None,
+        help="Project root for codebase-based implementation detection (default: parent of ROADMAP.md). "
+             "Scans internal/client/ and internal/provider/ to determine which schemas are implemented.",
+    )
     parser.add_argument("--output", help="Write result to file (default: stdout)")
     parser.add_argument(
         "--format",
@@ -533,7 +645,10 @@ def main() -> int:
     roadmap_entries = _parse_roadmap_not_implemented(args.roadmap_md)
     implemented_entries = _parse_roadmap_implemented(args.roadmap_md)
 
-    plan = build_migration_plan(diff, roadmap_entries, implemented_entries)
+    # Default project_root to parent of ROADMAP.md (typical layout)
+    project_root = Path(args.project_root) if args.project_root else Path(args.roadmap_md).resolve().parent
+
+    plan = build_migration_plan(diff, roadmap_entries, implemented_entries, project_root=project_root)
 
     if args.format == "markdown":
         output = render_markdown(plan)
