@@ -41,13 +41,17 @@ func nfsPolicyResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildNfsExportPolicyType returns the tftypes.Object for the NFS export policy resource.
+// buildNfsExportPolicyType returns the tftypes.Object for the NFS export policy resource (schema v1).
 func buildNfsExportPolicyType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
 		"update": tftypes.String,
 		"delete": tftypes.String,
+	}}
+	workloadType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
 	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":          tftypes.String,
@@ -56,6 +60,7 @@ func buildNfsExportPolicyType() tftypes.Object {
 		"is_local":    tftypes.Bool,
 		"policy_type": tftypes.String,
 		"version":     tftypes.String,
+		"workload":    workloadType,
 		"timeouts":    timeoutsType,
 	}}
 }
@@ -68,6 +73,10 @@ func nullNFSPolicyConfig() map[string]tftypes.Value {
 		"update": tftypes.String,
 		"delete": tftypes.String,
 	}}
+	workloadType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
+	}}
 	return map[string]tftypes.Value{
 		"id":          tftypes.NewValue(tftypes.String, nil),
 		"name":        tftypes.NewValue(tftypes.String, nil),
@@ -75,6 +84,7 @@ func nullNFSPolicyConfig() map[string]tftypes.Value {
 		"is_local":    tftypes.NewValue(tftypes.Bool, nil),
 		"policy_type": tftypes.NewValue(tftypes.String, nil),
 		"version":     tftypes.NewValue(tftypes.String, nil),
+		"workload":    tftypes.NewValue(workloadType, nil),
 		"timeouts":    tftypes.NewValue(timeoutsType, nil),
 	}
 }
@@ -588,6 +598,97 @@ func TestUnit_Unit_NfsExportPolicy_Read_NotFound(t *testing.T) {
 	}
 	if !readResp.State.Raw.IsNull() {
 		t.Error("expected state to be removed (null) when NFS export policy not found")
+	}
+}
+
+// TestUnit_NfsExportPolicyResource_StateUpgrade_V0toV1 verifies the v0->v1 upgrader
+// correctly migrates state by adding workload (null, computed) while preserving all
+// v0 fields intact. Feeds raw tftypes values (not struct literals) to exercise real
+// deserialization path.
+func TestUnit_NfsExportPolicyResource_StateUpgrade_V0toV1(t *testing.T) {
+	r := &nfsExportPolicyResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[0]
+	if !ok {
+		t.Fatalf("expected v0->v1 upgrader at key 0")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatalf("expected PriorSchema to be set for v0->v1 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	v0Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":          tftypes.String,
+		"name":        tftypes.String,
+		"enabled":     tftypes.Bool,
+		"is_local":    tftypes.Bool,
+		"policy_type": tftypes.String,
+		"version":     tftypes.String,
+		"timeouts":    timeoutsType,
+	}}
+
+	v0Val := tftypes.NewValue(v0Type, map[string]tftypes.Value{
+		"id":          tftypes.NewValue(tftypes.String, "nep-001"),
+		"name":        tftypes.NewValue(tftypes.String, "my-nfs-policy"),
+		"enabled":     tftypes.NewValue(tftypes.Bool, true),
+		"is_local":    tftypes.NewValue(tftypes.Bool, true),
+		"policy_type": tftypes.NewValue(tftypes.String, "nfs"),
+		"version":     tftypes.NewValue(tftypes.String, "abc123"),
+		"timeouts":    tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v0Val,
+		Schema: *upgrader.PriorSchema,
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildNfsExportPolicyType(), nil),
+			Schema: nfsPolicyResourceSchema(t).Schema,
+		},
+	}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader v0->v1 returned error: %s", resp.Diagnostics)
+	}
+
+	var model nfsExportPolicyModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded v1 state: %s", diags)
+	}
+
+	// Existing fields must be preserved.
+	if model.ID.ValueString() != "nep-001" {
+		t.Errorf("expected id=nep-001, got %s", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "my-nfs-policy" {
+		t.Errorf("expected name=my-nfs-policy, got %s", model.Name.ValueString())
+	}
+	if !model.Enabled.ValueBool() {
+		t.Errorf("expected enabled=true, got false")
+	}
+	if !model.IsLocal.ValueBool() {
+		t.Errorf("expected is_local=true, got false")
+	}
+	if model.PolicyType.ValueString() != "nfs" {
+		t.Errorf("expected policy_type=nfs, got %s", model.PolicyType.ValueString())
+	}
+	if model.Version.ValueString() != "abc123" {
+		t.Errorf("expected version=abc123, got %s", model.Version.ValueString())
+	}
+
+	// New field: workload must be null (not yet populated — Read() will hydrate from API).
+	if !model.Workload.IsNull() {
+		t.Errorf("expected workload to be null after v0->v1 upgrade, got %v", model.Workload)
 	}
 }
 
