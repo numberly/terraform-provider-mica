@@ -22,6 +22,9 @@ resource "flashblade_qos_policy" "example" {
 
   # 10,000 IOPS ceiling
   max_total_ops_per_sec = 10000
+
+  # context: read-only, populated by the API when the policy is associated
+  # with a workload context. Not settable by the user.
 }
 ```
 
@@ -41,6 +44,7 @@ resource "flashblade_qos_policy" "example" {
 
 ### Read-Only
 
+- `context` (Attributes) The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context. (see [below for nested schema](#nestedatt--context))
 - `id` (String) The unique identifier of the QoS policy.
 - `is_local` (Boolean) Whether the QoS policy is local to this array. Read-only.
 - `policy_type` (String) The type of the QoS policy (e.g. bandwidth-limit). Read-only.
@@ -54,6 +58,15 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
+
+<a id="nestedatt--context"></a>
+### Nested Schema for `context`
+
+Read-Only:
+
+- `id` (String) The context unique identifier.
+- `name` (String) The context name.
 
 ## Import
 

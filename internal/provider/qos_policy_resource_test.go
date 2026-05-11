@@ -47,15 +47,20 @@ func buildQosPolicyType() tftypes.Object {
 		"update": tftypes.String,
 		"delete": tftypes.String,
 	}}
+	contextType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
+	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"id":                     tftypes.String,
-		"name":                   tftypes.String,
-		"enabled":                tftypes.Bool,
+		"id":                      tftypes.String,
+		"name":                    tftypes.String,
+		"enabled":                 tftypes.Bool,
 		"max_total_bytes_per_sec": tftypes.Number,
-		"max_total_ops_per_sec":  tftypes.Number,
-		"is_local":               tftypes.Bool,
-		"policy_type":            tftypes.String,
-		"timeouts":               timeoutsType,
+		"max_total_ops_per_sec":   tftypes.Number,
+		"is_local":                tftypes.Bool,
+		"policy_type":             tftypes.String,
+		"context":                 contextType,
+		"timeouts":                timeoutsType,
 	}}
 }
 
@@ -67,15 +72,20 @@ func nullQosPolicyConfig() map[string]tftypes.Value {
 		"update": tftypes.String,
 		"delete": tftypes.String,
 	}}
+	contextType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
+	}}
 	return map[string]tftypes.Value{
-		"id":                     tftypes.NewValue(tftypes.String, nil),
-		"name":                   tftypes.NewValue(tftypes.String, nil),
-		"enabled":                tftypes.NewValue(tftypes.Bool, nil),
+		"id":                      tftypes.NewValue(tftypes.String, nil),
+		"name":                    tftypes.NewValue(tftypes.String, nil),
+		"enabled":                 tftypes.NewValue(tftypes.Bool, nil),
 		"max_total_bytes_per_sec": tftypes.NewValue(tftypes.Number, nil),
-		"max_total_ops_per_sec":  tftypes.NewValue(tftypes.Number, nil),
-		"is_local":               tftypes.NewValue(tftypes.Bool, nil),
-		"policy_type":            tftypes.NewValue(tftypes.String, nil),
-		"timeouts":               tftypes.NewValue(timeoutsType, nil),
+		"max_total_ops_per_sec":   tftypes.NewValue(tftypes.Number, nil),
+		"is_local":                tftypes.NewValue(tftypes.Bool, nil),
+		"policy_type":             tftypes.NewValue(tftypes.String, nil),
+		"context":                 tftypes.NewValue(contextType, nil),
+		"timeouts":                tftypes.NewValue(timeoutsType, nil),
 	}
 }
 
@@ -446,6 +456,105 @@ func TestUnit_QosPolicyResource_StateUpgrade_V0toV1(t *testing.T) {
 	}
 	if model.PolicyType.ValueString() != "bandwidth-limit" {
 		t.Errorf("expected policy_type=bandwidth-limit, got %s", model.PolicyType.ValueString())
+	}
+	// context: introduced in v2 — must be null after v0->v1 upgrade.
+	if !model.Context.IsNull() {
+		t.Errorf("expected context to be null after v0->v1 upgrade, got %s", model.Context.String())
+	}
+}
+
+// TestUnit_QosPolicyResource_StateUpgrade_V1toV2 verifies that the v1→v2 upgrader
+// carries all v1 attributes forward and sets context to null (new computed field).
+func TestUnit_QosPolicyResource_StateUpgrade_V1toV2(t *testing.T) {
+	r := &qosPolicyResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[1]
+	if !ok {
+		t.Fatal("expected v1->v2 upgrader at key 1")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatal("expected PriorSchema to be set for v1->v2 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+
+	v1Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                      tftypes.String,
+		"name":                    tftypes.String,
+		"enabled":                 tftypes.Bool,
+		"max_total_bytes_per_sec": tftypes.Number,
+		"max_total_ops_per_sec":   tftypes.Number,
+		"is_local":                tftypes.Bool,
+		"policy_type":             tftypes.String,
+		"timeouts":                timeoutsType,
+	}}
+
+	v1Val := tftypes.NewValue(v1Type, map[string]tftypes.Value{
+		"id":                      tftypes.NewValue(tftypes.String, "qos-v1-42"),
+		"name":                    tftypes.NewValue(tftypes.String, "prod-qos"),
+		"enabled":                 tftypes.NewValue(tftypes.Bool, true),
+		"max_total_bytes_per_sec": tftypes.NewValue(tftypes.Number, 1073741824),
+		"max_total_ops_per_sec":   tftypes.NewValue(tftypes.Number, 10000),
+		"is_local":                tftypes.NewValue(tftypes.Bool, true),
+		"policy_type":             tftypes.NewValue(tftypes.String, "bandwidth-limit"),
+		"timeouts":                tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v1Val,
+		Schema: *upgrader.PriorSchema,
+	}
+
+	currentSchema := qosPolicyResourceSchema(t).Schema
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildQosPolicyType(), nil),
+			Schema: currentSchema,
+		},
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
+	}
+
+	var model qosPolicyModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded state: %s", diags)
+	}
+
+	if model.ID.ValueString() != "qos-v1-42" {
+		t.Errorf("expected id=qos-v1-42, got %s", model.ID.ValueString())
+	}
+	if model.Name.ValueString() != "prod-qos" {
+		t.Errorf("expected name=prod-qos, got %s", model.Name.ValueString())
+	}
+	if !model.Enabled.ValueBool() {
+		t.Error("expected enabled=true")
+	}
+	if model.MaxTotalBytesPerSec.ValueInt64() != 1073741824 {
+		t.Errorf("expected max_total_bytes_per_sec=1073741824, got %d", model.MaxTotalBytesPerSec.ValueInt64())
+	}
+	if model.MaxTotalOpsPerSec.ValueInt64() != 10000 {
+		t.Errorf("expected max_total_ops_per_sec=10000, got %d", model.MaxTotalOpsPerSec.ValueInt64())
+	}
+	if !model.IsLocal.ValueBool() {
+		t.Error("expected is_local=true")
+	}
+	if model.PolicyType.ValueString() != "bandwidth-limit" {
+		t.Errorf("expected policy_type=bandwidth-limit, got %s", model.PolicyType.ValueString())
+	}
+	// context: new computed field — must be null after upgrade (Read will hydrate from API).
+	if !model.Context.IsNull() {
+		t.Errorf("expected context to be null after v1->v2 upgrade, got %s", model.Context.String())
 	}
 }
 

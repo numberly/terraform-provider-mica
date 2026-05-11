@@ -349,13 +349,14 @@ type BucketAuditFilterPatch struct {
 
 // QosPolicy represents a FlashBlade QoS policy from GET responses.
 type QosPolicy struct {
-	ID                   string `json:"id"`
-	Name                 string `json:"name"`
-	Enabled              bool   `json:"enabled"`
-	IsLocal              bool   `json:"is_local"`
-	MaxTotalBytesPerSec  int64  `json:"max_total_bytes_per_sec"`
-	MaxTotalOpsPerSec    int64  `json:"max_total_ops_per_sec"`
-	PolicyType           string `json:"policy_type"`
+	ID                   string         `json:"id"`
+	Name                 string         `json:"name"`
+	Enabled              bool           `json:"enabled"`
+	IsLocal              bool           `json:"is_local"`
+	MaxTotalBytesPerSec  int64          `json:"max_total_bytes_per_sec"`
+	MaxTotalOpsPerSec    int64          `json:"max_total_ops_per_sec"`
+	PolicyType           string         `json:"policy_type"`
+	Context              *NamedReference `json:"context,omitempty"`
 }
 
 // QosPolicyPost contains the fields for POST /qos-policies.

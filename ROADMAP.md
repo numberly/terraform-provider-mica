@@ -2,7 +2,7 @@
 
 FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-05-11 (API 2.23 upgrade — nfs_export_policy + smb_client_policy + smb_share_policy schema v1, adds computed workload field)
+**Last updated:** 2026-05-11 (API 2.23 upgrade — nfs_export_policy + smb_client_policy + smb_share_policy + qos_policy schema bumped; adds computed workload/context fields)
 **Provider version:** v2.22.2
 **Total API sections:** 84 | **Covered:** ~44 | **Coverage of IaC-relevant CRUD:** ~75%
 
@@ -39,7 +39,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Bucket Access Policies | `flashblade_bucket_access_policy` | Yes | Done | IAM-style per-bucket |
 | Bucket Access Policy Rules | `flashblade_bucket_access_policy_rule` | No | Done | |
 | Bucket Audit Filters | `flashblade_bucket_audit_filter` | Yes | Done | Actions + prefix filtering |
-| QoS Policies | `flashblade_qos_policy` | Yes | Done | Bandwidth + IOPS limits |
+| QoS Policies | `flashblade_qos_policy` | Yes | Done | Bandwidth + IOPS limits; schema v2 adds computed context field (API 2.23) |
 | QoS Policy Members | `flashblade_qos_policy_member` | No | Done | FS assignment (buckets not supported on v2.22) |
 
 ### Policies
