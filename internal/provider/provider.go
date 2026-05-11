@@ -248,6 +248,9 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 // Resources returns the list of resource types provided by this provider.
 func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		// Storage — workloads
+		NewWorkloadResource,
+
 		// Storage — file systems
 		NewFileSystemResource,
 
@@ -327,6 +330,9 @@ func (p *FlashBladeProvider) Resources(_ context.Context) []func() resource.Reso
 // DataSources returns the list of data source types provided by this provider.
 func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		// Storage — workloads
+		NewWorkloadDataSource,
+
 		// Storage — file systems
 		NewFileSystemDataSource,
 
