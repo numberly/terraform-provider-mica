@@ -69,7 +69,7 @@ func TestUnit_QosPolicy_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/qos-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/qos-policies":
 			name := r.URL.Query().Get("names")
 			if name != "high-throughput" {
 				writeJSON(w, http.StatusOK, listResponse([]client.QosPolicy{}))
@@ -101,7 +101,7 @@ func TestUnit_QosPolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/qos-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/qos-policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.QosPolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -125,7 +125,7 @@ func TestUnit_QosPolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/qos-policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/qos-policies":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param required", http.StatusBadRequest)
@@ -189,7 +189,7 @@ func TestUnit_QosPolicy_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/qos-policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/qos-policies":
 			name := r.URL.Query().Get("names")
 			if name != "high-throughput" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -241,7 +241,7 @@ func TestUnit_QosPolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/qos-policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/qos-policies":
 			name := r.URL.Query().Get("names")
 			if name != "high-throughput" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -281,7 +281,7 @@ func TestUnit_QosPolicyMember_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/qos-policies/members":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/qos-policies/members":
 			policyName := r.URL.Query().Get("policy_names")
 			if policyName != "high-throughput" {
 				writeJSON(w, http.StatusOK, map[string]any{"items": []client.QosPolicyMember{}})
@@ -316,7 +316,7 @@ func TestUnit_QosPolicyMember_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/qos-policies/members":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/qos-policies/members":
 			policyName := r.URL.Query().Get("policy_names")
 			memberName := r.URL.Query().Get("member_names")
 			memberType := r.URL.Query().Get("member_types")
@@ -356,7 +356,7 @@ func TestUnit_QosPolicyMember_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/qos-policies/members":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/qos-policies/members":
 			policyName := r.URL.Query().Get("policy_names")
 			memberName := r.URL.Query().Get("member_names")
 			if policyName != "high-throughput" || memberName != "fs-003" {

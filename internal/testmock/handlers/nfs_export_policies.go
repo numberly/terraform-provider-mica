@@ -28,8 +28,8 @@ func RegisterNfsExportPolicyHandlers(mux *http.ServeMux) *nfsExportPolicyStore {
 		rules:         make(map[string]map[string]*client.NfsExportPolicyRule),
 		nextRuleIndex: make(map[string]int),
 	}
-	mux.HandleFunc("/api/2.22/nfs-export-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.22/nfs-export-policies/rules", store.handleRules)
+	mux.HandleFunc("/api/2.23/nfs-export-policies", store.handlePolicy)
+	mux.HandleFunc("/api/2.23/nfs-export-policies/rules", store.handleRules)
 	return store
 }
 
@@ -65,7 +65,7 @@ func (s *nfsExportPolicyStore) handleRules(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// handlePolicyGet handles GET /api/2.22/nfs-export-policies with optional ?names= param.
+// handlePolicyGet handles GET /api/2.23/nfs-export-policies with optional ?names= param.
 func (s *nfsExportPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "ids"}) {
 		return
@@ -131,7 +131,7 @@ func (s *nfsExportPolicyStore) policyWithRules(policy *client.NfsExportPolicy) c
 	return p
 }
 
-// handlePolicyPost handles POST /api/2.22/nfs-export-policies?names={name}.
+// handlePolicyPost handles POST /api/2.23/nfs-export-policies?names={name}.
 func (s *nfsExportPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -178,7 +178,7 @@ func (s *nfsExportPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.NfsExportPolicy{s.policyWithRules(policy)})
 }
 
-// handlePolicyPatch handles PATCH /api/2.22/nfs-export-policies?names={name}.
+// handlePolicyPatch handles PATCH /api/2.23/nfs-export-policies?names={name}.
 func (s *nfsExportPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -246,7 +246,7 @@ func (s *nfsExportPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.
 	WriteJSONListResponse(w, http.StatusOK, []client.NfsExportPolicy{s.policyWithRules(policy)})
 }
 
-// handlePolicyDelete handles DELETE /api/2.22/nfs-export-policies?names={name}.
+// handlePolicyDelete handles DELETE /api/2.23/nfs-export-policies?names={name}.
 func (s *nfsExportPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -273,7 +273,7 @@ func (s *nfsExportPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http
 	w.WriteHeader(http.StatusOK)
 }
 
-// handleRulesGet handles GET /api/2.22/nfs-export-policies/rules.
+// handleRulesGet handles GET /api/2.23/nfs-export-policies/rules.
 // Filters by ?policy_names= and optionally ?names=.
 func (s *nfsExportPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "policy_names"}) {
@@ -321,7 +321,7 @@ func (s *nfsExportPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Req
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleRulesPost handles POST /api/2.22/nfs-export-policies/rules?policy_names={name}.
+// handleRulesPost handles POST /api/2.23/nfs-export-policies/rules?policy_names={name}.
 func (s *nfsExportPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names"}) {
 		return
@@ -391,7 +391,7 @@ func (s *nfsExportPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, []client.NfsExportPolicyRule{*rule})
 }
 
-// handleRulesPatch handles PATCH /api/2.22/nfs-export-policies/rules?names={name}&policy_names={policy}.
+// handleRulesPatch handles PATCH /api/2.23/nfs-export-policies/rules?names={name}&policy_names={policy}.
 func (s *nfsExportPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "policy_names"}) {
 		return
@@ -486,7 +486,7 @@ func (s *nfsExportPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.NfsExportPolicyRule{*rule})
 }
 
-// handleRulesDelete handles DELETE /api/2.22/nfs-export-policies/rules?names={name}&policy_names={policy}.
+// handleRulesDelete handles DELETE /api/2.23/nfs-export-policies/rules?names={name}&policy_names={policy}.
 func (s *nfsExportPolicyStore) handleRulesDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "policy_names"}) {
 		return

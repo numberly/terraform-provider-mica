@@ -918,7 +918,7 @@ func TestUnit_FileSystem_Delete_Unprocessable(t *testing.T) {
 	// - PATCH: accepts soft-delete (returns destroyed=true)
 	// - DELETE: returns 422 Unprocessable
 	// - GET: returns the soft-deleted file system (needed by PATCH logic)
-	ms.RegisterHandler("/api/2.22/file-systems", func(w http.ResponseWriter, r *http.Request) {
+	ms.RegisterHandler("/api/2.23/file-systems", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			// Return a soft-deleted filesystem (supports PATCH destroyed path).

@@ -56,7 +56,7 @@ type FileSystem struct {
 	Writable         bool          `json:"writable"`
 }
 
-// FileSystemPost contains the fields accepted on POST /api/2.22/file-systems.
+// FileSystemPost contains the fields accepted on POST /api/2.23/file-systems.
 // Name is NOT serialised to JSON — the API requires it as a ?names= query parameter.
 type FileSystemPost struct {
 	Name        string     `json:"-"`
@@ -66,7 +66,7 @@ type FileSystemPost struct {
 	Writable    bool       `json:"writable,omitempty"`
 }
 
-// FileSystemPatch contains all mutable fields for PATCH /api/2.22/file-systems.
+// FileSystemPatch contains all mutable fields for PATCH /api/2.23/file-systems.
 // Pointer types allow distinguishing "absent" from "false".
 type FileSystemPatch struct {
 	Name        *string    `json:"name,omitempty"`

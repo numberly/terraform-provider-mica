@@ -18,7 +18,7 @@ import (
 )
 
 // APIVersion is the FlashBlade REST API version this client targets.
-const APIVersion = "2.22"
+const APIVersion = "2.23"
 
 // Config holds all parameters for constructing a FlashBladeClient.
 type Config struct {

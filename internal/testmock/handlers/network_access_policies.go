@@ -41,8 +41,8 @@ func RegisterNetworkAccessPolicyHandlers(mux *http.ServeMux) *networkAccessPolic
 	store.rules["default"] = make(map[string]*client.NetworkAccessPolicyRule)
 	store.nextRuleIndex["default"] = 1
 
-	mux.HandleFunc("/api/2.22/network-access-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.22/network-access-policies/rules", store.handleRules)
+	mux.HandleFunc("/api/2.23/network-access-policies", store.handlePolicy)
+	mux.HandleFunc("/api/2.23/network-access-policies/rules", store.handleRules)
 	return store
 }
 

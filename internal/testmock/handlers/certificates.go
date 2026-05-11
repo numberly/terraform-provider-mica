@@ -16,14 +16,14 @@ type certificateStore struct {
 	nextID int
 }
 
-// RegisterCertificateHandlers registers CRUD handlers for /api/2.22/certificates
+// RegisterCertificateHandlers registers CRUD handlers for /api/2.23/certificates
 // against the provided ServeMux. The store pointer is returned for test setup.
 func RegisterCertificateHandlers(mux *http.ServeMux) *certificateStore {
 	store := &certificateStore{
 		byName: make(map[string]*client.Certificate),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.22/certificates", store.handle)
+	mux.HandleFunc("/api/2.23/certificates", store.handle)
 	return store
 }
 
@@ -49,7 +49,7 @@ func (s *certificateStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.22/certificates with optional ?names= param.
+// handleGet handles GET /api/2.23/certificates with optional ?names= param.
 // Returns empty list (HTTP 200) when name not found — matches real API behavior.
 func (s *certificateStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -81,7 +81,7 @@ func (s *certificateStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/certificates?names={name}.
+// handlePost handles POST /api/2.23/certificates?names={name}.
 // Requires non-empty certificate (PEM) in body. Returns 409 if name already exists.
 // Populates computed fields; private_key and passphrase are NOT stored (write-only).
 func (s *certificateStore) handlePost(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +144,7 @@ func (s *certificateStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Certificate{*cert})
 }
 
-// handlePatch handles PATCH /api/2.22/certificates?names={name}.
+// handlePatch handles PATCH /api/2.23/certificates?names={name}.
 // Applies non-nil pointer fields. Returns 404 if not found.
 // private_key and passphrase are accepted but not stored (write-only).
 func (s *certificateStore) handlePatch(w http.ResponseWriter, r *http.Request) {
@@ -183,7 +183,7 @@ func (s *certificateStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Certificate{*cert})
 }
 
-// handleDelete handles DELETE /api/2.22/certificates?names={name}.
+// handleDelete handles DELETE /api/2.23/certificates?names={name}.
 func (s *certificateStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return

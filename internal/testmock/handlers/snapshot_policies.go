@@ -23,8 +23,8 @@ func RegisterSnapshotPolicyHandlers(mux *http.ServeMux) *snapshotPolicyStore {
 	store := &snapshotPolicyStore{
 		policies: make(map[string]*client.SnapshotPolicy),
 	}
-	mux.HandleFunc("/api/2.22/policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.22/policies/file-systems", store.handleFileSystems)
+	mux.HandleFunc("/api/2.23/policies", store.handlePolicy)
+	mux.HandleFunc("/api/2.23/policies/file-systems", store.handleFileSystems)
 	return store
 }
 
@@ -44,7 +44,7 @@ func (s *snapshotPolicyStore) handlePolicy(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// handleFileSystems handles GET /api/2.22/policies/file-systems?policy_names={name}.
+// handleFileSystems handles GET /api/2.23/policies/file-systems?policy_names={name}.
 // Returns the list of file systems attached to the policy (empty in mock by default).
 func (s *snapshotPolicyStore) handleFileSystems(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -55,7 +55,7 @@ func (s *snapshotPolicyStore) handleFileSystems(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.PolicyMember{})
 }
 
-// handlePolicyGet handles GET /api/2.22/policies with optional ?names= param.
+// handlePolicyGet handles GET /api/2.23/policies with optional ?names= param.
 func (s *snapshotPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -82,7 +82,7 @@ func (s *snapshotPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Req
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePolicyPost handles POST /api/2.22/policies?names={name}.
+// handlePolicyPost handles POST /api/2.23/policies?names={name}.
 // Accepts optional inline rules in the body for creation-time rule setup.
 func (s *snapshotPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
@@ -135,7 +135,7 @@ func (s *snapshotPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, []client.SnapshotPolicy{*policy})
 }
 
-// handlePolicyPatch handles PATCH /api/2.22/policies?names={name}.
+// handlePolicyPatch handles PATCH /api/2.23/policies?names={name}.
 // Supports: enabled update, add_rules (appends rules), remove_rules (removes by name).
 // Name is read-only for snapshot policies and is silently ignored if provided.
 func (s *snapshotPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Request) {
@@ -228,7 +228,7 @@ func (s *snapshotPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.SnapshotPolicy{*policy})
 }
 
-// handlePolicyDelete handles DELETE /api/2.22/policies?names={name}.
+// handlePolicyDelete handles DELETE /api/2.23/policies?names={name}.
 func (s *snapshotPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {

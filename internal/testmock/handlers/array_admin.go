@@ -59,10 +59,10 @@ func RegisterArrayAdminHandlers(mux *http.ServeMux) *arrayAdminStore {
 		alertWatchers: make(map[string]*client.AlertWatcher),
 	}
 
-	mux.HandleFunc("/api/2.22/dns", dnsStore.handleDns)
-	mux.HandleFunc("/api/2.22/arrays", store.handleArrays)
-	mux.HandleFunc("/api/2.22/smtp-servers", store.handleSmtp)
-	mux.HandleFunc("/api/2.22/alert-watchers", store.handleAlertWatchers)
+	mux.HandleFunc("/api/2.23/dns", dnsStore.handleDns)
+	mux.HandleFunc("/api/2.23/arrays", store.handleArrays)
+	mux.HandleFunc("/api/2.23/smtp-servers", store.handleSmtp)
+	mux.HandleFunc("/api/2.23/alert-watchers", store.handleAlertWatchers)
 	return store
 }
 

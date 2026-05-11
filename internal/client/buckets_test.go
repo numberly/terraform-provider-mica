@@ -34,7 +34,7 @@ func TestUnit_Bucket_List_Paginated(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets":
 			callCount++
 			token := r.URL.Query().Get("continuation_token")
 			switch token {
@@ -89,7 +89,7 @@ func TestUnit_Bucket_List_SinglePage(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets":
 			callCount++
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            bktList,
@@ -120,7 +120,7 @@ func TestUnit_Bucket_List_Empty(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            []client.Bucket{},
 				"total_item_count": 0,
@@ -147,7 +147,7 @@ func TestUnit_Bucket_Get_Found(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets":
 			if r.URL.Query().Get("names") != "my-bucket" {
 				t.Errorf("expected names=my-bucket, got %q", r.URL.Query().Get("names"))
 			}
@@ -179,7 +179,7 @@ func TestUnit_Bucket_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            []client.Bucket{},
 				"total_item_count": 0,
@@ -207,7 +207,7 @@ func TestUnit_Bucket_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/buckets":
 			if r.URL.Query().Get("names") != "new-bucket" {
 				t.Errorf("expected names=new-bucket, got %q", r.URL.Query().Get("names"))
 			}
@@ -245,7 +245,7 @@ func TestUnit_Bucket_Patch_Destroyed(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/buckets":
 			if r.URL.Query().Get("ids") != "bkt-1" {
 				t.Errorf("expected ids=bkt-1, got %q", r.URL.Query().Get("ids"))
 			}
@@ -280,7 +280,7 @@ func TestUnit_Bucket_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/buckets":
 			hitIDs = r.URL.Query().Get("ids")
 			w.WriteHeader(http.StatusOK)
 		default:
@@ -305,7 +305,7 @@ func TestUnit_Bucket_PollUntilEradicated(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets":
 			calls++
 			if calls < 2 {
 				writeJSON(w, http.StatusOK, map[string]any{

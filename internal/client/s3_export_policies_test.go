@@ -24,7 +24,7 @@ func TestUnit_S3ExportPolicy_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/s3-export-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/s3-export-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-s3-policy" {
 				writeJSON(w, http.StatusOK, listResponse([]client.S3ExportPolicy{}))
@@ -56,7 +56,7 @@ func TestUnit_S3ExportPolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/s3-export-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/s3-export-policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.S3ExportPolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -80,7 +80,7 @@ func TestUnit_S3ExportPolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/s3-export-policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/s3-export-policies":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -120,7 +120,7 @@ func TestUnit_S3ExportPolicy_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/s3-export-policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/s3-export-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-s3-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -164,7 +164,7 @@ func TestUnit_S3ExportPolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/s3-export-policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/s3-export-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-s3-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -203,7 +203,7 @@ func TestUnit_S3ExportPolicyRule_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/s3-export-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/s3-export-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-s3-policy" || ruleName != "allow-all" {
@@ -236,7 +236,7 @@ func TestUnit_S3ExportPolicyRule_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/s3-export-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/s3-export-policies/rules":
 			writeJSON(w, http.StatusOK, listResponse([]client.S3ExportPolicyRule{}))
 		default:
 			http.NotFound(w, r)
@@ -260,7 +260,7 @@ func TestUnit_S3ExportPolicyRule_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/s3-export-policies/rules":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/s3-export-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-s3-policy" || ruleName != "new-rule" {
@@ -316,7 +316,7 @@ func TestUnit_S3ExportPolicyRule_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/s3-export-policies/rules":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/s3-export-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-s3-policy" || ruleName != "allow-all" {
@@ -351,7 +351,7 @@ func TestUnit_S3ExportPolicyRule_GetByIndex(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/s3-export-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/s3-export-policies/rules":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            rules,
 				"total_item_count": 2,
@@ -382,7 +382,7 @@ func TestUnit_S3ExportPolicyRule_Patch_ClearList(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/s3-export-policies/rules":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/s3-export-policies/rules":
 			capturedBody, _ = io.ReadAll(r.Body)
 			rule := client.S3ExportPolicyRule{
 				Name:      r.URL.Query().Get("names"),

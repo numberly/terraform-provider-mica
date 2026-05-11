@@ -17,7 +17,7 @@ func newDSRMServer(t *testing.T, handler http.Handler) *httptest.Server {
 		w.Header().Set("x-auth-token", "tok")
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.Handle("/api/2.22/management-access-policies/directory-services/roles", handler)
+	mux.Handle("/api/2.23/management-access-policies/directory-services/roles", handler)
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 	return srv

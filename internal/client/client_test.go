@@ -201,7 +201,7 @@ func TestUnit_NegotiateVersion(t *testing.T) {
 		case "/api/api_version":
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{"versions":["2.12","2.22"]}`))
+			_, _ = w.Write([]byte(`{"versions":["2.12","2.23"]}`))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}

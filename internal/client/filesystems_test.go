@@ -49,7 +49,7 @@ func TestUnit_FileSystem_Create(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/file-systems":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "Names query parameter is missing", http.StatusBadRequest)
@@ -112,7 +112,7 @@ func TestUnit_FileSystem_Read(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			name := r.URL.Query().Get("names")
 			if name != "read-fs" {
 				writeJSON(w, http.StatusOK, listResponse([]client.FileSystem{}))
@@ -147,7 +147,7 @@ func TestUnit_FileSystem_Read_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			// Return empty items — FlashBlade behavior for not found
 			writeJSON(w, http.StatusOK, listResponse([]client.FileSystem{}))
 		default:
@@ -174,7 +174,7 @@ func TestUnit_FileSystem_Update(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/file-systems":
 			id := r.URL.Query().Get("ids")
 			if id != "fs-id-003" {
 				http.Error(w, "unexpected id", http.StatusBadRequest)
@@ -220,7 +220,7 @@ func TestUnit_FileSystem_Update_Rename(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/file-systems":
 			var body client.FileSystemPatch
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
@@ -261,7 +261,7 @@ func TestUnit_FileSystem_SoftDelete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/file-systems":
 			var body client.FileSystemPatch
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
@@ -305,7 +305,7 @@ func TestUnit_FileSystem_Eradicate(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/file-systems":
 			id := r.URL.Query().Get("ids")
 			if id != "fs-id-006" {
 				http.Error(w, "unexpected id", http.StatusBadRequest)
@@ -336,7 +336,7 @@ func TestUnit_FileSystem_PollEradicated(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			callCount++
 			destroyed := r.URL.Query().Get("destroyed")
 			if destroyed != "true" {
@@ -372,7 +372,7 @@ func TestUnit_FileSystem_PollEradicated_Timeout(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			// Always return the file system as present (never eradicated)
 			fs := client.FileSystem{ID: "fs-id-008", Name: "timeout-fs", Destroyed: true}
 			writeJSON(w, http.StatusOK, listResponse([]client.FileSystem{fs}))
@@ -404,7 +404,7 @@ func TestUnit_FileSystem_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            fsList,
 				"total_item_count": 2,
@@ -446,7 +446,7 @@ func TestUnit_FileSystem_List_Paginated(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			callCount++
 			token := r.URL.Query().Get("continuation_token")
 			switch token {
@@ -505,7 +505,7 @@ func TestUnit_FileSystem_List_SinglePage(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			callCount++
 			// No continuation_token in response — single page.
 			writeJSON(w, http.StatusOK, map[string]any{
@@ -537,7 +537,7 @@ func TestUnit_FileSystem_List_WithFilter(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-systems":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-systems":
 			names := r.URL.Query().Get("names")
 			if names != "specific-fs" {
 				writeJSON(w, http.StatusOK, map[string]any{"items": []client.FileSystem{}})

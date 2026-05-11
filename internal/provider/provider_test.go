@@ -107,7 +107,7 @@ func mockFlashBladeServer(t *testing.T) *httptest.Server {
 		case "/api/api_version":
 			w.Header().Set("Content-Type", "application/json")
 			if err := json.NewEncoder(w).Encode(map[string]any{
-				"versions": []string{"2.10", "2.22"},
+				"versions": []string{"2.10", "2.23"},
 			}); err != nil {
 				http.Error(w, "encode error", http.StatusInternalServerError)
 			}
@@ -319,7 +319,7 @@ func TestUnit_Configure_OAuth2(t *testing.T) {
 		case "/api/api_version":
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"versions": []string{"2.10", "2.22"},
+				"versions": []string{"2.10", "2.23"},
 			})
 		case "/oauth2/1.0/token":
 			w.Header().Set("Content-Type", "application/json")

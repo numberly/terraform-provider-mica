@@ -16,7 +16,7 @@ func TestUnit_Subnet_Create(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/subnets":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/subnets":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query parameter is required", http.StatusBadRequest)
@@ -87,7 +87,7 @@ func TestUnit_Subnet_Read(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/subnets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/subnets":
 			name := r.URL.Query().Get("names")
 			if name != "read-subnet" {
 				writeJSON(w, http.StatusOK, listResponse([]client.Subnet{}))
@@ -119,7 +119,7 @@ func TestUnit_Subnet_Read_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/subnets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/subnets":
 			writeJSON(w, http.StatusOK, listResponse([]client.Subnet{}))
 		default:
 			http.NotFound(w, r)
@@ -143,7 +143,7 @@ func TestUnit_Subnet_Update(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/subnets":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/subnets":
 			name := r.URL.Query().Get("names")
 			if name != "patch-subnet" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -194,7 +194,7 @@ func TestUnit_Subnet_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/subnets":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/subnets":
 			name := r.URL.Query().Get("names")
 			if name != "delete-subnet" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -228,7 +228,7 @@ func TestUnit_Subnet_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/subnets":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/subnets":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            subnets,
 				"total_item_count": 2,

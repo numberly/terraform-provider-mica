@@ -508,7 +508,7 @@ type nfsRuleBodyCaptor struct {
 }
 
 func (c *nfsRuleBodyCaptor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/api/2.22/nfs-export-policies/rules" && r.Method == http.MethodPatch {
+	if r.URL.Path == "/api/2.23/nfs-export-policies/rules" && r.Method == http.MethodPatch {
 		buf, _ := io.ReadAll(r.Body)
 		r.Body = io.NopCloser(bytes.NewReader(buf))
 		c.lastPATCH = buf

@@ -28,7 +28,7 @@ func newDSManagementServer(t *testing.T, handler http.Handler) *httptest.Server 
 		w.Header().Set("x-auth-token", "tok")
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.Handle("/api/2.22/directory-services", handler)
+	mux.Handle("/api/2.23/directory-services", handler)
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 	return srv

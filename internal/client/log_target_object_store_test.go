@@ -27,7 +27,7 @@ func TestUnit_LogTargetObjectStore_Get_Found(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/log-targets/object-store":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/log-targets/object-store":
 			name := r.URL.Query().Get("names")
 			if name != "audit-target-1" {
 				writeJSON(w, http.StatusOK, listResponse([]client.LogTargetObjectStore{}))
@@ -65,7 +65,7 @@ func TestUnit_LogTargetObjectStore_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/log-targets/object-store":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/log-targets/object-store":
 			writeJSON(w, http.StatusOK, listResponse([]client.LogTargetObjectStore{}))
 		default:
 			http.NotFound(w, r)
@@ -89,7 +89,7 @@ func TestUnit_LogTargetObjectStore_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/log-targets/object-store":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/log-targets/object-store":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names required", http.StatusBadRequest)
@@ -145,7 +145,7 @@ func TestUnit_LogTargetObjectStore_Patch_Bucket(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/log-targets/object-store":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/log-targets/object-store":
 			name := r.URL.Query().Get("names")
 			if name != "audit-target-1" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -196,7 +196,7 @@ func TestUnit_LogTargetObjectStore_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/log-targets/object-store":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/log-targets/object-store":
 			name := r.URL.Query().Get("names")
 			if name != "audit-target-1" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)

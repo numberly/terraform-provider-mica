@@ -20,7 +20,7 @@ func TestUnit_GetObjectStoreUser(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-users":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-users":
 			name := r.URL.Query().Get("names")
 			if name != "acct/user" {
 				writeJSON(w, http.StatusOK, listResponse([]map[string]any{}))
@@ -60,7 +60,7 @@ func TestUnit_GetObjectStoreUser_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-users":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-users":
 			writeJSON(w, http.StatusOK, listResponse([]map[string]any{}))
 		default:
 			http.NotFound(w, r)
@@ -86,7 +86,7 @@ func TestUnit_PostObjectStoreUser(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-users":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-users":
 			name := r.URL.Query().Get("names")
 			if name != "acct/new-user" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -126,7 +126,7 @@ func TestUnit_PostObjectStoreUser_FullAccess(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-users":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-users":
 			queryFullAccess = r.URL.Query().Get("full_access")
 			name := r.URL.Query().Get("names")
 			writeJSON(w, http.StatusOK, listResponse([]map[string]any{
@@ -160,7 +160,7 @@ func TestUnit_ObjectStoreUser_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/object-store-users":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/object-store-users":
 			name := r.URL.Query().Get("names")
 			if name != "acct/delete-user" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -191,7 +191,7 @@ func TestUnit_ObjectStoreUser_EnsureUser_Creates(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-users":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-users":
 			postCalled = true
 			writeJSON(w, http.StatusOK, listResponse([]map[string]any{
 				{"name": r.URL.Query().Get("names"), "id": "xyz", "full_access": false},
@@ -217,7 +217,7 @@ func TestUnit_ObjectStoreUser_EnsureUser_AlreadyExists(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-users":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-users":
 			writeJSON(w, http.StatusConflict, map[string]any{
 				"errors": []map[string]any{
 					{"message": "already exists"},

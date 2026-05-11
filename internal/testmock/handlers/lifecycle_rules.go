@@ -16,13 +16,13 @@ type lifecycleRuleStore struct {
 	nextID int
 }
 
-// RegisterLifecycleRuleHandlers registers CRUD handlers for /api/2.22/lifecycle-rules
+// RegisterLifecycleRuleHandlers registers CRUD handlers for /api/2.23/lifecycle-rules
 // against the provided ServeMux. The returned store pointer can be used for test setup.
 func RegisterLifecycleRuleHandlers(mux *http.ServeMux) *lifecycleRuleStore {
 	store := &lifecycleRuleStore{
 		rules: make(map[string]*client.LifecycleRule),
 	}
-	mux.HandleFunc("/api/2.22/lifecycle-rules", store.handle)
+	mux.HandleFunc("/api/2.23/lifecycle-rules", store.handle)
 	return store
 }
 
@@ -49,7 +49,7 @@ func (s *lifecycleRuleStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.22/lifecycle-rules with optional query parameters:
+// handleGet handles GET /api/2.23/lifecycle-rules with optional query parameters:
 // ?bucket_ids=, ?bucket_names=, ?names=, ?ids=.
 func (s *lifecycleRuleStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names", "ids"}) {
@@ -99,7 +99,7 @@ func (s *lifecycleRuleStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/lifecycle-rules.
+// handlePost handles POST /api/2.23/lifecycle-rules.
 // Query params: confirm_date (optional).
 // Body: LifecycleRulePost.
 func (s *lifecycleRuleStore) handlePost(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +148,7 @@ func (s *lifecycleRuleStore) handlePost(w http.ResponseWriter, r *http.Request) 
 	WriteJSONListResponse(w, http.StatusOK, []client.LifecycleRule{*rule})
 }
 
-// handlePatch handles PATCH /api/2.22/lifecycle-rules.
+// handlePatch handles PATCH /api/2.23/lifecycle-rules.
 // Identification by ?names= (composite key "bucketName/ruleID").
 // Uses raw JSON decode for partial update semantics.
 func (s *lifecycleRuleStore) handlePatch(w http.ResponseWriter, r *http.Request) {
@@ -226,7 +226,7 @@ func (s *lifecycleRuleStore) handlePatch(w http.ResponseWriter, r *http.Request)
 	WriteJSONListResponse(w, http.StatusOK, []client.LifecycleRule{*rule})
 }
 
-// handleDelete handles DELETE /api/2.22/lifecycle-rules.
+// handleDelete handles DELETE /api/2.23/lifecycle-rules.
 // Identification by ?names= (composite key "bucketName/ruleID").
 func (s *lifecycleRuleStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_names", "names", "bucket_ids"}) {

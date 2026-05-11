@@ -27,7 +27,7 @@ func TestUnit_SnapshotPolicy_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-snapshot-policy" {
 				writeJSON(w, http.StatusOK, listResponse([]client.SnapshotPolicy{}))
@@ -62,7 +62,7 @@ func TestUnit_SnapshotPolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.SnapshotPolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -86,7 +86,7 @@ func TestUnit_SnapshotPolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/policies":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -131,7 +131,7 @@ func TestUnit_SnapshotPolicy_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-snapshot-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -175,7 +175,7 @@ func TestUnit_SnapshotPolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-snapshot-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -207,7 +207,7 @@ func TestUnit_SnapshotPolicy_AddRule(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-snapshot-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -256,7 +256,7 @@ func TestUnit_SnapshotPolicy_RemoveRule(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/policies":
 			var body client.SnapshotPolicyPatch
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
@@ -313,7 +313,7 @@ func TestUnit_SnapshotPolicy_GetRuleByIndex(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.SnapshotPolicy{expected}))
 		default:
 			http.NotFound(w, r)
@@ -349,7 +349,7 @@ func TestUnit_SnapshotPolicy_GetRuleByIndex_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.SnapshotPolicy{expected}))
 		default:
 			http.NotFound(w, r)

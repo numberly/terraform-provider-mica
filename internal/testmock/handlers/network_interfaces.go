@@ -20,14 +20,14 @@ type networkInterfaceStore struct {
 	nextID int
 }
 
-// RegisterNetworkInterfaceHandlers registers CRUD handlers for /api/2.22/network-interfaces
+// RegisterNetworkInterfaceHandlers registers CRUD handlers for /api/2.23/network-interfaces
 // against the provided ServeMux. The handlers share in-memory state and are thread-safe.
 func RegisterNetworkInterfaceHandlers(mux *http.ServeMux) *networkInterfaceStore {
 	store := &networkInterfaceStore{
 		byName: make(map[string]*client.NetworkInterface),
 		byID:   make(map[string]*client.NetworkInterface),
 	}
-	mux.HandleFunc("/api/2.22/network-interfaces", store.handle)
+	mux.HandleFunc("/api/2.23/network-interfaces", store.handle)
 	return store
 }
 
@@ -75,7 +75,7 @@ func (s *networkInterfaceStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.22/network-interfaces with optional ?names= param.
+// handleGet handles GET /api/2.23/network-interfaces with optional ?names= param.
 // If names is provided, returns the matching interface or an empty list.
 // If names is absent, returns all network interfaces.
 func (s *networkInterfaceStore) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +104,7 @@ func (s *networkInterfaceStore) handleGet(w http.ResponseWriter, r *http.Request
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/network-interfaces?names={name}&subnet_names={subnet}.
+// handlePost handles POST /api/2.23/network-interfaces?names={name}&subnet_names={subnet}.
 // The network interface name comes from ?names= and subnet from ?subnet_names= query parameters.
 func (s *networkInterfaceStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
@@ -155,7 +155,7 @@ func (s *networkInterfaceStore) handlePost(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, []client.NetworkInterface{*ni})
 }
 
-// handlePatch handles PATCH /api/2.22/network-interfaces?names={name}.
+// handlePatch handles PATCH /api/2.23/network-interfaces?names={name}.
 // Uses raw map decoding for true PATCH semantics on address.
 // services and attached_servers are always full-replaced when present.
 func (s *networkInterfaceStore) handlePatch(w http.ResponseWriter, r *http.Request) {
@@ -213,7 +213,7 @@ func (s *networkInterfaceStore) handlePatch(w http.ResponseWriter, r *http.Reque
 	WriteJSONListResponse(w, http.StatusOK, []client.NetworkInterface{*ni})
 }
 
-// handleDelete handles DELETE /api/2.22/network-interfaces?names={name}.
+// handleDelete handles DELETE /api/2.23/network-interfaces?names={name}.
 func (s *networkInterfaceStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {

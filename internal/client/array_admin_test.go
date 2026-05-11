@@ -23,7 +23,7 @@ func TestUnit_ArrayDns_Get_Found(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/dns":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/dns":
 			name := r.URL.Query().Get("names")
 			if name != "dns-config" {
 				writeJSON(w, http.StatusOK, listResponse([]client.ArrayDns{}))
@@ -61,7 +61,7 @@ func TestUnit_ArrayDns_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/dns":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/dns":
 			writeJSON(w, http.StatusOK, listResponse([]client.ArrayDns{}))
 		default:
 			http.NotFound(w, r)
@@ -85,7 +85,7 @@ func TestUnit_ArrayDns_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/dns":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/dns":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names required", http.StatusBadRequest)
@@ -133,7 +133,7 @@ func TestUnit_ArrayDns_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/dns":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/dns":
 			name := r.URL.Query().Get("names")
 			if name != "dns-config" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -181,7 +181,7 @@ func TestUnit_ArrayDns_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/dns":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/dns":
 			name := r.URL.Query().Get("names")
 			if name != "dns-config" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -216,7 +216,7 @@ func TestUnit_ArrayInfo_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/arrays":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/arrays":
 			writeJSON(w, http.StatusOK, listResponse([]client.ArrayInfo{expected}))
 		default:
 			http.NotFound(w, r)
@@ -243,7 +243,7 @@ func TestUnit_ArrayNtp_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/arrays":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/arrays":
 			var body client.ArrayNtpPatch
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
@@ -287,7 +287,7 @@ func TestUnit_SmtpServer_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/smtp-servers":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/smtp-servers":
 			writeJSON(w, http.StatusOK, listResponse([]client.SmtpServer{expected}))
 		default:
 			http.NotFound(w, r)
@@ -314,7 +314,7 @@ func TestUnit_SmtpServer_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/smtp-servers":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/smtp-servers":
 			var body client.SmtpServerPatch
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
@@ -355,7 +355,7 @@ func TestUnit_AlertWatcher_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/alert-watchers":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/alert-watchers":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            watchers,
 				"total_item_count": 2,
@@ -385,7 +385,7 @@ func TestUnit_AlertWatcher_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/alert-watchers":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/alert-watchers":
 			email := r.URL.Query().Get("names")
 			if email == "" {
 				http.Error(w, "names query param required", http.StatusBadRequest)
@@ -425,7 +425,7 @@ func TestUnit_AlertWatcher_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/alert-watchers":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/alert-watchers":
 			email := r.URL.Query().Get("names")
 			if email != "ops@example.com" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -473,7 +473,7 @@ func TestUnit_AlertWatcher_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/alert-watchers":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/alert-watchers":
 			email := r.URL.Query().Get("names")
 			if email != "ops@example.com" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -510,7 +510,7 @@ func TestUnit_ArrayConnection_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/array-connections":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/array-connections":
 			remoteName := r.URL.Query().Get("remote_names")
 			if remoteName != "remote-array" {
 				writeJSON(w, http.StatusOK, listResponse([]client.ArrayConnection{}))

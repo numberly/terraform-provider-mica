@@ -16,7 +16,7 @@ func TestUnit_NetworkInterface_Create(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/network-interfaces":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/network-interfaces":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names required", http.StatusBadRequest)
@@ -93,7 +93,7 @@ func TestUnit_NetworkInterface_Read(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/network-interfaces":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/network-interfaces":
 			name := r.URL.Query().Get("names")
 			if name != "read-vip" {
 				writeJSON(w, http.StatusOK, listResponse([]client.NetworkInterface{}))
@@ -125,7 +125,7 @@ func TestUnit_NetworkInterface_Read_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/network-interfaces":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/network-interfaces":
 			writeJSON(w, http.StatusOK, listResponse([]client.NetworkInterface{}))
 		default:
 			http.NotFound(w, r)
@@ -149,7 +149,7 @@ func TestUnit_NetworkInterface_Update(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/network-interfaces":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/network-interfaces":
 			name := r.URL.Query().Get("names")
 			if name != "patch-vip" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -200,7 +200,7 @@ func TestUnit_NetworkInterface_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/network-interfaces":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/network-interfaces":
 			name := r.URL.Query().Get("names")
 			if name != "delete-vip" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -234,7 +234,7 @@ func TestUnit_NetworkInterface_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/network-interfaces":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/network-interfaces":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            nis,
 				"total_item_count": 2,

@@ -22,7 +22,7 @@ func TestUnit_SmbSharePolicy_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/smb-share-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/smb-share-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-smb-share-policy" {
 				writeJSON(w, http.StatusOK, listResponse([]client.SmbSharePolicy{}))
@@ -54,7 +54,7 @@ func TestUnit_SmbSharePolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/smb-share-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/smb-share-policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.SmbSharePolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -78,7 +78,7 @@ func TestUnit_SmbSharePolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/smb-share-policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/smb-share-policies":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -118,7 +118,7 @@ func TestUnit_SmbSharePolicy_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/smb-share-policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/smb-share-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-smb-share-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -162,7 +162,7 @@ func TestUnit_SmbSharePolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/smb-share-policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/smb-share-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-smb-share-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -199,7 +199,7 @@ func TestUnit_SmbSharePolicyRule_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/smb-share-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/smb-share-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-smb-share-policy" || ruleName != "allow-everyone" {
@@ -232,7 +232,7 @@ func TestUnit_SmbSharePolicyRule_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/smb-share-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/smb-share-policies/rules":
 			writeJSON(w, http.StatusOK, listResponse([]client.SmbSharePolicyRule{}))
 		default:
 			http.NotFound(w, r)
@@ -256,7 +256,7 @@ func TestUnit_SmbSharePolicyRule_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/smb-share-policies/rules":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/smb-share-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			if policyName != "my-smb-share-policy" {
 				http.Error(w, "unexpected policy_names", http.StatusBadRequest)
@@ -305,7 +305,7 @@ func TestUnit_SmbSharePolicyRule_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/smb-share-policies/rules":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/smb-share-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-smb-share-policy" || ruleName != "allow-everyone" {
@@ -340,7 +340,7 @@ func TestUnit_SmbSharePolicyRule_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/smb-share-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/smb-share-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			if policyName != "my-smb-share-policy" {
 				writeJSON(w, http.StatusOK, listResponse([]client.SmbSharePolicyRule{}))
