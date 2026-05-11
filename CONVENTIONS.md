@@ -118,7 +118,19 @@ Reference: `internal/provider/target_data_source.go`.
 
 ## State Upgraders
 
-Bump `SchemaVersion` when adding/changing/renaming attributes. Naming: `xxxV0Model`, `xxxV1Model`; current = `xxxModel` (no suffix). `PriorSchema` must be exact copy of that version's schema. New fields → `types.StringNull()` / `types.ListNull(...)`. Chain runs sequentially (0→1→2). Entry key = prior version number. Empty map when version is 0.
+Bump `SchemaVersion` when adding/changing/renaming attributes. **Match the existing naming pattern of the resource being modified** — the codebase has two coexisting conventions (kept for historical consistency; do not normalize):
+
+- **Pattern A** (`server_resource.go`): current = `xxxResourceModel`, prior = `xxxV<N>StateModel`
+- **Pattern B** (`subnet_resource.go`, `bucket_resource.go`, etc. — majority): current = `xxxResourceModel` or `xxxModel`, prior = `xxxV<N>Model`
+
+When creating a new resource (no upgrader yet), default to Pattern B (`xxxV<N>Model`). When modifying, detect via `mcp__serena__get_symbols_overview` and match the existing pattern.
+
+`PriorSchema` must be an EXACT copy of that version's schema. **Hydration rules for new fields:**
+- `Optional` / write-only / sensitive → `types.StringNull()`, `types.BoolNull()`, etc.
+- `Computed` lists/sets/maps that `Read()` always populates from the API → `types.ListValueMust(elemType, []attr.Value{})` (typed empty collection, NOT null — null would produce a perpetual diff vs Read's empty list)
+- `Computed` scalars with API defaults → null (Read hydrates on first refresh)
+
+Never write literal default values in the upgrader. Chain runs sequentially (0→1→2). Entry key = prior version number. Empty map when version is 0.
 
 Reference: `internal/provider/server_resource.go` (v0→v1→v2).
 
@@ -146,12 +158,12 @@ Reference: `internal/provider/server_resource.go` (v0→v1→v2).
 
 | Component | Minimum tests |
 |-----------|---------------|
-| Client CRUD | 4 (Get_Found, Get_NotFound, Post, Patch, Delete) |
+| Client CRUD | 5 (Get_Found, Get_NotFound, Post, Patch, Delete) |
 | Resource | 3 (Lifecycle, Import, DriftDetection) |
 | Data source | 1 (Basic) |
-| State upgrader | 1 per version bump |
+| State upgrader | 1 per version bump (test name: `TestUnit_<Resource>Resource_StateUpgrade_V<N>toV<N+1>`) |
 
-**Baseline: 818 tests.** Must not decrease. New resource adds ≥8 tests. Run `make test` + `make lint` before every commit.
+**Baseline:** authoritative value lives in `GNUmakefile` as `TEST_BASELINE` and is enforced by `make test`. Must not decrease. **New resource adds ≥9 tests** (5 client + 3 resource + 1 data source). Run `make test` + `make lint` before every commit.
 
 ## Provider Registration
 
@@ -166,7 +178,7 @@ Register in `internal/provider/provider.go`: append `NewXxxResource` to `Resourc
 1. [ ] Model structs (Get/Post/Patch) in `models_<domain>.go`
 2. [ ] Client CRUD using `getOneByName[T]`
 3. [ ] Mock handler with Seed, empty-list GET, shared helpers
-4. [ ] Client tests (≥4) with `TestUnit_` prefix
+4. [ ] Client tests (≥5) with `TestUnit_` prefix
 5. [ ] Resource with all 4 interfaces, schema version 0, correct plan modifiers
 6. [ ] Drift detection on all mutable/computed fields
 7. [ ] ImportState with `nullTimeoutsValue()`
@@ -176,7 +188,7 @@ Register in `internal/provider/provider.go`: append `NewXxxResource` to `Resourc
 11. [ ] Registration in `provider.go`
 12. [ ] HCL examples (`resource.tf`, `import.sh`, `data-source.tf`)
 13. [ ] `make docs` regenerated
-14. [ ] `make test` passes, total count ≥ 818 baseline
+14. [ ] `make test` passes, total count ≥ `TEST_BASELINE` in `GNUmakefile` (delta +9 minimum for a new resource)
 15. [ ] `make lint` clean
 16. [ ] ROADMAP.md updated
 
@@ -185,8 +197,8 @@ Register in `internal/provider/provider.go`: append `NewXxxResource` to `Resourc
 1. [ ] Schema version incremented
 2. [ ] State upgrader with PriorSchema + intermediate model
 3. [ ] State upgrader test (≥1) with `TestUnit_` prefix
-4. [ ] New fields → null in upgrader
-5. [ ] ImportState updated for new fields
+4. [ ] New fields hydrated correctly in upgrader (null for Optional/sensitive; typed empty list for Computed lists `Read()` populates from API; never literal defaults)
+5. [ ] ImportState updated for **every new Optional field the API does not return on GET** (not just sensitive ones)
 6. [ ] Drift detection for new mutable/computed fields
 7. [ ] Plan modifiers correct (UseStateForUnknown only on stable computed)
 8. [ ] `make test` passes, count ≥ previous baseline
