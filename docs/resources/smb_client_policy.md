@@ -16,6 +16,9 @@ Manages a FlashBlade SMB client policy.
 resource "flashblade_smb_client_policy" "example" {
   name    = "terraform-smb-client-policy"
   enabled = true
+
+  # workload is read-only (computed) — populated by the API when the policy
+  # is associated with a workload. No configuration needed.
 }
 ```
 
@@ -38,6 +41,7 @@ resource "flashblade_smb_client_policy" "example" {
 - `is_local` (Boolean) If true, the policy is local to this array (not replicated).
 - `policy_type` (String) The type of the policy (e.g. 'smb').
 - `version` (String) The version of the SMB client policy (read-only, server-assigned).
+- `workload` (Attributes) The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload. (see [below for nested schema](#nestedatt--workload))
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -48,6 +52,15 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
+
+<a id="nestedatt--workload"></a>
+### Nested Schema for `workload`
+
+Read-Only:
+
+- `id` (String) The workload unique identifier.
+- `name` (String) The workload name.
 
 ## Import
 

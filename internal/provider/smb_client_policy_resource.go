@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/numberly/terraform-provider-mica/internal/client"
@@ -35,7 +37,19 @@ func NewSmbClientPolicyResource() resource.Resource {
 
 // ---------- model structs ----------------------------------------------------
 
-// smbClientPolicyModel is the top-level model for the flashblade_smb_client_policy resource.
+// smbClientPolicyV0Model is the schema-v0 model (prior to API 2.23 workload field).
+type smbClientPolicyV0Model struct {
+	ID                            types.String   `tfsdk:"id"`
+	Name                          types.String   `tfsdk:"name"`
+	Enabled                       types.Bool     `tfsdk:"enabled"`
+	IsLocal                       types.Bool     `tfsdk:"is_local"`
+	PolicyType                    types.String   `tfsdk:"policy_type"`
+	Version                       types.String   `tfsdk:"version"`
+	AccessBasedEnumerationEnabled types.Bool     `tfsdk:"access_based_enumeration_enabled"`
+	Timeouts                      timeouts.Value `tfsdk:"timeouts"`
+}
+
+// smbClientPolicyModel is the top-level model for the flashblade_smb_client_policy resource (schema v1).
 type smbClientPolicyModel struct {
 	ID                            types.String   `tfsdk:"id"`
 	Name                          types.String   `tfsdk:"name"`
@@ -44,6 +58,7 @@ type smbClientPolicyModel struct {
 	PolicyType                    types.String   `tfsdk:"policy_type"`
 	Version                       types.String   `tfsdk:"version"`
 	AccessBasedEnumerationEnabled types.Bool     `tfsdk:"access_based_enumeration_enabled"`
+	Workload                      types.Object   `tfsdk:"workload"`
 	Timeouts                      timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -56,7 +71,7 @@ func (r *smbClientPolicyResource) Metadata(_ context.Context, _ resource.Metadat
 // Schema defines the resource schema.
 func (r *smbClientPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade SMB client policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -103,6 +118,20 @@ func (r *smbClientPolicyResource) Schema(ctx context.Context, _ resource.SchemaR
 				Default:     booldefault.StaticBool(false),
 				Description: "If true, access-based enumeration is enabled for this policy.",
 			},
+			"workload": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The workload unique identifier.",
+					},
+					"name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The workload name.",
+					},
+				},
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -113,10 +142,94 @@ func (r *smbClientPolicyResource) Schema(ctx context.Context, _ resource.SchemaR
 	}
 }
 
-
 // UpgradeState returns state upgraders for schema migrations.
-func (r *smbClientPolicyResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *smbClientPolicyResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		// PriorSchema verified against smbClientPolicyV0Model fields:
+		//   ID (Computed), Name (Required), Enabled (Optional+Computed),
+		//   IsLocal (Computed), PolicyType (Computed), Version (Computed),
+		//   AccessBasedEnumerationEnabled (Optional+Computed), Timeouts (Optional)
+		0: {
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade SMB client policy.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The unique identifier of the SMB client policy.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						Required:    true,
+						Description: "The name of the SMB client policy. Can be changed in-place via PATCH (rename).",
+					},
+					"enabled": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
+						Description: "If true, the policy is enabled and its rules are enforced.",
+					},
+					"is_local": schema.BoolAttribute{
+						Computed:    true,
+						Description: "If true, the policy is local to this array (not replicated).",
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"policy_type": schema.StringAttribute{
+						Computed:    true,
+						Description: "The type of the policy (e.g. 'smb').",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"version": schema.StringAttribute{
+						Computed:    true,
+						Description: "The version of the SMB client policy (read-only, server-assigned).",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"access_based_enumeration_enabled": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "If true, access-based enumeration is enabled for this policy.",
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var prior smbClientPolicyV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				next := smbClientPolicyModel{
+					ID:                            prior.ID,
+					Name:                          prior.Name,
+					Enabled:                       prior.Enabled,
+					IsLocal:                       prior.IsLocal,
+					PolicyType:                    prior.PolicyType,
+					Version:                       prior.Version,
+					AccessBasedEnumerationEnabled: prior.AccessBasedEnumerationEnabled,
+					// workload: new computed field in v1 — null until Read hydrates from API.
+					Workload: types.ObjectNull(smbClientPolicyWorkloadAttrTypes()),
+					Timeouts: prior.Timeouts,
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -206,10 +319,10 @@ func (r *smbClientPolicyResource) Read(ctx context.Context, req resource.ReadReq
 	if !data.Enabled.IsNull() && !data.Enabled.IsUnknown() {
 		if data.Enabled.ValueBool() != policy.Enabled {
 			tflog.Debug(ctx, "drift detected on SMB client policy", map[string]any{
-				"resource":    name,
-				"field":       "enabled",
-				"was":         data.Enabled.ValueBool(),
-				"now":           policy.Enabled,
+				"resource": name,
+				"field":    "enabled",
+				"was":      data.Enabled.ValueBool(),
+				"now":      policy.Enabled,
 			})
 		}
 	}
@@ -218,11 +331,35 @@ func (r *smbClientPolicyResource) Read(ctx context.Context, req resource.ReadReq
 	if !data.AccessBasedEnumerationEnabled.IsNull() && !data.AccessBasedEnumerationEnabled.IsUnknown() {
 		if data.AccessBasedEnumerationEnabled.ValueBool() != policy.AccessBasedEnumerationEnabled {
 			tflog.Debug(ctx, "drift detected on SMB client policy", map[string]any{
-				"resource":    name,
-				"field":       "access_based_enumeration_enabled",
-				"was":         data.AccessBasedEnumerationEnabled.ValueBool(),
-				"now":           policy.AccessBasedEnumerationEnabled,
+				"resource": name,
+				"field":    "access_based_enumeration_enabled",
+				"was":      data.AccessBasedEnumerationEnabled.ValueBool(),
+				"now":      policy.AccessBasedEnumerationEnabled,
 			})
+		}
+	}
+
+	// Drift detection on workload field (computed — can change if policy migrated).
+	if !data.Workload.IsNull() && !data.Workload.IsUnknown() {
+		var prev struct {
+			ID   string `tfsdk:"id"`
+			Name string `tfsdk:"name"`
+		}
+		if diags := data.Workload.As(ctx, &prev, basetypes.ObjectAsOptions{}); !diags.HasError() {
+			newID := ""
+			newName := ""
+			if policy.Workload != nil {
+				newID = policy.Workload.ID
+				newName = policy.Workload.Name
+			}
+			if prev.ID != newID || prev.Name != newName {
+				tflog.Debug(ctx, "drift detected on SMB client policy", map[string]any{
+					"resource": name,
+					"field":    "workload",
+					"was":      fmt.Sprintf("{id:%s name:%s}", prev.ID, prev.Name),
+					"now":      fmt.Sprintf("{id:%s name:%s}", newID, newName),
+				})
+			}
 		}
 	}
 
@@ -354,6 +491,13 @@ func (r *smbClientPolicyResource) readIntoState(ctx context.Context, name string
 	return diags
 }
 
+// smbClientPolicyWorkloadAttrTypes returns the attribute types for the workload object.
+func smbClientPolicyWorkloadAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   types.StringType,
+		"name": types.StringType,
+	}
+}
 
 // mapSMBClientPolicyToModel maps a client.SmbClientPolicy to an smbClientPolicyModel.
 // It preserves user-managed fields (Timeouts).
@@ -365,4 +509,15 @@ func mapSMBClientPolicyToModel(policy *client.SmbClientPolicy, data *smbClientPo
 	data.PolicyType = types.StringValue(policy.PolicyType)
 	data.Version = types.StringValue(policy.Version)
 	data.AccessBasedEnumerationEnabled = types.BoolValue(policy.AccessBasedEnumerationEnabled)
+
+	// Workload — set if present in API response, null otherwise (Computed-only).
+	if policy.Workload != nil {
+		workloadObj, _ := types.ObjectValue(smbClientPolicyWorkloadAttrTypes(), map[string]attr.Value{
+			"id":   types.StringValue(policy.Workload.ID),
+			"name": types.StringValue(policy.Workload.Name),
+		})
+		data.Workload = workloadObj
+	} else {
+		data.Workload = types.ObjectNull(smbClientPolicyWorkloadAttrTypes())
+	}
 }

@@ -160,6 +160,7 @@ type SmbClientPolicy struct {
 	Version                      string                        `json:"version,omitempty"`
 	AccessBasedEnumerationEnabled bool                         `json:"access_based_enumeration_enabled,omitempty"`
 	Rules                        []SmbClientPolicyRuleInPolicy `json:"rules,omitempty"`
+	Workload                     *NamedReference               `json:"workload,omitempty"`
 }
 
 // SmbClientPolicyPost contains the fields accepted on POST /smb-client-policies.
