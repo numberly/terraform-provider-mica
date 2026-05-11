@@ -195,25 +195,14 @@ func (r *qosPolicyResource) UpgradeState(ctx context.Context) map[int64]resource
 				},
 			},
 			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-				var prior qosPolicyV0Model
-				resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+				var oldState qosPolicyV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &oldState)...)
 				if resp.Diagnostics.HasError() {
 					return
 				}
-				// v0 and v1 have the same attribute set; carry all fields forward.
-				// context field introduced in v2 — null until Read hydrates from API.
-				next := qosPolicyModel{
-					ID:                  prior.ID,
-					Name:                prior.Name,
-					Enabled:             prior.Enabled,
-					MaxTotalBytesPerSec: prior.MaxTotalBytesPerSec,
-					MaxTotalOpsPerSec:   prior.MaxTotalOpsPerSec,
-					IsLocal:             prior.IsLocal,
-					PolicyType:          prior.PolicyType,
-					Context:             types.ObjectNull(qosPolicyContextAttrTypes()),
-					Timeouts:            prior.Timeouts,
-				}
-				resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
+
+				newState := qosPolicyV1Model(oldState)
+				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
 			},
 		},
 

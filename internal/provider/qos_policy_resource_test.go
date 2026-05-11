@@ -416,11 +416,25 @@ func TestUnit_QosPolicyResource_StateUpgrade_V0toV1(t *testing.T) {
 		Schema: *upgrader.PriorSchema,
 	}
 
-	currentSchema := qosPolicyResourceSchema(t).Schema
+	// v1 target schema (the framework chains upgraders, so v0->v1 outputs v1-shaped state;
+	// resp.State.Schema is the schema corresponding to the NEXT upgrader's PriorSchema, not
+	// the current resource schema). Matches the canonical pattern in server_resource_test.go
+	// and file_system_export_resource_test.go.
+	v1Schema := *upgraders[1].PriorSchema
+	v1Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                      tftypes.String,
+		"name":                    tftypes.String,
+		"enabled":                 tftypes.Bool,
+		"max_total_bytes_per_sec": tftypes.Number,
+		"max_total_ops_per_sec":   tftypes.Number,
+		"is_local":                tftypes.Bool,
+		"policy_type":             tftypes.String,
+		"timeouts":                timeoutsType,
+	}}
 	resp := &resource.UpgradeStateResponse{
 		State: tfsdk.State{
-			Raw:    tftypes.NewValue(buildQosPolicyType(), nil),
-			Schema: currentSchema,
+			Raw:    tftypes.NewValue(v1Type, nil),
+			Schema: v1Schema,
 		},
 	}
 	req := resource.UpgradeStateRequest{State: &priorState}
@@ -431,7 +445,7 @@ func TestUnit_QosPolicyResource_StateUpgrade_V0toV1(t *testing.T) {
 		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
 	}
 
-	var model qosPolicyModel
+	var model qosPolicyV1Model
 	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get upgraded state: %s", diags)
 	}
@@ -457,10 +471,8 @@ func TestUnit_QosPolicyResource_StateUpgrade_V0toV1(t *testing.T) {
 	if model.PolicyType.ValueString() != "bandwidth-limit" {
 		t.Errorf("expected policy_type=bandwidth-limit, got %s", model.PolicyType.ValueString())
 	}
-	// context: introduced in v2 — must be null after v0->v1 upgrade.
-	if !model.Context.IsNull() {
-		t.Errorf("expected context to be null after v0->v1 upgrade, got %s", model.Context.String())
-	}
+	// Note: context (introduced in v2) is verified by the V1toV2 test, not here.
+	// v0->v1 deals only with v1-shaped state; context doesn't exist in v1 schema.
 }
 
 // TestUnit_QosPolicyResource_StateUpgrade_V1toV2 verifies that the v1→v2 upgrader
