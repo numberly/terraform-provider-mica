@@ -312,6 +312,17 @@
             },
             "flashblade_tls_policy_member": {
                 "current": "mica:index/tlsPolicyMember:TlsPolicyMember"
+            },
+            "flashblade_workload": {
+                "current": "mica:index/workload:Workload",
+                "fields": {
+                    "parameters": {
+                        "maxItemsOne": false
+                    },
+                    "status_details": {
+                        "maxItemsOne": false
+                    }
+                }
             }
         },
         "datasources": {
@@ -488,6 +499,12 @@
             "flashblade_quota_user": {
                 "current": "mica:index/getQuotaUser:getQuotaUser"
             },
+            "flashblade_resiliency_group": {
+                "current": "mica:index/getResiliencyGroup:getResiliencyGroup"
+            },
+            "flashblade_resiliency_group_member": {
+                "current": "mica:index/getResiliencyGroupMember:getResiliencyGroupMember"
+            },
             "flashblade_s3_export_policy": {
                 "current": "mica:index/getS3ExportPolicy:getS3ExportPolicy"
             },
@@ -546,6 +563,14 @@
                         "maxItemsOne": false
                     },
                     "enabled_tls_ciphers": {
+                        "maxItemsOne": false
+                    }
+                }
+            },
+            "flashblade_workload": {
+                "current": "mica:index/getWorkload:getWorkload",
+                "fields": {
+                    "status_details": {
                         "maxItemsOne": false
                     }
                 }

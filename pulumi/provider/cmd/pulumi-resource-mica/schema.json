@@ -298,6 +298,27 @@
                 }
             }
         },
+        "mica:index/FileSystemExportWorkload:FileSystemExportWorkload": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "The workload unique identifier.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The workload name.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "id",
+                        "name"
+                    ]
+                }
+            }
+        },
         "mica:index/FileSystemHttp:FileSystemHttp": {
             "properties": {
                 "enabled": {
@@ -464,6 +485,48 @@
                 }
             }
         },
+        "mica:index/FileSystemWorkload:FileSystemWorkload": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Workload ID.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Workload name.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "id",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "mica:index/NfsExportPolicyWorkload:NfsExportPolicyWorkload": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "The workload unique identifier.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The workload name.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "id",
+                        "name"
+                    ]
+                }
+            }
+        },
         "mica:index/ObjectStoreAccountSpace:ObjectStoreAccountSpace": {
             "properties": {
                 "dataReduction": {
@@ -537,6 +600,126 @@
                 }
             },
             "type": "object"
+        },
+        "mica:index/QosPolicyContext:QosPolicyContext": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "The context unique identifier.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The context name.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "id",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "mica:index/SmbClientPolicyWorkload:SmbClientPolicyWorkload": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "The workload unique identifier.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The workload name.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "id",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "mica:index/SmbSharePolicyWorkload:SmbSharePolicyWorkload": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "The workload unique identifier.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The workload name.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "id",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "mica:index/WorkloadContext:WorkloadContext": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "The context unique identifier.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The context name.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "id",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "mica:index/WorkloadParameter:WorkloadParameter": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The name of the preset parameter.\n"
+                },
+                "valueBool": {
+                    "type": "boolean",
+                    "description": "Boolean value for this parameter.\n"
+                },
+                "valueInteger": {
+                    "type": "integer",
+                    "description": "Integer value for this parameter.\n"
+                },
+                "valueResourceId": {
+                    "type": "string",
+                    "description": "Resource reference ID for this parameter.\n"
+                },
+                "valueResourceName": {
+                    "type": "string",
+                    "description": "Resource reference name for this parameter.\n"
+                },
+                "valueResourceType": {
+                    "type": "string",
+                    "description": "Resource reference type for this parameter.\n"
+                },
+                "valueString": {
+                    "type": "string",
+                    "description": "String value for this parameter.\n"
+                }
+            },
+            "type": "object",
+            "required": [
+                "name"
+            ]
         },
         "mica:index/getArraySmtpAlertWatcher:getArraySmtpAlertWatcher": {
             "properties": {
@@ -886,6 +1069,28 @@
                 "totalPhysical",
                 "unique",
                 "virtual"
+            ],
+            "language": {
+                "nodejs": {
+                    "requiredInputs": []
+                }
+            }
+        },
+        "mica:index/getWorkloadContext:getWorkloadContext": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "The context unique identifier.\n"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The context name.\n"
+                }
+            },
+            "type": "object",
+            "required": [
+                "id",
+                "name"
             ],
             "language": {
                 "nodejs": {
@@ -2712,6 +2917,10 @@
                     "type": "integer",
                     "description": "Milliseconds remaining until auto-eradication of a soft-deleted file system."
                 },
+                "workload": {
+                    "$ref": "#/types/mica:index/FileSystemWorkload:FileSystemWorkload",
+                    "description": "Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach."
+                },
                 "writable": {
                     "type": "boolean",
                     "description": "Whether the file system is writable."
@@ -2732,6 +2941,7 @@
                 "source",
                 "space",
                 "timeRemaining",
+                "workload",
                 "writable"
             ],
             "inputProperties": {
@@ -2762,6 +2972,10 @@
                 "smb": {
                     "$ref": "#/types/mica:index/FileSystemSmb:FileSystemSmb",
                     "description": "SMB protocol configuration."
+                },
+                "workload": {
+                    "$ref": "#/types/mica:index/FileSystemWorkload:FileSystemWorkload",
+                    "description": "Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach."
                 }
             },
             "requiredInputs": [
@@ -2827,6 +3041,10 @@
                         "type": "integer",
                         "description": "Milliseconds remaining until auto-eradication of a soft-deleted file system."
                     },
+                    "workload": {
+                        "$ref": "#/types/mica:index/FileSystemWorkload:FileSystemWorkload",
+                        "description": "Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach."
+                    },
                     "writable": {
                         "type": "boolean",
                         "description": "Whether the file system is writable."
@@ -2872,6 +3090,10 @@
                 "status": {
                     "type": "string",
                     "description": "The status of the export."
+                },
+                "workload": {
+                    "$ref": "#/types/mica:index/FileSystemExportWorkload:FileSystemExportWorkload",
+                    "description": "The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload."
                 }
             },
             "required": [
@@ -2883,7 +3105,8 @@
                 "policyType",
                 "serverName",
                 "sharePolicyName",
-                "status"
+                "status",
+                "workload"
             ],
             "inputProperties": {
                 "exportName": {
@@ -2950,6 +3173,10 @@
                     "status": {
                         "type": "string",
                         "description": "The status of the export."
+                    },
+                    "workload": {
+                        "$ref": "#/types/mica:index/FileSystemExportWorkload:FileSystemExportWorkload",
+                        "description": "The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload."
                     }
                 },
                 "type": "object"
@@ -3562,6 +3789,10 @@
                 "version": {
                     "type": "string",
                     "description": "The version token that changes on each policy update."
+                },
+                "workload": {
+                    "$ref": "#/types/mica:index/NfsExportPolicyWorkload:NfsExportPolicyWorkload",
+                    "description": "The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload."
                 }
             },
             "required": [
@@ -3569,7 +3800,8 @@
                 "isLocal",
                 "name",
                 "policyType",
-                "version"
+                "version",
+                "workload"
             ],
             "inputProperties": {
                 "enabled": {
@@ -3606,6 +3838,10 @@
                     "version": {
                         "type": "string",
                         "description": "The version token that changes on each policy update."
+                    },
+                    "workload": {
+                        "$ref": "#/types/mica:index/NfsExportPolicyWorkload:NfsExportPolicyWorkload",
+                        "description": "The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload."
                     }
                 },
                 "type": "object"
@@ -4526,6 +4762,10 @@
         },
         "mica:index/qosPolicy:QosPolicy": {
             "properties": {
+                "context": {
+                    "$ref": "#/types/mica:index/QosPolicyContext:QosPolicyContext",
+                    "description": "The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context."
+                },
                 "enabled": {
                     "type": "boolean",
                     "description": "Whether the QoS policy is enabled. Defaults to true."
@@ -4552,6 +4792,7 @@
                 }
             },
             "required": [
+                "context",
                 "enabled",
                 "isLocal",
                 "name",
@@ -4581,6 +4822,10 @@
             "stateInputs": {
                 "description": "Input properties used for looking up and filtering QosPolicy resources.\n",
                 "properties": {
+                    "context": {
+                        "$ref": "#/types/mica:index/QosPolicyContext:QosPolicyContext",
+                        "description": "The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context."
+                    },
                     "enabled": {
                         "type": "boolean",
                         "description": "Whether the QoS policy is enabled. Defaults to true."
@@ -4617,7 +4862,7 @@
                 },
                 "memberType": {
                     "type": "string",
-                    "description": "The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22."
+                    "description": "The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API."
                 },
                 "policyName": {
                     "type": "string",
@@ -4636,7 +4881,7 @@
                 },
                 "memberType": {
                     "type": "string",
-                    "description": "The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22."
+                    "description": "The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API."
                 },
                 "policyName": {
                     "type": "string",
@@ -4657,7 +4902,7 @@
                     },
                     "memberType": {
                         "type": "string",
-                        "description": "The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22."
+                        "description": "The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API."
                     },
                     "policyName": {
                         "type": "string",
@@ -5121,6 +5366,10 @@
                 "version": {
                     "type": "string",
                     "description": "The version of the SMB client policy (read-only, server-assigned)."
+                },
+                "workload": {
+                    "$ref": "#/types/mica:index/SmbClientPolicyWorkload:SmbClientPolicyWorkload",
+                    "description": "The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload."
                 }
             },
             "required": [
@@ -5129,7 +5378,8 @@
                 "isLocal",
                 "name",
                 "policyType",
-                "version"
+                "version",
+                "workload"
             ],
             "inputProperties": {
                 "accessBasedEnumerationEnabled": {
@@ -5174,6 +5424,10 @@
                     "version": {
                         "type": "string",
                         "description": "The version of the SMB client policy (read-only, server-assigned)."
+                    },
+                    "workload": {
+                        "$ref": "#/types/mica:index/SmbClientPolicyWorkload:SmbClientPolicyWorkload",
+                        "description": "The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload."
                     }
                 },
                 "type": "object"
@@ -5284,13 +5538,18 @@
                 "policyType": {
                     "type": "string",
                     "description": "The type of the policy (e.g. 'smb')."
+                },
+                "workload": {
+                    "$ref": "#/types/mica:index/SmbSharePolicyWorkload:SmbSharePolicyWorkload",
+                    "description": "The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload."
                 }
             },
             "required": [
                 "enabled",
                 "isLocal",
                 "name",
-                "policyType"
+                "policyType",
+                "workload"
             ],
             "inputProperties": {
                 "enabled": {
@@ -5323,6 +5582,10 @@
                     "policyType": {
                         "type": "string",
                         "description": "The type of the policy (e.g. 'smb')."
+                    },
+                    "workload": {
+                        "$ref": "#/types/mica:index/SmbSharePolicyWorkload:SmbSharePolicyWorkload",
+                        "description": "The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload."
                     }
                 },
                 "type": "object"
@@ -6092,6 +6355,144 @@
                     "policyName": {
                         "type": "string",
                         "description": "The name of the TLS policy. Changing this forces a new resource."
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "mica:index/workload:Workload": {
+            "properties": {
+                "context": {
+                    "$ref": "#/types/mica:index/WorkloadContext:WorkloadContext",
+                    "description": "The fleet context that owns this workload (read-only, API-managed)."
+                },
+                "created": {
+                    "type": "integer",
+                    "description": "The workload creation time, measured in milliseconds since the UNIX epoch."
+                },
+                "destroyEradicateOnDelete": {
+                    "type": "boolean",
+                    "description": "When true, permanently eradicates the workload on destroy (two-phase: soft-delete then eradicate). When false, only soft-deletes the workload (leaves it in the destroyed queue)."
+                },
+                "destroyed": {
+                    "type": "boolean",
+                    "description": "True if the workload has been soft-deleted and is pending eradication."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name of the workload. Changing this forces a new resource."
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/types/mica:index/WorkloadParameter:WorkloadParameter"
+                    },
+                    "description": "Parameter values to pass to the preset when creating the workload. Changing this forces a new resource."
+                },
+                "presetName": {
+                    "type": "string",
+                    "description": "The name of the preset to deploy this workload from. Changing this forces a new resource."
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The workload status (e.g. creating, ready, destroying, destroyed, eradicating, recovering)."
+                },
+                "statusDetails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Additional information about the workload status."
+                },
+                "timeRemaining": {
+                    "type": "integer",
+                    "description": "Time remaining in milliseconds before the destroyed workload is permanently eradicated."
+                }
+            },
+            "required": [
+                "context",
+                "created",
+                "destroyEradicateOnDelete",
+                "destroyed",
+                "name",
+                "presetName",
+                "status",
+                "statusDetails",
+                "timeRemaining"
+            ],
+            "inputProperties": {
+                "destroyEradicateOnDelete": {
+                    "type": "boolean",
+                    "description": "When true, permanently eradicates the workload on destroy (two-phase: soft-delete then eradicate). When false, only soft-deletes the workload (leaves it in the destroyed queue)."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name of the workload. Changing this forces a new resource."
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/types/mica:index/WorkloadParameter:WorkloadParameter"
+                    },
+                    "description": "Parameter values to pass to the preset when creating the workload. Changing this forces a new resource."
+                },
+                "presetName": {
+                    "type": "string",
+                    "description": "The name of the preset to deploy this workload from. Changing this forces a new resource."
+                }
+            },
+            "requiredInputs": [
+                "name",
+                "presetName"
+            ],
+            "stateInputs": {
+                "description": "Input properties used for looking up and filtering Workload resources.\n",
+                "properties": {
+                    "context": {
+                        "$ref": "#/types/mica:index/WorkloadContext:WorkloadContext",
+                        "description": "The fleet context that owns this workload (read-only, API-managed)."
+                    },
+                    "created": {
+                        "type": "integer",
+                        "description": "The workload creation time, measured in milliseconds since the UNIX epoch."
+                    },
+                    "destroyEradicateOnDelete": {
+                        "type": "boolean",
+                        "description": "When true, permanently eradicates the workload on destroy (two-phase: soft-delete then eradicate). When false, only soft-deletes the workload (leaves it in the destroyed queue)."
+                    },
+                    "destroyed": {
+                        "type": "boolean",
+                        "description": "True if the workload has been soft-deleted and is pending eradication."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the workload. Changing this forces a new resource."
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/types/mica:index/WorkloadParameter:WorkloadParameter"
+                        },
+                        "description": "Parameter values to pass to the preset when creating the workload. Changing this forces a new resource."
+                    },
+                    "presetName": {
+                        "type": "string",
+                        "description": "The name of the preset to deploy this workload from. Changing this forces a new resource."
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The workload status (e.g. creating, ready, destroying, destroyed, eradicating, recovering)."
+                    },
+                    "statusDetails": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Additional information about the workload status."
+                    },
+                    "timeRemaining": {
+                        "type": "integer",
+                        "description": "Time remaining in milliseconds before the destroyed workload is permanently eradicated."
                     }
                 },
                 "type": "object"
@@ -7746,6 +8147,98 @@
                 "type": "object"
             }
         },
+        "mica:index/getResiliencyGroup:getResiliencyGroup": {
+            "inputs": {
+                "description": "A collection of arguments for invoking getResiliencyGroup.\n",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name"
+                ]
+            },
+            "outputs": {
+                "description": "A collection of values returned by getResiliencyGroup.\n",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "statusDetails": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "status",
+                    "statusDetails"
+                ],
+                "type": "object"
+            }
+        },
+        "mica:index/getResiliencyGroupMember:getResiliencyGroupMember": {
+            "inputs": {
+                "description": "A collection of arguments for invoking getResiliencyGroupMember.\n",
+                "properties": {
+                    "memberName": {
+                        "type": "string"
+                    },
+                    "resiliencyGroupName": {
+                        "type": "string"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "memberName",
+                    "resiliencyGroupName"
+                ]
+            },
+            "outputs": {
+                "description": "A collection of values returned by getResiliencyGroupMember.\n",
+                "properties": {
+                    "groupId": {
+                        "type": "string"
+                    },
+                    "groupResourceType": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "memberId": {
+                        "type": "string"
+                    },
+                    "memberName": {
+                        "type": "string"
+                    },
+                    "memberResourceType": {
+                        "type": "string"
+                    },
+                    "resiliencyGroupName": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "groupId",
+                    "groupResourceType",
+                    "id",
+                    "memberId",
+                    "memberName",
+                    "memberResourceType",
+                    "resiliencyGroupName"
+                ],
+                "type": "object"
+            }
+        },
         "mica:index/getS3ExportPolicy:getS3ExportPolicy": {
             "inputs": {
                 "description": "A collection of arguments for invoking getS3ExportPolicy.\n",
@@ -8219,6 +8712,67 @@
                     "policyType",
                     "trustedClientCertificateAuthority",
                     "verifyClientCertificateTrust"
+                ],
+                "type": "object"
+            }
+        },
+        "mica:index/getWorkload:getWorkload": {
+            "inputs": {
+                "description": "A collection of arguments for invoking getWorkload.\n",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name"
+                ]
+            },
+            "outputs": {
+                "description": "A collection of values returned by getWorkload.\n",
+                "properties": {
+                    "context": {
+                        "$ref": "#/types/mica:index/getWorkloadContext:getWorkloadContext"
+                    },
+                    "created": {
+                        "type": "integer"
+                    },
+                    "destroyed": {
+                        "type": "boolean"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "presetName": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "statusDetails": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    },
+                    "timeRemaining": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "context",
+                    "created",
+                    "destroyed",
+                    "id",
+                    "name",
+                    "presetName",
+                    "status",
+                    "statusDetails",
+                    "timeRemaining"
                 ],
                 "type": "object"
             }
