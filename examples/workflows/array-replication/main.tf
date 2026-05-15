@@ -27,7 +27,7 @@
 #   5. Array B adopts the auto-created passive connection and sets replication addresses
 #
 # Prerequisites:
-#   - Two FlashBlade arrays with REST API v2.22+ (Purity//FB 4.6.7+)
+#   - Two FlashBlade arrays with REST API v2.23+ (Purity//FB 4.6.7+)
 #   - Network connectivity between management and data VIPs
 #   - Self-signed certificates already present on each array
 #

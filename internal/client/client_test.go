@@ -246,7 +246,7 @@ func TestUnit_NegotiateVersion_Missing(t *testing.T) {
 	}
 
 	if err := c.NegotiateVersion(context.Background()); err == nil {
-		t.Fatal("expected version negotiation to fail when v2.22 is absent")
+		t.Fatal("expected version negotiation to fail when the negotiated APIVersion is absent")
 	}
 }
 

@@ -20,7 +20,7 @@
 #       +-- [Bucket Replica Link] ------> [External S3 Bucket]
 #
 # Prerequisites:
-#   - FlashBlade with REST API v2.22+ (Purity//FB 4.6.7+)
+#   - FlashBlade with REST API v2.23+ (Purity//FB 4.6.7+)
 #   - Network connectivity from FlashBlade to the external S3 endpoint
 #   - Valid S3 credentials (access key ID + secret access key) for the remote
 #

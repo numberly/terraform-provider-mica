@@ -172,7 +172,7 @@ type DirectoryServiceManagementPatch struct {
 
 // DirectoryService represents a FlashBlade directory service configuration from GET /directory-services.
 // The management singleton is identified by Name == "management".
-// NOTE: the `smb` sub-object is DEPRECATED in v2.22 and intentionally NOT modelled here.
+// NOTE: the `smb` sub-object is DEPRECATED in the FlashBlade API and intentionally NOT modelled here.
 type DirectoryService struct {
 	ID                 string                     `json:"id,omitempty"`
 	Name               string                     `json:"name,omitempty"`
@@ -227,7 +227,7 @@ type DirectoryServiceRolePost struct {
 
 // DirectoryServiceRolePatch is the PATCH /directory-services/roles?names=<n> body.
 // Every field is a pointer so nil = omit. management_access_policies is NOT present
-// (readonly on PATCH per api_references/2.22.md line 434).
+// (readonly on PATCH per the FlashBlade API schema: management_access_policies is readOnly on DirectoryServiceRole).
 type DirectoryServiceRolePatch struct {
 	Group     *string          `json:"group,omitempty"`
 	GroupBase *string          `json:"group_base,omitempty"`

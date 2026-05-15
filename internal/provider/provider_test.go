@@ -280,7 +280,7 @@ func TestUnit_TflogOutput(t *testing.T) {
 }
 
 // TestUnit_Configure_VersionMismatch verifies that Configure returns a diagnostic
-// error when the FlashBlade endpoint does not support API version v2.22.
+// error when the FlashBlade endpoint does not support the negotiated APIVersion.
 func TestUnit_Configure_VersionMismatch(t *testing.T) {
 	// Server that only supports old API versions.
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

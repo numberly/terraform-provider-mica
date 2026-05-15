@@ -61,7 +61,7 @@ func (p *FlashBladeProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 // Schema returns the provider configuration schema.
 func (p *FlashBladeProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Interact with Pure Storage FlashBlade arrays via the REST API v2.22.",
+		Description: "Interact with Pure Storage FlashBlade arrays via the REST API v2.23.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				Optional:    true,
@@ -226,7 +226,7 @@ func (p *FlashBladeProvider) Configure(ctx context.Context, req provider.Configu
 		return
 	}
 
-	// Negotiate API version — fail early if v2.22 is not supported.
+	// Negotiate API version — fail early if APIVersion is not supported by the array.
 	if err := c.NegotiateVersion(ctx); err != nil {
 		resp.Diagnostics.AddError(
 			"FlashBlade API version not supported",

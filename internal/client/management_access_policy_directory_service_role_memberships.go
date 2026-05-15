@@ -7,7 +7,7 @@ import (
 )
 
 // dsrmPath builds "/management-access-policies/directory-services/roles?policy_names=<p>&member_names=<r>".
-// FlashBlade API v2.22 expects `member_names` (not `role_names`) on this endpoint — the role IS the
+// The FlashBlade API expects `member_names` (not `role_names`) on this endpoint — the role IS the
 // member of the membership relation. Using `role_names` yields HTTP 400 "Member identifier is required".
 func dsrmPath(policyName, roleName string) string {
 	v := url.Values{}
