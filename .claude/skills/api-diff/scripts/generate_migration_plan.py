@@ -239,6 +239,36 @@ def _group_modified_schemas(items: list[dict[str, Any]]) -> list[dict[str, Any]]
     return list(groups.values())
 
 
+_METHOD_TOKEN_RE = re.compile(r"http\.Method(Get|Post|Put|Patch|Delete|Head|Options|Connect|Trace)")
+
+
+def _scan_method_infrastructure(project_root: Path) -> set[str]:
+    """Return the set of HTTP methods backed by client infrastructure.
+
+    A method is considered "supported" if `http.Method<X>` appears at least once
+    in a non-test, non-comment Go line under `internal/client/`. The client
+    layer routes every outbound request through `c.do(ctx, http.Method<X>, ...)`,
+    so the presence of this literal is the most reliable signal that an
+    established pattern exists for the verb.
+
+    Returns lowercased method names (e.g. {"get", "post", "patch", "delete"}).
+    """
+    methods: set[str] = set()
+    client_dir = project_root / "internal" / "client"
+    if not client_dir.is_dir():
+        return methods
+    for go_file in client_dir.glob("*.go"):
+        if go_file.name.endswith("_test.go"):
+            continue
+        for line in go_file.read_text(encoding="utf-8").splitlines():
+            stripped = line.lstrip()
+            if stripped.startswith("//"):
+                continue
+            for m in _METHOD_TOKEN_RE.finditer(line):
+                methods.add(m.group(1).lower())
+    return methods
+
+
 def _scan_implemented_in_codebase(project_root: Path) -> dict[str, str | None]:
     """
     Scan `internal/client/` and `internal/provider/` to build an authoritative map of
@@ -436,6 +466,31 @@ def build_migration_plan(
 
     # Codebase-based implementation map (authoritative when project_root given)
     implemented_map = _scan_implemented_in_codebase(project_root) if project_root else {}
+    supported_methods = _scan_method_infrastructure(project_root) if project_root else set()
+
+    # ---- prerequisites (new HTTP methods without client infra) ----
+    method_delta = diff.get("method_delta", {})
+    added_methods = method_delta.get("added_methods", [])
+    added_method_counts = method_delta.get("added_endpoints_per_method", {})
+    prerequisites: list[dict[str, Any]] = []
+    for m in added_methods:
+        if m in supported_methods:
+            continue
+        endpoint_count = added_method_counts.get(m, 0)
+        prerequisites.append({
+            "type": "http_method",
+            "method": m.upper(),
+            "endpoint_count": endpoint_count,
+            "action": (
+                f"NEW HTTP METHOD `{m.upper()}` appears in {endpoint_count} new endpoint(s) but is "
+                f"not used anywhere in `internal/client/*.go`. Before spawning any Phase 3 agent on "
+                f"an endpoint using this method: (1) add a `{m}One[B,R]` (or equivalent) generic to "
+                f"`internal/client/client.go`, (2) document the convention in CONVENTIONS.md "
+                f"(e.g. PUT vs PATCH semantics for Update routing), (3) extend the "
+                f"`flashblade-resource-implementor` agent SKILL to brief the new method's pointer "
+                f"rules and Update() flow."
+            ),
+        })
 
     # ---- update_models (grouped by base name, cross-referenced) ----
     raw_modified = [
@@ -553,7 +608,9 @@ def build_migration_plan(
             "new_resources": len(new_resources),
             "deprecated": len(deprecated),
             "roadmap_gaps": len(roadmap_gaps),
+            "prerequisites": len(prerequisites),
         },
+        "prerequisites": prerequisites,
         "update_models": update_models,
         "new_resources": new_resources,
         "deprecated": deprecated,
@@ -590,12 +647,36 @@ def render_markdown(plan: dict[str, Any]) -> str:
         "",
         "| Category | Count |",
         "| -------- | ----- |",
+        f"| Prerequisites (blocking) | {s.get('prerequisites', 0)} |",
         f"| Model updates | {s['update_models']} ({s['update_models_implemented']} impact implemented resources) |",
         f"| New resources | {s['new_resources']} |",
         f"| Deprecated | {s['deprecated']} |",
         f"| Roadmap gaps | {s['roadmap_gaps']} |",
         "",
     ]
+
+    # Prerequisites — emit at top when present (blocking work that must precede Phase 3)
+    prereqs = plan.get("prerequisites", [])
+    if prereqs:
+        lines += [
+            "## ⚠️ Prerequisites (BLOCKING)",
+            "",
+            "These items represent infrastructure gaps the client layer needs to fill **before** "
+            "implementing any new resource that depends on them. Do not skip — proceeding without "
+            "the listed work produces broken code or forces agents into ad-hoc patterns that "
+            "diverge from project conventions.",
+            "",
+        ]
+        rows = [
+            [
+                prereq.get("type", "—"),
+                prereq.get("method", "—"),
+                str(prereq.get("endpoint_count", "—")),
+                prereq.get("action", "—"),
+            ]
+            for prereq in prereqs
+        ]
+        lines.append(_md_table(["Type", "Method", "Endpoint Count", "Action"], rows))
 
     # update_models — sorted: implemented first, then not implemented
     sorted_models = sorted(plan["update_models"], key=lambda m: (not m.get("implemented", False), m["schema_name"]))

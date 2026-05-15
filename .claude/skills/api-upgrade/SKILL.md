@@ -168,6 +168,7 @@ After each agent returns:
 
 Before proceeding to Phase 3, verify all of the following:
 
+- [ ] **Prerequisites resolved or deferred**: re-read `prerequisites` from the migration plan. For each item with `type: http_method`, either (a) the missing client infrastructure has been committed (e.g. `putOne[B,R]` generic added, CONVENTIONS updated, implementor agent SKILL extended) OR (b) every Phase 3 candidate using that method is being explicitly skipped this run (track them in ROADMAP under Candidate/tech debt with a note linking back to the prereq). If neither — STOP. Proceeding without addressing prereqs is the failure mode this gate exists for.
 - [ ] All `update_models` items from migration plan applied (one agent invocation per resource, all returned SUCCESS)
 - [ ] Each modified resource has a new state upgrader entry AND a state upgrader test (`TestUnit_<Resource>Resource_StateUpgrade_V<N>toV<N+1>`)
 - [ ] `make test` passes; count delta ≥ +1 per modified resource (the new upgrader test)

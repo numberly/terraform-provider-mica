@@ -58,12 +58,15 @@ This command enforces the exact, repeatable sequence so every upgrade goes throu
    (Replace `OLD` with the value from step 3.)
 
 7. **Show the user the migration plan summary** before launching Phase 1. Specifically:
+   - **Prerequisites (BLOCKING)** — count of items requiring net-new client infrastructure (new HTTP methods, etc.). If non-zero, surface each item verbatim from the plan's `prerequisites` section. These MUST be resolved before Phase 3 spawns any agent on a dependent endpoint.
    - How many `update_models` items (Phase 2 work)
    - How many `new_resources` items (Phase 3 work)
    - How many `deprecated` items (Phase 4 work)
    - Any `roadmap_gaps` flagged
 
    Ask the user: "Migration plan summary above. Proceed to Phase 1 (version bump)?" Wait for confirmation. Do NOT skip this checkpoint.
+
+   **If `prerequisites > 0`**: also ask explicitly how to handle each prereq item. The two valid responses are: (a) **Resolve now** — implement the missing client infrastructure in a separate PR/commit before continuing the upgrade workflow, OR (b) **Defer** — track the prereq + every endpoint that depends on it as ROADMAP tech debt and skip those endpoints in Phase 3. Document the choice. Do NOT silently proceed without addressing prereqs — that produces broken code or forces agents into ad-hoc patterns.
 
 ## Workflow execution
 
