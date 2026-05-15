@@ -130,6 +130,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Snapshot Policy FS Members | Resource | POST, DELETE `/snapshot-policies/file-systems` | Link snapshot policies to filesystems | Candidate |
 | Object Store Roles | Resource | Full CRUD + trust policies | IAM-style roles for S3 fine-grained access | Candidate |
 | Active Directory | Resource | Full CRUD | AD integration for SMB/NFS authentication | Candidate |
+| Workload Presets | Resource | Full CRUD + PUT | Template-driven workload preset (API 2.23). **Blocked**: requires new `putOne[B,R]` generic in client, CONVENTIONS update for PATCH-rename vs PUT-replace routing, and `flashblade-resource-implementor` agent extension for PUT semantics | Candidate |
 
 ### Medium Priority -- Admin and security
 
