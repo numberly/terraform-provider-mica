@@ -1,6 +1,6 @@
 ---
 name: api-upgrade
-description: "Orchestrate a FlashBlade Terraform provider upgrade to a new REST API version through 5 review-gated phases: infrastructure version bump, schema updates, new resources, deprecations, and documentation. Consumes api-diff migration plan output and delegates new resource implementation to flashblade-resource-builder."
+description: "Orchestrate a FlashBlade Terraform provider upgrade to a new REST API version through 6 review-gated phases: infrastructure version bump, schema updates, new resources, deprecations, documentation, and Pulumi bridge alignment. Consumes api-diff migration plan output and delegates new resource implementation to flashblade-resource-builder."
 ---
 
 # api-upgrade
@@ -331,17 +331,88 @@ Commit:
 git commit --no-verify -m "docs: update API reference and provider docs for vNEW"
 ```
 
-#### Review Gate 5 (Final)
+#### Review Gate 5
 
-Before closing the upgrade, verify all of the following:
+Before proceeding to Phase 6, verify all of the following:
 
 - [ ] `api_references/NEW.md` generated successfully
 - [ ] `make docs` regenerated all `docs/` files
 - [ ] `ROADMAP.md` updated: new resources moved from Candidate to Implemented, counters updated
 - [ ] `FLASHBLADE_API.md` updated if hand-curated sections changed
-- [ ] All commits pushed, PR opened
 
-Type 'gate-5 passed' — upgrade complete.
+Type 'gate-5 passed' to continue.
+
+---
+
+### Phase 6 — Pulumi Bridge
+
+The Pulumi bridge (`pulumi/provider/`) wraps the TF provider for Pulumi consumers. Resources and data sources flow through automatically via `tokens.SingleModule("flashblade_", ...)` — there is no manual registration step — BUT three things drift on every TF surface change and the Pulumi CI surfaces them only after the PR is pushed. Fix them inline now to avoid a CI round-trip.
+
+**Step 6.1 — Bump count assertions.**
+
+`pulumi/provider/resources_test.go` hardcodes the expected resource/data-source counts. Compute the new values, then update:
+
+```bash
+# Current TF provider counts (authoritative — count entries in Resources() + DataSources() in provider.go)
+ACTUAL_RESOURCES=$(grep -cE '^\s+NewFlashblade[A-Z]\w+Resource,' internal/provider/provider.go || true)
+ACTUAL_DATASOURCES=$(grep -cE '^\s+NewFlashblade[A-Z]\w+DataSource,' internal/provider/provider.go || true)
+
+# OR more robust — read from prov via Serena `find_symbol` on Resources/DataSources
+# and count the slice entries. The grep above is a quick start; if your provider.go
+# uses a different constructor name pattern, prefer Serena.
+
+# Replace the consts in pulumi/provider/resources_test.go:
+#   expectedResources   = <ACTUAL_RESOURCES>
+#   expectedDataSources = <ACTUAL_DATASOURCES>
+```
+
+Note: the constructor naming in this repo is `New<Resource>Resource` and `New<Resource>DataSource` without a `Flashblade` prefix. Adjust the grep accordingly, or just count `Resources()` / `DataSources()` entries by reading the function bodies via Serena.
+
+**Step 6.2 — ComputeID overrides for new resources with composite import IDs.**
+
+The Pulumi bridge derives the resource ID from TF's `id` attribute by default. Resources that import via a composite key (e.g. `policyName/ruleName`, `account/user/policy`) instead of a UUID need an explicit `ComputeID` override in `pulumi/provider/resources.go`. Look for prior examples: `s3_export_policy_rule`, `bucket_access_policy_rule`, `management_access_policy_directory_service_role_membership`.
+
+For each new resource from Phase 3:
+
+- Read its `ImportState` function via `mcp__serena__find_symbol`.
+- If it parses a composite key (presence of `strings.Split(req.ID, "/")` or similar), add a `ComputeID` block in `resources.go` following the existing pattern. The block reads the relevant state fields and reconstructs the composite ID.
+- If import is by name or UUID directly, no override is needed.
+
+**Step 6.3 — Run Pulumi tests.**
+
+```bash
+cd pulumi/provider && go test ./... -count=1
+cd ../..
+```
+
+Must pass. The failure mode `TestProviderInfo_ResourceAndDataSourceCounts: Resources count = X, want Y` means Step 6.1 was missed.
+
+**Step 6.4 — Update `TEST_BASELINE` in `GNUmakefile` and pulumi CHANGELOG (optional).**
+
+- `TEST_BASELINE` in the project `GNUmakefile` is the floor enforced by `make test`. Bump it to the current count so future regressions of more than a couple of tests are caught locally:
+  ```bash
+  CURRENT=$(make test 2>&1 | grep -oP 'Test count: \K\d+' | tail -1)
+  sed -i "s/^TEST_BASELINE=.*/TEST_BASELINE=$CURRENT/" GNUmakefile
+  ```
+- `pulumi/CHANGELOG.md` is only updated when cutting a new Pulumi release (independent versioning cadence from the TF provider). If this upgrade will trigger a Pulumi release, add a top-level `## [vX.Y.Z-pulumi.beta]` entry with the API version covered; otherwise skip.
+
+Commit:
+```bash
+git add pulumi/provider/resources_test.go GNUmakefile <pulumi/provider/resources.go if ComputeID added> <pulumi/CHANGELOG.md if updated>
+git commit --no-verify -m "chore(pulumi): align bridge expectations with API NEW additions"
+```
+
+#### Review Gate 6 (Final)
+
+Before closing the upgrade, verify all of the following:
+
+- [ ] `cd pulumi/provider && go test ./... -count=1` passes
+- [ ] `pulumi/provider/resources_test.go` consts match actual TF provider counts
+- [ ] Every new Phase 3 resource that imports via a composite key has a corresponding `ComputeID` override in `pulumi/provider/resources.go` (Serena `find_symbol` on ImportState to verify)
+- [ ] `GNUmakefile` `TEST_BASELINE` matches current `make test` count (so future regressions are caught locally before CI)
+- [ ] All commits pushed, PR opened, CI green (TF Tests/Lint/Docs and Pulumi Prerequisites all SUCCESS)
+
+Type 'gate-6 passed' — upgrade complete.
 
 ---
 

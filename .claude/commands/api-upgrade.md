@@ -1,5 +1,5 @@
 ---
-description: Run the full FlashBlade API version upgrade workflow (5 phases, review-gated)
+description: Run the full FlashBlade API version upgrade workflow (6 phases, review-gated)
 argument-hint: <new_version> (e.g. 2.23)
 ---
 
@@ -70,13 +70,14 @@ This command enforces the exact, repeatable sequence so every upgrade goes throu
 
 ## Workflow execution
 
-Once the user confirms, invoke the `api-upgrade` skill at `.claude/skills/api-upgrade/SKILL.md` and follow its 5 phases strictly:
+Once the user confirms, invoke the `api-upgrade` skill at `.claude/skills/api-upgrade/SKILL.md` and follow its 6 phases strictly:
 
 - **Phase 1** — Infrastructure version bump (mechanical script)
 - **Phase 2** — Schema updates (spawn `flashblade-resource-modifier` agent **once per `update_models` item, serially, never parallel**)
 - **Phase 3** — New resources (spawn `flashblade-resource-implementor` agent **once per `new_resources` item, serially, never parallel**)
 - **Phase 4** — Deprecations (inline)
 - **Phase 5** — Documentation regeneration
+- **Phase 6** — Pulumi bridge alignment (count assertions, ComputeID overrides, TEST_BASELINE bump)
 
 **Hard rules — non-negotiable:**
 
@@ -101,9 +102,9 @@ If something goes wrong mid-upgrade:
 
 ## Post-upgrade
 
-After Gate 5 passes:
+After Gate 6 passes:
 
 - The branch `test/api-upgrade-$ARGUMENTS` contains the full upgrade.
-- Run a final full validation: `make build && make test && make lint && make docs`.
+- Run a final full validation: `make build && make test && make lint && make docs && ( cd pulumi/provider && go test ./... -count=1 )`.
 - Open a PR for review — do NOT merge to main directly.
 - After PR is merged: delete the upgrade branch.
