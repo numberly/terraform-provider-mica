@@ -12,15 +12,17 @@ import (
 	"github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version"
 )
 
-// Expected counts. Matches TF provider registrations (54 resources, 40 data sources).
+// Expected counts. Matches TF provider registrations (55 resources, 43 data sources
+// after the API 2.23 upgrade — adds flashblade_workload resource + data source,
+// plus flashblade_resiliency_group and flashblade_resiliency_group_member DSs).
 // Update when TF provider resource set changes.
 //
-// Note: schema.json contains 41 entries under "functions" — the extra entry is
-// "pulumi:providers:flashblade/terraformConfig", a provider-level function
-// injected by the bridge, not a data source. prov.DataSources = 40 is correct.
+// Note: schema.json contains DataSources+1 entries under "functions" — the extra
+// entry is "pulumi:providers:flashblade/terraformConfig", a provider-level function
+// injected by the bridge, not a data source.
 const (
-	expectedResources   = 54
-	expectedDataSources = 40
+	expectedResources   = 55
+	expectedDataSources = 43
 )
 
 // POC resources under test (D-05).
