@@ -378,16 +378,26 @@ For each new resource from Phase 3:
 - If it parses a composite key (presence of `strings.Split(req.ID, "/")` or similar), add a `ComputeID` block in `resources.go` following the existing pattern. The block reads the relevant state fields and reconstructs the composite ID.
 - If import is by name or UUID directly, no override is needed.
 
-**Step 6.3 — Run Pulumi tests.**
+**Step 6.3 — Regenerate Pulumi schema artefacts.**
 
 ```bash
-cd pulumi/provider && go test ./... -count=1
-cd ../..
+cd pulumi && make tfgen && cd ..
+git status --short pulumi/provider/cmd/pulumi-resource-mica/
 ```
 
-Must pass. The failure mode `TestProviderInfo_ResourceAndDataSourceCounts: Resources count = X, want Y` means Step 6.1 was missed.
+`make tfgen` rebuilds the Pulumi-side `schema.json`, `schema-embed.json`, and `bridge-metadata.json` from the TF schema. New TF resources/DSs always produce a diff here; the Pulumi Prerequisites CI job runs `git diff --exit-code` on these three files and fails if they are stale. Commit the regenerated artefacts.
 
-**Step 6.4 — Update `TEST_BASELINE` in `GNUmakefile` and pulumi CHANGELOG (optional).**
+**Step 6.4 — Run Pulumi tests.**
+
+```bash
+cd pulumi/provider && go test ./... -count=1 && cd ../..
+```
+
+Must pass. Failure modes:
+- `TestProviderInfo_ResourceAndDataSourceCounts: Resources count = X, want Y` → Step 6.1 was missed (constants not bumped).
+- Diff on schema artefacts → Step 6.3 was missed (`make tfgen` not run).
+
+**Step 6.5 — Update `TEST_BASELINE` in `GNUmakefile` and pulumi CHANGELOG (optional).**
 
 - `TEST_BASELINE` in the project `GNUmakefile` is the floor enforced by `make test`. Bump it to the current count so future regressions of more than a couple of tests are caught locally:
   ```bash
@@ -396,8 +406,13 @@ Must pass. The failure mode `TestProviderInfo_ResourceAndDataSourceCounts: Resou
   ```
 - `pulumi/CHANGELOG.md` is only updated when cutting a new Pulumi release (independent versioning cadence from the TF provider). If this upgrade will trigger a Pulumi release, add a top-level `## [vX.Y.Z-pulumi.beta]` entry with the API version covered; otherwise skip.
 
-Commit:
+Commit (one or two commits — split if the regen alone is large):
 ```bash
+# Schema regen lives on its own commit (large auto-generated diff)
+git add pulumi/provider/cmd/pulumi-resource-mica/{schema.json,schema-embed.json,bridge-metadata.json}
+git commit --no-verify -m "chore(pulumi): regenerate schema artefacts for API NEW additions"
+
+# Bridge expectations + baseline + any ComputeID overrides
 git add pulumi/provider/resources_test.go GNUmakefile <pulumi/provider/resources.go if ComputeID added> <pulumi/CHANGELOG.md if updated>
 git commit --no-verify -m "chore(pulumi): align bridge expectations with API NEW additions"
 ```
@@ -406,6 +421,7 @@ git commit --no-verify -m "chore(pulumi): align bridge expectations with API NEW
 
 Before closing the upgrade, verify all of the following:
 
+- [ ] `cd pulumi && make tfgen` produces no diff against committed artefacts (Step 6.3 done)
 - [ ] `cd pulumi/provider && go test ./... -count=1` passes
 - [ ] `pulumi/provider/resources_test.go` consts match actual TF provider counts
 - [ ] Every new Phase 3 resource that imports via a composite key has a corresponding `ComputeID` override in `pulumi/provider/resources.go` (Serena `find_symbol` on ImportState to verify)
