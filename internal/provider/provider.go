@@ -365,6 +365,7 @@ func (p *FlashBladeProvider) DataSources(_ context.Context) []func() datasource.
 		NewSubnetDataSource,
 		NewLinkAggregationGroupDataSource,
 		NewResiliencyGroupDataSource,
+		NewResiliencyGroupMemberDataSource,
 		NewNetworkInterfaceDataSource,
 
 		// Replication

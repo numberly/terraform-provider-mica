@@ -2,7 +2,7 @@
 
 FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-05-15 (adds flashblade_resiliency_group data source -- API 2.23 hardware-managed HA grouping)
+**Last updated:** 2026-05-15 (adds flashblade_resiliency_group_member data source -- API 2.23 group-to-member relationships)
 **Provider version:** v2.23.0
 **Total API sections:** 84 | **Covered:** ~45 | **Coverage of IaC-relevant CRUD:** ~76%
 
@@ -72,6 +72,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Network Interfaces | `flashblade_network_interface` | Yes | Done | VIP: data, sts, egress-only, replication |
 | Link Aggregation Groups | No | Yes | DS-only | Hardware-managed, read-only |
 | Resiliency Groups | No | Yes | DS-only | Hardware-managed HA group (status, status_details) -- API 2.23 |
+| Resiliency Group Members | No | Yes | DS-only | Group-to-member relationships -- API 2.23 |
 
 ### Replication
 
