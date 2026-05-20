@@ -1,14 +1,15 @@
 ---
-status: partial
+status: resolved
 phase: 59-api-2-23-consolidation-validation
 source: [59-VERIFICATION.md]
 started: 2026-05-20T00:00:00Z
-updated: 2026-05-20T00:00:00Z
+updated: 2026-05-20T01:00:00Z
+resolved: 2026-05-20T01:00:00Z
 ---
 
 ## Current Test
 
-awaiting operator action
+resolved — operator confirmed acceptance done
 
 ## Tests
 
@@ -25,14 +26,14 @@ Acceptance criteria:
 - Results recorded in `.planning/phases/59-api-2-23-consolidation-validation/59-04-ACCEPTANCE.md`
 - HCL fixtures committed under `examples/acceptance/api-2-23/` (plan 59-04 task 1 is `type: auto` — can be re-invoked separately to generate them, or author manually)
 
-result: [pending]
+result: PASS — operator confirmed terraform apply/plan-no-drift/destroy cycle clean on par5+pa7 for new resources and migrated schemas
 
 ## Summary
 
 total: 1
-passed: 0
+passed: 1
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 

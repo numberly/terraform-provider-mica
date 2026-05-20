@@ -50,7 +50,7 @@ Most of the implementation has already landed on `test/api-upgrade-2.23` (≈ 16
 - [x] **VALID-01** — `make test` passes on `test/api-upgrade-2.23`, test count ≥ updated `TEST_BASELINE`
 - [x] **VALID-02** — `make lint` clean
 - [x] **VALID-03** — `make docs` regenerated; `docs/` diff committed
-- [ ] **VALID-04** — Acceptance tests run live against real FlashBlade (par5 + pa7) on the new resources (workload, resiliency_group, resiliency_group_member) and on the migrated schemas
+- [x] **VALID-04** — Acceptance tests run live against real FlashBlade (par5 + pa7) on the new resources (workload, resiliency_group, resiliency_group_member) and on the migrated schemas
 - [x] **VALID-05** — `git diff --exit-code` clean after `make tfgen` (no Pulumi schema drift)
 - [x] **VALID-06** — ROADMAP.md counters (covered / coverage %) refreshed; footer date + provider version bumped to `v2.23.0`
 
@@ -106,7 +106,7 @@ Deferred to later milestones:
 | VALID-01 | Phase 59 | Complete |
 | VALID-02 | Phase 59 | Complete |
 | VALID-03 | Phase 59 | Complete |
-| VALID-04 | Phase 59 | Pending |
+| VALID-04 | Phase 59 | Done (resolved 2026-05-20) |
 | VALID-05 | Phase 59 | Complete |
 | VALID-06 | Phase 59 | Complete |
 | RELEASE-01 | Phase 60 | Pending |
