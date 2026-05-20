@@ -35,7 +35,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 
 | #  | Phase | Goal | Requirements | Success Criteria |
 |----|-------|------|--------------|------------------|
-| 61 | `flashblade_snmp_manager` Resource & Data Source | 1/1 | Complete   | 2026-05-20 |
+| 61 | `flashblade_snmp_manager` Resource & Data Source | 1/1 | Complete    | 2026-05-20 |
 
 ### Phase 61: `flashblade_snmp_manager` Resource & Data Source
 
