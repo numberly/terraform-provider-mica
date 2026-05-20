@@ -1,34 +1,38 @@
 ---
 gsd_state_version: 1.0
-milestone: pulumi-2.22.3
-milestone_name: Pulumi Bridge Alpha
-status: completed
-last_updated: "2026-04-24T12:00:00.000Z"
-last_activity: 2026-04-24
+milestone: v2.23.0
+milestone_name: FlashBlade API 2.23 Upgrade
+status: in_progress
+last_updated: "2026-05-20T00:00:00.000Z"
+last_activity: 2026-05-20
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-21)
+See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** Phase 58 — release-pipeline-docs
+**Current focus:** v2.23.0 — API 2.23 upgrade (retro + finalisation)
 
 ## Current Position
 
-Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha) — **COMPLETED 2026-04-24**
-Status: Archived — no active milestone
-Last activity: 2026-04-24
+Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-20 — Milestone v2.23.0 started
 
-Progress: [██████████] 100% (5/5 phases, 15/15 plans)
+Progress: [░░░░░░░░░░] 0% (0/2 phases)
+
+Working branch: `test/api-upgrade-2.23` (~167 fichiers, ~7000 insertions vs main)
 
 ## Recent Milestones
 

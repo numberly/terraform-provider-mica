@@ -3,16 +3,37 @@
 ## Current State
 
 **Latest shipped:** pulumi-2.22.3 (Pulumi Bridge Alpha) — 2026-04-24
-**Active milestone:** None — awaiting next milestone planning
+**Active milestone:** v2.23.0 — FlashBlade API 2.23 Upgrade (in progress on branch `test/api-upgrade-2.23`)
 
 **Shipped to date:** 15 milestones, 58 phases
 **TF Provider:** v2.22.3 (54 resources + 40 data sources, 836 tests)
 **Pulumi Bridge:** pulumi-2.22.3 alpha (private distribution via GitHub Releases, Python + Go SDKs)
 
-Next steps: plan the next milestone via `/gsd:new-milestone` — typical candidates:
-- `v2.23.0` (upgrade to FlashBlade API 2.23 when swagger available)
-- `pulumi-2.22.3-beta` (live-test the alpha bridge, fix gaps, publish to Pulumi Registry)
-- Other feature additions
+## Current Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade
+
+**Goal:** Aligner le provider sur l'API FlashBlade 2.23, ajouter le support des Workloads et Resiliency Groups, puis livrer la release (validation, docs, tag, merge).
+
+**Target features (déjà implémentés sur `test/api-upgrade-2.23`):**
+- API version bump 2.22 → 2.23 (provider, client, mock, examples, references)
+- `flashblade_workload` resource + data source
+- `flashblade_resiliency_group` data source (DS-only)
+- `flashblade_resiliency_group_member` data source (DS-only)
+- Schéma v1 (workload field) sur 6 ressources : file_system, file_system_export, nfs_export_policy, smb_client_policy, smb_share_policy, qos_policy
+- qos_policy : computed `context` field
+- Pulumi bridge regen (schema.json, bridge-metadata.json, schema-embed.json)
+- api-diff / api-upgrade skills enhancements (per-field variants, codebase scan, BLOCKING method detection)
+
+**Target features (à livrer dans la finalisation):**
+- Validation `make test` + `make lint` + `make docs` clean sur la branche
+- Acceptance tests live FlashBlade (par5, pa7) sur les nouvelles ressources et les schémas migrés
+- CHANGELOG + release notes v2.23.0
+- ROADMAP.md fix-up (coverage counters, version footer)
+- Tag `v2.23.0` + merge `test/api-upgrade-2.23` → `main`
+
+**Key context:**
+- Travail rétro : ~167 fichiers / ~7000 insertions déjà sur la branche, piloté par les skills `api-diff` et `api-upgrade`
+- 2 phases prévues : Phase 59 (consolidation rétro + validation), Phase 60 (release & merge)
+- TEST_BASELINE actuel (GNUmakefile) : 807 — à mettre à jour quand v2.23.0 ship
 
 ## What This Is
 
@@ -64,7 +85,7 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 
 ### Active
 
-_Active requirements are being defined for milestone pulumi-2.22.3 (see `.planning/REQUIREMENTS.md`)._
+_Active requirements are being defined for milestone v2.23.0 (see `.planning/REQUIREMENTS.md`)._
 
 ### Known Follow-up Defects
 
@@ -126,4 +147,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-22 — Phase 55 complete (full mapping: 4 ComputeID closures, 7 Secret marks, soft-delete registration, 19 tests pass, all 12 requirements satisfied)*
+*Last updated: 2026-05-20 — milestone v2.23.0 started (retro + finalisation for API 2.23 upgrade work already on branch `test/api-upgrade-2.23`).*
