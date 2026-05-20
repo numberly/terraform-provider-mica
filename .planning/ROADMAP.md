@@ -32,7 +32,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 
 ### Phases
 
-- [ ] **Phase 59: API 2.23 Consolidation & Validation** — Retro-document the API 2.23 work already on branch, then validate the whole upgrade clean (test/lint/docs/acceptance/bridge).
+- [x] **Phase 59: API 2.23 Consolidation & Validation** — Retro-document the API 2.23 work already on branch, then validate the whole upgrade clean (test/lint/docs/acceptance/bridge). (completed 2026-05-20)
 - [ ] **Phase 60: v2.23.0 Release** — Rebase, merge, tag, publish artefacts, archive milestone.
 
 ### Phase Details
@@ -60,7 +60,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
   4. `make tfgen` followed by `git diff --exit-code` is clean — no Pulumi schema / bridge-metadata drift (covers VALID-05)
   5. ROADMAP.md coverage counters and footer reflect API 2.23 deltas and `v2.23.0` as the provider version (covers VALID-06)
 
-**Plans:** 4/5 plans executed
+**Plans:** 4/5 plans complete
 - [x] 59-01-retro-traceability-PLAN.md — Trace 19 retro REQ-IDs against branch state (RETRO.md)
 - [x] 59-02-make-checks-PLAN.md — Run make test/lint/docs and capture outputs (CHECKS.md)
 - [x] 59-03-pulumi-bridge-check-PLAN.md — Run make tfgen, verify clean diff on pulumi/
@@ -89,7 +89,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 59. API 2.23 Consolidation & Validation | 4/5 | In Progress|  |
+| 59. API 2.23 Consolidation & Validation | 4/5 | Complete    | 2026-05-20 |
 | 60. v2.23.0 Release | 0/0 | Not started | - |
 
 ---
