@@ -3,10 +3,10 @@
 ## Current State
 
 **Latest shipped:** v2.23.0 (FlashBlade API 2.23 Upgrade) — 2026-05-20
-**Active milestone:** v2.23.1 — `flashblade_snmp_manager` resource & data source
+**Active milestone:** v2.23.1 — `flashblade_snmp_manager` resource & data source (phase 61 complete, ready to ship)
 
-**Shipped to date:** 16 milestones, 60 phases
-**TF Provider:** v2.23.0 (55 resources + 43 data sources, 807 tests, [GitHub Release](https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0))
+**Shipped to date:** 16 milestones, 61 phases
+**TF Provider:** v2.23.0 (55 resources + 43 data sources, 807 tests, [GitHub Release](https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0)) — pending v2.23.1: 56 resources + 44 data sources, 816 tests on branch `implem-snmp-managers`
 **Pulumi Bridge:** pulumi-2.22.3 alpha (private distribution via GitHub Releases, Python + Go SDKs) — bridge schema regen'd for API 2.23 but no new Pulumi release yet
 
 ## Current Milestone: v2.23.1 `flashblade_snmp_manager`
@@ -169,4 +169,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-20 — milestone v2.23.1 started (`flashblade_snmp_manager` resource + data source, branch `implem-snmp-managers`).*
+*Last updated: 2026-05-20 — phase 61 complete (`flashblade_snmp_manager` resource + data source shipped, 9/9 must-haves verified, 816 tests on branch `implem-snmp-managers`).*
