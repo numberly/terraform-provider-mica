@@ -1,10 +1,10 @@
 # API Coverage Roadmap
 
-FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
+FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-05-15 (adds flashblade_resiliency_group_member data source -- API 2.23 group-to-member relationships)
+**Last updated:** 2026-05-20 (API 2.23 upgrade: workload resource + resiliency_group/member data sources, schema v1/v2 migrations on file_system, file_system_export, nfs/smb/qos policies)
 **Provider version:** v2.23.0
-**Total API sections:** 84 | **Covered:** ~45 | **Coverage of IaC-relevant CRUD:** ~76%
+**Total API sections:** 84 | **Covered:** ~48 (55 resources + 43 data sources) | **Coverage of IaC-relevant CRUD:** ~78%
 
 ## Coverage Legend
 
