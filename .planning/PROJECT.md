@@ -2,14 +2,20 @@
 
 ## Current State
 
-**Latest shipped:** pulumi-2.22.3 (Pulumi Bridge Alpha) — 2026-04-24
-**Active milestone:** v2.23.0 — FlashBlade API 2.23 Upgrade (in progress on branch `test/api-upgrade-2.23`)
+**Latest shipped:** v2.23.0 (FlashBlade API 2.23 Upgrade) — 2026-05-20
+**Active milestone:** None — awaiting next milestone planning
 
-**Shipped to date:** 15 milestones, 58 phases
-**TF Provider:** v2.22.3 (54 resources + 40 data sources, 836 tests)
-**Pulumi Bridge:** pulumi-2.22.3 alpha (private distribution via GitHub Releases, Python + Go SDKs)
+**Shipped to date:** 16 milestones, 60 phases
+**TF Provider:** v2.23.0 (55 resources + 43 data sources, 807 tests, [GitHub Release](https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0))
+**Pulumi Bridge:** pulumi-2.22.3 alpha (private distribution via GitHub Releases, Python + Go SDKs) — bridge schema regen'd for API 2.23 but no new Pulumi release yet
 
-## Current Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade
+Next steps: plan the next milestone via `/gsd:new-milestone` — typical candidates:
+- `pulumi-2.23.0` (publish the regen'd bridge schema, generate Python + Go SDKs for API 2.23)
+- API 2.24+ when swagger lands
+- Hardening: integrate par5/pa7 acceptance into CI, author HCL fixtures under `examples/acceptance/`
+- Other feature additions
+
+## Last Completed Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade (shipped 2026-05-20)
 
 **Goal:** Aligner le provider sur l'API FlashBlade 2.23, ajouter le support des Workloads et Resiliency Groups, puis livrer la release (validation, docs, tag, merge).
 
@@ -85,7 +91,7 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 
 ### Active
 
-_Active requirements are being defined for milestone v2.23.0 (see `.planning/REQUIREMENTS.md`)._
+_No active milestone — start the next one via `/gsd:new-milestone`._
 
 ### Known Follow-up Defects
 
@@ -147,4 +153,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-20 — Phase 59 complete (24/25 must-haves verified; VALID-04 acceptance live owed by operator, tracked in 59-HUMAN-UAT.md). Phase 60 (release) next.*
+*Last updated: 2026-05-20 — milestone v2.23.0 shipped (tag `v2.23.0`, squash `3fd485d`, GitHub Release published). Archived to `.planning/milestones/v2.23.0-*`.*

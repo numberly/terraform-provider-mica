@@ -267,3 +267,31 @@
 - RELEASE-03 smoke test (`pulumi plugin install`) deferred until first `pulumi-*` tag pushed
 
 **Archives:** [milestones/pulumi-2.22.3-ROADMAP.md](milestones/pulumi-2.22.3-ROADMAP.md) · [pulumi-2.22.3-REQUIREMENTS.md](milestones/pulumi-2.22.3-REQUIREMENTS.md)
+
+### v2.23.0 — FlashBlade API 2.23 Upgrade (completed 2026-05-20)
+
+**Goal:** Align the Mica Terraform provider on FlashBlade® REST API 2.23 — add Workload + Resiliency Group support, propagate the `workload` field to existing policy/file-system resources, regenerate the Pulumi bridge schema, validate against par5 + pa7, ship a signed release.
+
+**Delivered:**
+
+- API version bump 2.22 → 2.23 (provider, client, mock handlers, examples, AI references)
+- New resource `flashblade_workload` (full CRUD + drift + import) + data source
+- New data sources `flashblade_resiliency_group` and `flashblade_resiliency_group_member` (DS-only — API 2.23 does not expose CRUD)
+- Schema v1 migrations adding `workload` computed field to 6 resources: file_system, file_system_export, nfs_export_policy, smb_client_policy, smb_share_policy, qos_policy
+- qos_policy: computed `context` field; upgrader realigned on canonical chain pattern
+- Pulumi bridge regenerated (schema.json + bridge-metadata.json + schema-embed.json) for 4 new tokens + 6 schema deltas; `make tfgen` idempotent
+- api-diff / api-upgrade skills enhancements: per-field variants in modified schemas, codebase scan replacing slug matching, BLOCKING prerequisite detection for new HTTP methods
+- 807 unit tests passing on `test/api-upgrade-2.23` (TEST_BASELINE unchanged)
+- Live acceptance validated on par5 + pa7 (`59-HUMAN-UAT.md` resolved 2026-05-20)
+- Squash-merged via PR #16 (commit `3fd485d`), tag `v2.23.0` on main, GoReleaser + cosign published 10 signed artefacts
+
+**Phases:** 59–60 (10 plans total — 5 retro + finalisation in Phase 59, 5 linear release plans in Phase 60)
+**Last phase number:** 60
+
+**Known gaps (tech debt):**
+- HCL acceptance fixtures under `examples/acceptance/api-2-23/` not authored by GSD planner — acceptance was run from existing operator workflow
+- CI does not yet run acceptance against par5/pa7 — manual operator-driven sign-off
+- Pulumi SDK regen + private release for `pulumi-2.23.0` deferred to a dedicated milestone
+
+**Archives:** [milestones/v2.23.0-ROADMAP.md](milestones/v2.23.0-ROADMAP.md) · [milestones/v2.23.0-REQUIREMENTS.md](milestones/v2.23.0-REQUIREMENTS.md)
+**Release:** https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0

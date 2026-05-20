@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.23.0
-milestone_name: — FlashBlade API 2.23 Upgrade
-status: executing
-last_updated: "2026-05-20T08:59:24.520Z"
+milestone_name: FlashBlade API 2.23 Upgrade
+status: shipped
+last_updated: "2026-05-20T09:30:00.000Z"
 last_activity: 2026-05-20
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 2
   total_plans: 10
-  completed_plans: 8
-  percent: 0
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -20,22 +20,19 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** Phase 60 — v2.23.0 Release
+**Current focus:** No active milestone — `/gsd:new-milestone` for next cycle
 
 ## Current Position
 
-Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade
-Phase: 60 (v2.23.0 Release) — EXECUTING
-Plan: 5 of 5
-Status: Ready to execute
-Last activity: 2026-05-20
+Milestone: v2.23.0 (FlashBlade API 2.23 Upgrade) — **SHIPPED 2026-05-20**
+Status: Archived — no active milestone
+Last activity: 2026-05-20 — milestone archived
 
-Progress: [░░░░░░░░░░] 0% (0/2 phases)
-
-Working branch: `test/api-upgrade-2.23` (~167 fichiers, ~7000 insertions vs main)
+Progress: [██████████] 100% (2/2 phases, 10/10 plans)
 
 ## Recent Milestones
 
+- ✅ **v2.23.0** — FlashBlade API 2.23 Upgrade (shipped 2026-05-20, 807 tests, 33/33 requirements, [release](https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0), [archive](milestones/v2.23.0-ROADMAP.md))
 - ✅ **pulumi-2.22.3** — Pulumi Bridge Alpha (shipped 2026-04-24, 836 TF tests + 23 bridge tests, [archive](milestones/pulumi-2.22.3-ROADMAP.md))
 - ✅ **v2.22.3** — Convention Compliance (shipped 2026-04-20, 779 tests, 12/12 requirements, [archive](milestones/v2.22.3-ROADMAP.md))
 - ✅ **v2.22.2** — Directory Service Roles & Role Mappings (shipped 2026-04-17, 818 tests, [archive](milestones/v2.22.2-ROADMAP.md))
