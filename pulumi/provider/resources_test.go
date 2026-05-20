@@ -12,9 +12,8 @@ import (
 	"github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version"
 )
 
-// Expected counts. Matches TF provider registrations (55 resources, 43 data sources
-// after the API 2.23 upgrade — adds flashblade_workload resource + data source,
-// plus flashblade_resiliency_group and flashblade_resiliency_group_member DSs).
+// Expected counts. Matches TF provider registrations (56 resources, 44 data sources
+// after v2.23.1 — adds flashblade_snmp_manager resource + data source).
 // Update when TF provider resource set changes.
 //
 // Note: schema.json contains DataSources+1 entries under "functions" — the extra
