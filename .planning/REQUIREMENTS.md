@@ -61,7 +61,7 @@ Most of the implementation has already landed on `test/api-upgrade-2.23` (≈ 16
 - [x] **RELEASE-03** — Open PR `test/api-upgrade-2.23` → `main`, pass CI
 - [x] **RELEASE-04** — Merge PR
 - [x] **RELEASE-05** — Tag `v2.23.0` + GoReleaser release artifacts
-- [ ] **RELEASE-06** — Update `TEST_BASELINE` in `GNUmakefile` to the new count
+- [x] **RELEASE-06** — Update `TEST_BASELINE` in `GNUmakefile` to the new count (no-op: actual 807 == current 807, baseline already correct post-merge)
 - [ ] **RELEASE-07** — Archive milestone via `/gsd:complete-milestone`
 
 ## Future Requirements
@@ -114,7 +114,7 @@ Deferred to later milestones:
 | RELEASE-03 | Phase 60 | Complete |
 | RELEASE-04 | Phase 60 | Complete |
 | RELEASE-05 | Phase 60 | Complete |
-| RELEASE-06 | Phase 60 | Pending |
+| RELEASE-06 | Phase 60 | Complete (no-op, baseline already correct) |
 | RELEASE-07 | Phase 60 | Pending |
 
 **Coverage:** 33/33 ✓ (20 retro / Done · 6 Phase 59 active · 1 Phase 60 complete · 6 Phase 60 active)
