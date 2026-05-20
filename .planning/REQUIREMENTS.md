@@ -60,7 +60,7 @@ Most of the implementation has already landed on `test/api-upgrade-2.23` (≈ 16
 - [x] **RELEASE-02** — Rebase `test/api-upgrade-2.23` on `main` (cleanup)
 - [x] **RELEASE-03** — Open PR `test/api-upgrade-2.23` → `main`, pass CI
 - [x] **RELEASE-04** — Merge PR
-- [ ] **RELEASE-05** — Tag `v2.23.0` + GoReleaser release artifacts
+- [x] **RELEASE-05** — Tag `v2.23.0` + GoReleaser release artifacts
 - [ ] **RELEASE-06** — Update `TEST_BASELINE` in `GNUmakefile` to the new count
 - [ ] **RELEASE-07** — Archive milestone via `/gsd:complete-milestone`
 
