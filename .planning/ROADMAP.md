@@ -83,15 +83,20 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
   4. `TEST_BASELINE` in `GNUmakefile` is bumped to the new post-merge test count (covers RELEASE-06)
   5. Milestone v2.23.0 is archived under `.planning/milestones/` via `/gsd:complete-milestone` (covers RELEASE-07)
 
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 60-01-preflight-and-changelog-PLAN.md — Pre-flight gate (VALID-04 resolution) + v2.23.0 CHANGELOG entry
+- [ ] 60-02-rebase-and-pr-PLAN.md — Rebase test/api-upgrade-2.23 on main, push, open PR, wait for CI green
+- [ ] 60-03-merge-PLAN.md — Merge PR into main
+- [ ] 60-04-tag-and-release-PLAN.md — Tag v2.23.0, push, verify GoReleaser publication
+- [ ] 60-05-baseline-and-archive-PLAN.md — Bump TEST_BASELINE + archive milestone via /gsd:complete-milestone
 
 ### Progress Table
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 59. API 2.23 Consolidation & Validation | 4/5 | Complete    | 2026-05-20 |
-| 60. v2.23.0 Release | 0/0 | Not started | - |
+| 60. v2.23.0 Release | 0/5 | Not started | - |
 
 ---
 
-*Last updated: 2026-05-20 — roadmap created for milestone v2.23.0 (Phase 59 + Phase 60).*
+*Last updated: 2026-05-20 — Phase 60 plans authored (5 plans, linear waves 1-5).*
