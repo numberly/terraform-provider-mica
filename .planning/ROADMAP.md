@@ -60,9 +60,9 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
   4. `make tfgen` followed by `git diff --exit-code` is clean — no Pulumi schema / bridge-metadata drift (covers VALID-05)
   5. ROADMAP.md coverage counters and footer reflect API 2.23 deltas and `v2.23.0` as the provider version (covers VALID-06)
 
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 - [ ] 59-01-retro-traceability-PLAN.md — Trace 19 retro REQ-IDs against branch state (RETRO.md)
-- [ ] 59-02-make-checks-PLAN.md — Run make test/lint/docs and capture outputs (CHECKS.md)
+- [x] 59-02-make-checks-PLAN.md — Run make test/lint/docs and capture outputs (CHECKS.md)
 - [ ] 59-03-pulumi-bridge-check-PLAN.md — Run make tfgen, verify clean diff on pulumi/
 - [ ] 59-04-acceptance-live-PLAN.md — Live acceptance against par5 + pa7 (HCL fixtures + ACCEPTANCE.md, human-gated)
 - [ ] 59-05-roadmap-counters-PLAN.md — Refresh root ROADMAP.md counters / version / API version
@@ -89,7 +89,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 59. API 2.23 Consolidation & Validation | 0/5 | Not started | - |
+| 59. API 2.23 Consolidation & Validation | 1/5 | In Progress|  |
 | 60. v2.23.0 Release | 0/0 | Not started | - |
 
 ---
