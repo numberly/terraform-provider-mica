@@ -147,4 +147,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-20 — milestone v2.23.0 started (retro + finalisation for API 2.23 upgrade work already on branch `test/api-upgrade-2.23`).*
+*Last updated: 2026-05-20 — Phase 59 complete (24/25 must-haves verified; VALID-04 acceptance live owed by operator, tracked in 59-HUMAN-UAT.md). Phase 60 (release) next.*
