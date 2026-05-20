@@ -113,7 +113,7 @@ Deferred to later milestones:
 | RELEASE-02 | Phase 60 | Complete |
 | RELEASE-03 | Phase 60 | Complete |
 | RELEASE-04 | Phase 60 | Complete |
-| RELEASE-05 | Phase 60 | Pending |
+| RELEASE-05 | Phase 60 | Complete |
 | RELEASE-06 | Phase 60 | Pending |
 | RELEASE-07 | Phase 60 | Pending |
 
