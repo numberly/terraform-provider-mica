@@ -56,7 +56,7 @@ Most of the implementation has already landed on `test/api-upgrade-2.23` (≈ 16
 
 ### RELEASE — ship v2.23.0 (to be done in Phase 60)
 
-- [ ] **RELEASE-01** — CHANGELOG entry for `v2.23.0` (added resources, schema migrations, bridge regen)
+- [x] **RELEASE-01** — CHANGELOG entry for `v2.23.0` (added resources, schema migrations, bridge regen)
 - [ ] **RELEASE-02** — Rebase `test/api-upgrade-2.23` on `main` (cleanup)
 - [ ] **RELEASE-03** — Open PR `test/api-upgrade-2.23` → `main`, pass CI
 - [ ] **RELEASE-04** — Merge PR
@@ -109,7 +109,7 @@ Deferred to later milestones:
 | VALID-04 | Phase 59 | Done (resolved 2026-05-20) |
 | VALID-05 | Phase 59 | Complete |
 | VALID-06 | Phase 59 | Complete |
-| RELEASE-01 | Phase 60 | Pending |
+| RELEASE-01 | Phase 60 | Complete |
 | RELEASE-02 | Phase 60 | Pending |
 | RELEASE-03 | Phase 60 | Pending |
 | RELEASE-04 | Phase 60 | Pending |
@@ -117,4 +117,4 @@ Deferred to later milestones:
 | RELEASE-06 | Phase 60 | Pending |
 | RELEASE-07 | Phase 60 | Pending |
 
-**Coverage:** 33/33 ✓ (20 retro / Done · 6 Phase 59 active · 7 Phase 60 active)
+**Coverage:** 33/33 ✓ (20 retro / Done · 6 Phase 59 active · 1 Phase 60 complete · 6 Phase 60 active)
