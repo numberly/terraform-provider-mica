@@ -17,10 +17,76 @@
 - ✅ **v2.22.2** — DS Roles & Role Mappings (shipped 2026-04-17)
 - ✅ **v2.22.3** — Convention Compliance (shipped 2026-04-20)
 - ✅ **pulumi-2.22.3** — Pulumi Bridge Alpha (shipped 2026-04-24)
-- 📋 **Next milestone** — TBD
+- 🚧 **v2.23.0** — FlashBlade API 2.23 Upgrade (in progress)
 
 See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` for per-milestone roadmap + requirements archives.
 
-## Current State
+---
 
-No active milestone. Run `/gsd:new-milestone` to start the next one.
+## Active Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade
+
+**Working branch:** `test/api-upgrade-2.23`
+**Granularity:** coarse
+**Total requirements:** 33 (19 retro / already implemented + 14 active)
+**Coverage:** 33/33 ✓
+
+### Phases
+
+- [ ] **Phase 59: API 2.23 Consolidation & Validation** — Retro-document the API 2.23 work already on branch, then validate the whole upgrade clean (test/lint/docs/acceptance/bridge).
+- [ ] **Phase 60: v2.23.0 Release** — Rebase, merge, tag, publish artefacts, archive milestone.
+
+### Phase Details
+
+#### Phase 59: API 2.23 Consolidation & Validation
+
+**Goal**: API 2.23 upgrade (version bump, workload + resiliency resources, schema v1 migrations, Pulumi bridge regen) is fully documented, traceable, and validated end-to-end against real arrays — provider is release-ready on `test/api-upgrade-2.23`.
+
+**Depends on**: Nothing (branch already carries the implementation)
+
+**Requirements** (retro / already implemented — 19):
+- API-01, API-02, API-03
+- WORKLOAD-01, WORKLOAD-02, WORKLOAD-03
+- RESILIENCY-01, RESILIENCY-02, RESILIENCY-03
+- SCHEMA-01, SCHEMA-02, SCHEMA-03, SCHEMA-04, SCHEMA-05, SCHEMA-06, SCHEMA-07, SCHEMA-08
+- BRIDGE-01, BRIDGE-02, BRIDGE-03
+
+**Requirements** (active work — 6):
+- VALID-01, VALID-02, VALID-03, VALID-04, VALID-05, VALID-06
+
+**Success Criteria** (what must be TRUE):
+  1. `make test` passes on `test/api-upgrade-2.23` with count ≥ updated `TEST_BASELINE` (covers VALID-01)
+  2. `make lint` returns 0 issues and `make docs` regenerates without manual edits (covers VALID-02, VALID-03)
+  3. Acceptance tests run live against par5 + pa7 on the new resources (workload, resiliency_group, resiliency_group_member) and all 6 migrated schemas, with no drift on re-apply (covers VALID-04)
+  4. `make tfgen` followed by `git diff --exit-code` is clean — no Pulumi schema / bridge-metadata drift (covers VALID-05)
+  5. ROADMAP.md coverage counters and footer reflect API 2.23 deltas and `v2.23.0` as the provider version (covers VALID-06)
+
+**Plans**: TBD
+
+#### Phase 60: v2.23.0 Release
+
+**Goal**: `v2.23.0` is shipped — branch merged to `main`, tagged, GoReleaser artefacts published, baseline bumped, milestone archived.
+
+**Depends on**: Phase 59
+
+**Requirements** (active work — 7):
+- RELEASE-01, RELEASE-02, RELEASE-03, RELEASE-04, RELEASE-05, RELEASE-06, RELEASE-07
+
+**Success Criteria** (what must be TRUE):
+  1. CHANGELOG.md has a `v2.23.0` entry covering new resources, schema migrations, and Pulumi bridge regen (covers RELEASE-01)
+  2. `test/api-upgrade-2.23` is rebased on `main`, PR opens green, and is merged (covers RELEASE-02, RELEASE-03, RELEASE-04)
+  3. Tag `v2.23.0` exists on `main` and GoReleaser has published signed release artefacts (covers RELEASE-05)
+  4. `TEST_BASELINE` in `GNUmakefile` is bumped to the new post-merge test count (covers RELEASE-06)
+  5. Milestone v2.23.0 is archived under `.planning/milestones/` via `/gsd:complete-milestone` (covers RELEASE-07)
+
+**Plans**: TBD
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 59. API 2.23 Consolidation & Validation | 0/0 | Not started | - |
+| 60. v2.23.0 Release | 0/0 | Not started | - |
+
+---
+
+*Last updated: 2026-05-20 — roadmap created for milestone v2.23.0 (Phase 59 + Phase 60).*

@@ -81,4 +81,40 @@ Deferred to later milestones:
 
 ## Traceability
 
-_Filled by gsd-roadmapper after roadmap creation._
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| API-01 | Phase 59 | Done (retro) |
+| API-02 | Phase 59 | Done (retro) |
+| API-03 | Phase 59 | Done (retro) |
+| WORKLOAD-01 | Phase 59 | Done (retro) |
+| WORKLOAD-02 | Phase 59 | Done (retro) |
+| WORKLOAD-03 | Phase 59 | Done (retro) |
+| RESILIENCY-01 | Phase 59 | Done (retro) |
+| RESILIENCY-02 | Phase 59 | Done (retro) |
+| RESILIENCY-03 | Phase 59 | Done (retro) |
+| SCHEMA-01 | Phase 59 | Done (retro) |
+| SCHEMA-02 | Phase 59 | Done (retro) |
+| SCHEMA-03 | Phase 59 | Done (retro) |
+| SCHEMA-04 | Phase 59 | Done (retro) |
+| SCHEMA-05 | Phase 59 | Done (retro) |
+| SCHEMA-06 | Phase 59 | Done (retro) |
+| SCHEMA-07 | Phase 59 | Done (retro) |
+| SCHEMA-08 | Phase 59 | Done (retro) |
+| BRIDGE-01 | Phase 59 | Done (retro) |
+| BRIDGE-02 | Phase 59 | Done (retro) |
+| BRIDGE-03 | Phase 59 | Done (retro) |
+| VALID-01 | Phase 59 | Pending |
+| VALID-02 | Phase 59 | Pending |
+| VALID-03 | Phase 59 | Pending |
+| VALID-04 | Phase 59 | Pending |
+| VALID-05 | Phase 59 | Pending |
+| VALID-06 | Phase 59 | Pending |
+| RELEASE-01 | Phase 60 | Pending |
+| RELEASE-02 | Phase 60 | Pending |
+| RELEASE-03 | Phase 60 | Pending |
+| RELEASE-04 | Phase 60 | Pending |
+| RELEASE-05 | Phase 60 | Pending |
+| RELEASE-06 | Phase 60 | Pending |
+| RELEASE-07 | Phase 60 | Pending |
+
+**Coverage:** 33/33 ✓ (20 retro / Done · 6 Phase 59 active · 7 Phase 60 active)
