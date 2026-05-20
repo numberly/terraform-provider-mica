@@ -57,8 +57,8 @@ Most of the implementation has already landed on `test/api-upgrade-2.23` (≈ 16
 ### RELEASE — ship v2.23.0 (to be done in Phase 60)
 
 - [x] **RELEASE-01** — CHANGELOG entry for `v2.23.0` (added resources, schema migrations, bridge regen)
-- [ ] **RELEASE-02** — Rebase `test/api-upgrade-2.23` on `main` (cleanup)
-- [ ] **RELEASE-03** — Open PR `test/api-upgrade-2.23` → `main`, pass CI
+- [x] **RELEASE-02** — Rebase `test/api-upgrade-2.23` on `main` (cleanup)
+- [x] **RELEASE-03** — Open PR `test/api-upgrade-2.23` → `main`, pass CI
 - [ ] **RELEASE-04** — Merge PR
 - [ ] **RELEASE-05** — Tag `v2.23.0` + GoReleaser release artifacts
 - [ ] **RELEASE-06** — Update `TEST_BASELINE` in `GNUmakefile` to the new count
@@ -110,8 +110,8 @@ Deferred to later milestones:
 | VALID-05 | Phase 59 | Complete |
 | VALID-06 | Phase 59 | Complete |
 | RELEASE-01 | Phase 60 | Complete |
-| RELEASE-02 | Phase 60 | Pending |
-| RELEASE-03 | Phase 60 | Pending |
+| RELEASE-02 | Phase 60 | Complete |
+| RELEASE-03 | Phase 60 | Complete |
 | RELEASE-04 | Phase 60 | Pending |
 | RELEASE-05 | Phase 60 | Pending |
 | RELEASE-06 | Phase 60 | Pending |
