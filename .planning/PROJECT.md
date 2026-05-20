@@ -3,17 +3,33 @@
 ## Current State
 
 **Latest shipped:** v2.23.0 (FlashBlade API 2.23 Upgrade) — 2026-05-20
-**Active milestone:** None — awaiting next milestone planning
+**Active milestone:** v2.23.1 — `flashblade_snmp_manager` resource & data source
 
 **Shipped to date:** 16 milestones, 60 phases
 **TF Provider:** v2.23.0 (55 resources + 43 data sources, 807 tests, [GitHub Release](https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0))
 **Pulumi Bridge:** pulumi-2.22.3 alpha (private distribution via GitHub Releases, Python + Go SDKs) — bridge schema regen'd for API 2.23 but no new Pulumi release yet
 
-Next steps: plan the next milestone via `/gsd:new-milestone` — typical candidates:
-- `pulumi-2.23.0` (publish the regen'd bridge schema, generate Python + Go SDKs for API 2.23)
-- API 2.24+ when swagger lands
-- Hardening: integrate par5/pa7 acceptance into CI, author HCL fixtures under `examples/acceptance/`
-- Other feature additions
+## Current Milestone: v2.23.1 `flashblade_snmp_manager`
+
+**Goal:** Add a `flashblade_snmp_manager` Terraform resource + data source for `/api/2.23/snmp-managers` (full CRUD), driven by the `flashblade-resource-builder` skill and zero deviation from `CONVENTIONS.md`.
+
+**Target features:**
+- `flashblade_snmp_manager` resource — full CRUD (Create/Read/Update/Delete) against `/api/2.23/snmp-managers`
+- `flashblade_snmp_manager` data source — lookup by `name`
+- Nested config for SNMP `v2c` (community) and `v3` (user, auth_protocol/auth_passphrase, privacy_protocol/privacy_passphrase) with enum validators
+- Sensitive write-once handling on `community`, `auth_passphrase`, `privacy_passphrase` (API never returns them on GET)
+- Mock handler with Seed + empty-list GET=200, ≥9 new tests prefixed `TestUnit_`
+- ImportState by `name` (never by UUID)
+- HCL examples + `make docs` regenerated
+- Repo-level `ROADMAP.md` row moved from *Medium Priority — Not Implemented* to *Array Administration / Implemented* in the same commit as the implementation
+
+**Key context:**
+- Branch: `implem-snmp-managers` (from clean `main`)
+- API source: `api_references/2.23.md` + `swagger-2.23.json` (`SnmpManager`, `SnmpManagerPost`, `_snmp_v2c`, `_snmp_v3`, `_snmp_v3_post`)
+- Pre-check (Serena `find_symbol`): no existing `Snmp*` / `snmp_manager` collision
+- Domain home: `internal/client/models_admin.go` (alongside `SmtpServer`, `SyslogServer`, `AlertWatcher`)
+- `TEST_BASELINE` (GNUmakefile) = 807 → expected ≥ 816 post-implementation (do **not** bump baseline in this milestone — reserved for release milestones)
+- Out of scope: `GET /snmp-managers/test` (resource-action pattern, deferred), Pulumi bridge regen (separate `pulumi-2.23.x` milestone)
 
 ## Last Completed Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade (shipped 2026-05-20)
 
@@ -91,7 +107,7 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 
 ### Active
 
-_No active milestone — start the next one via `/gsd:new-milestone`._
+- **v2.23.1** — `flashblade_snmp_manager` resource + data source (SNMP-01..13, see `.planning/REQUIREMENTS.md`)
 
 ### Known Follow-up Defects
 
@@ -153,4 +169,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-20 — milestone v2.23.0 shipped (tag `v2.23.0`, squash `3fd485d`, GitHub Release published). Archived to `.planning/milestones/v2.23.0-*`.*
+*Last updated: 2026-05-20 — milestone v2.23.1 started (`flashblade_snmp_manager` resource + data source, branch `implem-snmp-managers`).*

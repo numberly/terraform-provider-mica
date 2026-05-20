@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.23.0
-milestone_name: FlashBlade API 2.23 Upgrade
-status: shipped
-last_updated: "2026-05-20T09:30:00.000Z"
+milestone: v2.23.1
+milestone_name: flashblade_snmp_manager
+status: planning
+last_updated: "2026-05-20T10:00:00.000Z"
 last_activity: 2026-05-20
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -20,53 +20,53 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** No active milestone — `/gsd:new-milestone` for next cycle
+**Current focus:** v2.23.1 — `flashblade_snmp_manager` resource & data source (full CRUD on `/api/2.23/snmp-managers`)
 
 ## Current Position
 
-Milestone: v2.23.0 (FlashBlade API 2.23 Upgrade) — **SHIPPED 2026-05-20**
-Status: Archived — no active milestone
-Last activity: 2026-05-20 — milestone archived
+Milestone: v2.23.1 (`flashblade_snmp_manager`) — **PLANNING**
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-20 — Milestone v2.23.1 started
 
-Progress: [██████████] 100% (2/2 phases, 10/10 plans)
+Progress: [          ] 0% (0/1 phases, 0/0 plans)
 
 ## Recent Milestones
 
+- 🚧 **v2.23.1** — `flashblade_snmp_manager` (in planning, started 2026-05-20)
 - ✅ **v2.23.0** — FlashBlade API 2.23 Upgrade (shipped 2026-05-20, 807 tests, 33/33 requirements, [release](https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0), [archive](milestones/v2.23.0-ROADMAP.md))
 - ✅ **pulumi-2.22.3** — Pulumi Bridge Alpha (shipped 2026-04-24, 836 TF tests + 23 bridge tests, [archive](milestones/pulumi-2.22.3-ROADMAP.md))
 - ✅ **v2.22.3** — Convention Compliance (shipped 2026-04-20, 779 tests, 12/12 requirements, [archive](milestones/v2.22.3-ROADMAP.md))
 - ✅ **v2.22.2** — Directory Service Roles & Role Mappings (shipped 2026-04-17, 818 tests, [archive](milestones/v2.22.2-ROADMAP.md))
-- ✅ **v2.22.1** — Directory Service – Array Management (shipped 2026-04-17, 798 tests, [archive](milestones/v2.22.1-ROADMAP.md))
 
 ## Performance Metrics
 
-- **Provider tests:** 836 (baseline at last shipped milestone pulumi-2.22.3)
-- **TEST_BASELINE (GNUmakefile):** 807 — to refresh once API 2.23 work lands on main (RELEASE-06)
+- **Provider tests:** 807 (TEST_BASELINE at last shipped milestone v2.23.0)
+- **TEST_BASELINE (GNUmakefile):** 807 — must NOT be bumped in this milestone; expected ≥ 816 after Phase 61 lands.
 - **Lint:** 0 issues at last release
-- **Resources / Data sources:** 54 / 40 pre-API-2.23. Expected delta on merge: +1 resource (workload), +3 data sources (workload, resiliency_group, resiliency_group_member)
+- **Resources / Data sources:** 55 / 43 — expected delta on merge: **+1 resource**, **+1 data source** (`flashblade_snmp_manager`)
 
 ## Accumulated Context
 
-### Key Decisions (v2.23.0)
+### Key Decisions (v2.23.1)
 
-- Retro milestone: 19/33 requirements already implemented on branch `test/api-upgrade-2.23`. They are mapped to Phase 59 for traceability only, not re-execution.
-- 14 requirements are active work: VALID-01..06 (Phase 59), RELEASE-01..07 (Phase 60).
-- Tight 2-phase split (coarse granularity): consolidation+validation, then release.
-- Acceptance validation on par5 + pa7 is mandatory before merge (VALID-04).
-- Pulumi SDK regen / publish (`pulumi-2.23.0`) is OUT of scope — separate milestone.
+- Resource scope = pure CRUD on `/snmp-managers`. The connectivity test endpoint `GET /snmp-managers/test` is OUT of scope (resource-action pattern, future milestone alongside `/dns/test`, `/smtp/test`, etc.).
+- Branch from clean `main`: `implem-snmp-managers`.
+- Domain placement: `internal/client/models_admin.go` (with `SmtpServer`, `SyslogServer`, `AlertWatcher`). Confirmed via `mcp__serena__get_symbols_overview`.
+- Pre-check (Serena `find_symbol` on `SnmpManager` / `Snmp*` / `snmp_manager`): no existing code, greenfield implementation.
+- Sensitive write-once fields: `v2c.community`, `v3.auth_passphrase`, `v3.privacy_passphrase` — never returned by API GET → keep state value, never overwrite in Read; null in ImportState.
+- Validators choose the **stricter POST-time constraints** from `_snmp_v3_post` (privacy_passphrase 8-63, auth_passphrase ≤ 32) for safer UX.
+- No cross-field validator on `version` vs. `v2c`/`v3` — let API validate (alignment with provider conventions).
+- `TEST_BASELINE` (GNUmakefile) must NOT be bumped in v2.23.1 — reserved for release milestones.
 
-### Key Decisions (pulumi-2.22.3, kept for context)
+### Key Decisions (carried from v2.23.0, for context)
 
-- Module path: `github.com/numberly/opentofu-provider-flashblade`. Bridge modules under `./pulumi/provider/` and `./pulumi/sdk/go/` with `replace ../../`.
-- Bridge: `pulumi-terraform-bridge/v3 v3.127.0`, `pulumi/sdk/v3 v3.231.0`, `pulumi/pkg/v3 v3.231.0`.
-- Schema commit policy: `schema.json` + `bridge-metadata.json` committed; CI gate via `git diff --exit-code` after `make tfgen` — directly relevant to VALID-05.
-- Composite IDs use `/` separator with string keys.
-- Tokens via SingleModule (`flashblade:index/*`).
+- Pulumi SDK regen / publish is owned by a separate `pulumi-2.23.x` milestone (out of scope here too).
 
 ### Open Todos
 
-- Plan Phase 59 via `/gsd:plan-phase 59`.
-- At Phase 60 release time: bump `TEST_BASELINE` in `GNUmakefile` (RELEASE-06).
+- Plan Phase 61 via `/gsd:plan-phase 61`.
 
 ### Open Blockers
 
@@ -74,9 +74,9 @@ _(none)_
 
 ## Next Steps
 
-Run `/gsd:plan-phase 59` to decompose Phase 59 into executable plans (consolidation + validation work covering VALID-01..06, plus retro traceability for the 19 already-shipped API/WORKLOAD/RESILIENCY/SCHEMA/BRIDGE requirements).
+Run `/gsd:plan-phase 61` (or `/gsd:discuss-phase 61` first) to decompose Phase 61 into executable plans following the *New Resource* 16-item checklist from `CONVENTIONS.md`. Implementation must be driven by the `flashblade-resource-builder` skill.
 
 ## Session Log
 
-- 2026-05-20 — Milestone v2.23.0 created (retro + finalisation for API 2.23 upgrade on branch `test/api-upgrade-2.23`).
-- 2026-05-20 — Roadmap created: Phase 59 (API 2.23 Consolidation & Validation), Phase 60 (v2.23.0 Release). 33/33 requirements mapped.
+- 2026-05-20 — Milestone v2.23.1 created (`flashblade_snmp_manager` CRUD, branch `implem-snmp-managers`). Pre-check Serena: no collision. API schemas validated via `swagger-to-reference` + raw `swagger-2.23.json`.
+- 2026-05-20 — Roadmap created: Phase 61 (Implement `flashblade_snmp_manager` Resource & Data Source). 13/13 requirements mapped.
