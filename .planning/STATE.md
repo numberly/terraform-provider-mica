@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Milestone: v2.23.1 (`flashblade_snmp_manager`) — **PLANNING**
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-05-20 — Milestone v2.23.1 started
+Phase: 61 — `flashblade_snmp_manager` Resource & Data Source (context gathered)
+Plan: pending (`/gsd:plan-phase 61`)
+Status: Context gathered, ready to plan
+Last activity: 2026-05-20 — Phase 61 context captured (20 decisions D-01..D-20)
 
 Progress: [          ] 0% (0/1 phases, 0/0 plans)
 
@@ -80,3 +80,4 @@ Run `/gsd:plan-phase 61` (or `/gsd:discuss-phase 61` first) to decompose Phase 6
 
 - 2026-05-20 — Milestone v2.23.1 created (`flashblade_snmp_manager` CRUD, branch `implem-snmp-managers`). Pre-check Serena: no collision. API schemas validated via `swagger-to-reference` + raw `swagger-2.23.json`.
 - 2026-05-20 — Roadmap created: Phase 61 (Implement `flashblade_snmp_manager` Resource & Data Source). 13/13 requirements mapped.
+- 2026-05-20 — Phase 61 context gathered. 20 decisions locked (D-01..D-20) in `phases/61-flashblade-snmp-manager/61-CONTEXT.md`. Next: `/gsd:plan-phase 61`.
