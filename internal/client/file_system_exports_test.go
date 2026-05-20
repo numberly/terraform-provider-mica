@@ -25,7 +25,7 @@ func TestUnit_FileSystemExport_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-system-exports":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-system-exports":
 			name := r.URL.Query().Get("names")
 			if name != "my-fs/my-export" {
 				writeJSON(w, http.StatusOK, listResponse([]client.FileSystemExport{}))
@@ -63,7 +63,7 @@ func TestUnit_FileSystemExport_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/file-system-exports":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/file-system-exports":
 			writeJSON(w, http.StatusOK, listResponse([]client.FileSystemExport{}))
 		default:
 			http.NotFound(w, r)
@@ -87,7 +87,7 @@ func TestUnit_FileSystemExport_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/file-system-exports":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/file-system-exports":
 			// POST uses ?member_names= and ?policy_names=
 			memberName := r.URL.Query().Get("member_names")
 			policyName := r.URL.Query().Get("policy_names")
@@ -140,7 +140,7 @@ func TestUnit_FileSystemExport_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/file-system-exports":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/file-system-exports":
 			// PATCH uses ?ids=
 			id := r.URL.Query().Get("ids")
 			if id != "fse-id-003" {
@@ -190,7 +190,7 @@ func TestUnit_FileSystemExport_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/file-system-exports":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/file-system-exports":
 			// DELETE uses ?member_names= and ?names=
 			memberName := r.URL.Query().Get("member_names")
 			exportName := r.URL.Query().Get("names")

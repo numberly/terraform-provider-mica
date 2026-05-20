@@ -27,7 +27,7 @@ func TestUnit_AuditObjectStorePolicy_Get_Found(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/audit-object-store-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/audit-object-store-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-audit-policy" {
 				writeJSON(w, http.StatusOK, listResponse([]client.AuditObjectStorePolicy{}))
@@ -68,7 +68,7 @@ func TestUnit_AuditObjectStorePolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/audit-object-store-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/audit-object-store-policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.AuditObjectStorePolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -92,7 +92,7 @@ func TestUnit_AuditObjectStorePolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/audit-object-store-policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/audit-object-store-policies":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -150,7 +150,7 @@ func TestUnit_AuditObjectStorePolicy_Patch_Enabled(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/audit-object-store-policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/audit-object-store-policies":
 			name := r.URL.Query().Get("names")
 			if name != "existing-policy" {
 				http.Error(w, "not found", http.StatusNotFound)
@@ -202,7 +202,7 @@ func TestUnit_AuditObjectStorePolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/audit-object-store-policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/audit-object-store-policies":
 			name := r.URL.Query().Get("names")
 			if name != "delete-policy" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)

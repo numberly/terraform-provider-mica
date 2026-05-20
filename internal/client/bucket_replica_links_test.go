@@ -26,7 +26,7 @@ func TestUnit_BucketReplicaLink_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/bucket-replica-links":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/bucket-replica-links":
 			localBucket := r.URL.Query().Get("local_bucket_names")
 			remoteBucket := r.URL.Query().Get("remote_bucket_names")
 			if localBucket != "local-bucket" || remoteBucket != "remote-bucket" {
@@ -59,7 +59,7 @@ func TestUnit_BucketReplicaLink_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/bucket-replica-links":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/bucket-replica-links":
 			writeJSON(w, http.StatusOK, listResponse([]client.BucketReplicaLink{}))
 		default:
 			http.NotFound(w, r)
@@ -83,7 +83,7 @@ func TestUnit_BucketReplicaLink_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/bucket-replica-links":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/bucket-replica-links":
 			localBucket := r.URL.Query().Get("local_bucket_names")
 			remoteBucket := r.URL.Query().Get("remote_bucket_names")
 			remoteCreds := r.URL.Query().Get("remote_credentials_names")
@@ -141,7 +141,7 @@ func TestUnit_BucketReplicaLink_Post_NoCredentials(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/bucket-replica-links":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/bucket-replica-links":
 			remoteCreds := r.URL.Query().Get("remote_credentials_names")
 			if remoteCreds != "" {
 				http.Error(w, "unexpected remote_credentials_names", http.StatusBadRequest)
@@ -183,7 +183,7 @@ func TestUnit_BucketReplicaLink_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/bucket-replica-links":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/bucket-replica-links":
 			id := r.URL.Query().Get("ids")
 			if id != "brl-id-001" {
 				http.Error(w, "unexpected ids param", http.StatusBadRequest)
@@ -229,7 +229,7 @@ func TestUnit_BucketReplicaLink_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/bucket-replica-links":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/bucket-replica-links":
 			// DELETE uses ?ids= not ?names=
 			id := r.URL.Query().Get("ids")
 			if id != "brl-id-001" {

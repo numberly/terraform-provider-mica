@@ -24,7 +24,7 @@ func TestUnit_SyslogServer_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/syslog-servers":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/syslog-servers":
 			name := r.URL.Query().Get("names")
 			if name != "syslog-1" {
 				writeJSON(w, http.StatusOK, listResponse([]client.SyslogServer{}))
@@ -59,7 +59,7 @@ func TestUnit_SyslogServer_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/syslog-servers":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/syslog-servers":
 			writeJSON(w, http.StatusOK, listResponse([]client.SyslogServer{}))
 		default:
 			http.NotFound(w, r)
@@ -83,7 +83,7 @@ func TestUnit_SyslogServer_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/syslog-servers":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/syslog-servers":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -137,7 +137,7 @@ func TestUnit_SyslogServer_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/syslog-servers":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/syslog-servers":
 			name := r.URL.Query().Get("names")
 			if name != "existing-syslog" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -185,7 +185,7 @@ func TestUnit_SyslogServer_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/syslog-servers":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/syslog-servers":
 			name := r.URL.Query().Get("names")
 			if name != "delete-syslog" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -219,7 +219,7 @@ func TestUnit_SyslogServer_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/syslog-servers":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/syslog-servers":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            servers,
 				"total_item_count": 2,

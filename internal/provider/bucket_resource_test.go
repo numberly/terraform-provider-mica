@@ -750,7 +750,7 @@ func TestUnit_Unit_Bucket_Create_Conflict(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
 	// Register a mock that always returns 409 on POST /buckets.
-	ms.RegisterHandler("/api/2.22/buckets", func(w http.ResponseWriter, r *http.Request) {
+	ms.RegisterHandler("/api/2.23/buckets", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			handlers.WriteJSONError(w, http.StatusConflict, "Bucket with the given name already exists.")
 			return
@@ -794,7 +794,7 @@ func TestUnit_Unit_Bucket_Read_NotFound(t *testing.T) {
 	defer ms.Close()
 	// Register a GET handler that always returns 404-equivalent: empty items list.
 	// FlashBlade returns HTTP 200 + empty items for not-found resources.
-	ms.RegisterHandler("/api/2.22/buckets", func(w http.ResponseWriter, r *http.Request) {
+	ms.RegisterHandler("/api/2.23/buckets", func(w http.ResponseWriter, r *http.Request) {
 		handlers.WriteJSONListResponse(w, http.StatusOK, []client.Bucket{})
 	})
 

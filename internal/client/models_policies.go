@@ -4,13 +4,14 @@ import "encoding/json"
 
 // NfsExportPolicy represents a FlashBlade NFS export policy from GET responses.
 type NfsExportPolicy struct {
-	ID         string                      `json:"id,omitempty"`
-	Name       string                      `json:"name"`
-	Enabled    bool                        `json:"enabled"`
-	IsLocal    bool                        `json:"is_local,omitempty"`
-	PolicyType string                      `json:"policy_type,omitempty"`
-	Version    string                      `json:"version,omitempty"`
+	ID         string                       `json:"id,omitempty"`
+	Name       string                       `json:"name"`
+	Enabled    bool                         `json:"enabled"`
+	IsLocal    bool                         `json:"is_local,omitempty"`
+	PolicyType string                       `json:"policy_type,omitempty"`
+	Version    string                       `json:"version,omitempty"`
 	Rules      []NfsExportPolicyRuleInPolicy `json:"rules,omitempty"`
+	Workload   *NamedReference              `json:"workload,omitempty"`
 }
 
 // NfsExportPolicyPost contains the fields accepted on POST /nfs-export-policies.
@@ -100,6 +101,7 @@ type SmbSharePolicy struct {
 	IsLocal    bool                        `json:"is_local,omitempty"`
 	PolicyType string                      `json:"policy_type,omitempty"`
 	Rules      []SmbSharePolicyRuleInPolicy `json:"rules,omitempty"`
+	Workload   *NamedReference             `json:"workload,omitempty"`
 }
 
 // SmbSharePolicyPost contains the fields accepted on POST /smb-share-policies.
@@ -159,6 +161,7 @@ type SmbClientPolicy struct {
 	Version                      string                        `json:"version,omitempty"`
 	AccessBasedEnumerationEnabled bool                         `json:"access_based_enumeration_enabled,omitempty"`
 	Rules                        []SmbClientPolicyRuleInPolicy `json:"rules,omitempty"`
+	Workload                     *NamedReference               `json:"workload,omitempty"`
 }
 
 // SmbClientPolicyPost contains the fields accepted on POST /smb-client-policies.

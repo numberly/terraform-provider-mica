@@ -10,6 +10,8 @@ pulumi-tfgen-flashblade
 pulumi/examples/*-go/*-go
 swagger-*.json
 .gstack/
+headroom_memory.db
+docs-presentation/
 
 # Build artifacts
 /terraform-provider-mica

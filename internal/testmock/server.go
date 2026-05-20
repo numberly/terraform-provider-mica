@@ -55,11 +55,11 @@ func (ms *MockServer) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleAPIVersion handles GET /api/api_version by returning a versions list
-// that includes the target API version "2.22".
+// that includes the target API version "2.23".
 func (ms *MockServer) handleAPIVersion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"versions": []string{"2.12", "2.15", "2.22"},
+		"versions": []string{"2.12", "2.15", "2.23"},
 	})
 }

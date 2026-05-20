@@ -24,7 +24,7 @@ func TestUnit_ObjectStoreAccountExport_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-account-exports":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-account-exports":
 			name := r.URL.Query().Get("names")
 			if name != "test-account/_array_server" {
 				writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccountExport{}))
@@ -59,7 +59,7 @@ func TestUnit_ObjectStoreAccountExport_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-account-exports":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-account-exports":
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccountExport{}))
 		default:
 			http.NotFound(w, r)
@@ -83,7 +83,7 @@ func TestUnit_ObjectStoreAccountExport_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-account-exports":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-account-exports":
 			// POST uses ?member_names= and ?policy_names=
 			memberName := r.URL.Query().Get("member_names")
 			policyName := r.URL.Query().Get("policy_names")
@@ -135,7 +135,7 @@ func TestUnit_ObjectStoreAccountExport_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-account-exports":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/object-store-account-exports":
 			// PATCH uses ?ids=
 			id := r.URL.Query().Get("ids")
 			if id != "osa-export-id-003" {
@@ -184,7 +184,7 @@ func TestUnit_ObjectStoreAccountExport_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/object-store-account-exports":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/object-store-account-exports":
 			// DELETE uses ?member_names= and ?names=
 			memberName := r.URL.Query().Get("member_names")
 			exportName := r.URL.Query().Get("names")

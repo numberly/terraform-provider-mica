@@ -386,7 +386,7 @@ func TestUnit_ObjectStoreAccessPolicyDataSource(t *testing.T) {
 func TestUnit_Unit_OAP_Create_Conflict(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
-	ms.RegisterHandler("/api/2.22/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
+	ms.RegisterHandler("/api/2.23/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			handlers.WriteJSONError(w, http.StatusConflict, "Policy with the given name already exists.")
 			return
@@ -414,7 +414,7 @@ func TestUnit_Unit_OAP_Create_Conflict(t *testing.T) {
 func TestUnit_Unit_OAP_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
-	ms.RegisterHandler("/api/2.22/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
+	ms.RegisterHandler("/api/2.23/object-store-access-policies", func(w http.ResponseWriter, r *http.Request) {
 		handlers.WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccessPolicy{})
 	})
 

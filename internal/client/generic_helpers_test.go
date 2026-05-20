@@ -11,7 +11,7 @@ import (
 )
 
 // newGenericHelperServer creates a test server with /api/login + configurable
-// /api/2.22/test-resource endpoint for testing postOne/patchOne via PostTarget/PatchTarget.
+// /api/2.23/test-resource endpoint for testing postOne/patchOne via PostTarget/PatchTarget.
 func newGenericHelperServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
 	t.Helper()
 	mux := http.NewServeMux()
@@ -19,7 +19,7 @@ func newGenericHelperServer(t *testing.T, handler http.HandlerFunc) *httptest.Se
 		w.Header().Set("x-auth-token", "tok")
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.HandleFunc("/api/2.22/targets", handler)
+	mux.HandleFunc("/api/2.23/targets", handler)
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 	return srv

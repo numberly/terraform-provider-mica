@@ -229,7 +229,7 @@ Create `internal/provider/<resource>_data_source.go`:
 Before considering ANY resource complete:
 
 ```bash
-make test    # All tests pass, count >= baseline (722+)
+make test    # All tests pass, count >= TEST_BASELINE in GNUmakefile (delta +9 minimum for a new resource)
 make lint    # 0 issues
 make docs    # Regenerate
 ```

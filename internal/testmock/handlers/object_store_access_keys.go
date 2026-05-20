@@ -19,7 +19,7 @@ type accessKeyStore struct {
 	accounts *objectStoreAccountStore
 }
 
-// RegisterObjectStoreAccessKeyHandlers registers CRUD handlers for /api/2.22/object-store-access-keys
+// RegisterObjectStoreAccessKeyHandlers registers CRUD handlers for /api/2.23/object-store-access-keys
 // against the provided ServeMux. The accounts store is used to validate user account existence.
 // The store pointer is returned for cross-reference if needed.
 func RegisterObjectStoreAccessKeyHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *accessKeyStore {
@@ -27,7 +27,7 @@ func RegisterObjectStoreAccessKeyHandlers(mux *http.ServeMux, accounts *objectSt
 		byName:   make(map[string]*client.ObjectStoreAccessKey),
 		accounts: accounts,
 	}
-	mux.HandleFunc("/api/2.22/object-store-access-keys", store.handle)
+	mux.HandleFunc("/api/2.23/object-store-access-keys", store.handle)
 	return store
 }
 
@@ -44,7 +44,7 @@ func (s *accessKeyStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.22/object-store-access-keys with optional ?names= param.
+// handleGet handles GET /api/2.23/object-store-access-keys with optional ?names= param.
 // IMPORTANT: secret_access_key is NOT returned in GET responses — it is set to empty string.
 func (s *accessKeyStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
@@ -77,7 +77,7 @@ func (s *accessKeyStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/object-store-access-keys.
+// handlePost handles POST /api/2.23/object-store-access-keys.
 // Body must contain {user: {name: "<account>/admin"}}.
 // Response includes secret_access_key — it will never be returned again on subsequent GETs.
 func (s *accessKeyStore) handlePost(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +139,7 @@ func (s *accessKeyStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccessKey{*key})
 }
 
-// handleDelete handles DELETE /api/2.22/object-store-access-keys?names={name}.
+// handleDelete handles DELETE /api/2.23/object-store-access-keys?names={name}.
 func (s *accessKeyStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {

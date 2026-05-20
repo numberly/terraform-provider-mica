@@ -21,7 +21,7 @@ type fileSystemStore struct {
 	byID    map[string]*client.FileSystem
 }
 
-// RegisterFileSystemHandlers registers CRUD handlers for /api/2.22/file-systems
+// RegisterFileSystemHandlers registers CRUD handlers for /api/2.23/file-systems
 // against the provided ServeMux. The handlers share in-memory state and are
 // thread-safe.
 func RegisterFileSystemHandlers(mux *http.ServeMux) *fileSystemStore {
@@ -29,7 +29,7 @@ func RegisterFileSystemHandlers(mux *http.ServeMux) *fileSystemStore {
 		byName: make(map[string]*client.FileSystem),
 		byID:   make(map[string]*client.FileSystem),
 	}
-	mux.HandleFunc("/api/2.22/file-systems", store.handle)
+	mux.HandleFunc("/api/2.23/file-systems", store.handle)
 	return store
 }
 
@@ -73,7 +73,7 @@ func (s *fileSystemStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.22/file-systems with optional ?names=, ?ids=, ?destroyed= params.
+// handleGet handles GET /api/2.23/file-systems with optional ?names=, ?ids=, ?destroyed= params.
 func (s *fileSystemStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "ids", "destroyed"}) {
 		return
@@ -119,7 +119,7 @@ func (s *fileSystemStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/file-systems?names={name}.
+// handlePost handles POST /api/2.23/file-systems?names={name}.
 // The FlashBlade API requires the name as a ?names= query parameter, not in the body.
 func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -159,6 +159,7 @@ func (s *fileSystemStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		DefaultQuotas: client.DefaultQuotas{},
 		MultiProtocol: client.MultiProtocol{},
 		Writable:      body.Writable,
+		Workload:      body.Workload,
 	}
 
 	s.byName[fs.Name] = fs
@@ -181,7 +182,7 @@ func derefSMB(p *client.SMBConfig) client.SMBConfig {
 	return *p
 }
 
-// handlePatch handles PATCH /api/2.22/file-systems?ids={id}.
+// handlePatch handles PATCH /api/2.23/file-systems?ids={id}.
 func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
 		return
@@ -271,10 +272,20 @@ func (s *fileSystemStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 		fs.SMB = smb
 	}
 
+	if v, ok := rawPatch["workload"]; ok {
+		// workload uses double-pointer semantics: JSON null clears, object sets.
+		var ref *client.NamedReference
+		if err := json.Unmarshal(v, &ref); err != nil {
+			WriteJSONError(w, http.StatusBadRequest, "invalid workload field")
+			return
+		}
+		fs.Workload = ref
+	}
+
 	WriteJSONListResponse(w, http.StatusOK, []client.FileSystem{*fs})
 }
 
-// handleDelete handles DELETE /api/2.22/file-systems?ids={id}.
+// handleDelete handles DELETE /api/2.23/file-systems?ids={id}.
 // Only works on file systems that are already soft-deleted (destroyed=true).
 func (s *fileSystemStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {

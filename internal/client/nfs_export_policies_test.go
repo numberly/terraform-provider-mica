@@ -22,7 +22,7 @@ func TestUnit_NfsExportPolicy_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/nfs-export-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/nfs-export-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-nfs-policy" {
 				writeJSON(w, http.StatusOK, listResponse([]client.NfsExportPolicy{}))
@@ -54,7 +54,7 @@ func TestUnit_NfsExportPolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/nfs-export-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/nfs-export-policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.NfsExportPolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -78,7 +78,7 @@ func TestUnit_NfsExportPolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/nfs-export-policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/nfs-export-policies":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -119,7 +119,7 @@ func TestUnit_NfsExportPolicy_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/nfs-export-policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/nfs-export-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-nfs-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -164,7 +164,7 @@ func TestUnit_NfsExportPolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/nfs-export-policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/nfs-export-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-nfs-policy" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -202,7 +202,7 @@ func TestUnit_NfsExportPolicyRule_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/nfs-export-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/nfs-export-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-nfs-policy" || ruleName != "rule-1" {
@@ -235,7 +235,7 @@ func TestUnit_NfsExportPolicyRule_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/nfs-export-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/nfs-export-policies/rules":
 			writeJSON(w, http.StatusOK, listResponse([]client.NfsExportPolicyRule{}))
 		default:
 			http.NotFound(w, r)
@@ -259,7 +259,7 @@ func TestUnit_NfsExportPolicyRule_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/nfs-export-policies/rules":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/nfs-export-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			if policyName != "my-nfs-policy" {
 				http.Error(w, "unexpected policy_names", http.StatusBadRequest)
@@ -309,7 +309,7 @@ func TestUnit_NfsExportPolicyRule_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/nfs-export-policies/rules":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/nfs-export-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-nfs-policy" || ruleName != "rule-1" {
@@ -344,7 +344,7 @@ func TestUnit_NfsExportPolicyRule_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/nfs-export-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/nfs-export-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			if policyName != "my-nfs-policy" {
 				writeJSON(w, http.StatusOK, listResponse([]client.NfsExportPolicyRule{}))
@@ -384,7 +384,7 @@ func TestUnit_NfsExportPolicyRule_GetByIndex(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/nfs-export-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/nfs-export-policies/rules":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            rules,
 				"total_item_count": 2,

@@ -40,13 +40,17 @@ func fsExportResourceSchema(t *testing.T) resource.SchemaResponse {
 	return resp
 }
 
-// buildFileSystemExportType returns the tftypes.Object for the file system export resource schema.
+// buildFileSystemExportType returns the tftypes.Object for the file system export resource schema (v2+).
 func buildFileSystemExportType() tftypes.Object {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
 		"update": tftypes.String,
 		"delete": tftypes.String,
+	}}
+	workloadType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
 	}}
 	return tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"id":                tftypes.String,
@@ -59,17 +63,22 @@ func buildFileSystemExportType() tftypes.Object {
 		"enabled":           tftypes.Bool,
 		"policy_type":       tftypes.String,
 		"status":            tftypes.String,
+		"workload":          workloadType,
 		"timeouts":          timeoutsType,
 	}}
 }
 
-// nullFSExportConfig returns a base config map with all attributes null.
+// nullFSExportConfig returns a base config map with all attributes null (v2+ schema).
 func nullFSExportConfig() map[string]tftypes.Value {
 	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"create": tftypes.String,
 		"read":   tftypes.String,
 		"update": tftypes.String,
 		"delete": tftypes.String,
+	}}
+	workloadType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":   tftypes.String,
+		"name": tftypes.String,
 	}}
 	return map[string]tftypes.Value{
 		"id":                tftypes.NewValue(tftypes.String, nil),
@@ -82,6 +91,7 @@ func nullFSExportConfig() map[string]tftypes.Value {
 		"enabled":           tftypes.NewValue(tftypes.Bool, nil),
 		"policy_type":       tftypes.NewValue(tftypes.String, nil),
 		"status":            tftypes.NewValue(tftypes.String, nil),
+		"workload":          tftypes.NewValue(workloadType, nil),
 		"timeouts":          tftypes.NewValue(timeoutsType, nil),
 	}
 }
@@ -461,10 +471,25 @@ func TestUnit_FileSystemExport_StateUpgrade_V0toV1(t *testing.T) {
 		Raw:    v0Val,
 		Schema: *upgrader.PriorSchema,
 	}
+	// The v0->v1 upgrader outputs fileSystemExportV1Model; use v1 schema (PriorSchema of upgrader[1]).
+	v1Schema := *upgraders[1].PriorSchema
+	v1Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                tftypes.String,
+		"name":              tftypes.String,
+		"export_name":       tftypes.String,
+		"file_system_name":  tftypes.String,
+		"server_name":       tftypes.String,
+		"policy_name":       tftypes.String,
+		"share_policy_name": tftypes.String,
+		"enabled":           tftypes.Bool,
+		"policy_type":       tftypes.String,
+		"status":            tftypes.String,
+		"timeouts":          timeoutsType,
+	}}
 	resp := &resource.UpgradeStateResponse{
 		State: tfsdk.State{
-			Raw:    tftypes.NewValue(buildFileSystemExportType(), nil),
-			Schema: fsExportResourceSchema(t).Schema,
+			Raw:    tftypes.NewValue(v1Type, nil),
+			Schema: v1Schema,
 		},
 	}
 	req := resource.UpgradeStateRequest{State: &priorState}
@@ -475,7 +500,7 @@ func TestUnit_FileSystemExport_StateUpgrade_V0toV1(t *testing.T) {
 		t.Fatalf("StateUpgrader returned error: %s", resp.Diagnostics)
 	}
 
-	var model fileSystemExportModel
+	var model fileSystemExportV1Model
 	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get upgraded state: %s", diags)
 	}
@@ -516,5 +541,104 @@ func TestUnit_FileSystemExport_Patch_ClearSharePolicy(t *testing.T) {
 	}
 	if string(v) != "null" {
 		t.Errorf("expected share_policy=null in PATCH body, got %s", string(v))
+	}
+}
+
+// TestUnit_FileSystemExportResource_StateUpgrade_V1toV2 verifies the v1->v2 upgrader
+// correctly migrates state by adding workload (null, computed) while preserving all
+// v1 fields intact. Feeds raw tftypes values (not struct literals) to exercise real
+// JSON deserialization path.
+func TestUnit_FileSystemExportResource_StateUpgrade_V1toV2(t *testing.T) {
+	r := &fileSystemExportResource{}
+	upgraders := r.UpgradeState(context.Background())
+
+	upgrader, ok := upgraders[1]
+	if !ok {
+		t.Fatalf("expected v1->v2 upgrader at key 1")
+	}
+	if upgrader.PriorSchema == nil {
+		t.Fatalf("expected PriorSchema to be set for v1->v2 upgrader")
+	}
+
+	timeoutsType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"create": tftypes.String,
+		"read":   tftypes.String,
+		"update": tftypes.String,
+		"delete": tftypes.String,
+	}}
+	v1Type := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"id":                tftypes.String,
+		"name":              tftypes.String,
+		"export_name":       tftypes.String,
+		"file_system_name":  tftypes.String,
+		"server_name":       tftypes.String,
+		"policy_name":       tftypes.String,
+		"share_policy_name": tftypes.String,
+		"enabled":           tftypes.Bool,
+		"policy_type":       tftypes.String,
+		"status":            tftypes.String,
+		"timeouts":          timeoutsType,
+	}}
+
+	v1Val := tftypes.NewValue(v1Type, map[string]tftypes.Value{
+		"id":                tftypes.NewValue(tftypes.String, "fse-001"),
+		"name":              tftypes.NewValue(tftypes.String, "fs2/nfs-export"),
+		"export_name":       tftypes.NewValue(tftypes.String, "nfs-export"),
+		"file_system_name":  tftypes.NewValue(tftypes.String, "fs2"),
+		"server_name":       tftypes.NewValue(tftypes.String, "server2"),
+		"policy_name":       tftypes.NewValue(tftypes.String, "nfs-policy-1"),
+		"share_policy_name": tftypes.NewValue(tftypes.String, nil),
+		"enabled":           tftypes.NewValue(tftypes.Bool, true),
+		"policy_type":       tftypes.NewValue(tftypes.String, "nfs"),
+		"status":            tftypes.NewValue(tftypes.String, "ok"),
+		"timeouts":          tftypes.NewValue(timeoutsType, nil),
+	})
+
+	priorState := tfsdk.State{
+		Raw:    v1Val,
+		Schema: *upgrader.PriorSchema,
+	}
+	req := resource.UpgradeStateRequest{State: &priorState}
+	resp := &resource.UpgradeStateResponse{
+		State: tfsdk.State{
+			Raw:    tftypes.NewValue(buildFileSystemExportType(), nil),
+			Schema: fsExportResourceSchema(t).Schema,
+		},
+	}
+
+	upgrader.StateUpgrader(context.Background(), req, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("StateUpgrader v1->v2 returned error: %s", resp.Diagnostics)
+	}
+
+	var model fileSystemExportModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get upgraded v2 state: %s", diags)
+	}
+
+	// Existing fields must be preserved.
+	if model.Name.ValueString() != "fs2/nfs-export" {
+		t.Errorf("expected name=fs2/nfs-export, got %s", model.Name.ValueString())
+	}
+	if model.FileSystemName.ValueString() != "fs2" {
+		t.Errorf("expected file_system_name=fs2, got %s", model.FileSystemName.ValueString())
+	}
+	if model.ServerName.ValueString() != "server2" {
+		t.Errorf("expected server_name=server2, got %s", model.ServerName.ValueString())
+	}
+	if model.PolicyName.ValueString() != "nfs-policy-1" {
+		t.Errorf("expected policy_name=nfs-policy-1, got %s", model.PolicyName.ValueString())
+	}
+	if model.PolicyType.ValueString() != "nfs" {
+		t.Errorf("expected policy_type=nfs, got %s", model.PolicyType.ValueString())
+	}
+	if !model.Enabled.ValueBool() {
+		t.Errorf("expected enabled=true, got false")
+	}
+
+	// New field: workload must be null (not yet populated — Read() will hydrate from API).
+	if !model.Workload.IsNull() {
+		t.Errorf("expected workload to be null after v1->v2 upgrade, got %v", model.Workload)
 	}
 }

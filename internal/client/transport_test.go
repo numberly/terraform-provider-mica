@@ -29,7 +29,7 @@ func TestUnit_RetryTransport_429(t *testing.T) {
 		t.Fatalf("new client: %v", err)
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL+"/api/2.22/file-systems", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL+"/api/2.23/file-systems", nil)
 	if err != nil {
 		t.Fatalf("new request: %v", err)
 	}

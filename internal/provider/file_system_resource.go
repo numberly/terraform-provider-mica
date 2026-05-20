@@ -55,8 +55,9 @@ type filesystemSMBModel struct {
 	SMBEncryptionEnabled          types.Bool `tfsdk:"smb_encryption_enabled"`
 }
 
-// filesystemModel is the top-level model for the flashblade_file_system resource.
-type filesystemModel struct {
+// filesystemV0Model mirrors the v0 schema shape (no workload field).
+// Used as the INPUT of the v0->v1 state upgrader.
+type filesystemV0Model struct {
 	ID                       types.String   `tfsdk:"id"`
 	Name                     types.String   `tfsdk:"name"`
 	Provisioned              types.Int64    `tfsdk:"provisioned"`
@@ -76,16 +77,38 @@ type filesystemModel struct {
 	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 }
 
+// filesystemModel is the top-level model for the flashblade_file_system resource (schema v1).
+type filesystemModel struct {
+	ID                       types.String   `tfsdk:"id"`
+	Name                     types.String   `tfsdk:"name"`
+	Provisioned              types.Int64    `tfsdk:"provisioned"`
+	Destroyed                types.Bool     `tfsdk:"destroyed"`
+	DestroyEradicateOnDelete types.Bool     `tfsdk:"destroy_eradicate_on_delete"`
+	TimeRemaining            types.Int64    `tfsdk:"time_remaining"`
+	Created                  types.Int64    `tfsdk:"created"`
+	PromotionStatus          types.String   `tfsdk:"promotion_status"`
+	Writable                 types.Bool     `tfsdk:"writable"`
+	Space                    types.Object   `tfsdk:"space"`
+	NFS                      types.Object   `tfsdk:"nfs"`
+	SMB                      types.Object   `tfsdk:"smb"`
+	HTTP                     types.Object   `tfsdk:"http"`
+	MultiProtocol            types.Object   `tfsdk:"multi_protocol"`
+	DefaultQuotas            types.Object   `tfsdk:"default_quotas"`
+	Source                   types.Object   `tfsdk:"source"`
+	Workload                 types.Object   `tfsdk:"workload"`
+	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
+}
+
 // ---------- resource interface methods --------------------------------------
 
 func (r *filesystemResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "flashblade_file_system"
 }
 
-// Schema defines the resource schema.
+// Schema defines the resource schema (version 1).
 func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     0,
+		Version:     1,
 		Description: "Manages a FlashBlade file system.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -301,14 +324,292 @@ func (r *filesystemResource) Schema(ctx context.Context, _ resource.SchemaReques
 					},
 				},
 			},
+			"workload": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Workload ID.",
+					},
+					"name": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Workload name.",
+					},
+				},
+			},
 		},
 	}
 }
 
 
 // UpgradeState returns state upgraders for schema migrations.
-func (r *filesystemResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
-	return map[int64]resource.StateUpgrader{}
+func (r *filesystemResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		// v0 -> v1: add workload field (API 2.23).
+		0: {
+			// PriorSchema verified against filesystemV0Model fields:
+			//   ID (Computed), Name (Required), Provisioned (Required), Destroyed (Computed),
+			//   DestroyEradicateOnDelete (Optional+Computed), TimeRemaining (Computed),
+			//   Created (Computed), PromotionStatus (Computed), Writable (Computed),
+			//   Space (Computed), NFS (Optional+Computed), SMB (Optional+Computed),
+			//   HTTP (Computed), MultiProtocol (Optional+Computed), DefaultQuotas (Optional+Computed),
+			//   Source (Computed), Timeouts (Optional)
+			PriorSchema: &schema.Schema{
+				Version:     0,
+				Description: "Manages a FlashBlade file system.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The unique identifier of the file system.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						Required:    true,
+						Description: "The name of the file system. Supports in-place rename.",
+					},
+					"provisioned": schema.Int64Attribute{
+						Required:    true,
+						Description: "Provisioned size of the file system in bytes.",
+					},
+					"destroyed": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Whether the file system is soft-deleted.",
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"destroy_eradicate_on_delete": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
+						Description: "When true (default), Terraform will eradicate the file system on destroy. When false, only soft-deletes.",
+					},
+					"time_remaining": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Milliseconds remaining until auto-eradication of a soft-deleted file system.",
+					},
+					"created": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Unix timestamp (milliseconds) when the file system was created.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.UseStateForUnknown(),
+						},
+					},
+					"promotion_status": schema.StringAttribute{
+						Computed:    true,
+						Description: "Replication promotion status of the file system.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"writable": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Whether the file system is writable.",
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+					"space": schema.SingleNestedAttribute{
+						Computed:    true,
+						Description: "Storage space breakdown (read-only, API-managed).",
+						Attributes: map[string]schema.Attribute{
+							"data_reduction": schema.Float64Attribute{
+								Computed:    true,
+								Description: "Data reduction ratio.",
+							},
+							"snapshots": schema.Int64Attribute{
+								Computed:    true,
+								Description: "Physical space used by snapshots in bytes.",
+							},
+							"total_physical": schema.Int64Attribute{
+								Computed:    true,
+								Description: "Total physical space used in bytes.",
+							},
+							"unique": schema.Int64Attribute{
+								Computed:    true,
+								Description: "Unique physical space used in bytes.",
+							},
+							"virtual": schema.Int64Attribute{
+								Computed:    true,
+								Description: "Virtual (logical) space used in bytes.",
+							},
+							"snapshots_effective": schema.Int64Attribute{
+								Computed:    true,
+								Description: "Effective snapshot space used in bytes.",
+							},
+						},
+					},
+					"nfs": schema.SingleNestedAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "NFS protocol configuration.",
+						Attributes: map[string]schema.Attribute{
+							"enabled": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(true),
+								Description: "Whether NFS is enabled on this file system.",
+							},
+							"v3_enabled": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Whether NFSv3 is enabled.",
+							},
+							"v4_1_enabled": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(true),
+								Description: "Whether NFSv4.1 is enabled.",
+							},
+							"rules": schema.StringAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: "NFS export rules string (e.g. '*(rw,no_root_squash)').",
+							},
+							"transport": schema.StringAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: "NFS transport protocol ('tcp' or 'udp').",
+							},
+						},
+					},
+					"smb": schema.SingleNestedAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "SMB protocol configuration.",
+						Attributes: map[string]schema.Attribute{
+							"enabled": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Whether SMB is enabled on this file system.",
+							},
+							"access_based_enumeration_enabled": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Whether access-based enumeration is enabled for SMB.",
+							},
+							"continuous_availability_enabled": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Whether continuous availability is enabled for SMB.",
+							},
+							"smb_encryption_enabled": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Whether SMB encryption is enabled.",
+							},
+						},
+					},
+					"http": schema.SingleNestedAttribute{
+						Computed:    true,
+						Description: "HTTP protocol configuration (read-only, API-managed).",
+						Attributes: map[string]schema.Attribute{
+							"enabled": schema.BoolAttribute{
+								Computed:    true,
+								Description: "Whether HTTP is enabled on this file system.",
+							},
+						},
+					},
+					"multi_protocol": schema.SingleNestedAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Multi-protocol access configuration.",
+						Attributes: map[string]schema.Attribute{
+							"access_control_style": schema.StringAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: "Access control style for multi-protocol access ('nfs' or 'smb').",
+							},
+							"safeguard_acls": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: "Whether to safeguard ACLs during multi-protocol access.",
+							},
+						},
+					},
+					"default_quotas": schema.SingleNestedAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Default quota settings.",
+						Attributes: map[string]schema.Attribute{
+							"group_quota": schema.Int64Attribute{
+								Optional:    true,
+								Computed:    true,
+								Description: "Default quota per group in bytes.",
+							},
+							"user_quota": schema.Int64Attribute{
+								Optional:    true,
+								Computed:    true,
+								Description: "Default quota per user in bytes.",
+							},
+						},
+					},
+					"source": schema.SingleNestedAttribute{
+						Computed:    true,
+						Description: "Source file system reference (for clones/replicas, read-only).",
+						Attributes: map[string]schema.Attribute{
+							"id": schema.StringAttribute{
+								Computed:    true,
+								Description: "Source file system ID.",
+							},
+							"name": schema.StringAttribute{
+								Computed:    true,
+								Description: "Source file system name.",
+							},
+						},
+					},
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var prior filesystemV0Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				next := filesystemModel{
+					ID:                       prior.ID,
+					Name:                     prior.Name,
+					Provisioned:              prior.Provisioned,
+					Destroyed:                prior.Destroyed,
+					DestroyEradicateOnDelete: prior.DestroyEradicateOnDelete,
+					TimeRemaining:            prior.TimeRemaining,
+					Created:                  prior.Created,
+					PromotionStatus:          prior.PromotionStatus,
+					Writable:                 prior.Writable,
+					Space:                    prior.Space,
+					NFS:                      prior.NFS,
+					SMB:                      prior.SMB,
+					HTTP:                     prior.HTTP,
+					MultiProtocol:            prior.MultiProtocol,
+					DefaultQuotas:            prior.DefaultQuotas,
+					Source:                   prior.Source,
+					// workload: new field in v1 — null until user sets it or Read hydrates from API.
+					Workload: types.ObjectNull(fsWorkloadAttrTypes()),
+					Timeouts: prior.Timeouts,
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
+			},
+		},
+	}
 }
 
 // Configure injects the FlashBladeClient into the resource.
@@ -347,6 +648,22 @@ func (r *filesystemResource) Create(ctx context.Context, req resource.CreateRequ
 	post := client.FileSystemPost{
 		Name:        data.Name.ValueString(),
 		Provisioned: data.Provisioned.ValueInt64(),
+	}
+
+	// Workload: optional at create time — attach to an existing workload.
+	if !data.Workload.IsNull() && !data.Workload.IsUnknown() {
+		var wl struct {
+			ID   types.String `tfsdk:"id"`
+			Name types.String `tfsdk:"name"`
+		}
+		resp.Diagnostics.Append(data.Workload.As(ctx, &wl, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		post.Workload = &client.NamedReference{
+			ID:   wl.ID.ValueString(),
+			Name: wl.Name.ValueString(),
+		}
 	}
 
 	if !data.NFS.IsNull() && !data.NFS.IsUnknown() {
@@ -421,11 +738,36 @@ func (r *filesystemResource) Read(ctx context.Context, req resource.ReadRequest,
 	if !data.Provisioned.IsNull() && !data.Provisioned.IsUnknown() {
 		if data.Provisioned.ValueInt64() != fs.Provisioned {
 			tflog.Debug(ctx, "drift detected on file system", map[string]any{
-				"resource":    name,
-				"field":       "provisioned",
-				"was":         data.Provisioned.ValueInt64(),
-				"now":           fs.Provisioned,
+				"resource": name,
+				"field":    "provisioned",
+				"was":      data.Provisioned.ValueInt64(),
+				"now":      fs.Provisioned,
 			})
+		}
+	}
+	if !data.Workload.IsNull() && !data.Workload.IsUnknown() {
+		// Workload is an object — drift check by comparing id+name from state vs API.
+		var stateWorkload struct {
+			ID   types.String `tfsdk:"id"`
+			Name types.String `tfsdk:"name"`
+		}
+		if diags := data.Workload.As(ctx, &stateWorkload, basetypes.ObjectAsOptions{}); !diags.HasError() {
+			apiID := ""
+			apiName := ""
+			if fs.Workload != nil {
+				apiID = fs.Workload.ID
+				apiName = fs.Workload.Name
+			}
+			if stateWorkload.ID.ValueString() != apiID || stateWorkload.Name.ValueString() != apiName {
+				tflog.Debug(ctx, "drift detected on file system", map[string]any{
+					"resource":       name,
+					"field":          "workload",
+					"was_id":         stateWorkload.ID.ValueString(),
+					"was_name":       stateWorkload.Name.ValueString(),
+					"now_id":         apiID,
+					"now_name":       apiName,
+				})
+			}
 		}
 	}
 
@@ -500,6 +842,33 @@ func (r *filesystemResource) Update(ctx context.Context, req resource.UpdateRequ
 		patch.SMB = &smb
 	}
 
+	// Workload changes: use double-pointer semantics.
+	// - plan.Workload null && state.Workload non-null → clear (outer non-nil + inner nil)
+	// - plan.Workload known non-null → set or update
+	// - plan.Workload null && state.Workload null → omit
+	// - plan.Workload unknown → skip (framework will call Read to hydrate)
+	if !plan.Workload.IsUnknown() && !plan.Workload.Equal(state.Workload) {
+		if plan.Workload.IsNull() {
+			// Clear the workload assignment.
+			inner := (*client.NamedReference)(nil)
+			patch.Workload = &inner
+		} else {
+			var wl struct {
+				ID   types.String `tfsdk:"id"`
+				Name types.String `tfsdk:"name"`
+			}
+			resp.Diagnostics.Append(plan.Workload.As(ctx, &wl, basetypes.ObjectAsOptions{})...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			ref := &client.NamedReference{
+				ID:   wl.ID.ValueString(),
+				Name: wl.Name.ValueString(),
+			}
+			patch.Workload = &ref
+		}
+	}
+
 	_, err := r.client.PatchFileSystem(ctx, state.ID.ValueString(), patch)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating file system", err.Error())
@@ -553,6 +922,8 @@ func (r *filesystemResource) ImportState(ctx context.Context, req resource.Impor
 	var data filesystemModel
 	// Set defaults for optional fields not returned by the API.
 	data.DestroyEradicateOnDelete = types.BoolValue(true)
+	// workload is Optional/Computed — null on import (API response will hydrate via mapFileSystemToModel).
+	data.Workload = types.ObjectNull(fsWorkloadAttrTypes())
 	// Initialize timeouts with a proper null value so the framework can serialize it.
 	data.Timeouts = nullTimeoutsValue()
 
@@ -606,6 +977,13 @@ func fsDefaultQuotasAttrTypes() map[string]attr.Type {
 }
 
 func fsSourceAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   types.StringType,
+		"name": types.StringType,
+	}
+}
+
+func fsWorkloadAttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":   types.StringType,
 		"name": types.StringType,
@@ -729,6 +1107,21 @@ func mapFileSystemToModel(fs *client.FileSystem, data *filesystemModel) diag.Dia
 		return diags
 	}
 	data.DefaultQuotas = dqObj
+
+	// Workload — set if present in API response, null otherwise (Optional/Computed).
+	if fs.Workload != nil {
+		workloadObj, workloadDiags := types.ObjectValue(fsWorkloadAttrTypes(), map[string]attr.Value{
+			"id":   types.StringValue(fs.Workload.ID),
+			"name": types.StringValue(fs.Workload.Name),
+		})
+		diags.Append(workloadDiags...)
+		if diags.HasError() {
+			return diags
+		}
+		data.Workload = workloadObj
+	} else {
+		data.Workload = types.ObjectNull(fsWorkloadAttrTypes())
+	}
 
 	return diags
 }

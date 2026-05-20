@@ -26,7 +26,7 @@ func TestUnit_QuotaUser_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/quotas/users":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/quotas/users":
 			fsName := r.URL.Query().Get("file_system_names")
 			uidParam := r.URL.Query().Get("uids")
 			if fsName != "my-fs" || uidParam != "1001" {
@@ -59,7 +59,7 @@ func TestUnit_QuotaUser_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/quotas/users":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/quotas/users":
 			writeJSON(w, http.StatusOK, listResponse([]client.QuotaUser{}))
 		default:
 			http.NotFound(w, r)
@@ -83,7 +83,7 @@ func TestUnit_QuotaUser_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/quotas/users":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/quotas/users":
 			fsName := r.URL.Query().Get("file_system_names")
 			uid := r.URL.Query().Get("uids")
 			if fsName == "" || uid == "" {
@@ -130,7 +130,7 @@ func TestUnit_QuotaUser_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/quotas/users":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/quotas/users":
 			fsName := r.URL.Query().Get("file_system_names")
 			uid := r.URL.Query().Get("uids")
 			if fsName != "my-fs" || uid != "1001" {
@@ -177,7 +177,7 @@ func TestUnit_QuotaUser_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/quotas/users":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/quotas/users":
 			fsName := r.URL.Query().Get("file_system_names")
 			uid := r.URL.Query().Get("uids")
 			if fsName != "my-fs" || uid != "1001" {
@@ -217,7 +217,7 @@ func TestUnit_QuotaGroup_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/quotas/groups":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/quotas/groups":
 			fsName := r.URL.Query().Get("file_system_names")
 			gidParam := r.URL.Query().Get("gids")
 			if fsName != "my-fs" || gidParam != "2001" {
@@ -250,7 +250,7 @@ func TestUnit_QuotaGroup_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/quotas/groups":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/quotas/groups":
 			writeJSON(w, http.StatusOK, listResponse([]client.QuotaGroup{}))
 		default:
 			http.NotFound(w, r)
@@ -274,7 +274,7 @@ func TestUnit_QuotaGroup_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/quotas/groups":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/quotas/groups":
 			fsName := r.URL.Query().Get("file_system_names")
 			gid := r.URL.Query().Get("gids")
 			if fsName == "" || gid == "" {
@@ -321,7 +321,7 @@ func TestUnit_QuotaGroup_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/quotas/groups":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/quotas/groups":
 			fsName := r.URL.Query().Get("file_system_names")
 			gid := r.URL.Query().Get("gids")
 			if fsName != "my-fs" || gid != "2001" {
@@ -368,7 +368,7 @@ func TestUnit_QuotaGroup_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/quotas/groups":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/quotas/groups":
 			fsName := r.URL.Query().Get("file_system_names")
 			gid := r.URL.Query().Get("gids")
 			if fsName != "my-fs" || gid != "2001" {

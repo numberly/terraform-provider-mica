@@ -16,11 +16,11 @@ type arrayConnectionKeyStore struct {
 }
 
 // RegisterArrayConnectionKeyHandlers registers GET/POST handlers for
-// /api/2.22/array-connections/connection-key against the provided ServeMux.
+// /api/2.23/array-connections/connection-key against the provided ServeMux.
 // The store pointer is returned for test setup (Seed).
 func RegisterArrayConnectionKeyHandlers(mux *http.ServeMux) *arrayConnectionKeyStore {
 	store := &arrayConnectionKeyStore{nextID: 1}
-	mux.HandleFunc("/api/2.22/array-connections/connection-key", store.handle)
+	mux.HandleFunc("/api/2.23/array-connections/connection-key", store.handle)
 	return store
 }
 
@@ -42,7 +42,7 @@ func (s *arrayConnectionKeyStore) handle(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// handleGet handles GET /api/2.22/array-connections/connection-key.
+// handleGet handles GET /api/2.23/array-connections/connection-key.
 // Returns the current key as a plain JSON object (not a list envelope).
 // If no key has been set, returns a zero-value object with HTTP 200.
 func (s *arrayConnectionKeyStore) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +60,7 @@ func (s *arrayConnectionKeyStore) handleGet(w http.ResponseWriter, r *http.Reque
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/array-connections/connection-key.
+// handlePost handles POST /api/2.23/array-connections/connection-key.
 // Generates a new synthetic key, overwrites the current one, and returns it as a plain JSON object.
 func (s *arrayConnectionKeyStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{}) {

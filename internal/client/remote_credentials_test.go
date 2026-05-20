@@ -23,7 +23,7 @@ func TestUnit_RemoteCredentials_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-remote-credentials":
 			name := r.URL.Query().Get("names")
 			if name != "remote-array/creds-001" {
 				writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreRemoteCredentials{}))
@@ -55,7 +55,7 @@ func TestUnit_RemoteCredentials_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-remote-credentials":
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreRemoteCredentials{}))
 		default:
 			http.NotFound(w, r)
@@ -79,7 +79,7 @@ func TestUnit_RemoteCredentials_Post_WithRemote(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-remote-credentials":
 			name := r.URL.Query().Get("names")
 			remoteName := r.URL.Query().Get("remote_names")
 			targetName := r.URL.Query().Get("target_names")
@@ -143,7 +143,7 @@ func TestUnit_RemoteCredentials_Post_WithTarget(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-remote-credentials":
 			name := r.URL.Query().Get("names")
 			remoteName := r.URL.Query().Get("remote_names")
 			targetName := r.URL.Query().Get("target_names")
@@ -208,7 +208,7 @@ func TestUnit_RemoteCredentials_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/object-store-remote-credentials":
 			name := r.URL.Query().Get("names")
 			if name != "remote-array/creds-001" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -263,7 +263,7 @@ func TestUnit_RemoteCredentials_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/object-store-remote-credentials":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/object-store-remote-credentials":
 			name := r.URL.Query().Get("names")
 			if name != "remote-array/creds-001" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)

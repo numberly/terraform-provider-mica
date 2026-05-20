@@ -484,7 +484,7 @@ func TestUnit_Subnet_StateUpgrade_V0toV1(t *testing.T) {
 }
 
 // subnetBodyCaptor is a tiny http.Handler wrapper that records the last request
-// body for POST/PATCH to /api/2.22/subnets and then delegates to the real mock.
+// body for POST/PATCH to /api/2.23/subnets and then delegates to the real mock.
 type subnetBodyCaptor struct {
 	inner     http.Handler
 	lastPOST  []byte
@@ -492,7 +492,7 @@ type subnetBodyCaptor struct {
 }
 
 func (c *subnetBodyCaptor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/api/2.22/subnets" && (r.Method == http.MethodPost || r.Method == http.MethodPatch) {
+	if r.URL.Path == "/api/2.23/subnets" && (r.Method == http.MethodPost || r.Method == http.MethodPatch) {
 		buf, _ := io.ReadAll(r.Body)
 		r.Body = io.NopCloser(bytes.NewReader(buf))
 		if r.Method == http.MethodPost {

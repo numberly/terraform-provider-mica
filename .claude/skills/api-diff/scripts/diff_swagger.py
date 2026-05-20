@@ -7,6 +7,7 @@ Usage:
 Output sections:
   new_endpoints, removed_endpoints, modified_endpoints
   new_schemas, removed_schemas, modified_schemas
+  method_delta (HTTP methods added/removed between versions)
 
 stdlib only: json, argparse, sys, os, pathlib
 """
@@ -60,6 +61,35 @@ def _has_request_body(operation: dict) -> bool:
 
 def _response_codes(operation: dict) -> list[str]:
     return sorted(operation.get("responses", {}).keys())
+
+
+def _compute_method_delta(
+    old_ops: dict[tuple[str, str], dict],
+    new_ops: dict[tuple[str, str], dict],
+) -> dict[str, Any]:
+    """Return the HTTP-method delta between two API versions.
+
+    A "new" method (e.g. PUT appearing for the first time across the whole API)
+    is a category change for the client layer — it requires net-new request
+    infrastructure (helper generics, conventions, agent guidance) before any
+    endpoint using it can be implemented. Surfacing this in the diff prevents
+    silent assumptions downstream.
+    """
+    old_methods = {m for (_, m) in old_ops}
+    new_methods = {m for (_, m) in new_ops}
+    added = sorted(new_methods - old_methods)
+    removed = sorted(old_methods - new_methods)
+    added_counts: dict[str, int] = {m: 0 for m in added}
+    for (_, mm) in new_ops:
+        if mm in added_counts:
+            added_counts[mm] += 1
+    return {
+        "old_methods": sorted(old_methods),
+        "new_methods": sorted(new_methods),
+        "added_methods": added,
+        "removed_methods": removed,
+        "added_endpoints_per_method": added_counts,
+    }
 
 
 def _compare_endpoints(
@@ -276,8 +306,39 @@ def _md_schema_table(items: list[dict]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _md_method_delta(method_delta: dict[str, Any]) -> str:
+    added = method_delta.get("added_methods", [])
+    removed = method_delta.get("removed_methods", [])
+    counts = method_delta.get("added_endpoints_per_method", {})
+
+    if not added and not removed:
+        return "_No HTTP method changes — set of methods is identical between versions._\n"
+
+    lines: list[str] = []
+    if added:
+        lines.append("**Added methods** (new to this version of the API):")
+        lines.append("")
+        for m in added:
+            lines.append(f"- `{m.upper()}` — {counts.get(m, 0)} endpoint(s)")
+        lines.append("")
+        lines.append(
+            "> ⚠️  Each added method is a category change: if your client layer has no existing "
+            "infrastructure for it, you MUST extend the client (generic helper, conventions, "
+            "agent guidance) before implementing any endpoint that uses it."
+        )
+        lines.append("")
+    if removed:
+        lines.append("**Removed methods** (no longer present in this version):")
+        lines.append("")
+        for m in removed:
+            lines.append(f"- `{m.upper()}`")
+        lines.append("")
+    return "\n".join(lines) + "\n"
+
+
 def _render_markdown(diff: dict[str, Any]) -> str:
     summary = diff["summary"]
+    method_delta = diff.get("method_delta", {})
     lines = [
         f"# FlashBlade API Diff: {diff['old_version']} → {diff['new_version']}",
         "",
@@ -291,7 +352,12 @@ def _render_markdown(diff: dict[str, Any]) -> str:
         f"| New schemas | {summary['new_schemas']} |",
         f"| Removed schemas | {summary['removed_schemas']} |",
         f"| Modified schemas | {summary['modified_schemas']} |",
+        f"| Added HTTP methods | {summary.get('added_methods', 0)} |",
+        f"| Removed HTTP methods | {summary.get('removed_methods', 0)} |",
         "",
+        "## HTTP Method Delta",
+        "",
+        _md_method_delta(method_delta),
         "## New Endpoints",
         "",
         _md_endpoint_table(diff["new_endpoints"]),
@@ -360,6 +426,7 @@ def main() -> int:
     new_sc, removed_sc, modified_sc = _compare_schemas(
         old_schemas, new_schemas, old_swagger, new_swagger
     )
+    method_delta = _compute_method_delta(old_endpoints, new_endpoints)
 
     diff: dict[str, Any] = {
         "old_version": old_swagger.get("info", {}).get("version", "unknown"),
@@ -371,7 +438,10 @@ def main() -> int:
             "new_schemas": len(new_sc),
             "removed_schemas": len(removed_sc),
             "modified_schemas": len(modified_sc),
+            "added_methods": len(method_delta["added_methods"]),
+            "removed_methods": len(method_delta["removed_methods"]),
         },
+        "method_delta": method_delta,
         "new_endpoints": new_ep,
         "removed_endpoints": removed_ep,
         "modified_endpoints": modified_ep,

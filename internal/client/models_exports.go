@@ -32,6 +32,7 @@ type FileSystemExport struct {
 	PolicyType  string          `json:"policy_type,omitempty"`
 	SharePolicy *NamedReference `json:"share_policy,omitempty"`
 	Status      string          `json:"status,omitempty"`
+	Workload    *NamedReference `json:"workload,omitempty"`
 }
 
 // FileSystemExportPost contains the fields accepted on POST /file-system-exports.

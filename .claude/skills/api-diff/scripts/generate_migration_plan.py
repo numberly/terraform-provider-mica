@@ -174,82 +174,263 @@ def _schema_base_name(schema_name: str) -> str:
     return schema_name
 
 
+def _variant_suffix(schema_name: str, base: str) -> str:
+    """Return the suffix ('Post', 'Patch', 'Get') or 'GET' for the base (no suffix)."""
+    if schema_name == base:
+        return "GET"  # the bare base name is the GET response shape
+    return schema_name[len(base):]  # e.g. "Post", "Patch"
+
+
 def _group_modified_schemas(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Group modified schemas by base name (FileSystem + FileSystemPost + FileSystemPatch → FileSystem).
     Merge added/removed/changed fields (union, deduplicated).
+
+    Preserves per-field variant tracking via `field_variants` map:
+      {field_name: set of variant suffixes that saw this field added/removed/changed}
+
+    This is what enables distinguishing "settable" fields (added to Post/Patch) from
+    "read-only computed" fields (added to GET only). Without this, _action_for_modified_schema
+    cannot generate accurate guidance — it would always say "Add to Post/Patch" even when
+    the field is purely a GET response field that should be a Terraform Computed-only
+    attribute.
     """
     groups: dict[str, dict[str, Any]] = {}
     for item in items:
-        base = _schema_base_name(item["schema_name"])
+        schema_name = item["schema_name"]
+        base = _schema_base_name(schema_name)
+        suffix = _variant_suffix(schema_name, base)
         details = item.get("details", {})
+
         if base not in groups:
             groups[base] = {
                 "schema_name": base,
-                "variants": [item["schema_name"]],
+                "variants": [schema_name],
                 "added_fields": list(details.get("added_fields", [])),
                 "removed_fields": list(details.get("removed_fields", [])),
                 "changed_fields": list(details.get("changed_fields", [])),
                 "annotation": item.get("annotation", "needs_verification"),
+                # NEW: track which variants saw each field changed
+                "field_variants": {
+                    "added": {f: {suffix} for f in details.get("added_fields", [])},
+                    "removed": {f: {suffix} for f in details.get("removed_fields", [])},
+                    "changed": {(f["field"] if isinstance(f, dict) else f): {suffix}
+                                for f in details.get("changed_fields", [])},
+                },
             }
         else:
             g = groups[base]
-            g["variants"].append(item["schema_name"])
+            g["variants"].append(schema_name)
             for f in details.get("added_fields", []):
                 if f not in g["added_fields"]:
                     g["added_fields"].append(f)
+                g["field_variants"]["added"].setdefault(f, set()).add(suffix)
             for f in details.get("removed_fields", []):
                 if f not in g["removed_fields"]:
                     g["removed_fields"].append(f)
+                g["field_variants"]["removed"].setdefault(f, set()).add(suffix)
             for f in details.get("changed_fields", []):
+                key = f["field"] if isinstance(f, dict) else f
                 if f not in g["changed_fields"]:
                     g["changed_fields"].append(f)
-            # Promote annotation: real_change > needs_verification > swagger_artifact
+                g["field_variants"]["changed"].setdefault(key, set()).add(suffix)
             if item.get("annotation") == "real_change":
                 g["annotation"] = "real_change"
     return list(groups.values())
 
 
+_METHOD_TOKEN_RE = re.compile(r"http\.Method(Get|Post|Put|Patch|Delete|Head|Options|Connect|Trace)")
+
+
+def _scan_method_infrastructure(project_root: Path) -> set[str]:
+    """Return the set of HTTP methods backed by client infrastructure.
+
+    A method is considered "supported" if `http.Method<X>` appears at least once
+    in a non-test, non-comment Go line under `internal/client/`. The client
+    layer routes every outbound request through `c.do(ctx, http.Method<X>, ...)`,
+    so the presence of this literal is the most reliable signal that an
+    established pattern exists for the verb.
+
+    Returns lowercased method names (e.g. {"get", "post", "patch", "delete"}).
+    """
+    methods: set[str] = set()
+    client_dir = project_root / "internal" / "client"
+    if not client_dir.is_dir():
+        return methods
+    for go_file in client_dir.glob("*.go"):
+        if go_file.name.endswith("_test.go"):
+            continue
+        for line in go_file.read_text(encoding="utf-8").splitlines():
+            stripped = line.lstrip()
+            if stripped.startswith("//"):
+                continue
+            for m in _METHOD_TOKEN_RE.finditer(line):
+                methods.add(m.group(1).lower())
+    return methods
+
+
+def _scan_implemented_in_codebase(project_root: Path) -> dict[str, str | None]:
+    """
+    Scan `internal/client/` and `internal/provider/` to build an authoritative map of
+    schema → TF resource. Replaces the prior ROADMAP-based heuristic which had two
+    failure modes:
+      - column 1 of ROADMAP rows sometimes contains "Yes + Yes" instead of `flashblade_xxx`,
+        producing `terraform_resource: None` for valid implementations (NFS/SMB policies)
+      - substring slug matching wrongly attributed abstract base schemas (e.g. Policy →
+        Object Store User Policy) when the base is actually composed into other schemas
+
+    Method:
+      1. Find every `type <X>Post struct` and `type <X>Patch struct` in `internal/client/models_*.go`
+         → schema is "represented in this provider's client layer" with base name X
+      2. For each such X, find which `internal/provider/*_resource.go` files reference
+         `client.<X>Post` or `client.<X>Patch`
+      3. Return {X (lowercased): resource_name or None}
+
+    Returns dict where:
+      - key = lowercased schema base name (e.g. "nfsexportpolicy")
+      - value = "flashblade_<resource>" if a resource file uses the structs, else None
+        (None means: client has the structs but no TF resource consumes them yet)
+    """
+    result: dict[str, str | None] = {}
+
+    client_dir = project_root / "internal" / "client"
+    provider_dir = project_root / "internal" / "provider"
+    if not client_dir.is_dir() or not provider_dir.is_dir():
+        # Project layout not recognised — fall back to empty map (no false implementations)
+        return result
+
+    # Step 1: schema bases with Post/Patch structs in client layer
+    struct_re = re.compile(r"^type\s+(\w+?)(?:Post|Patch)\s+struct\b", re.MULTILINE)
+    schema_bases: set[str] = set()
+    for go_file in client_dir.glob("models_*.go"):
+        content = go_file.read_text(encoding="utf-8")
+        for match in struct_re.finditer(content):
+            schema_bases.add(match.group(1))
+
+    # Step 2: which resource file uses each schema base
+    # Build (base_name → resource_file_path) by scanning provider files for client.<X>Post/Patch refs
+    resource_files = sorted(provider_dir.glob("*_resource.go"))
+    base_to_resource: dict[str, str] = {}
+    for base in schema_bases:
+        ref_patterns = [f"client.{base}Post", f"client.{base}Patch"]
+        for rfile in resource_files:
+            if rfile.name.endswith("_test.go") or rfile.name.endswith("_data_source.go"):
+                continue
+            content = rfile.read_text(encoding="utf-8")
+            if any(p in content for p in ref_patterns):
+                # Derive TF resource name from filename: foo_resource.go → flashblade_foo
+                resource_stem = rfile.stem.removesuffix("_resource")
+                base_to_resource[base] = f"flashblade_{resource_stem}"
+                break
+
+    # Step 3: populate result with both implemented and client-only bases
+    for base in schema_bases:
+        result[base.lower()] = base_to_resource.get(base)
+
+    return result
+
+
 def _match_implemented(
     schema_base: str,
-    implemented_entries: list[dict[str, str]],
+    implemented_map: dict[str, str | None],
 ) -> dict[str, str] | None:
     """
-    Match a schema base name (e.g. "FileSystem", "QosPolicy") against implemented
-    ROADMAP entries by converting both to slugs and checking for overlap.
+    Look up a schema base name in the codebase-derived implementation map.
+
+    Returns:
+      - {"resource_name": "flashblade_xxx", "api_section": <derived>} if a TF resource exists
+      - {"resource_name": None, "api_section": <derived>} if the client has the structs
+        but no TF resource consumes them yet (client-only — useful signal for orchestrator)
+      - None if the schema has no Post/Patch structs in the client at all
     """
-    # Convert CamelCase to slug: "FileSystem" → "file-system", "QosPolicy" → "qos-policy"
+    key = schema_base.lower()
+    if key not in implemented_map:
+        return None
+
+    resource_name = implemented_map[key]
+    # Derive a stable api_section for downstream display (preserved for compat with old shape)
     slug = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "-", schema_base).lower()
     slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")
+    return {
+        "resource_name": resource_name,  # may be None — means "client-only, no TF resource"
+        "api_section": schema_base,
+        "slug": slug,
+    }
 
-    for entry in implemented_entries:
-        entry_slug = entry["slug"]
-        # Direct slug containment (both directions)
-        if slug in entry_slug or entry_slug in slug:
-            return entry
-        # Word overlap: ≥2 shared words
-        slug_words = set(slug.split("-"))
-        entry_words = set(entry_slug.split("-"))
-        if len(slug_words & entry_words) >= 2:
-            return entry
-    return None
+
+def _is_abstract_base(schema_name: str, all_modified_schemas: list[str], implemented_map: dict[str, str | None]) -> bool:
+    """
+    A schema is an "abstract base" if:
+      - It has no Post/Patch structs in the client (key not in implemented_map), AND
+      - At least one OTHER schema in the same diff has the same name as a suffix
+        (heuristic for OpenAPI allOf composition: e.g. base "Policy" + derived "NfsExportPolicy")
+
+    Marking these as abstract prevents the migration plan from listing redundant work:
+    the base's fields are already covered by the composites that ARE in the diff.
+    """
+    if schema_name.lower() in implemented_map:
+        return False
+    # Look for other diff entries that end with this schema's name (composites)
+    for other in all_modified_schemas:
+        if other == schema_name:
+            continue
+        if other.endswith(schema_name):
+            return True
+    return False
 
 
 def _action_for_modified_schema(item: dict[str, Any]) -> str:
-    details = item.get("details", {})
-    added = details.get("added_fields", [])
+    """
+    Generate per-field guidance that distinguishes settable fields (added to Post/Patch)
+    from read-only/computed fields (added to GET only).
+
+    Uses `field_variants` populated by _group_modified_schemas to know which variants
+    each field appeared in. Without this, the action would always claim "add to Post/Patch"
+    even for fields that only exist in the GET response shape.
+
+    Output examples:
+      - "Add workload to FileSystem + FileSystemPost + FileSystemPatch — settable (TF: Optional+Computed)"
+      - "Add workload to NfsExportPolicy GET only — read-only (TF: Computed only, no client Post/Patch change)"
+    """
     schema = item.get("schema_name", "Unknown")
+    details = item.get("details", {})
+    field_variants = item.get("field_variants") or {}
+
+    added = details.get("added_fields", [])
     if added:
-        fields_str = ", ".join(added)
-        return f"Add {fields_str} to {schema}Post/Patch structs"
+        parts = []
+        for f in added:
+            variants = sorted(field_variants.get("added", {}).get(f, {"GET"}))
+            settable = any(v in ("Post", "Patch") for v in variants)
+            target_struct_list = ", ".join(
+                f"{schema}{v if v != 'GET' else ''}".rstrip() for v in variants
+            )
+            if settable:
+                parts.append(
+                    f"Add `{f}` to {target_struct_list} (settable — TF: Optional+Computed)"
+                )
+            else:
+                parts.append(
+                    f"Add `{f}` to {schema} GET only (read-only — TF: Computed only, no Post/Patch struct change)"
+                )
+        return " ; ".join(parts)
+
     changed = details.get("changed_fields", [])
     if changed:
-        names = ", ".join(f["field"] for f in changed)
+        names = ", ".join(f["field"] if isinstance(f, dict) else str(f) for f in changed)
         return f"Update field types for {names} in {schema} structs"
+
     removed = details.get("removed_fields", [])
     if removed:
-        fields_str = ", ".join(removed)
-        return f"Remove {fields_str} from {schema} structs (check usage)"
+        parts = []
+        for f in removed:
+            variants = sorted(field_variants.get("removed", {}).get(f, {"GET"}))
+            target_struct_list = ", ".join(
+                f"{schema}{v if v != 'GET' else ''}".rstrip() for v in variants
+            )
+            parts.append(f"Remove `{f}` from {target_struct_list} (check usage)")
+        return " ; ".join(parts)
+
     return f"Review {schema} struct for schema changes"
 
 
@@ -262,6 +443,7 @@ def build_migration_plan(
     diff: dict[str, Any],
     roadmap_entries: list[dict[str, str]],
     implemented_entries: list[dict[str, str]] | None = None,
+    project_root: Path | None = None,
 ) -> dict[str, Any]:
     """
     Build a 4-category migration plan from a diff.json dict.
@@ -272,9 +454,43 @@ def build_migration_plan(
                        where annotation != swagger_artifact
       deprecated     — removed_endpoints + removed_schemas where annotation != swagger_artifact
       roadmap_gaps   — subset of new_resources matching a ROADMAP.md Candidate/Deferred entry
+
+    `project_root` enables codebase-based implementation detection (replaces the legacy
+    ROADMAP slug-matching). When provided, the script scans `internal/client/` and
+    `internal/provider/` to determine which schemas are actually implemented.
+    `implemented_entries` is retained for back-compat but no longer used when project_root
+    is supplied.
     """
     if implemented_entries is None:
         implemented_entries = []
+
+    # Codebase-based implementation map (authoritative when project_root given)
+    implemented_map = _scan_implemented_in_codebase(project_root) if project_root else {}
+    supported_methods = _scan_method_infrastructure(project_root) if project_root else set()
+
+    # ---- prerequisites (new HTTP methods without client infra) ----
+    method_delta = diff.get("method_delta", {})
+    added_methods = method_delta.get("added_methods", [])
+    added_method_counts = method_delta.get("added_endpoints_per_method", {})
+    prerequisites: list[dict[str, Any]] = []
+    for m in added_methods:
+        if m in supported_methods:
+            continue
+        endpoint_count = added_method_counts.get(m, 0)
+        prerequisites.append({
+            "type": "http_method",
+            "method": m.upper(),
+            "endpoint_count": endpoint_count,
+            "action": (
+                f"NEW HTTP METHOD `{m.upper()}` appears in {endpoint_count} new endpoint(s) but is "
+                f"not used anywhere in `internal/client/*.go`. Before spawning any Phase 3 agent on "
+                f"an endpoint using this method: (1) add a `{m}One[B,R]` (or equivalent) generic to "
+                f"`internal/client/client.go`, (2) document the convention in CONVENTIONS.md "
+                f"(e.g. PUT vs PATCH semantics for Update routing), (3) extend the "
+                f"`flashblade-resource-implementor` agent SKILL to brief the new method's pointer "
+                f"rules and Update() flow."
+            ),
+        })
 
     # ---- update_models (grouped by base name, cross-referenced) ----
     raw_modified = [
@@ -282,27 +498,39 @@ def build_migration_plan(
         if item.get("annotation") != "swagger_artifact"
     ]
     grouped = _group_modified_schemas(raw_modified)
+    all_modified_names = [g["schema_name"] for g in grouped]
 
     update_models: list[dict[str, Any]] = []
     for g in grouped:
-        impl_match = _match_implemented(g["schema_name"], implemented_entries)
-        action = _action_for_modified_schema({
-            "schema_name": g["schema_name"],
-            "details": {
-                "added_fields": g["added_fields"],
-                "removed_fields": g["removed_fields"],
-                "changed_fields": g["changed_fields"],
-            },
-        })
+        schema_name = g["schema_name"]
+        impl_match = _match_implemented(schema_name, implemented_map)
+        is_abstract = _is_abstract_base(schema_name, all_modified_names, implemented_map)
+
+        if is_abstract:
+            # Don't emit work for abstract bases — their composites are listed separately
+            composites = [n for n in all_modified_names if n != schema_name and n.endswith(schema_name)]
+            action = f"Abstract base schema — work covered by composite(s): {', '.join(composites)}. No direct action needed."
+        else:
+            action = _action_for_modified_schema({
+                "schema_name": schema_name,
+                "details": {
+                    "added_fields": g["added_fields"],
+                    "removed_fields": g["removed_fields"],
+                    "changed_fields": g["changed_fields"],
+                },
+                "field_variants": g.get("field_variants", {}),
+            })
+
         update_models.append({
-            "schema_name": g["schema_name"],
+            "schema_name": schema_name,
             "variants": g["variants"],
             "added_fields": g["added_fields"],
             "removed_fields": g["removed_fields"],
             "changed_fields": g["changed_fields"],
             "annotation": g["annotation"],
-            "implemented": impl_match is not None,
+            "implemented": (impl_match is not None) and (impl_match.get("resource_name") is not None),
             "terraform_resource": impl_match["resource_name"] if impl_match else None,
+            "abstract_base": is_abstract,
             "action": action,
         })
 
@@ -380,7 +608,9 @@ def build_migration_plan(
             "new_resources": len(new_resources),
             "deprecated": len(deprecated),
             "roadmap_gaps": len(roadmap_gaps),
+            "prerequisites": len(prerequisites),
         },
+        "prerequisites": prerequisites,
         "update_models": update_models,
         "new_resources": new_resources,
         "deprecated": deprecated,
@@ -417,12 +647,36 @@ def render_markdown(plan: dict[str, Any]) -> str:
         "",
         "| Category | Count |",
         "| -------- | ----- |",
+        f"| Prerequisites (blocking) | {s.get('prerequisites', 0)} |",
         f"| Model updates | {s['update_models']} ({s['update_models_implemented']} impact implemented resources) |",
         f"| New resources | {s['new_resources']} |",
         f"| Deprecated | {s['deprecated']} |",
         f"| Roadmap gaps | {s['roadmap_gaps']} |",
         "",
     ]
+
+    # Prerequisites — emit at top when present (blocking work that must precede Phase 3)
+    prereqs = plan.get("prerequisites", [])
+    if prereqs:
+        lines += [
+            "## ⚠️ Prerequisites (BLOCKING)",
+            "",
+            "These items represent infrastructure gaps the client layer needs to fill **before** "
+            "implementing any new resource that depends on them. Do not skip — proceeding without "
+            "the listed work produces broken code or forces agents into ad-hoc patterns that "
+            "diverge from project conventions.",
+            "",
+        ]
+        rows = [
+            [
+                prereq.get("type", "—"),
+                prereq.get("method", "—"),
+                str(prereq.get("endpoint_count", "—")),
+                prereq.get("action", "—"),
+            ]
+            for prereq in prereqs
+        ]
+        lines.append(_md_table(["Type", "Method", "Endpoint Count", "Action"], rows))
 
     # update_models — sorted: implemented first, then not implemented
     sorted_models = sorted(plan["update_models"], key=lambda m: (not m.get("implemented", False), m["schema_name"]))
@@ -510,6 +764,12 @@ def main() -> int:
     )
     parser.add_argument("diff_json", metavar="diff.json", help="Path to diff JSON produced by diff_swagger.py")
     parser.add_argument("roadmap_md", metavar="ROADMAP.md", help="Path to ROADMAP.md for cross-reference")
+    parser.add_argument(
+        "--project-root",
+        default=None,
+        help="Project root for codebase-based implementation detection (default: parent of ROADMAP.md). "
+             "Scans internal/client/ and internal/provider/ to determine which schemas are implemented.",
+    )
     parser.add_argument("--output", help="Write result to file (default: stdout)")
     parser.add_argument(
         "--format",
@@ -533,7 +793,10 @@ def main() -> int:
     roadmap_entries = _parse_roadmap_not_implemented(args.roadmap_md)
     implemented_entries = _parse_roadmap_implemented(args.roadmap_md)
 
-    plan = build_migration_plan(diff, roadmap_entries, implemented_entries)
+    # Default project_root to parent of ROADMAP.md (typical layout)
+    project_root = Path(args.project_root) if args.project_root else Path(args.roadmap_md).resolve().parent
+
+    plan = build_migration_plan(diff, roadmap_entries, implemented_entries, project_root=project_root)
 
     if args.format == "markdown":
         output = render_markdown(plan)

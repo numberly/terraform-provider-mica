@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/numberly/terraform-provider-mica/internal/client"
 )
@@ -32,7 +34,20 @@ func NewQosPolicyResource() resource.Resource {
 
 // ---------- model structs ----------------------------------------------------
 
-// qosPolicyModel is the Terraform state model for the flashblade_qos_policy resource.
+// qosPolicyV1Model mirrors the resource state at schema Version 1 (no context field).
+// Used by the v1→v2 state upgrader.
+type qosPolicyV1Model struct {
+	ID                  types.String   `tfsdk:"id"`
+	Name                types.String   `tfsdk:"name"`
+	Enabled             types.Bool     `tfsdk:"enabled"`
+	MaxTotalBytesPerSec types.Int64    `tfsdk:"max_total_bytes_per_sec"`
+	MaxTotalOpsPerSec   types.Int64    `tfsdk:"max_total_ops_per_sec"`
+	IsLocal             types.Bool     `tfsdk:"is_local"`
+	PolicyType          types.String   `tfsdk:"policy_type"`
+	Timeouts            timeouts.Value `tfsdk:"timeouts"`
+}
+
+// qosPolicyModel is the Terraform state model for the flashblade_qos_policy resource (v2+).
 type qosPolicyModel struct {
 	ID                  types.String   `tfsdk:"id"`
 	Name                types.String   `tfsdk:"name"`
@@ -41,6 +56,7 @@ type qosPolicyModel struct {
 	MaxTotalOpsPerSec   types.Int64    `tfsdk:"max_total_ops_per_sec"`
 	IsLocal             types.Bool     `tfsdk:"is_local"`
 	PolicyType          types.String   `tfsdk:"policy_type"`
+	Context             types.Object   `tfsdk:"context"`
 	Timeouts            timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -53,7 +69,7 @@ func (r *qosPolicyResource) Metadata(_ context.Context, _ resource.MetadataReque
 // Schema defines the resource schema.
 func (r *qosPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     1,
+		Version:     2,
 		Description: "Manages a FlashBlade QoS policy for enforcing bandwidth and IOPS limits on buckets and file systems.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -95,6 +111,20 @@ func (r *qosPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"context": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The context unique identifier.",
+					},
+					"name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The context name.",
+					},
+				},
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -106,9 +136,9 @@ func (r *qosPolicyResource) Schema(ctx context.Context, _ resource.SchemaRequest
 }
 
 // qosPolicyV0Model mirrors the resource state at schema Version 0. The shape is
-// identical to the current model since the v0→v1 migration only changes wire
-// semantics in QosPolicyPost (MaxTotal* int64 → *int64) — no Terraform attribute
-// was added, removed, or retyped. See D-52-01.
+// identical to v1 since the v0→v1 migration only changes wire semantics in
+// QosPolicyPost (MaxTotal* int64 → *int64) — no Terraform attribute was added,
+// removed, or retyped. See D-52-01.
 type qosPolicyV0Model struct {
 	ID                  types.String   `tfsdk:"id"`
 	Name                types.String   `tfsdk:"name"`
@@ -121,9 +151,8 @@ type qosPolicyV0Model struct {
 }
 
 // UpgradeState returns state upgraders for schema migrations.
-// v0→v1: no-op identity — the Terraform attribute set is unchanged. The bump exists
-// because wire-format semantics changed (QosPolicyPost.MaxTotal* int64 → *int64 so
-// the 0=unlimited value is preserved through POST). See R-006 / D-52-01.
+// v0→v1: no-op identity — Terraform attribute set unchanged (POST wire-format only). See R-006 / D-52-01.
+// v1→v2: adds computed context field (API 2.23 readOnly).
 func (r *qosPolicyResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	return map[int64]resource.StateUpgrader{
 		0: {
@@ -171,9 +200,76 @@ func (r *qosPolicyResource) UpgradeState(ctx context.Context) map[int64]resource
 				if resp.Diagnostics.HasError() {
 					return
 				}
-				// Identity copy — no attribute shape change.
-				newState := qosPolicyModel(oldState)
+
+				newState := qosPolicyV1Model(oldState)
 				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+
+		// PriorSchema verified against qosPolicyV1Model fields:
+		//   ID (Computed), Name (Required), Enabled (Optional+Computed),
+		//   MaxTotalBytesPerSec (Optional), MaxTotalOpsPerSec (Optional),
+		//   IsLocal (Computed), PolicyType (Computed), Timeouts (Optional)
+		1: {
+			PriorSchema: &schema.Schema{
+				Version:     1,
+				Description: "Manages a FlashBlade QoS policy for enforcing bandwidth and IOPS limits on buckets and file systems.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						Required: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"enabled": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+						Default:  booldefault.StaticBool(true),
+					},
+					"max_total_bytes_per_sec": schema.Int64Attribute{Optional: true},
+					"max_total_ops_per_sec":   schema.Int64Attribute{Optional: true},
+					"is_local":                schema.BoolAttribute{Computed: true},
+					"policy_type": schema.StringAttribute{
+						Computed: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var prior qosPolicyV1Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				next := qosPolicyModel{
+					ID:                  prior.ID,
+					Name:                prior.Name,
+					Enabled:             prior.Enabled,
+					MaxTotalBytesPerSec: prior.MaxTotalBytesPerSec,
+					MaxTotalOpsPerSec:   prior.MaxTotalOpsPerSec,
+					IsLocal:             prior.IsLocal,
+					PolicyType:          prior.PolicyType,
+					// context: new computed field in v2 — null until Read hydrates from API.
+					Context:  types.ObjectNull(qosPolicyContextAttrTypes()),
+					Timeouts: prior.Timeouts,
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
 			},
 		},
 	}
@@ -262,6 +358,18 @@ func (r *qosPolicyResource) Read(ctx context.Context, req resource.ReadRequest, 
 		}
 		resp.Diagnostics.AddError("Error reading QoS policy", err.Error())
 		return
+	}
+
+	// Drift detection on context field.
+	if !data.Context.IsNull() && !data.Context.IsUnknown() {
+		if policy.Context == nil {
+			tflog.Debug(ctx, "drift detected on QoS policy", map[string]any{
+				"resource": data.Name.ValueString(),
+				"field":    "context",
+				"was":      data.Context.String(),
+				"now":      "null",
+			})
+		}
 	}
 
 	mapQosPolicyToModel(policy, &data)
@@ -365,6 +473,14 @@ func (r *qosPolicyResource) ImportState(ctx context.Context, req resource.Import
 
 // ---------- helpers ---------------------------------------------------------
 
+// qosPolicyContextAttrTypes returns the attribute types for the context nested object.
+func qosPolicyContextAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   types.StringType,
+		"name": types.StringType,
+	}
+}
+
 // mapQosPolicyToModel maps a client.QosPolicy to the Terraform model.
 func mapQosPolicyToModel(policy *client.QosPolicy, data *qosPolicyModel) {
 	data.ID = types.StringValue(policy.ID)
@@ -383,5 +499,16 @@ func mapQosPolicyToModel(policy *client.QosPolicy, data *qosPolicyModel) {
 		data.MaxTotalOpsPerSec = types.Int64Value(policy.MaxTotalOpsPerSec)
 	} else if data.MaxTotalOpsPerSec.IsNull() || data.MaxTotalOpsPerSec.IsUnknown() {
 		data.MaxTotalOpsPerSec = types.Int64Null()
+	}
+
+	// Context — set if present in API response, null otherwise (Computed-only).
+	if policy.Context != nil {
+		ctxObj, _ := types.ObjectValue(qosPolicyContextAttrTypes(), map[string]attr.Value{
+			"id":   types.StringValue(policy.Context.ID),
+			"name": types.StringValue(policy.Context.Name),
+		})
+		data.Context = ctxObj
+	} else {
+		data.Context = types.ObjectNull(qosPolicyContextAttrTypes())
 	}
 }

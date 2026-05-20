@@ -1,10 +1,10 @@
 # API Coverage Roadmap
 
-FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
+FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-04-17
-**Provider version:** v2.22.2
-**Total API sections:** 84 | **Covered:** ~44 | **Coverage of IaC-relevant CRUD:** ~75%
+**Last updated:** 2026-05-20 (API 2.23 upgrade: workload resource + resiliency_group/member data sources, schema v1/v2 migrations on file_system, file_system_export, nfs/smb/qos policies)
+**Provider version:** v2.23.0
+**Total API sections:** 84 | **Covered:** ~48 (55 resources + 43 data sources) | **Coverage of IaC-relevant CRUD:** ~78%
 
 ## Coverage Legend
 
@@ -24,7 +24,8 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
-| File Systems | `flashblade_file_system` | Yes | Done | CRUD + soft-delete + eradication |
+| Workloads | `flashblade_workload` | Yes | Done | CRUD + soft-delete + eradication; preset-driven workload orchestration (API 2.23) |
+| File Systems | `flashblade_file_system` | Yes | Done | CRUD + soft-delete + eradication; gained `workload` field (API 2.23, schema v1) |
 | Buckets | `flashblade_bucket` | Yes | Done | Versioning, quota, eradication, object lock, public access |
 | Object Store Accounts | `flashblade_object_store_account` | Yes | Done | S3 namespace |
 | Object Store Access Keys | `flashblade_object_store_access_key` | Yes | Done | Cross-array secret sharing |
@@ -39,7 +40,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Bucket Access Policies | `flashblade_bucket_access_policy` | Yes | Done | IAM-style per-bucket |
 | Bucket Access Policy Rules | `flashblade_bucket_access_policy_rule` | No | Done | |
 | Bucket Audit Filters | `flashblade_bucket_audit_filter` | Yes | Done | Actions + prefix filtering |
-| QoS Policies | `flashblade_qos_policy` | Yes | Done | Bandwidth + IOPS limits |
+| QoS Policies | `flashblade_qos_policy` | Yes | Done | Bandwidth + IOPS limits; schema v2 adds computed context field (API 2.23) |
 | QoS Policy Members | `flashblade_qos_policy_member` | No | Done | FS assignment (buckets not supported on v2.22) |
 
 ### Policies
@@ -47,8 +48,8 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
 | NFS Export Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
-| SMB Share Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
-| SMB Client Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
+| SMB Share Policy + Rules | Yes + Yes | Yes | Done | Full CRUD; schema v1: computed workload (API 2.23) |
+| SMB Client Policy + Rules | Yes + Yes | Yes | Done | Full CRUD; schema v1: computed workload (API 2.23) |
 | Snapshot Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
 | Network Access Policy + Rules | Yes + Yes | Yes | Done | Singleton + rules |
 | Object Store Access Policy + Rules | Yes + Yes | Yes | Done | Full CRUD |
@@ -59,7 +60,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | API Section | Resource | Data Source | Status | Notes |
 |-------------|----------|:----------:|--------|-------|
 | Servers | `flashblade_server` | Yes | Done | DNS, directory_services, network_interfaces |
-| File System Exports | `flashblade_file_system_export` | Yes | Done | NFS export to server |
+| File System Exports | `flashblade_file_system_export` | Yes | Done | NFS export to server; workload back-reference (API 2.23, schema v2) |
 | Account Exports | `flashblade_object_store_account_export` | Yes | Done | S3 export to server |
 | Virtual Hosts | `flashblade_object_store_virtual_host` | Yes | Done | S3 virtual-hosted endpoints |
 
@@ -70,6 +71,8 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Subnets | `flashblade_subnet` | Yes | Done | Prefix, gateway, MTU, VLAN, LAG |
 | Network Interfaces | `flashblade_network_interface` | Yes | Done | VIP: data, sts, egress-only, replication |
 | Link Aggregation Groups | No | Yes | DS-only | Hardware-managed, read-only |
+| Resiliency Groups | No | Yes | DS-only | Hardware-managed HA group (status, status_details) -- API 2.23 |
+| Resiliency Group Members | No | Yes | DS-only | Group-to-member relationships -- API 2.23 |
 
 ### Replication
 
@@ -129,6 +132,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Snapshot Policy FS Members | Resource | POST, DELETE `/snapshot-policies/file-systems` | Link snapshot policies to filesystems | Candidate |
 | Object Store Roles | Resource | Full CRUD + trust policies | IAM-style roles for S3 fine-grained access | Candidate |
 | Active Directory | Resource | Full CRUD | AD integration for SMB/NFS authentication | Candidate |
+| Workload Presets | Resource | Full CRUD + PUT | Template-driven workload preset (API 2.23). **Blocked**: requires new `putOne[B,R]` generic in client, CONVENTIONS update for PATCH-rename vs PUT-replace routing, and `flashblade-resource-implementor` agent extension for PUT semantics | Candidate |
 
 ### Medium Priority -- Admin and security
 

@@ -25,7 +25,7 @@ func TestUnit_ObjectStoreVirtualHost_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-virtual-hosts":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-virtual-hosts":
 			name := r.URL.Query().Get("names")
 			if name != "s3.example.com" {
 				writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreVirtualHost{}))
@@ -60,7 +60,7 @@ func TestUnit_ObjectStoreVirtualHost_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-virtual-hosts":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-virtual-hosts":
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreVirtualHost{}))
 		default:
 			http.NotFound(w, r)
@@ -84,7 +84,7 @@ func TestUnit_ObjectStoreVirtualHost_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-virtual-hosts":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-virtual-hosts":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -133,7 +133,7 @@ func TestUnit_ObjectStoreVirtualHost_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-virtual-hosts":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/object-store-virtual-hosts":
 			name := r.URL.Query().Get("names")
 			if name != "old.example.com" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -181,7 +181,7 @@ func TestUnit_ObjectStoreVirtualHost_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/object-store-virtual-hosts":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/object-store-virtual-hosts":
 			name := r.URL.Query().Get("names")
 			if name != "delete.example.com" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)

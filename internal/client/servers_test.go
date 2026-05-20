@@ -21,7 +21,7 @@ func TestUnit_Server_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/servers":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/servers":
 			name := r.URL.Query().Get("names")
 			if name != "test-server" {
 				writeJSON(w, http.StatusOK, listResponse([]client.Server{}))
@@ -53,7 +53,7 @@ func TestUnit_Server_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/servers":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/servers":
 			writeJSON(w, http.StatusOK, listResponse([]client.Server{}))
 		default:
 			http.NotFound(w, r)
@@ -77,7 +77,7 @@ func TestUnit_Server_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/servers":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/servers":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -129,7 +129,7 @@ func TestUnit_Server_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/servers":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/servers":
 			name := r.URL.Query().Get("names")
 			if name != "existing-server" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -175,7 +175,7 @@ func TestUnit_Server_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/servers":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/servers":
 			name := r.URL.Query().Get("names")
 			if name != "delete-server" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -206,7 +206,7 @@ func TestUnit_Server_Delete_CascadeDelete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/servers":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/servers":
 			gotCascade = r.URL.Query().Get("cascade_delete")
 			w.WriteHeader(http.StatusOK)
 		default:

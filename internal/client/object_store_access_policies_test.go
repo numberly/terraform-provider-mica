@@ -25,7 +25,7 @@ func TestUnit_ObjectStoreAccessPolicy_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-access-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-access-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-oap" {
 				writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccessPolicy{}))
@@ -57,7 +57,7 @@ func TestUnit_ObjectStoreAccessPolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-access-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-access-policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccessPolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -81,7 +81,7 @@ func TestUnit_ObjectStoreAccessPolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-access-policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-access-policies":
 			name := r.URL.Query().Get("names")
 			if name == "" {
 				http.Error(w, "names query param missing", http.StatusBadRequest)
@@ -129,7 +129,7 @@ func TestUnit_ObjectStoreAccessPolicy_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-access-policies":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/object-store-access-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-oap" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -173,7 +173,7 @@ func TestUnit_ObjectStoreAccessPolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/object-store-access-policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/object-store-access-policies":
 			name := r.URL.Query().Get("names")
 			if name != "my-oap" {
 				http.Error(w, "unexpected name", http.StatusBadRequest)
@@ -207,7 +207,7 @@ func TestUnit_ObjectStoreAccessPolicy_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-access-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-access-policies":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            policies,
 				"total_item_count": 2,
@@ -245,7 +245,7 @@ func TestUnit_ObjectStoreAccessPolicyRule_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-access-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-access-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-oap" || ruleName != "allow-get-object" {
@@ -281,7 +281,7 @@ func TestUnit_ObjectStoreAccessPolicyRule_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-access-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-access-policies/rules":
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccessPolicyRule{}))
 		default:
 			http.NotFound(w, r)
@@ -305,7 +305,7 @@ func TestUnit_ObjectStoreAccessPolicyRule_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-access-policies/rules":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-access-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-oap" || ruleName != "new-rule" {
@@ -359,7 +359,7 @@ func TestUnit_ObjectStoreAccessPolicyRule_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/object-store-access-policies/rules":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/object-store-access-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-oap" || ruleName != "allow-get-object" {
@@ -389,7 +389,7 @@ func TestUnit_ObjectStoreAccessPolicyRule_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-access-policies/rules":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/object-store-access-policies/rules":
 			policyName := r.URL.Query().Get("policy_names")
 			ruleName := r.URL.Query().Get("names")
 			if policyName != "my-oap" || ruleName != "allow-get-object" {
@@ -442,7 +442,7 @@ func TestUnit_ObjectStoreAccessPolicyRule_Patch_ClearList(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-access-policies/rules":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/object-store-access-policies/rules":
 			capturedBody, _ = io.ReadAll(r.Body)
 			rule := client.ObjectStoreAccessPolicyRule{
 				Name:      r.URL.Query().Get("names"),

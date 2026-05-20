@@ -24,7 +24,7 @@ func TestUnit_BucketAccessPolicy_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets/bucket-access-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets/bucket-access-policies":
 			bucketName := r.URL.Query().Get("bucket_names")
 			if bucketName != "my-bucket" {
 				writeJSON(w, http.StatusOK, listResponse([]client.BucketAccessPolicy{}))
@@ -56,7 +56,7 @@ func TestUnit_BucketAccessPolicy_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets/bucket-access-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets/bucket-access-policies":
 			writeJSON(w, http.StatusOK, listResponse([]client.BucketAccessPolicy{}))
 		default:
 			http.NotFound(w, r)
@@ -80,7 +80,7 @@ func TestUnit_BucketAccessPolicy_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/buckets/bucket-access-policies":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/buckets/bucket-access-policies":
 			bucketName := r.URL.Query().Get("bucket_names")
 			if bucketName == "" {
 				http.Error(w, "bucket_names required", http.StatusBadRequest)
@@ -125,7 +125,7 @@ func TestUnit_BucketAccessPolicy_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/buckets/bucket-access-policies":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/buckets/bucket-access-policies":
 			bucketName := r.URL.Query().Get("bucket_names")
 			if bucketName != "my-bucket" {
 				http.Error(w, "unexpected bucket_names param", http.StatusBadRequest)
@@ -164,7 +164,7 @@ func TestUnit_BucketAccessPolicyRule_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets/bucket-access-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets/bucket-access-policies/rules":
 			bucketName := r.URL.Query().Get("bucket_names")
 			ruleName := r.URL.Query().Get("names")
 			if bucketName != "my-bucket" || ruleName != "allow-public-get" {
@@ -197,7 +197,7 @@ func TestUnit_BucketAccessPolicyRule_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets/bucket-access-policies/rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets/bucket-access-policies/rules":
 			writeJSON(w, http.StatusOK, listResponse([]client.BucketAccessPolicyRule{}))
 		default:
 			http.NotFound(w, r)
@@ -221,7 +221,7 @@ func TestUnit_BucketAccessPolicyRule_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/buckets/bucket-access-policies/rules":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/buckets/bucket-access-policies/rules":
 			// POST requires both ?names= (bucket) and ?bucket_names= (bucket)
 			names := r.URL.Query().Get("names")
 			bucketNames := r.URL.Query().Get("bucket_names")
@@ -275,7 +275,7 @@ func TestUnit_BucketAccessPolicyRule_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/buckets/bucket-access-policies/rules":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/buckets/bucket-access-policies/rules":
 			bucketName := r.URL.Query().Get("bucket_names")
 			ruleName := r.URL.Query().Get("names")
 			if bucketName != "my-bucket" || ruleName != "allow-public-get" {

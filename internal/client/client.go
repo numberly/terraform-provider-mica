@@ -18,7 +18,7 @@ import (
 )
 
 // APIVersion is the FlashBlade REST API version this client targets.
-const APIVersion = "2.22"
+const APIVersion = "2.23"
 
 // Config holds all parameters for constructing a FlashBladeClient.
 type Config struct {
@@ -156,9 +156,9 @@ func buildTransport(cfg Config, retryDelay time.Duration) (http.RoundTripper, er
 	}, nil
 }
 
-// NegotiateVersion fetches the API version list and verifies that v2.22 is supported.
+// NegotiateVersion fetches the API version list and verifies that APIVersion is supported by the array.
 func (c *FlashBladeClient) NegotiateVersion(ctx context.Context) error {
-	// Extract base endpoint from baseURL (strip "/api/2.22").
+	// Extract base endpoint from baseURL (strip "/api/<APIVersion>").
 	endpoint := strings.TrimSuffix(c.baseURL, "/api/"+APIVersion)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"/api/api_version", nil)

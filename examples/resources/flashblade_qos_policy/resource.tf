@@ -7,4 +7,7 @@ resource "flashblade_qos_policy" "example" {
 
   # 10,000 IOPS ceiling
   max_total_ops_per_sec = 10000
+
+  # context: read-only, populated by the API when the policy is associated
+  # with a workload context. Not settable by the user.
 }

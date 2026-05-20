@@ -28,7 +28,7 @@
 #
 # Prerequisites:
 #   - Two FlashBlade arrays with an array connection already established
-#   - REST API v2.22+ on both arrays
+#   - REST API v2.23+ on both arrays
 #   - Network connectivity between arrays on replication ports
 #
 # Usage:

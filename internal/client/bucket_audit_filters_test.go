@@ -23,7 +23,7 @@ func TestUnit_BucketAuditFilter_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets/audit-filters":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets/audit-filters":
 			filterName := r.URL.Query().Get("names")
 			bucketName := r.URL.Query().Get("bucket_names")
 			if filterName != "audit-filter-01" || bucketName != "my-bucket" {
@@ -59,7 +59,7 @@ func TestUnit_BucketAuditFilter_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/buckets/audit-filters":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/buckets/audit-filters":
 			writeJSON(w, http.StatusOK, listResponse([]client.BucketAuditFilter{}))
 		default:
 			http.NotFound(w, r)
@@ -83,7 +83,7 @@ func TestUnit_BucketAuditFilter_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/buckets/audit-filters":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/buckets/audit-filters":
 			filterName := r.URL.Query().Get("names")
 			bucketName := r.URL.Query().Get("bucket_names")
 			if filterName == "" || bucketName == "" {
@@ -140,7 +140,7 @@ func TestUnit_BucketAuditFilter_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/buckets/audit-filters":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/buckets/audit-filters":
 			filterName := r.URL.Query().Get("names")
 			bucketName := r.URL.Query().Get("bucket_names")
 			if filterName != "audit-filter-01" || bucketName != "my-bucket" {
@@ -197,7 +197,7 @@ func TestUnit_BucketAuditFilter_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/buckets/audit-filters":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/buckets/audit-filters":
 			filterName := r.URL.Query().Get("names")
 			bucketName := r.URL.Query().Get("bucket_names")
 			if filterName != "audit-filter-01" || bucketName != "my-bucket" {

@@ -18,14 +18,14 @@ type serverStore struct {
 	byID   map[string]*client.Server
 }
 
-// RegisterServerHandlers registers CRUD handlers for /api/2.22/servers
+// RegisterServerHandlers registers CRUD handlers for /api/2.23/servers
 // against the provided ServeMux. The handlers share in-memory state and are thread-safe.
 func RegisterServerHandlers(mux *http.ServeMux) *serverStore {
 	store := &serverStore{
 		byName: make(map[string]*client.Server),
 		byID:   make(map[string]*client.Server),
 	}
-	mux.HandleFunc("/api/2.22/servers", store.handle)
+	mux.HandleFunc("/api/2.23/servers", store.handle)
 	return store
 }
 
@@ -60,7 +60,7 @@ func (s *serverStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.22/servers with optional ?names= param.
+// handleGet handles GET /api/2.23/servers with optional ?names= param.
 func (s *serverStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -87,7 +87,7 @@ func (s *serverStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/servers?names={name}&create_ds={name}_nfs.
+// handlePost handles POST /api/2.23/servers?names={name}&create_ds={name}_nfs.
 // Both query parameters are required by the FlashBlade API.
 func (s *serverStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "create_ds"}) {
@@ -126,7 +126,7 @@ func (s *serverStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Server{*srv})
 }
 
-// handlePatch handles PATCH /api/2.22/servers?names={name}.
+// handlePatch handles PATCH /api/2.23/servers?names={name}.
 func (s *serverStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -162,7 +162,7 @@ func (s *serverStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Server{*srv})
 }
 
-// handleDelete handles DELETE /api/2.22/servers?names={name}.
+// handleDelete handles DELETE /api/2.23/servers?names={name}.
 // Accepts an optional ?cascade_delete= parameter but does not validate it.
 func (s *serverStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")

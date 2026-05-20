@@ -373,7 +373,7 @@ func TestUnit_QuotaGroupDataSource(t *testing.T) {
 func TestUnit_Unit_QuotaGroup_Create_Conflict(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
-	ms.RegisterHandler("/api/2.22/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
+	ms.RegisterHandler("/api/2.23/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			handlers.WriteJSONError(w, http.StatusConflict, "A quota for this group already exists on the file system.")
 			return
@@ -401,7 +401,7 @@ func TestUnit_Unit_QuotaGroup_Create_Conflict(t *testing.T) {
 func TestUnit_Unit_QuotaGroup_Read_NotFound(t *testing.T) {
 	ms := testmock.NewMockServer()
 	defer ms.Close()
-	ms.RegisterHandler("/api/2.22/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
+	ms.RegisterHandler("/api/2.23/quotas/groups", func(w http.ResponseWriter, r *http.Request) {
 		handlers.WriteJSONListResponse(w, http.StatusOK, []client.QuotaGroup{})
 	})
 

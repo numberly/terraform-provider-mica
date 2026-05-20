@@ -26,7 +26,7 @@ func TestUnit_NetworkAccessPolicy_List_Paginated(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/network-access-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/network-access-policies":
 			callCount++
 			token := r.URL.Query().Get("continuation_token")
 			switch token {
@@ -78,7 +78,7 @@ func TestUnit_NetworkAccessPolicy_List_SinglePage(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/network-access-policies":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/network-access-policies":
 			callCount++
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            policies,
@@ -110,7 +110,7 @@ func TestUnit_NetworkAccessPolicyRule_Patch_ClearList(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/network-access-policies/rules":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/network-access-policies/rules":
 			capturedBody, _ = io.ReadAll(r.Body)
 			rule := client.NetworkAccessPolicyRule{
 				Name:       r.URL.Query().Get("names"),

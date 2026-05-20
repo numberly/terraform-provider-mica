@@ -151,7 +151,7 @@ resource "flashblade_qos_policy" "standard" {
   max_total_ops_per_sec   = 10000      # 10k IOPS
 }
 
-# Note: QoS member_type only supports "file-systems" and "realms" on API v2.22.
+# Note: QoS member_type only supports "file-systems" and "realms" -- bucket assignment is not supported by the FlashBlade API.
 # Bucket QoS assignment is managed via the bucket's qos_policy attribute instead.
 # resource "flashblade_qos_policy_member" "bucket" {
 #   policy_name = flashblade_qos_policy.standard.name

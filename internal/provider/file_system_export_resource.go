@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/numberly/terraform-provider-mica/internal/client"
@@ -33,8 +35,25 @@ func NewFileSystemExportResource() resource.Resource {
 
 // ---------- model structs ----------------------------------------------------
 
-// fileSystemExportModel is the top-level model for the flashblade_file_system_export resource.
+// fileSystemExportModel is the top-level model for the flashblade_file_system_export resource (schema v2+).
 type fileSystemExportModel struct {
+	ID              types.String   `tfsdk:"id"`
+	Name            types.String   `tfsdk:"name"`
+	ExportName      types.String   `tfsdk:"export_name"`
+	FileSystemName  types.String   `tfsdk:"file_system_name"`
+	ServerName      types.String   `tfsdk:"server_name"`
+	PolicyName      types.String   `tfsdk:"policy_name"`
+	SharePolicyName types.String   `tfsdk:"share_policy_name"`
+	Enabled         types.Bool     `tfsdk:"enabled"`
+	PolicyType      types.String   `tfsdk:"policy_type"`
+	Status          types.String   `tfsdk:"status"`
+	Workload        types.Object   `tfsdk:"workload"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
+}
+
+// fileSystemExportV0Model is the frozen v0 state model. Identical attribute set to v1 —
+// the v0→v1 bump is defensive per D-51-04 (only wire-format semantics changed on PATCH).
+type fileSystemExportV0Model struct {
 	ID              types.String   `tfsdk:"id"`
 	Name            types.String   `tfsdk:"name"`
 	ExportName      types.String   `tfsdk:"export_name"`
@@ -48,9 +67,9 @@ type fileSystemExportModel struct {
 	Timeouts        timeouts.Value `tfsdk:"timeouts"`
 }
 
-// fileSystemExportV0Model is the v0 state model. Identical attribute set to the current model —
-// the v0→v1 bump is defensive per D-51-04 (only wire-format semantics changed on PATCH).
-type fileSystemExportV0Model struct {
+// fileSystemExportV1Model is the frozen v1 state model (schema version 1).
+// Used by the v1→v2 state upgrader.
+type fileSystemExportV1Model struct {
 	ID              types.String   `tfsdk:"id"`
 	Name            types.String   `tfsdk:"name"`
 	ExportName      types.String   `tfsdk:"export_name"`
@@ -73,7 +92,7 @@ func (r *fileSystemExportResource) Metadata(_ context.Context, _ resource.Metada
 // Schema defines the resource schema.
 func (r *fileSystemExportResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Version:     1,
+		Version:     2,
 		Description: "Manages a FlashBlade file system export.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -139,6 +158,20 @@ func (r *fileSystemExportResource) Schema(ctx context.Context, _ resource.Schema
 				Computed:    true,
 				Description: "The status of the export.",
 			},
+			"workload": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The workload unique identifier.",
+					},
+					"name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The workload name.",
+					},
+				},
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
@@ -154,6 +187,7 @@ func (r *fileSystemExportResource) Schema(ctx context.Context, _ resource.Schema
 // v0→v1: no-op identity. The Terraform attribute set is unchanged; the bump exists because
 // wire-format semantics changed for Server and SharePolicy (**NamedReference in PATCH).
 // See D-51-03 and D-51-04.
+// v1→v2: adds workload (computed object reference, API 2.23).
 func (r *fileSystemExportResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	return map[int64]resource.StateUpgrader{
 		0: {
@@ -186,8 +220,115 @@ func (r *fileSystemExportResource) UpgradeState(ctx context.Context) map[int64]r
 					return
 				}
 
-				newState := fileSystemExportModel(oldState)
+				newState := fileSystemExportV1Model(oldState)
 				resp.Diagnostics.Append(resp.State.Set(ctx, newState)...)
+			},
+		},
+		// PriorSchema verified against fileSystemExportV1Model fields:
+		//   ID (Computed), Name (Computed), ExportName (Optional+Computed),
+		//   FileSystemName (Required), ServerName (Required), PolicyName (Required),
+		//   SharePolicyName (Optional+Computed), Enabled (Computed),
+		//   PolicyType (Computed), Status (Computed), Timeouts (Optional)
+		1: {
+			PriorSchema: &schema.Schema{
+				Version:     1,
+				Description: "Manages a FlashBlade file system export.",
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "The unique identifier of the file system export.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The combined name of the export (e.g. 'filesystem/export_name').",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"export_name": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The export name part. Defaults to the file system name if not set.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"file_system_name": schema.StringAttribute{
+						Required:    true,
+						Description: "The name of the file system to export. Changing this forces a new resource.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"server_name": schema.StringAttribute{
+						Required:    true,
+						Description: "The name of the server to export to. Changing this forces a new resource.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"policy_name": schema.StringAttribute{
+						Required:    true,
+						Description: "The name of the NFS export policy to apply to the export.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"share_policy_name": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The name of the SMB share policy to apply to the export.",
+					},
+					"enabled": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Whether the export is enabled.",
+					},
+					"policy_type": schema.StringAttribute{
+						Computed:    true,
+						Description: "The policy type ('nfs' or 'smb').",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"status": schema.StringAttribute{
+						Computed:    true,
+						Description: "The status of the export.",
+					},
+					"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+						Create: true,
+						Read:   true,
+						Update: true,
+						Delete: true,
+					}),
+				},
+			},
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				var prior fileSystemExportV1Model
+				resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+
+				next := fileSystemExportModel{
+					ID:              prior.ID,
+					Name:            prior.Name,
+					ExportName:      prior.ExportName,
+					FileSystemName:  prior.FileSystemName,
+					ServerName:      prior.ServerName,
+					PolicyName:      prior.PolicyName,
+					SharePolicyName: prior.SharePolicyName,
+					Enabled:         prior.Enabled,
+					PolicyType:      prior.PolicyType,
+					Status:          prior.Status,
+					// workload: new computed field in v2 — null until Read hydrates from API.
+					Workload: types.ObjectNull(fsExportWorkloadAttrTypes()),
+					Timeouts: prior.Timeouts,
+				}
+
+				resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
 			},
 		},
 	}
@@ -278,10 +419,10 @@ func (r *fileSystemExportResource) Read(ctx context.Context, req resource.ReadRe
 	if !data.ExportName.IsNull() && !data.ExportName.IsUnknown() {
 		if data.ExportName.ValueString() != export.ExportName {
 			tflog.Debug(ctx, "drift detected on file system export", map[string]any{
-				"resource":    name,
-				"field":       "export_name",
-				"was":         data.ExportName.ValueString(),
-				"now":           export.ExportName,
+				"resource": name,
+				"field":    "export_name",
+				"was":      data.ExportName.ValueString(),
+				"now":      export.ExportName,
 			})
 		}
 	}
@@ -292,11 +433,36 @@ func (r *fileSystemExportResource) Read(ctx context.Context, req resource.ReadRe
 		}
 		if data.SharePolicyName.ValueString() != apiSharePolicy {
 			tflog.Debug(ctx, "drift detected on file system export", map[string]any{
-				"resource":    name,
-				"field":       "share_policy_name",
-				"was":         data.SharePolicyName.ValueString(),
-				"now":           apiSharePolicy,
+				"resource": name,
+				"field":    "share_policy_name",
+				"was":      data.SharePolicyName.ValueString(),
+				"now":      apiSharePolicy,
 			})
+		}
+	}
+	if !data.Workload.IsNull() && !data.Workload.IsUnknown() {
+		// Workload is a computed object — drift check by comparing id+name from state vs API.
+		var stateWorkload struct {
+			ID   types.String `tfsdk:"id"`
+			Name types.String `tfsdk:"name"`
+		}
+		if diags := data.Workload.As(ctx, &stateWorkload, basetypes.ObjectAsOptions{}); !diags.HasError() {
+			apiID := ""
+			apiName := ""
+			if export.Workload != nil {
+				apiID = export.Workload.ID
+				apiName = export.Workload.Name
+			}
+			if stateWorkload.ID.ValueString() != apiID || stateWorkload.Name.ValueString() != apiName {
+				tflog.Debug(ctx, "drift detected on file system export", map[string]any{
+					"resource":  name,
+					"field":     "workload",
+					"was_id":    stateWorkload.ID.ValueString(),
+					"was_name":  stateWorkload.Name.ValueString(),
+					"now_id":    apiID,
+					"now_name":  apiName,
+				})
+			}
 		}
 	}
 
@@ -412,6 +578,14 @@ func (r *fileSystemExportResource) readIntoState(ctx context.Context, name strin
 }
 
 
+// fsExportWorkloadAttrTypes returns the attribute types for the workload nested object.
+func fsExportWorkloadAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   types.StringType,
+		"name": types.StringType,
+	}
+}
+
 // mapFileSystemExportToModel maps a client.FileSystemExport to a fileSystemExportModel.
 // It preserves user-managed fields (Timeouts).
 func mapFileSystemExportToModel(export *client.FileSystemExport, data *fileSystemExportModel) {
@@ -435,5 +609,16 @@ func mapFileSystemExportToModel(export *client.FileSystemExport, data *fileSyste
 		data.SharePolicyName = types.StringValue(export.SharePolicy.Name)
 	} else {
 		data.SharePolicyName = types.StringNull()
+	}
+
+	// Workload — set if present in API response, null otherwise (Computed-only).
+	if export.Workload != nil {
+		workloadObj, _ := types.ObjectValue(fsExportWorkloadAttrTypes(), map[string]attr.Value{
+			"id":   types.StringValue(export.Workload.ID),
+			"name": types.StringValue(export.Workload.Name),
+		})
+		data.Workload = workloadObj
+	} else {
+		data.Workload = types.ObjectNull(fsExportWorkloadAttrTypes())
 	}
 }

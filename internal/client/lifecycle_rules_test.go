@@ -36,7 +36,7 @@ func TestUnit_LifecycleRule_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/lifecycle-rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/lifecycle-rules":
 			// Get uses bucket_names filter
 			bucketName := r.URL.Query().Get("bucket_names")
 			if bucketName != "my-bucket" {
@@ -72,7 +72,7 @@ func TestUnit_LifecycleRule_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/lifecycle-rules":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/lifecycle-rules":
 			// Return rules but not the one being searched
 			writeJSON(w, http.StatusOK, listResponse([]client.LifecycleRule{
 				{ID: "lr-id-999", RuleID: "other-rule", Bucket: client.NamedReference{Name: "my-bucket"}},
@@ -99,7 +99,7 @@ func TestUnit_LifecycleRule_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/lifecycle-rules":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/lifecycle-rules":
 			var body client.LifecycleRulePost
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "bad body", http.StatusBadRequest)
@@ -145,7 +145,7 @@ func TestUnit_LifecycleRule_Post_WithConfirmDate(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/lifecycle-rules":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/lifecycle-rules":
 			if r.URL.Query().Get("confirm_date") != "true" {
 				http.Error(w, "expected confirm_date=true", http.StatusBadRequest)
 				return
@@ -181,7 +181,7 @@ func TestUnit_LifecycleRule_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/lifecycle-rules":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/lifecycle-rules":
 			// Patch uses composite names: bucketName/ruleID
 			name := r.URL.Query().Get("names")
 			if name != "my-bucket/expire-old" {
@@ -232,7 +232,7 @@ func TestUnit_LifecycleRule_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/lifecycle-rules":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/lifecycle-rules":
 			// Delete uses composite names: bucketName/ruleID
 			name := r.URL.Query().Get("names")
 			if name != "my-bucket/expire-old" {

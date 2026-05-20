@@ -1,34 +1,38 @@
 ---
 gsd_state_version: 1.0
-milestone: pulumi-2.22.3
-milestone_name: Pulumi Bridge Alpha
-status: completed
-last_updated: "2026-04-24T12:00:00.000Z"
-last_activity: 2026-04-24
+milestone: v2.23.0
+milestone_name: — FlashBlade API 2.23 Upgrade
+status: executing
+last_updated: "2026-05-20T08:31:47.510Z"
+last_activity: 2026-05-20
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 10
+  completed_plans: 6
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-21)
+See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** Phase 58 — release-pipeline-docs
+**Current focus:** Phase 60 — v2.23.0 Release
 
 ## Current Position
 
-Milestone: pulumi-2.22.3 (Pulumi Bridge Alpha) — **COMPLETED 2026-04-24**
-Status: Archived — no active milestone
-Last activity: 2026-04-24
+Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade
+Phase: 60 (v2.23.0 Release) — EXECUTING
+Plan: 3 of 5
+Status: Ready to execute
+Last activity: 2026-05-20
 
-Progress: [██████████] 100% (5/5 phases, 15/15 plans)
+Progress: [░░░░░░░░░░] 0% (0/2 phases)
+
+Working branch: `test/api-upgrade-2.23` (~167 fichiers, ~7000 insertions vs main)
 
 ## Recent Milestones
 
@@ -37,59 +41,45 @@ Progress: [██████████] 100% (5/5 phases, 15/15 plans)
 - ✅ **v2.22.2** — Directory Service Roles & Role Mappings (shipped 2026-04-17, 818 tests, [archive](milestones/v2.22.2-ROADMAP.md))
 - ✅ **v2.22.1** — Directory Service – Array Management (shipped 2026-04-17, 798 tests, [archive](milestones/v2.22.1-ROADMAP.md))
 
+## Performance Metrics
+
+- **Provider tests:** 836 (baseline at last shipped milestone pulumi-2.22.3)
+- **TEST_BASELINE (GNUmakefile):** 807 — to refresh once API 2.23 work lands on main (RELEASE-06)
+- **Lint:** 0 issues at last release
+- **Resources / Data sources:** 54 / 40 pre-API-2.23. Expected delta on merge: +1 resource (workload), +3 data sources (workload, resiliency_group, resiliency_group_member)
+
 ## Accumulated Context
 
-### Key Decisions (pulumi-2.22.3)
+### Key Decisions (v2.23.0)
 
-- **Module path:** `github.com/numberly/opentofu-provider-flashblade` (TF provider root). Bridge modules: `./pulumi/provider/` and `./pulumi/sdk/go/` each with own `go.mod`; TF provider wired via `replace ../../`.
-- **Bridge versions:** `pulumi-terraform-bridge/v3 v3.127.0`, `pulumi/sdk/v3 v3.231.0`, `pulumi/pkg/v3 v3.231.0`. Replace SHA: `v2.0.0-20260318212141-5525259d096b`.
-- **Schema commit policy:** `schema.json` + `bridge-metadata.json` committed to git (no schema-embed.json — bridge v3.127.0 does not generate it). CI enforces `git diff --exit-code` after `make tfgen`.
-- **Secrets pattern:** `Secret: tfbridge.True()` + `AdditionalSecretOutputs` belt-and-braces (Write-Only Fields pattern deferred). NOTE: `AdditionalSecretOutputs` field does NOT exist on `ResourceInfo` in bridge v3.127.0 — TF `Sensitive=true` auto-promotion is the runtime defense.
-- **Composite IDs:** All 4 composite resources use `/` separator with string IDs (NOT colon + integer). Verified against `readIntoState` in `internal/provider/`.
-- **No SetAutonaming:** Storage names are operational identifiers — no random suffix.
-- **Soft-delete defense:** `DeleteTimeout: 30*time.Minute` on bucket + filesystem (bridge default 5min kills `pollUntilGone`). NOTE: `DeleteTimeout` field does NOT exist on `ResourceInfo` in bridge v3.127.0 — TF timeouts defaults (30m for bucket/filesystem) inherited via shim.
-- **ShimProvider import:** `pftfbridge "github.com/pulumi/pulumi-terraform-bridge/v3/pkg/pf/tfbridge"` — the constructor lives here, not in `pkg/pf` which only defines the interface.
-- **pftfbridge.Main signature (v3.127.0):** `Main(ctx, pkg, ProviderInfo, ProviderMetadata)` — no error return (void, calls os.Exit). Plan template's error-check pattern was dropped.
-- **SDK scope:** Python + Go only. No TS, C#, Java. No PyPI, npm, NuGet, Pulumi Registry.
-- **Distribution:** GitHub Releases private. Go SDK via git tag `sdk/go/vX.Y.Z` + `GOPRIVATE`. Python SDK via `.whl` attached to release.
+- Retro milestone: 19/33 requirements already implemented on branch `test/api-upgrade-2.23`. They are mapped to Phase 59 for traceability only, not re-execution.
+- 14 requirements are active work: VALID-01..06 (Phase 59), RELEASE-01..07 (Phase 60).
+- Tight 2-phase split (coarse granularity): consolidation+validation, then release.
+- Acceptance validation on par5 + pa7 is mandatory before merge (VALID-04).
+- Pulumi SDK regen / publish (`pulumi-2.23.0`) is OUT of scope — separate milestone.
 
-- **Token form:** `flashblade:index/*` via SingleModule (KnownModules unusable when resource name == module prefix e.g. flashblade_bucket with module bucket).
-- **schema-embed.json:** Not generated by bridge v3.127.0 — embed `schema.json` directly in main.go. schema-embed.json concept was from older docs.
-- **Sensitive ID fix:** `tfbridge.False()` not `True()` — bridge error message is incorrect. False() = acknowledge ID exposed in state (IDs can't be encrypted).
-- **TF config is nested:** `auth.api_token`, `auth.oauth2.*` — not flat. Config overrides removed; bridge auto-promotes nested Sensitive=true fields.
-- **version.go default:** Must be valid semver (`0.0.1`) for `MustApplyAutoAliases` to succeed. Default `"dev"` fails semver parse.
-- **Test counts:** prov.Resources=54, prov.DataSources=40 (not 28/21 from old roadmap). Plan template had stale values.
+### Key Decisions (pulumi-2.22.3, kept for context)
 
-### Critical Pitfalls (pre-mitigated by phase design)
+- Module path: `github.com/numberly/opentofu-provider-flashblade`. Bridge modules under `./pulumi/provider/` and `./pulumi/sdk/go/` with `replace ../../`.
+- Bridge: `pulumi-terraform-bridge/v3 v3.127.0`, `pulumi/sdk/v3 v3.231.0`, `pulumi/pkg/v3 v3.231.0`.
+- Schema commit policy: `schema.json` + `bridge-metadata.json` committed; CI gate via `git diff --exit-code` after `make tfgen` — directly relevant to VALID-05.
+- Composite IDs use `/` separator with string keys.
+- Tokens via SingleModule (`flashblade:index/*`).
 
-- **PB1 (CRITICAL):** Default 5-min `DeleteTimeout` kills `pollUntilGone` → mitigated in Phase 54 (SOFTDELETE-01) and Phase 55 (SOFTDELETE-02/03).
-- **PB2 (CRITICAL):** Wrong composite ID separator → all `ComputeID` implementations must read `readIntoState` first. `/` separator, string rule names.
-- **PB3 (HIGH):** Secret-ness lost on state update → `Secret: tfbridge.True()` + `AdditionalSecretOutputs` on all 6 sensitive fields.
-- **PB4 (MEDIUM):** Replace SHA coupled to bridge version → must re-verify SHA on every bridge bump.
-- **PB5 (HIGH):** Go SDK `go get` requires `sdk/go/vX.Y.Z` tag in addition to release tag → post-goreleaser step in `pulumi-release.yml`.
-- **PB7 (MEDIUM):** `timeouts {}` leaks into SDK → `omitTimeoutsOnAll` helper applied BEFORE first `make tfgen`.
+### Open Todos
+
+- Plan Phase 59 via `/gsd:plan-phase 59`.
+- At Phase 60 release time: bump `TEST_BASELINE` in `GNUmakefile` (RELEASE-06).
 
 ### Open Blockers
 
-_(none — 3 open questions from research resolved via REQUIREMENTS.md decisions: module path = numberly, schema committed, Write-Only Fields deferred)_
+_(none)_
 
 ## Next Steps
 
-Phase 55 complete. All 8 Phase 55 requirements satisfied (SECRETS-03, SOFTDELETE-03, UPGRADE-01/02/03, COMPOSITE-02/03/04). Ready for Phase 56 (Python + Go SDK generation) or verification.
-
-## Key Decisions (Phase 55)
-
-- **COMPOSITE-03 state keys:** policyName+name (network_access_policy_rule CRUD uses string names; ImportState parses integer index but CRUD path is by name)
-- **COMPOSITE-04 ordering:** role FIRST in composite ID — built-in policy names contain slashes (e.g. pure:policy/array_admin)
-- **array_connection_key dual override:** id:False() for sensitive ID + connection_key:True() for the key value itself
+Run `/gsd:plan-phase 59` to decompose Phase 59 into executable plans (consolidation + validation work covering VALID-01..06, plus retro traceability for the 19 already-shipped API/WORKLOAD/RESILIENCY/SCHEMA/BRIDGE requirements).
 
 ## Session Log
 
-- 2026-04-22T09:15Z — Plan 54-01 completed: pulumi/ module skeleton (3 go.mod files, Makefile, .gitignore)
-- 2026-04-22T11:05Z — Plan 54-02 completed: resources.go ProviderInfo + pftfbridge.ShimProvider, go.sum resolved, bridge API gaps documented
-- 2026-04-22T09:35Z — Plan 54-03 completed: both cmd/main.go entry points, placeholder embed files, both binaries build (tfgen 101.5MB, resource 95.7MB)
-- 2026-04-22T11:48Z — Plan 54-04 completed: make tfgen + schema generation, 6 auto-fixes (SingleModule, semver, False() sensitive ID, nested config, schema-embed.json), schema.json 54 resources committed
-- 2026-04-22T12:08Z — Plan 54-05 completed: resources_test.go, 11 TestProviderInfo_* tests all pass, TEST-01 satisfied, Phase 54 bridge chain validated
-- 2026-04-22T10:13Z — Plan 54-06 completed: 3 VERIFICATION.md gaps closed (pulumi/examples/.gitkeep, SECRETS-01/SOFTDELETE-01/MAPPING-03 spec aligned with bridge v3.127.0 reality)
-- 2026-04-22T11:18Z — Plan 55-01 completed: 3 ComputeID closures + 6 Secret:True() marks, go build + go vet clean
-- 2026-04-22T11:12Z — Plan 55-02 completed: 8 new test functions (SECRETS-03/SOFTDELETE-03/UPGRADE-01-03/COMPOSITE-02-04), 19 tests pass, schema drift-free
+- 2026-05-20 — Milestone v2.23.0 created (retro + finalisation for API 2.23 upgrade on branch `test/api-upgrade-2.23`).
+- 2026-05-20 — Roadmap created: Phase 59 (API 2.23 Consolidation & Validation), Phase 60 (v2.23.0 Release). 33/33 requirements mapped.

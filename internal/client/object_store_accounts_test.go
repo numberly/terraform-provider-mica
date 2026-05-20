@@ -23,7 +23,7 @@ func TestUnit_ObjectStoreAccount_Get(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-accounts":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-accounts":
 			name := r.URL.Query().Get("names")
 			if name != "test-account" {
 				writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccount{}))
@@ -58,7 +58,7 @@ func TestUnit_ObjectStoreAccount_Get_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-accounts":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-accounts":
 			writeJSON(w, http.StatusOK, listResponse([]client.ObjectStoreAccount{}))
 		default:
 			http.NotFound(w, r)
@@ -82,7 +82,7 @@ func TestUnit_ObjectStoreAccount_Post(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/object-store-accounts":
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.23/object-store-accounts":
 			// POST uses ?names= query parameter
 			name := r.URL.Query().Get("names")
 			if name == "" {
@@ -130,7 +130,7 @@ func TestUnit_ObjectStoreAccount_Patch(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.22/object-store-accounts":
+		case r.Method == http.MethodPatch && r.URL.Path == "/api/2.23/object-store-accounts":
 			name := r.URL.Query().Get("names")
 			if name != "patch-account" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -178,7 +178,7 @@ func TestUnit_ObjectStoreAccount_Delete(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.22/object-store-accounts":
+		case r.Method == http.MethodDelete && r.URL.Path == "/api/2.23/object-store-accounts":
 			name := r.URL.Query().Get("names")
 			if name != "delete-account" {
 				http.Error(w, "unexpected names param", http.StatusBadRequest)
@@ -212,7 +212,7 @@ func TestUnit_ObjectStoreAccount_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/object-store-accounts":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/object-store-accounts":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            accounts,
 				"total_item_count": 2,

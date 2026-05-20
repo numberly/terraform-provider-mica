@@ -25,7 +25,7 @@ func TestUnit_LAG_Read(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/link-aggregation-groups":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/link-aggregation-groups":
 			name := r.URL.Query().Get("names")
 			if name != "uplink" {
 				writeJSON(w, http.StatusOK, listResponse([]client.LinkAggregationGroup{}))
@@ -63,7 +63,7 @@ func TestUnit_LAG_Read_NotFound(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/link-aggregation-groups":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/link-aggregation-groups":
 			writeJSON(w, http.StatusOK, listResponse([]client.LinkAggregationGroup{}))
 		default:
 			http.NotFound(w, r)
@@ -92,7 +92,7 @@ func TestUnit_LAG_List(t *testing.T) {
 		case r.URL.Path == "/api/login":
 			w.Header().Set("x-auth-token", "tok")
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet && r.URL.Path == "/api/2.22/link-aggregation-groups":
+		case r.Method == http.MethodGet && r.URL.Path == "/api/2.23/link-aggregation-groups":
 			writeJSON(w, http.StatusOK, map[string]any{
 				"items":            lags,
 				"total_item_count": 2,

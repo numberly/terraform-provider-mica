@@ -1,6 +1,6 @@
 package client
 
-// Subnet represents a FlashBlade subnet from GET /api/2.22/subnets.
+// Subnet represents a FlashBlade subnet from GET /api/2.23/subnets.
 // All fields except Name use omitempty; Name is always present in GET responses.
 type Subnet struct {
 	ID                   string           `json:"id,omitempty"`
@@ -15,7 +15,7 @@ type Subnet struct {
 	VLAN                 int64            `json:"vlan,omitempty"`
 }
 
-// SubnetPost contains writable fields for POST /api/2.22/subnets?names=<name>.
+// SubnetPost contains writable fields for POST /api/2.23/subnets?names=<name>.
 // Name is NOT included — it is passed as the ?names= query parameter.
 // Enabled, ID, Interfaces, and Services are read-only (ro) in the API spec and must not be sent.
 // VLAN is *int64 so that VLAN=0 (semantic "untagged") is sent explicitly instead of being
@@ -28,7 +28,7 @@ type SubnetPost struct {
 	VLAN                 *int64          `json:"vlan,omitempty"`
 }
 
-// SubnetPatch contains writable fields for PATCH /api/2.22/subnets?names=<name>.
+// SubnetPatch contains writable fields for PATCH /api/2.23/subnets?names=<name>.
 // Pointer types allow true omission of unchanged fields.
 // LinkAggregationGroup uses **NamedReference (CONVENTIONS.md §Pointer rules, PATCH struct):
 //   - nil outer                        → omit
@@ -42,7 +42,7 @@ type SubnetPatch struct {
 	VLAN                 *int64           `json:"vlan,omitempty"`
 }
 
-// LinkAggregationGroup represents a FlashBlade LAG from GET /api/2.22/link-aggregation-groups.
+// LinkAggregationGroup represents a FlashBlade LAG from GET /api/2.23/link-aggregation-groups.
 // All fields are read-only — the struct is used only in GET responses.
 // LAGs are hardware-managed and cannot be created, updated, or deleted via the API.
 type LinkAggregationGroup struct {
@@ -55,7 +55,7 @@ type LinkAggregationGroup struct {
 	Status     string   `json:"status,omitempty"`
 }
 
-// NetworkInterface represents a FlashBlade network interface from GET /api/2.22/network-interfaces.
+// NetworkInterface represents a FlashBlade network interface from GET /api/2.23/network-interfaces.
 // All fields except Name use omitempty; Name is always present in GET responses.
 type NetworkInterface struct {
 	ID              string           `json:"id,omitempty"`
@@ -73,7 +73,7 @@ type NetworkInterface struct {
 	Realms          []string         `json:"realms,omitempty"`
 }
 
-// NetworkInterfacePost contains writable fields for POST /api/2.22/network-interfaces?names=<name>.
+// NetworkInterfacePost contains writable fields for POST /api/2.23/network-interfaces?names=<name>.
 // Name is NOT included — it is passed as the ?names= query parameter.
 // Subnet is passed via the ?subnet_names= query parameter, not in the body.
 type NetworkInterfacePost struct {
@@ -83,7 +83,7 @@ type NetworkInterfacePost struct {
 	AttachedServers []NamedReference `json:"attached_servers,omitempty"`
 }
 
-// NetworkInterfacePatch contains mutable fields for PATCH /api/2.22/network-interfaces?names=<name>.
+// NetworkInterfacePatch contains mutable fields for PATCH /api/2.23/network-interfaces?names=<name>.
 // Address uses *string + omitempty for true PATCH semantics (only sent when changed).
 // Services and AttachedServers do NOT use omitempty — clearing them requires sending [] in JSON.
 type NetworkInterfacePatch struct {
@@ -136,7 +136,7 @@ type CertificatePatch struct {
 	PrivateKey              *string `json:"private_key,omitempty"`
 }
 
-// TlsPolicy represents a FlashBlade TLS policy from GET /api/2.22/tls-policies.
+// TlsPolicy represents a FlashBlade TLS policy from GET /api/2.23/tls-policies.
 type TlsPolicy struct {
 	ID                               string          `json:"id"`
 	Name                             string          `json:"name"`
@@ -152,7 +152,7 @@ type TlsPolicy struct {
 	VerifyClientCertificateTrust     bool            `json:"verify_client_certificate_trust"`
 }
 
-// TlsPolicyPost contains writable fields for POST /api/2.22/tls-policies.
+// TlsPolicyPost contains writable fields for POST /api/2.23/tls-policies.
 // Name is passed via ?names= query parameter, not in body.
 type TlsPolicyPost struct {
 	ApplianceCertificate             *NamedReference `json:"appliance_certificate,omitempty"`
@@ -181,13 +181,13 @@ type TlsPolicyPatch struct {
 }
 
 // TlsPolicyMember represents an association between a TLS policy and a network interface.
-// Returned by GET /api/2.22/tls-policies/members and GET /api/2.22/network-interfaces/tls-policies.
+// Returned by GET /api/2.23/tls-policies/members and GET /api/2.23/network-interfaces/tls-policies.
 type TlsPolicyMember struct {
 	Policy NamedReference `json:"policy"`
 	Member NamedReference `json:"member"`
 }
 
-// CertificateGroup represents a FlashBlade certificate group from GET /api/2.22/certificate-groups.
+// CertificateGroup represents a FlashBlade certificate group from GET /api/2.23/certificate-groups.
 // All fields are read-only: id and name set at creation, realms computed by API.
 type CertificateGroup struct {
 	ID     string   `json:"id"`
@@ -195,12 +195,12 @@ type CertificateGroup struct {
 	Realms []string `json:"realms"`
 }
 
-// CertificateGroupPost is the body for POST /api/2.22/certificate-groups.
+// CertificateGroupPost is the body for POST /api/2.23/certificate-groups.
 // Name is passed via ?names= query parameter; no writable body fields exist for this resource.
 type CertificateGroupPost struct{}
 
 // CertificateGroupMember represents the association between a certificate and a certificate group.
-// Returned by GET /api/2.22/certificate-groups/certificates.
+// Returned by GET /api/2.23/certificate-groups/certificates.
 type CertificateGroupMember struct {
 	Certificate NamedReference `json:"certificate"`
 	Group       NamedReference `json:"group"`

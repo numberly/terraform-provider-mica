@@ -19,9 +19,9 @@ type tlsPolicyStore struct {
 }
 
 // RegisterTlsPolicyHandlers registers CRUD handlers for:
-//   - /api/2.22/tls-policies (policy CRUD)
-//   - /api/2.22/tls-policies/members (member GET list)
-//   - /api/2.22/network-interfaces/tls-policies (member POST/DELETE)
+//   - /api/2.23/tls-policies (policy CRUD)
+//   - /api/2.23/tls-policies/members (member GET list)
+//   - /api/2.23/network-interfaces/tls-policies (member POST/DELETE)
 //
 // Returns the store so tests can call Seed and SeedMember.
 func RegisterTlsPolicyHandlers(mux *http.ServeMux) *tlsPolicyStore {
@@ -30,9 +30,9 @@ func RegisterTlsPolicyHandlers(mux *http.ServeMux) *tlsPolicyStore {
 		members:  make(map[string][]client.TlsPolicyMember),
 	}
 	// Register member endpoints before policy endpoint to avoid ServeMux prefix collision.
-	mux.HandleFunc("/api/2.22/tls-policies/members", store.handleMember)
-	mux.HandleFunc("/api/2.22/tls-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.22/network-interfaces/tls-policies", store.handleNITlsPolicies)
+	mux.HandleFunc("/api/2.23/tls-policies/members", store.handleMember)
+	mux.HandleFunc("/api/2.23/tls-policies", store.handlePolicy)
+	mux.HandleFunc("/api/2.23/network-interfaces/tls-policies", store.handleNITlsPolicies)
 	return store
 }
 
@@ -66,7 +66,7 @@ func (s *tlsPolicyStore) handlePolicy(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handlePolicyGet handles GET /api/2.22/tls-policies.
+// handlePolicyGet handles GET /api/2.23/tls-policies.
 // When ?names= filter matches nothing, returns empty list with HTTP 200 (not 404).
 func (s *tlsPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names", "effective", "purity_defined"}) {
@@ -98,7 +98,7 @@ func (s *tlsPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request)
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePolicyPost handles POST /api/2.22/tls-policies.
+// handlePolicyPost handles POST /api/2.23/tls-policies.
 func (s *tlsPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -146,7 +146,7 @@ func (s *tlsPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request
 	WriteJSONListResponse(w, http.StatusOK, []client.TlsPolicy{*policy})
 }
 
-// handlePolicyPatch handles PATCH /api/2.22/tls-policies.
+// handlePolicyPatch handles PATCH /api/2.23/tls-policies.
 func (s *tlsPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names"}) {
 		return
@@ -200,7 +200,7 @@ func (s *tlsPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, []client.TlsPolicy{*policy})
 }
 
-// handlePolicyDelete handles DELETE /api/2.22/tls-policies.
+// handlePolicyDelete handles DELETE /api/2.23/tls-policies.
 func (s *tlsPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names"}) {
 		return
@@ -225,7 +225,7 @@ func (s *tlsPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 }
 
-// handleMember dispatches GET /api/2.22/tls-policies/members requests.
+// handleMember dispatches GET /api/2.23/tls-policies/members requests.
 func (s *tlsPolicyStore) handleMember(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -234,7 +234,7 @@ func (s *tlsPolicyStore) handleMember(w http.ResponseWriter, r *http.Request) {
 	s.handleMemberGet(w, r)
 }
 
-// handleMemberGet handles GET /api/2.22/tls-policies/members.
+// handleMemberGet handles GET /api/2.23/tls-policies/members.
 func (s *tlsPolicyStore) handleMemberGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names"}) {
 		return
@@ -265,7 +265,7 @@ func (s *tlsPolicyStore) handleMemberGet(w http.ResponseWriter, r *http.Request)
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleNITlsPolicies dispatches POST/DELETE /api/2.22/network-interfaces/tls-policies requests.
+// handleNITlsPolicies dispatches POST/DELETE /api/2.23/network-interfaces/tls-policies requests.
 func (s *tlsPolicyStore) handleNITlsPolicies(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -277,7 +277,7 @@ func (s *tlsPolicyStore) handleNITlsPolicies(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// handleMemberPost handles POST /api/2.22/network-interfaces/tls-policies.
+// handleMemberPost handles POST /api/2.23/network-interfaces/tls-policies.
 func (s *tlsPolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names"}) {
 		return
@@ -336,7 +336,7 @@ func (f *TlsPolicyStoreFacade) SeedMember(policyName string, member client.TlsPo
 	f.store.SeedMember(policyName, member)
 }
 
-// handleMemberDelete handles DELETE /api/2.22/network-interfaces/tls-policies.
+// handleMemberDelete handles DELETE /api/2.23/network-interfaces/tls-policies.
 func (s *tlsPolicyStore) handleMemberDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names"}) {
 		return

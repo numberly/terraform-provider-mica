@@ -30,8 +30,8 @@ func RegisterQuotaHandlers(mux *http.ServeMux) *quotaStore {
 		userQuotas:  make(map[string]*client.QuotaUser),
 		groupQuotas: make(map[string]*client.QuotaGroup),
 	}
-	mux.HandleFunc("/api/2.22/quotas/users", store.handleUsers)
-	mux.HandleFunc("/api/2.22/quotas/groups", store.handleGroups)
+	mux.HandleFunc("/api/2.23/quotas/users", store.handleUsers)
+	mux.HandleFunc("/api/2.23/quotas/groups", store.handleGroups)
 	return store
 }
 

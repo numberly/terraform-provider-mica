@@ -16,14 +16,14 @@ type remoteCredentialsStore struct {
 	nextID int
 }
 
-// RegisterRemoteCredentialsHandlers registers CRUD handlers for /api/2.22/object-store-remote-credentials
+// RegisterRemoteCredentialsHandlers registers CRUD handlers for /api/2.23/object-store-remote-credentials
 // against the provided ServeMux. The store pointer is returned for cross-reference if needed.
 func RegisterRemoteCredentialsHandlers(mux *http.ServeMux) *remoteCredentialsStore {
 	store := &remoteCredentialsStore{
 		byName: make(map[string]*client.ObjectStoreRemoteCredentials),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.22/object-store-remote-credentials", store.handle)
+	mux.HandleFunc("/api/2.23/object-store-remote-credentials", store.handle)
 	return store
 }
 
@@ -49,7 +49,7 @@ func (s *remoteCredentialsStore) handle(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// handleGet handles GET /api/2.22/object-store-remote-credentials with optional ?names= param.
+// handleGet handles GET /api/2.23/object-store-remote-credentials with optional ?names= param.
 // IMPORTANT: secret_access_key is NOT returned in GET responses — it is set to empty string.
 func (s *remoteCredentialsStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -85,7 +85,7 @@ func (s *remoteCredentialsStore) handleGet(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.22/object-store-remote-credentials.
+// handlePost handles POST /api/2.23/object-store-remote-credentials.
 // Requires ?names= and exactly one of ?remote_names= or ?target_names=.
 // Body contains access_key_id + secret_access_key.
 // Response includes secret_access_key — POST only.
@@ -158,7 +158,7 @@ func (s *remoteCredentialsStore) handlePost(w http.ResponseWriter, r *http.Reque
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreRemoteCredentials{*cred})
 }
 
-// handlePatch handles PATCH /api/2.22/object-store-remote-credentials?names={name}.
+// handlePatch handles PATCH /api/2.23/object-store-remote-credentials?names={name}.
 // Updates access_key_id and/or secret_access_key. Response does NOT include secret_access_key (like GET).
 func (s *remoteCredentialsStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -198,7 +198,7 @@ func (s *remoteCredentialsStore) handlePatch(w http.ResponseWriter, r *http.Requ
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreRemoteCredentials{redacted})
 }
 
-// handleDelete handles DELETE /api/2.22/object-store-remote-credentials?names={name}.
+// handleDelete handles DELETE /api/2.23/object-store-remote-credentials?names={name}.
 func (s *remoteCredentialsStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return

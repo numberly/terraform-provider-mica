@@ -63,7 +63,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 	resp.Body.Close()
 
-	// Step 2: GET /api/api_version — verify "2.22" present.
+	// Step 2: GET /api/api_version — verify "2.23" present.
 	resp = doJSON(t, http.MethodGet, base+"/api/api_version", nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("GET /api/api_version: expected 200, got %d", resp.StatusCode)
@@ -74,23 +74,23 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	decodeJSON(t, resp, &versionResp)
 	found := false
 	for _, v := range versionResp.Versions {
-		if v == "2.22" {
+		if v == "2.23" {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Errorf("GET /api/api_version: expected 2.22 in versions, got %v", versionResp.Versions)
+		t.Errorf("GET /api/api_version: expected 2.23 in versions, got %v", versionResp.Versions)
 	}
 
-	// Step 3: POST /api/2.22/file-systems?names=test-fs — create file system.
+	// Step 3: POST /api/2.23/file-systems?names=test-fs — create file system.
 	// The FlashBlade API requires the name as a ?names= query parameter, not in the body.
-	resp = doJSON(t, http.MethodPost, base+"/api/2.22/file-systems?names=test-fs", map[string]any{
+	resp = doJSON(t, http.MethodPost, base+"/api/2.23/file-systems?names=test-fs", map[string]any{
 		"provisioned": 1073741824,
 	})
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		t.Fatalf("POST /api/2.22/file-systems: expected 200, got %d: %s", resp.StatusCode, body)
+		t.Fatalf("POST /api/2.23/file-systems: expected 200, got %d: %s", resp.StatusCode, body)
 	}
 	var createResp struct {
 		Items []struct {
@@ -102,7 +102,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 	decodeJSON(t, resp, &createResp)
 	if len(createResp.Items) == 0 {
-		t.Fatal("POST /api/2.22/file-systems: expected items in response")
+		t.Fatal("POST /api/2.23/file-systems: expected items in response")
 	}
 	fs := createResp.Items[0]
 	if fs.ID == "" {
@@ -116,8 +116,8 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 	fsID := fs.ID
 
-	// Step 4: GET /api/2.22/file-systems?names=test-fs — verify file system returned.
-	resp = doJSON(t, http.MethodGet, base+"/api/2.22/file-systems?names=test-fs", nil)
+	// Step 4: GET /api/2.23/file-systems?names=test-fs — verify file system returned.
+	resp = doJSON(t, http.MethodGet, base+"/api/2.23/file-systems?names=test-fs", nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("GET file-systems?names=test-fs: expected 200, got %d", resp.StatusCode)
 	}
@@ -135,8 +135,8 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 		t.Errorf("expected name test-fs, got %q", getResp.Items[0].Name)
 	}
 
-	// Step 5: PATCH /api/2.22/file-systems?ids={id} — update provisioned size.
-	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), map[string]any{
+	// Step 5: PATCH /api/2.23/file-systems?ids={id} — update provisioned size.
+	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), map[string]any{
 		"provisioned": 2147483648,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -159,7 +159,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 
 	// Step 6: PATCH destroyed=true — soft-delete.
-	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), map[string]any{
+	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), map[string]any{
 		"destroyed": true,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -176,8 +176,8 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 		t.Error("expected destroyed=true after soft-delete patch")
 	}
 
-	// Step 7: DELETE /api/2.22/file-systems?ids={id} — eradicate.
-	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), nil)
+	// Step 7: DELETE /api/2.23/file-systems?ids={id} — eradicate.
+	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), nil)
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("DELETE: expected 200, got %d: %s", resp.StatusCode, body)
@@ -185,7 +185,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	resp.Body.Close()
 
 	// Step 8: GET after eradication — verify empty items.
-	resp = doJSON(t, http.MethodGet, base+"/api/2.22/file-systems?names=test-fs", nil)
+	resp = doJSON(t, http.MethodGet, base+"/api/2.23/file-systems?names=test-fs", nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("GET after eradicate: expected 200, got %d", resp.StatusCode)
 	}
@@ -225,13 +225,13 @@ func TestUnit_MockServer_LoginAndVersion(t *testing.T) {
 	decodeJSON(t, resp, &vr)
 	found := false
 	for _, v := range vr.Versions {
-		if v == "2.22" {
+		if v == "2.23" {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Errorf("expected 2.22 in versions, got %v", vr.Versions)
+		t.Errorf("expected 2.23 in versions, got %v", vr.Versions)
 	}
 }
 
@@ -243,7 +243,7 @@ func TestUnit_MockServer_DeleteRequiresDestroyed(t *testing.T) {
 
 	// Create a file system (not destroyed).
 	// The FlashBlade API requires the name as a ?names= query parameter, not in the body.
-	resp := doJSON(t, http.MethodPost, base+"/api/2.22/file-systems?names=no-destroy-fs", map[string]any{
+	resp := doJSON(t, http.MethodPost, base+"/api/2.23/file-systems?names=no-destroy-fs", map[string]any{
 		"provisioned": 1073741824,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -261,7 +261,7 @@ func TestUnit_MockServer_DeleteRequiresDestroyed(t *testing.T) {
 	fsID := createResp.Items[0].ID
 
 	// Attempt DELETE without soft-deleting first — should return 400.
-	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s/api/2.22/file-systems?ids=%s", base, fsID), nil)
+	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), nil)
 	if resp.StatusCode != http.StatusBadRequest {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("DELETE non-destroyed: expected 400, got %d: %s", resp.StatusCode, body)
