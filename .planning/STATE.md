@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.23.1
 milestone_name: "**Goal:** Ship `flashblade_snmp_manager` resource + data source"
 status: verifying
-last_updated: "2026-05-20T12:47:32.276Z"
+last_updated: "2026-05-20T13:24:59.298Z"
 last_activity: 2026-05-20
 progress:
   total_phases: 1
