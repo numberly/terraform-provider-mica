@@ -2,8 +2,8 @@
 
 FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-07-02 (bucket CORS policy resource + data source; empty-body policy create, named rules reconciled via /rules sub-endpoint, delete+recreate on change)
-**Provider version:** v2.23.0
+**Last updated:** 2026-05-20 (v2.23.1: `flashblade_snmp_manager` resource + data source, sensitive write-once community/passphrases, in-place v2c<->v3 switch)
+**Provider version:** v2.23.1
 **Total API sections:** 84 | **Covered:** ~49 (56 resources + 44 data sources) | **Coverage of IaC-relevant CRUD:** ~78%
 
 ## Coverage Legend
@@ -103,6 +103,7 @@ FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-pr
 | Directory Services (Management) | `flashblade_directory_service_management` | Yes | Done | Singleton; LDAP admin auth; write-only bind_password |
 | Directory Services (Roles) | `flashblade_directory_service_role` | Yes | Done | LDAP group → management access policy mapping; user-supplied name via ?names= (50.1); v2.22.2 |
 | Management Access Policy DS Role Membership | `flashblade_management_access_policy_directory_service_role_membership` | No | Done | Additive policy-to-role association; composite ID role_name/policy_name; v2.22.2 |
+| SNMP Managers | `flashblade_snmp_manager` | Yes | Done | v2.23.1; full CRUD; sensitive write-once community/passphrases; /test endpoint deferred |
 
 ### Audit
 
@@ -143,7 +144,6 @@ FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-pr
 | KMIP | Resource | Full CRUD | External encryption key management | Candidate |
 | SAML2 SSO | Resource | Full CRUD | SAML-based single sign-on for admin console | Candidate |
 | OIDC SSO | Resource | Full CRUD | OpenID Connect authentication | Candidate |
-| SNMP Managers | Resource | Full CRUD | SNMP trap destinations for monitoring | Candidate |
 | Administrators | Resource | Full CRUD + API tokens | Admin account management | Candidate |
 | Alert Watchers | Resource | Full CRUD | Email alerting configuration | Candidate |
 | Public Keys | Resource | GET, POST, DELETE | SSH/API public key management | Candidate |

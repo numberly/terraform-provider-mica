@@ -283,7 +283,7 @@ func TestUnit_SnmpManagerResource_Import(t *testing.T) {
 	if model.Version.ValueString() != "v3" {
 		t.Errorf("expected version=v3, got %s", model.Version.ValueString())
 	}
-	if !model.Timeouts.Object.IsNull() {
+	if !model.Timeouts.IsNull() {
 		t.Error("expected timeouts to be null after import")
 	}
 
