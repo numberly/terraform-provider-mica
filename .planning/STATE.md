@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.23.1
-milestone_name: flashblade_snmp_manager
-status: planning
-last_updated: "2026-05-20T10:00:00.000Z"
+milestone_name: "**Goal:** Ship `flashblade_snmp_manager` resource + data source"
+status: verifying
+last_updated: "2026-05-20T12:39:03.209Z"
 last_activity: 2026-05-20
 progress:
   total_phases: 1
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
   percent: 0
 ---
 
@@ -20,17 +20,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources through Terraform with zero surprises.
-**Current focus:** v2.23.1 — `flashblade_snmp_manager` resource & data source (full CRUD on `/api/2.23/snmp-managers`)
+**Current focus:** Phase 61 — flashblade-snmp-manager
 
 ## Current Position
 
-Milestone: v2.23.1 (`flashblade_snmp_manager`) — **PLANNING**
-Phase: 61 — `flashblade_snmp_manager` Resource & Data Source (context gathered)
-Plan: pending (`/gsd:plan-phase 61`)
-Status: Context gathered, ready to plan
-Last activity: 2026-05-20 — Phase 61 context captured (20 decisions D-01..D-20)
+Milestone: v2.23.1 (`flashblade_snmp_manager`) — **EXECUTION COMPLETE, AWAITING VERIFICATION**
+Phase: 61 (flashblade-snmp-manager) — VERIFYING
+Plan: 1 of 1 (complete)
+Status: Phase complete — ready for verification
+Last activity: 2026-05-20 -- Plan 61-01 executed, 816 tests, branch implem-snmp-managers (11 commits)
 
-Progress: [          ] 0% (0/1 phases, 0/0 plans)
+Progress: [██████████] 100% (1/1 phases, 1/1 plans)
 
 ## Recent Milestones
 
@@ -42,10 +42,11 @@ Progress: [          ] 0% (0/1 phases, 0/0 plans)
 
 ## Performance Metrics
 
-- **Provider tests:** 807 (TEST_BASELINE at last shipped milestone v2.23.0)
-- **TEST_BASELINE (GNUmakefile):** 807 — must NOT be bumped in this milestone; expected ≥ 816 after Phase 61 lands.
-- **Lint:** 0 issues at last release
-- **Resources / Data sources:** 55 / 43 — expected delta on merge: **+1 resource**, **+1 data source** (`flashblade_snmp_manager`)
+- **Provider tests:** 816 (post-Phase-61, baseline 807 + 9 new for `flashblade_snmp_manager`)
+- **TEST_BASELINE (GNUmakefile):** 807 — NOT bumped (reserved for release milestones, will move to 816 at v2.23.1 ship)
+- **Lint:** 0 issues
+- **Resources / Data sources:** 56 / 44 (post-Phase-61, +1 resource +1 data source `flashblade_snmp_manager`)
+- **Phase 61 plan 01 execution:** 13 tasks, 11 atomic commits on `implem-snmp-managers`, ~15 min
 
 ## Accumulated Context
 
@@ -64,9 +65,17 @@ Progress: [          ] 0% (0/1 phases, 0/0 plans)
 
 - Pulumi SDK regen / publish is owned by a separate `pulumi-2.23.x` milestone (out of scope here too).
 
+### Key Decisions (Phase 61 execution)
+
+- **Mock handler wiring follows codebase pattern** (per-test registration via `ms.Mux`), not plan literal text (`server.go`). The existing codebase never wires resource handlers in `NewMockServer`. Deviation documented in SUMMARY.md.
+- **Drift logs inlined to satisfy "exactly 6" contract** (not routed through a helper) for grep-ability and explicit per-leaf branching.
+- **Strict POST-time validators applied at provider schema level for both Create AND Update** (auth_passphrase ≤ 32, privacy_passphrase 8..63) — predictable validation before PATCH.
+
 ### Open Todos
 
-- Plan Phase 61 via `/gsd:plan-phase 61`.
+- Run `/gsd:verify-phase 61` to validate the execution.
+- After verification: tag `v2.23.1`, push branch `implem-snmp-managers`, open PR to `main`.
+- At v2.23.1 release: bump `TEST_BASELINE` in `GNUmakefile` from 807 to 816.
 
 ### Open Blockers
 
@@ -74,10 +83,11 @@ _(none)_
 
 ## Next Steps
 
-Run `/gsd:plan-phase 61` (or `/gsd:discuss-phase 61` first) to decompose Phase 61 into executable plans following the *New Resource* 16-item checklist from `CONVENTIONS.md`. Implementation must be driven by the `flashblade-resource-builder` skill.
+Run `/gsd:verify-phase 61` to validate the execution. On pass: tag v2.23.1, open PR `implem-snmp-managers` → `main`.
 
 ## Session Log
 
 - 2026-05-20 — Milestone v2.23.1 created (`flashblade_snmp_manager` CRUD, branch `implem-snmp-managers`). Pre-check Serena: no collision. API schemas validated via `swagger-to-reference` + raw `swagger-2.23.json`.
 - 2026-05-20 — Roadmap created: Phase 61 (Implement `flashblade_snmp_manager` Resource & Data Source). 13/13 requirements mapped.
 - 2026-05-20 — Phase 61 context gathered. 20 decisions locked (D-01..D-20) in `phases/61-flashblade-snmp-manager/61-CONTEXT.md`. Next: `/gsd:plan-phase 61`.
+- 2026-05-20 — **Phase 61 plan 01 executed.** 13 tasks, 11 atomic commits on `implem-snmp-managers` (a241ec1 → 24098d1). 816 tests (807 + 9), lint clean, docs idempotent, ROADMAP row moved to Implemented. SUMMARY at `.planning/phases/61-flashblade-snmp-manager/61-01-implement-snmp-manager-SUMMARY.md`.

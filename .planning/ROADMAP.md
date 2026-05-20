@@ -35,7 +35,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 
 | #  | Phase | Goal | Requirements | Success Criteria |
 |----|-------|------|--------------|------------------|
-| 61 | `flashblade_snmp_manager` Resource & Data Source | Deliver resource + DS satisfying the *New Resource* 16-item checklist | SNMP-01..13 | 5 (see below) |
+| 61 | `flashblade_snmp_manager` Resource & Data Source | 1/1 | Complete   | 2026-05-20 |
 
 ### Phase 61: `flashblade_snmp_manager` Resource & Data Source
 
@@ -46,7 +46,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 **Plans:** 1 plan
 
 Plans:
-- [ ] 61-01-implement-snmp-manager-PLAN.md — Monolithic plan covering the 16-item *New Resource* checklist: models → client → mock → tests → resource → DS → registration → examples → docs → ROADMAP.md → quality gates (build/lint/test ≥ 816). Branch `implem-snmp-managers`, one atomic commit (`--no-verify`, no `Co-Authored-By`).
+- [x] 61-01-implement-snmp-manager-PLAN.md — Monolithic plan covering the 16-item *New Resource* checklist: models → client → mock → tests → resource → DS → registration → examples → docs → ROADMAP.md → quality gates (build/lint/test ≥ 816). Branch `implem-snmp-managers`, one atomic commit (`--no-verify`, no `Co-Authored-By`).
 
 **Success criteria:**
 1. Provider compiles (`make build`), all linters pass (`make lint`), full test suite passes (`make test`) with total count ≥ `TEST_BASELINE + 9` (≥ 816).

@@ -19,34 +19,34 @@ Implement Terraform resource `flashblade_snmp_manager` (full CRUD) and matching 
 
 ### Resource & Data Source
 
-- [ ] **SNMP-01** — Resource `flashblade_snmp_manager` implements full CRUD (Create / Read / Update / Delete) against `/api/2.23/snmp-managers` via the `flashblade-resource-builder` skill.
-- [ ] **SNMP-02** — Resource supports both SNMP protocol versions (`v2c`, `v3`) through nested config blocks, with enum validators on `notification` (`inform`|`trap`), `version` (`v2c`|`v3`), `v3.auth_protocol` (`MD5`|`SHA`), `v3.privacy_protocol` (`AES`|`DES`).
-- [ ] **SNMP-04** — Data source `flashblade_snmp_manager` (2 interfaces only: `DataSource`, `DataSourceWithConfigure`); `name` Required, all others Computed; not-found → `AddError`.
+- [x] **SNMP-01** — Resource `flashblade_snmp_manager` implements full CRUD (Create / Read / Update / Delete) against `/api/2.23/snmp-managers` via the `flashblade-resource-builder` skill.
+- [x] **SNMP-02** — Resource supports both SNMP protocol versions (`v2c`, `v3`) through nested config blocks, with enum validators on `notification` (`inform`|`trap`), `version` (`v2c`|`v3`), `v3.auth_protocol` (`MD5`|`SHA`), `v3.privacy_protocol` (`AES`|`DES`).
+- [x] **SNMP-04** — Data source `flashblade_snmp_manager` (2 interfaces only: `DataSource`, `DataSourceWithConfigure`); `name` Required, all others Computed; not-found → `AddError`.
 
 ### Security & State
 
-- [ ] **SNMP-03** — Sensitive fields `v2c.community`, `v3.auth_passphrase`, `v3.privacy_passphrase` are marked `Sensitive: true`, treated **write-once** (API never returns them on GET → Read must not overwrite state), and null in ImportState.
-- [ ] **SNMP-05** — ImportState by `name` (`?names=`-based; never by UUID), uses `nullTimeoutsValue()`, sets all sensitive/write-once fields to null.
-- [ ] **SNMP-06** — Drift detection via `tflog.Debug(ctx, "drift detected", {"resource", "field", "was", "now"})` on every mutable/computed field (`host`, `notification`, `version`, `v2c.community`-presence, `v3.user`, `v3.auth_protocol`, `v3.privacy_protocol`).
+- [x] **SNMP-03** — Sensitive fields `v2c.community`, `v3.auth_passphrase`, `v3.privacy_passphrase` are marked `Sensitive: true`, treated **write-once** (API never returns them on GET → Read must not overwrite state), and null in ImportState.
+- [x] **SNMP-05** — ImportState by `name` (`?names=`-based; never by UUID), uses `nullTimeoutsValue()`, sets all sensitive/write-once fields to null.
+- [x] **SNMP-06** — Drift detection via `tflog.Debug(ctx, "drift detected", {"resource", "field", "was", "now"})` on every mutable/computed field (`host`, `notification`, `version`, `v2c.community`-presence, `v3.user`, `v3.auth_protocol`, `v3.privacy_protocol`).
 
 ### Test Infrastructure
 
-- [ ] **SNMP-07** — Mock handler `internal/testmock/handlers/snmp_managers.go` with `snmpManagerStore` (mutex + byName + nextID), `RegisterSnmpManagerHandlers(mux)` returning `*snmpManagerStore` for `Seed()`, and GET-with-no-match returning HTTP 200 + empty list (NOT 404). Uses shared helpers (`ValidateQueryParams`, `RequireQueryParam`, `WriteJSONListResponse`, `WriteJSONError`).
-- [ ] **SNMP-08** — At least **9 new** unit tests prefixed `TestUnit_`:
+- [x] **SNMP-07** — Mock handler `internal/testmock/handlers/snmp_managers.go` with `snmpManagerStore` (mutex + byName + nextID), `RegisterSnmpManagerHandlers(mux)` returning `*snmpManagerStore` for `Seed()`, and GET-with-no-match returning HTTP 200 + empty list (NOT 404). Uses shared helpers (`ValidateQueryParams`, `RequireQueryParam`, `WriteJSONListResponse`, `WriteJSONError`).
+- [x] **SNMP-08** — At least **9 new** unit tests prefixed `TestUnit_`:
   - 5 client tests (`TestUnit_SnmpManager_Get_Found`, `_Get_NotFound`, `_Post`, `_Patch`, `_Delete`)
   - 3 resource tests (`TestUnit_SnmpManagerResource_Lifecycle`, `_Import`, `_DriftDetection`)
   - 1 data source test (`TestUnit_SnmpManagerDataSource_Basic`)
 
 ### Wiring & Documentation
 
-- [ ] **SNMP-09** — Resource and data source registered in `internal/provider/provider.go` (`NewSnmpManagerResource` in `Resources()`, `NewSnmpManagerDataSource` in `DataSources()`).
-- [ ] **SNMP-10** — Documentation regenerated via `make docs`; HCL examples present at `examples/resources/flashblade_snmp_manager/{resource.tf,import.sh}` and `examples/data-sources/flashblade_snmp_manager/data-source.tf`; `import.sh` uses `name` (not UUID).
-- [ ] **SNMP-11** — Repo-level `ROADMAP.md` row for `SNMP Managers` moved from *Medium Priority — Not Implemented* to *Array Administration / Implemented* (status `Done`, notes mention `v2.23.1; full CRUD; sensitive write-once community/passphrases`), counters + footer date/version refreshed, all in the **same commit** as the implementation.
+- [x] **SNMP-09** — Resource and data source registered in `internal/provider/provider.go` (`NewSnmpManagerResource` in `Resources()`, `NewSnmpManagerDataSource` in `DataSources()`).
+- [x] **SNMP-10** — Documentation regenerated via `make docs`; HCL examples present at `examples/resources/flashblade_snmp_manager/{resource.tf,import.sh}` and `examples/data-sources/flashblade_snmp_manager/data-source.tf`; `import.sh` uses `name` (not UUID).
+- [x] **SNMP-11** — Repo-level `ROADMAP.md` row for `SNMP Managers` moved from *Medium Priority — Not Implemented* to *Array Administration / Implemented* (status `Done`, notes mention `v2.23.1; full CRUD; sensitive write-once community/passphrases`), counters + footer date/version refreshed, all in the **same commit** as the implementation.
 
 ### Quality Gates
 
-- [ ] **SNMP-12** — `make build && make test && make lint && make docs` all clean; total test count ≥ `TEST_BASELINE + 9` (≥ 816).
-- [ ] **SNMP-13** — Out-of-scope endpoints (`/snmp-managers/test`) documented in PROJECT.md as explicit deferral; no provider code references them in v2.23.1.
+- [x] **SNMP-12** — `make build && make test && make lint && make docs` all clean; total test count ≥ `TEST_BASELINE + 9` (≥ 816).
+- [x] **SNMP-13** — Out-of-scope endpoints (`/snmp-managers/test`) documented in PROJECT.md as explicit deferral; no provider code references them in v2.23.1.
 
 ## Traceability
 
