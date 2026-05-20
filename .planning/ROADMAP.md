@@ -43,6 +43,11 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 
 **Requirements covered:** SNMP-01, SNMP-02, SNMP-03, SNMP-04, SNMP-05, SNMP-06, SNMP-07, SNMP-08, SNMP-09, SNMP-10, SNMP-11, SNMP-12, SNMP-13 (13 total).
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 61-01-implement-snmp-manager-PLAN.md — Monolithic plan covering the 16-item *New Resource* checklist: models → client → mock → tests → resource → DS → registration → examples → docs → ROADMAP.md → quality gates (build/lint/test ≥ 816). Branch `implem-snmp-managers`, one atomic commit (`--no-verify`, no `Co-Authored-By`).
+
 **Success criteria:**
 1. Provider compiles (`make build`), all linters pass (`make lint`), full test suite passes (`make test`) with total count ≥ `TEST_BASELINE + 9` (≥ 816).
 2. `make docs` regenerates `docs/resources/snmp_manager.md` and `docs/data-sources/snmp_manager.md` with no manual edits and no diff on re-run.
@@ -66,4 +71,4 @@ Full archive: [`milestones/v2.23.0-ROADMAP.md`](milestones/v2.23.0-ROADMAP.md) �
 
 ---
 
-*Last updated: 2026-05-20 — milestone v2.23.1 started (`flashblade_snmp_manager` resource + data source, 1 phase, 13 requirements). Run `/gsd:plan-phase 61` (or `/gsd:discuss-phase 61` first) to begin.*
+*Last updated: 2026-05-20 — Phase 61 planned (1 monolithic plan `61-01-implement-snmp-manager-PLAN.md`, 13 tasks T01..T13).*
