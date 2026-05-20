@@ -84,7 +84,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
   5. Milestone v2.23.0 is archived under `.planning/milestones/` via `/gsd:complete-milestone` (covers RELEASE-07)
 
 **Plans**: 5 plans
-- [ ] 60-01-preflight-and-changelog-PLAN.md — Pre-flight gate (VALID-04 resolution) + v2.23.0 CHANGELOG entry
+- [x] 60-01-preflight-and-changelog-PLAN.md — Pre-flight gate (VALID-04 resolution) + v2.23.0 CHANGELOG entry
 - [ ] 60-02-rebase-and-pr-PLAN.md — Rebase test/api-upgrade-2.23 on main, push, open PR, wait for CI green
 - [ ] 60-03-merge-PLAN.md — Merge PR into main
 - [ ] 60-04-tag-and-release-PLAN.md — Tag v2.23.0, push, verify GoReleaser publication
@@ -95,7 +95,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 59. API 2.23 Consolidation & Validation | 4/5 | Complete    | 2026-05-20 |
-| 60. v2.23.0 Release | 0/5 | Not started | - |
+| 60. v2.23.0 Release | 1/5 | In Progress|  |
 
 ---
 
