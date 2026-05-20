@@ -277,6 +277,9 @@
             "flashblade_snapshot_policy_rule": {
                 "current": "mica:index/snapshotPolicyRule:SnapshotPolicyRule"
             },
+            "flashblade_snmp_manager": {
+                "current": "mica:index/snmpManager:SnmpManager"
+            },
             "flashblade_subnet": {
                 "current": "mica:index/subnet:Subnet",
                 "fields": {
@@ -536,6 +539,9 @@
             },
             "flashblade_snapshot_policy": {
                 "current": "mica:index/getSnapshotPolicy:getSnapshotPolicy"
+            },
+            "flashblade_snmp_manager": {
+                "current": "mica:index/getSnmpManager:getSnmpManager"
             },
             "flashblade_subnet": {
                 "current": "mica:index/getSubnet:getSubnet",
