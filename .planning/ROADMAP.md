@@ -37,7 +37,7 @@ See `.planning/MILESTONES.md` for milestone details and `.planning/milestones/` 
 |----|-------|------|--------------|------------------|
 | 61 | `flashblade_snmp_manager` Resource & Data Source | Deliver resource + DS satisfying the *New Resource* 16-item checklist | SNMP-01..13 | 5 (see below) |
 
-### Phase 61 — `flashblade_snmp_manager` Resource & Data Source
+### Phase 61: `flashblade_snmp_manager` Resource & Data Source
 
 **Goal:** Implement Terraform resource `flashblade_snmp_manager` and matching data source against `/api/2.23/snmp-managers`, including 3 model structs (Get/Post/Patch + nested `v2c`/`v3`), client CRUD via `getOneByName[T]`, mock handler with empty-list GET=200, ≥9 new `TestUnit_` tests, HCL examples, regenerated docs, and the repo-level `ROADMAP.md` row move — all in the strict order of the *New Resource* checklist in `CONVENTIONS.md`.
 
