@@ -59,7 +59,7 @@ Most of the implementation has already landed on `test/api-upgrade-2.23` (≈ 16
 - [x] **RELEASE-01** — CHANGELOG entry for `v2.23.0` (added resources, schema migrations, bridge regen)
 - [x] **RELEASE-02** — Rebase `test/api-upgrade-2.23` on `main` (cleanup)
 - [x] **RELEASE-03** — Open PR `test/api-upgrade-2.23` → `main`, pass CI
-- [ ] **RELEASE-04** — Merge PR
+- [x] **RELEASE-04** — Merge PR
 - [ ] **RELEASE-05** — Tag `v2.23.0` + GoReleaser release artifacts
 - [ ] **RELEASE-06** — Update `TEST_BASELINE` in `GNUmakefile` to the new count
 - [ ] **RELEASE-07** — Archive milestone via `/gsd:complete-milestone`
@@ -112,7 +112,7 @@ Deferred to later milestones:
 | RELEASE-01 | Phase 60 | Complete |
 | RELEASE-02 | Phase 60 | Complete |
 | RELEASE-03 | Phase 60 | Complete |
-| RELEASE-04 | Phase 60 | Pending |
+| RELEASE-04 | Phase 60 | Complete |
 | RELEASE-05 | Phase 60 | Pending |
 | RELEASE-06 | Phase 60 | Pending |
 | RELEASE-07 | Phase 60 | Pending |
