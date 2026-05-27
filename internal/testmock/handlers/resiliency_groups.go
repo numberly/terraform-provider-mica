@@ -24,7 +24,7 @@ func RegisterResiliencyGroupHandlers(mux *http.ServeMux) *resiliencyGroupStore {
 	store := &resiliencyGroupStore{
 		groups: make(map[string]*client.ResiliencyGroup),
 	}
-	mux.HandleFunc("/api/2.23/resiliency-groups", store.handle)
+	mux.HandleFunc(APIPrefix+"/resiliency-groups", store.handle)
 	return store
 }
 

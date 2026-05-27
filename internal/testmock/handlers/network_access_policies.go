@@ -14,9 +14,9 @@ import (
 // networkAccessPolicyStore is the thread-safe in-memory state for NAP handlers.
 type networkAccessPolicyStore struct {
 	mu            sync.Mutex
-	policies      map[string]*client.NetworkAccessPolicy              // policyName -> policy
+	policies      map[string]*client.NetworkAccessPolicy                // policyName -> policy
 	rules         map[string]map[string]*client.NetworkAccessPolicyRule // policyName -> ruleName -> rule
-	nextRuleIndex map[string]int                                       // policyName -> next index counter
+	nextRuleIndex map[string]int                                        // policyName -> next index counter
 }
 
 // RegisterNetworkAccessPolicyHandlers registers CRUD handlers for network access policies and rules.
@@ -41,8 +41,8 @@ func RegisterNetworkAccessPolicyHandlers(mux *http.ServeMux) *networkAccessPolic
 	store.rules["default"] = make(map[string]*client.NetworkAccessPolicyRule)
 	store.nextRuleIndex["default"] = 1
 
-	mux.HandleFunc("/api/2.23/network-access-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/network-access-policies/rules", store.handleRules)
+	mux.HandleFunc(APIPrefix+"/network-access-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/network-access-policies/rules", store.handleRules)
 	return store
 }
 

@@ -28,8 +28,8 @@ func RegisterS3ExportPolicyHandlers(mux *http.ServeMux) *s3ExportPolicyStore {
 		rules:         make(map[string]map[string]*client.S3ExportPolicyRule),
 		nextRuleIndex: make(map[string]int),
 	}
-	mux.HandleFunc("/api/2.23/s3-export-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/s3-export-policies/rules", store.handleRules)
+	mux.HandleFunc(APIPrefix+"/s3-export-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/s3-export-policies/rules", store.handleRules)
 	return store
 }
 

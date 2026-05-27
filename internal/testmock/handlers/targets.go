@@ -23,7 +23,7 @@ func RegisterTargetHandlers(mux *http.ServeMux) *targetStore {
 		byName: make(map[string]*client.Target),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/targets", store.handle)
+	mux.HandleFunc(APIPrefix+"/targets", store.handle)
 	return store
 }
 

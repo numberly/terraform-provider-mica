@@ -22,7 +22,7 @@ func RegisterObjectStoreVirtualHostHandlers(mux *http.ServeMux) *objectStoreVirt
 	store := &objectStoreVirtualHostStore{
 		hosts: make(map[string]*client.ObjectStoreVirtualHost),
 	}
-	mux.HandleFunc("/api/2.23/object-store-virtual-hosts", store.handleVirtualHost)
+	mux.HandleFunc(APIPrefix+"/object-store-virtual-hosts", store.handleVirtualHost)
 	return store
 }
 

@@ -27,7 +27,7 @@ func RegisterSubnetHandlers(mux *http.ServeMux) *subnetStore {
 		byName: make(map[string]*client.Subnet),
 		byID:   make(map[string]*client.Subnet),
 	}
-	mux.HandleFunc("/api/2.23/subnets", store.handle)
+	mux.HandleFunc(APIPrefix+"/subnets", store.handle)
 	return store
 }
 

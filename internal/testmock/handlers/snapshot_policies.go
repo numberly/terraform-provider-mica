@@ -23,8 +23,8 @@ func RegisterSnapshotPolicyHandlers(mux *http.ServeMux) *snapshotPolicyStore {
 	store := &snapshotPolicyStore{
 		policies: make(map[string]*client.SnapshotPolicy),
 	}
-	mux.HandleFunc("/api/2.23/policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/policies/file-systems", store.handleFileSystems)
+	mux.HandleFunc(APIPrefix+"/policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/policies/file-systems", store.handleFileSystems)
 	return store
 }
 

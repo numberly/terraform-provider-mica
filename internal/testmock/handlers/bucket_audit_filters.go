@@ -22,7 +22,7 @@ func RegisterBucketAuditFilterHandlers(mux *http.ServeMux) *bucketAuditFilterSto
 	store := &bucketAuditFilterStore{
 		filters: make(map[string]*client.BucketAuditFilter),
 	}
-	mux.HandleFunc("/api/2.23/buckets/audit-filters", store.handle)
+	mux.HandleFunc(APIPrefix+"/buckets/audit-filters", store.handle)
 	return store
 }
 

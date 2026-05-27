@@ -15,9 +15,9 @@ import (
 // nfsExportPolicyStore is the thread-safe in-memory state for NFS export policy handlers.
 type nfsExportPolicyStore struct {
 	mu            sync.Mutex
-	policies      map[string]*client.NfsExportPolicy           // policyName -> policy
+	policies      map[string]*client.NfsExportPolicy                // policyName -> policy
 	rules         map[string]map[string]*client.NfsExportPolicyRule // policyName -> ruleName -> rule
-	nextRuleIndex map[string]int                                // policyName -> next index counter
+	nextRuleIndex map[string]int                                    // policyName -> next index counter
 }
 
 // RegisterNfsExportPolicyHandlers registers CRUD handlers for NFS export policies and rules.
@@ -28,8 +28,8 @@ func RegisterNfsExportPolicyHandlers(mux *http.ServeMux) *nfsExportPolicyStore {
 		rules:         make(map[string]map[string]*client.NfsExportPolicyRule),
 		nextRuleIndex: make(map[string]int),
 	}
-	mux.HandleFunc("/api/2.23/nfs-export-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/nfs-export-policies/rules", store.handleRules)
+	mux.HandleFunc(APIPrefix+"/nfs-export-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/nfs-export-policies/rules", store.handleRules)
 	return store
 }
 

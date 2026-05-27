@@ -32,7 +32,7 @@ func RegisterResiliencyGroupMemberHandlers(mux *http.ServeMux) *resiliencyGroupM
 	store := &resiliencyGroupMemberStore{
 		members: make(map[memberKey]*client.ResiliencyGroupMember),
 	}
-	mux.HandleFunc("/api/2.23/resiliency-groups/members", store.handle)
+	mux.HandleFunc(APIPrefix+"/resiliency-groups/members", store.handle)
 	return store
 }
 

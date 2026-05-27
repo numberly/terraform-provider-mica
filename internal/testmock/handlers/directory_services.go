@@ -25,7 +25,7 @@ func RegisterDirectoryServicesHandlers(mux *http.ServeMux) *directoryServicesSto
 		byName: make(map[string]*client.DirectoryService),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/directory-services", store.handle)
+	mux.HandleFunc(APIPrefix+"/directory-services", store.handle)
 	return store
 }
 

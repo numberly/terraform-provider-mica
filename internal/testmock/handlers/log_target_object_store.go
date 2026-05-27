@@ -23,7 +23,7 @@ func RegisterLogTargetObjectStoreHandlers(mux *http.ServeMux) *logTargetObjectSt
 		byName: make(map[string]*client.LogTargetObjectStore),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/log-targets/object-store", store.handle)
+	mux.HandleFunc(APIPrefix+"/log-targets/object-store", store.handle)
 	return store
 }
 

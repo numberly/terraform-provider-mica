@@ -85,7 +85,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 
 	// Step 3: POST /api/2.23/file-systems?names=test-fs — create file system.
 	// The FlashBlade API requires the name as a ?names= query parameter, not in the body.
-	resp = doJSON(t, http.MethodPost, base+"/api/2.23/file-systems?names=test-fs", map[string]any{
+	resp = doJSON(t, http.MethodPost, base+handlers.APIPrefix+"/file-systems?names=test-fs", map[string]any{
 		"provisioned": 1073741824,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -117,7 +117,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	fsID := fs.ID
 
 	// Step 4: GET /api/2.23/file-systems?names=test-fs — verify file system returned.
-	resp = doJSON(t, http.MethodGet, base+"/api/2.23/file-systems?names=test-fs", nil)
+	resp = doJSON(t, http.MethodGet, base+handlers.APIPrefix+"/file-systems?names=test-fs", nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("GET file-systems?names=test-fs: expected 200, got %d", resp.StatusCode)
 	}
@@ -136,7 +136,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 
 	// Step 5: PATCH /api/2.23/file-systems?ids={id} — update provisioned size.
-	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), map[string]any{
+	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s"+handlers.APIPrefix+"/file-systems?ids=%s", base, fsID), map[string]any{
 		"provisioned": 2147483648,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -159,7 +159,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 
 	// Step 6: PATCH destroyed=true — soft-delete.
-	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), map[string]any{
+	resp = doJSON(t, http.MethodPatch, fmt.Sprintf("%s"+handlers.APIPrefix+"/file-systems?ids=%s", base, fsID), map[string]any{
 		"destroyed": true,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -177,7 +177,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	}
 
 	// Step 7: DELETE /api/2.23/file-systems?ids={id} — eradicate.
-	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), nil)
+	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s"+handlers.APIPrefix+"/file-systems?ids=%s", base, fsID), nil)
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("DELETE: expected 200, got %d: %s", resp.StatusCode, body)
@@ -185,7 +185,7 @@ func TestUnit_MockServer_FullCRUDLifecycle(t *testing.T) {
 	resp.Body.Close()
 
 	// Step 8: GET after eradication — verify empty items.
-	resp = doJSON(t, http.MethodGet, base+"/api/2.23/file-systems?names=test-fs", nil)
+	resp = doJSON(t, http.MethodGet, base+handlers.APIPrefix+"/file-systems?names=test-fs", nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("GET after eradicate: expected 200, got %d", resp.StatusCode)
 	}
@@ -243,7 +243,7 @@ func TestUnit_MockServer_DeleteRequiresDestroyed(t *testing.T) {
 
 	// Create a file system (not destroyed).
 	// The FlashBlade API requires the name as a ?names= query parameter, not in the body.
-	resp := doJSON(t, http.MethodPost, base+"/api/2.23/file-systems?names=no-destroy-fs", map[string]any{
+	resp := doJSON(t, http.MethodPost, base+handlers.APIPrefix+"/file-systems?names=no-destroy-fs", map[string]any{
 		"provisioned": 1073741824,
 	})
 	if resp.StatusCode != http.StatusOK {
@@ -261,7 +261,7 @@ func TestUnit_MockServer_DeleteRequiresDestroyed(t *testing.T) {
 	fsID := createResp.Items[0].ID
 
 	// Attempt DELETE without soft-deleting first — should return 400.
-	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s/api/2.23/file-systems?ids=%s", base, fsID), nil)
+	resp = doJSON(t, http.MethodDelete, fmt.Sprintf("%s"+handlers.APIPrefix+"/file-systems?ids=%s", base, fsID), nil)
 	if resp.StatusCode != http.StatusBadRequest {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("DELETE non-destroyed: expected 400, got %d: %s", resp.StatusCode, body)

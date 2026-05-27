@@ -23,7 +23,7 @@ func RegisterDirectoryServiceRolesHandlers(mux *http.ServeMux) *directoryService
 		byName: make(map[string]*client.DirectoryServiceRole),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/directory-services/roles", s.handle)
+	mux.HandleFunc(APIPrefix+"/directory-services/roles", s.handle)
 	return s
 }
 

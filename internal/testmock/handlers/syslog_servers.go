@@ -21,7 +21,7 @@ func RegisterSyslogServerHandlers(mux *http.ServeMux) *syslogServerStore {
 	store := &syslogServerStore{
 		servers: make(map[string]*client.SyslogServer),
 	}
-	mux.HandleFunc("/api/2.23/syslog-servers", store.handle)
+	mux.HandleFunc(APIPrefix+"/syslog-servers", store.handle)
 	return store
 }
 

@@ -26,7 +26,7 @@ func RegisterObjectStoreAccountHandlers(mux *http.ServeMux) *objectStoreAccountS
 		byName: make(map[string]*client.ObjectStoreAccount),
 		byID:   make(map[string]*client.ObjectStoreAccount),
 	}
-	mux.HandleFunc("/api/2.23/object-store-accounts", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-accounts", store.handle)
 	return store
 }
 

@@ -23,7 +23,7 @@ func RegisterWorkloadHandlers(mux *http.ServeMux) *workloadStore {
 		byName: make(map[string]*client.Workload),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/workloads", store.handle)
+	mux.HandleFunc(APIPrefix+"/workloads", store.handle)
 	return store
 }
 

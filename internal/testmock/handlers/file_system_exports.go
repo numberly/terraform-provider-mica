@@ -24,7 +24,7 @@ func RegisterFileSystemExportHandlers(mux *http.ServeMux) *fileSystemExportStore
 		byName: make(map[string]*client.FileSystemExport),
 		byID:   make(map[string]*client.FileSystemExport),
 	}
-	mux.HandleFunc("/api/2.23/file-system-exports", store.handle)
+	mux.HandleFunc(APIPrefix+"/file-system-exports", store.handle)
 	return store
 }
 

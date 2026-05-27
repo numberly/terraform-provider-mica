@@ -27,7 +27,7 @@ func RegisterNetworkInterfaceHandlers(mux *http.ServeMux) *networkInterfaceStore
 		byName: make(map[string]*client.NetworkInterface),
 		byID:   make(map[string]*client.NetworkInterface),
 	}
-	mux.HandleFunc("/api/2.23/network-interfaces", store.handle)
+	mux.HandleFunc(APIPrefix+"/network-interfaces", store.handle)
 	return store
 }
 

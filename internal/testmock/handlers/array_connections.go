@@ -23,7 +23,7 @@ func RegisterArrayConnectionHandlers(mux *http.ServeMux) *arrayConnectionStore {
 		byName: make(map[string]*client.ArrayConnection),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/array-connections", store.handle)
+	mux.HandleFunc(APIPrefix+"/array-connections", store.handle)
 	return store
 }
 

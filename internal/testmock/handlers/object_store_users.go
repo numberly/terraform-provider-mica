@@ -27,8 +27,8 @@ func RegisterObjectStoreUserHandlers(mux *http.ServeMux, accounts *objectStoreAc
 		policies: make(map[string][]string),
 		accounts: accounts,
 	}
-	mux.HandleFunc("/api/2.23/object-store-users", store.handle)
-	mux.HandleFunc("/api/2.23/object-store-users/object-store-access-policies", store.handlePolicies)
+	mux.HandleFunc(APIPrefix+"/object-store-users", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-users/object-store-access-policies", store.handlePolicies)
 	return store
 }
 

@@ -24,7 +24,7 @@ func RegisterBucketReplicaLinkHandlers(mux *http.ServeMux) *bucketReplicaLinkSto
 	store := &bucketReplicaLinkStore{
 		byID: make(map[string]*client.BucketReplicaLink),
 	}
-	mux.HandleFunc("/api/2.23/bucket-replica-links", store.handle)
+	mux.HandleFunc(APIPrefix+"/bucket-replica-links", store.handle)
 	return store
 }
 

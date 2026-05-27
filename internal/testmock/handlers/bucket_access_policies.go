@@ -24,8 +24,8 @@ func RegisterBucketAccessPolicyHandlers(mux *http.ServeMux) *bucketAccessPolicyS
 	store := &bucketAccessPolicyStore{
 		policies: make(map[string]*client.BucketAccessPolicy),
 	}
-	mux.HandleFunc("/api/2.23/buckets/bucket-access-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/buckets/bucket-access-policies/rules", store.handleRule)
+	mux.HandleFunc(APIPrefix+"/buckets/bucket-access-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/buckets/bucket-access-policies/rules", store.handleRule)
 	return store
 }
 

@@ -24,8 +24,8 @@ func RegisterSmbClientPolicyHandlers(mux *http.ServeMux) *smbClientPolicyStore {
 		policies: make(map[string]*client.SmbClientPolicy),
 		rules:    make(map[string]map[string]*client.SmbClientPolicyRule),
 	}
-	mux.HandleFunc("/api/2.23/smb-client-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/smb-client-policies/rules", store.handleRules)
+	mux.HandleFunc(APIPrefix+"/smb-client-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/smb-client-policies/rules", store.handleRules)
 	return store
 }
 

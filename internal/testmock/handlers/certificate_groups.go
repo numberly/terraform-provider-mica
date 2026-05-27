@@ -29,8 +29,8 @@ func RegisterCertificateGroupHandlers(mux *http.ServeMux) *certificateGroupStore
 		groups:  make(map[string]*client.CertificateGroup),
 		members: make(map[string][]client.CertificateGroupMember),
 	}
-	mux.HandleFunc("/api/2.23/certificate-groups/certificates", store.handleCertificates)
-	mux.HandleFunc("/api/2.23/certificate-groups", store.handleGroup)
+	mux.HandleFunc(APIPrefix+"/certificate-groups/certificates", store.handleCertificates)
+	mux.HandleFunc(APIPrefix+"/certificate-groups", store.handleGroup)
 	return store
 }
 

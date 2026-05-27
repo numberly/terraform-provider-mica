@@ -24,7 +24,7 @@ func RegisterObjectStoreAccountExportHandlers(mux *http.ServeMux) *objectStoreAc
 		byName: make(map[string]*client.ObjectStoreAccountExport),
 		byID:   make(map[string]*client.ObjectStoreAccountExport),
 	}
-	mux.HandleFunc("/api/2.23/object-store-account-exports", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-account-exports", store.handle)
 	return store
 }
 

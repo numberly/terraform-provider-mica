@@ -13,7 +13,7 @@ import (
 // smbSharePolicyStore is the thread-safe in-memory state for SMB share policy handlers.
 type smbSharePolicyStore struct {
 	mu       sync.Mutex
-	policies map[string]*client.SmbSharePolicy              // policyName -> policy
+	policies map[string]*client.SmbSharePolicy                // policyName -> policy
 	rules    map[string]map[string]*client.SmbSharePolicyRule // policyName -> ruleName -> rule
 }
 
@@ -24,8 +24,8 @@ func RegisterSmbSharePolicyHandlers(mux *http.ServeMux) *smbSharePolicyStore {
 		policies: make(map[string]*client.SmbSharePolicy),
 		rules:    make(map[string]map[string]*client.SmbSharePolicyRule),
 	}
-	mux.HandleFunc("/api/2.23/smb-share-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/smb-share-policies/rules", store.handleRules)
+	mux.HandleFunc(APIPrefix+"/smb-share-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/smb-share-policies/rules", store.handleRules)
 	return store
 }
 

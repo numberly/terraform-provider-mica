@@ -23,7 +23,7 @@ func RegisterRemoteCredentialsHandlers(mux *http.ServeMux) *remoteCredentialsSto
 		byName: make(map[string]*client.ObjectStoreRemoteCredentials),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/object-store-remote-credentials", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-remote-credentials", store.handle)
 	return store
 }
 

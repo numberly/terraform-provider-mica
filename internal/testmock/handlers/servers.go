@@ -25,7 +25,7 @@ func RegisterServerHandlers(mux *http.ServeMux) *serverStore {
 		byName: make(map[string]*client.Server),
 		byID:   make(map[string]*client.Server),
 	}
-	mux.HandleFunc("/api/2.23/servers", store.handle)
+	mux.HandleFunc(APIPrefix+"/servers", store.handle)
 	return store
 }
 

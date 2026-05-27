@@ -23,7 +23,7 @@ func RegisterSnmpManagerHandlers(mux *http.ServeMux) *snmpManagerStore {
 		byName: make(map[string]*client.SnmpManager),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/snmp-managers", store.handle)
+	mux.HandleFunc(APIPrefix+"/snmp-managers", store.handle)
 	return store
 }
 

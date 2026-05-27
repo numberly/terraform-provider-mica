@@ -23,7 +23,7 @@ func RegisterCertificateHandlers(mux *http.ServeMux) *certificateStore {
 		byName: make(map[string]*client.Certificate),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/certificates", store.handle)
+	mux.HandleFunc(APIPrefix+"/certificates", store.handle)
 	return store
 }
 

@@ -23,7 +23,7 @@ func RegisterLinkAggregationGroupHandlers(mux *http.ServeMux) *lagStore {
 	store := &lagStore{
 		lags: make(map[string]*client.LinkAggregationGroup),
 	}
-	mux.HandleFunc("/api/2.23/link-aggregation-groups", store.handle)
+	mux.HandleFunc(APIPrefix+"/link-aggregation-groups", store.handle)
 	return store
 }
 

@@ -22,7 +22,7 @@ func RegisterLifecycleRuleHandlers(mux *http.ServeMux) *lifecycleRuleStore {
 	store := &lifecycleRuleStore{
 		rules: make(map[string]*client.LifecycleRule),
 	}
-	mux.HandleFunc("/api/2.23/lifecycle-rules", store.handle)
+	mux.HandleFunc(APIPrefix+"/lifecycle-rules", store.handle)
 	return store
 }
 

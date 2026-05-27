@@ -20,7 +20,7 @@ type arrayConnectionKeyStore struct {
 // The store pointer is returned for test setup (Seed).
 func RegisterArrayConnectionKeyHandlers(mux *http.ServeMux) *arrayConnectionKeyStore {
 	store := &arrayConnectionKeyStore{nextID: 1}
-	mux.HandleFunc("/api/2.23/array-connections/connection-key", store.handle)
+	mux.HandleFunc(APIPrefix+"/array-connections/connection-key", store.handle)
 	return store
 }
 

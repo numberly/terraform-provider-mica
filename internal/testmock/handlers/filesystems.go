@@ -16,9 +16,9 @@ import (
 
 // fileSystemStore is the thread-safe in-memory state for file system handlers.
 type fileSystemStore struct {
-	mu      sync.Mutex
-	byName  map[string]*client.FileSystem
-	byID    map[string]*client.FileSystem
+	mu     sync.Mutex
+	byName map[string]*client.FileSystem
+	byID   map[string]*client.FileSystem
 }
 
 // RegisterFileSystemHandlers registers CRUD handlers for /api/2.23/file-systems
@@ -29,7 +29,7 @@ func RegisterFileSystemHandlers(mux *http.ServeMux) *fileSystemStore {
 		byName: make(map[string]*client.FileSystem),
 		byID:   make(map[string]*client.FileSystem),
 	}
-	mux.HandleFunc("/api/2.23/file-systems", store.handle)
+	mux.HandleFunc(APIPrefix+"/file-systems", store.handle)
 	return store
 }
 
@@ -319,4 +319,3 @@ func (s *fileSystemStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
-

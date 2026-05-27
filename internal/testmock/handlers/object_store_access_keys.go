@@ -27,7 +27,7 @@ func RegisterObjectStoreAccessKeyHandlers(mux *http.ServeMux, accounts *objectSt
 		byName:   make(map[string]*client.ObjectStoreAccessKey),
 		accounts: accounts,
 	}
-	mux.HandleFunc("/api/2.23/object-store-access-keys", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-access-keys", store.handle)
 	return store
 }
 

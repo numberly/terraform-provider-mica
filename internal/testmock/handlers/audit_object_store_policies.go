@@ -26,8 +26,8 @@ func RegisterAuditObjectStorePolicyHandlers(mux *http.ServeMux) *auditObjectStor
 		members: make(map[string][]client.AuditObjectStorePolicyMember),
 		nextID:  1,
 	}
-	mux.HandleFunc("/api/2.23/audit-object-store-policies/members", store.handleMember)
-	mux.HandleFunc("/api/2.23/audit-object-store-policies", store.handle)
+	mux.HandleFunc(APIPrefix+"/audit-object-store-policies/members", store.handleMember)
+	mux.HandleFunc(APIPrefix+"/audit-object-store-policies", store.handle)
 	return store
 }
 

@@ -30,7 +30,7 @@ func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStor
 		byID:     make(map[string]*client.Bucket),
 		accounts: accounts,
 	}
-	mux.HandleFunc("/api/2.23/buckets", store.handle)
+	mux.HandleFunc(APIPrefix+"/buckets", store.handle)
 	return store
 }
 
@@ -199,7 +199,7 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 			EradicationMode:   "retention-based",
 			ManualEradication: "disabled",
 		},
-		ObjectLockConfig:  client.ObjectLockConfig{},
+		ObjectLockConfig:   client.ObjectLockConfig{},
 		PublicAccessConfig: client.PublicAccessConfig{},
 		PublicStatus:       "not-public",
 	}

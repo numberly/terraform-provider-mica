@@ -13,7 +13,7 @@ import (
 // qosPolicyStore is the thread-safe in-memory state for QoS policy handlers.
 type qosPolicyStore struct {
 	mu      sync.Mutex
-	byName  map[string]*client.QosPolicy       // keyed by policy name
+	byName  map[string]*client.QosPolicy        // keyed by policy name
 	members map[string][]client.QosPolicyMember // keyed by policy name
 	nextID  int
 }
@@ -26,8 +26,8 @@ func RegisterQosPolicyHandlers(mux *http.ServeMux) *qosPolicyStore {
 		byName:  make(map[string]*client.QosPolicy),
 		members: make(map[string][]client.QosPolicyMember),
 	}
-	mux.HandleFunc("/api/2.23/qos-policies/members", store.handleMember)
-	mux.HandleFunc("/api/2.23/qos-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/qos-policies/members", store.handleMember)
+	mux.HandleFunc(APIPrefix+"/qos-policies", store.handlePolicy)
 	return store
 }
 

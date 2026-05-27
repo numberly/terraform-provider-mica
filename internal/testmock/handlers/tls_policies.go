@@ -12,10 +12,10 @@ import (
 
 // tlsPolicyStore is the thread-safe in-memory state for TLS policy handlers.
 type tlsPolicyStore struct {
-	mu      sync.Mutex
+	mu       sync.Mutex
 	policies map[string]*client.TlsPolicy        // keyed by policy name
 	members  map[string][]client.TlsPolicyMember // keyed by policy name
-	nextID  int
+	nextID   int
 }
 
 // RegisterTlsPolicyHandlers registers CRUD handlers for:
@@ -30,9 +30,9 @@ func RegisterTlsPolicyHandlers(mux *http.ServeMux) *tlsPolicyStore {
 		members:  make(map[string][]client.TlsPolicyMember),
 	}
 	// Register member endpoints before policy endpoint to avoid ServeMux prefix collision.
-	mux.HandleFunc("/api/2.23/tls-policies/members", store.handleMember)
-	mux.HandleFunc("/api/2.23/tls-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/network-interfaces/tls-policies", store.handleNITlsPolicies)
+	mux.HandleFunc(APIPrefix+"/tls-policies/members", store.handleMember)
+	mux.HandleFunc(APIPrefix+"/tls-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/network-interfaces/tls-policies", store.handleNITlsPolicies)
 	return store
 }
 
@@ -127,18 +127,18 @@ func (s *tlsPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request
 	id := fmt.Sprintf("tls-%d", s.nextID)
 
 	policy := &client.TlsPolicy{
-		ID:                               id,
-		Name:                             name,
-		ApplianceCertificate:             body.ApplianceCertificate,
-		ClientCertificatesRequired:       body.ClientCertificatesRequired,
-		DisabledTlsCiphers:               body.DisabledTlsCiphers,
-		Enabled:                          body.Enabled,
-		EnabledTlsCiphers:                body.EnabledTlsCiphers,
-		IsLocal:                          true,
-		MinTlsVersion:                    body.MinTlsVersion,
-		PolicyType:                       "tls",
+		ID:                                id,
+		Name:                              name,
+		ApplianceCertificate:              body.ApplianceCertificate,
+		ClientCertificatesRequired:        body.ClientCertificatesRequired,
+		DisabledTlsCiphers:                body.DisabledTlsCiphers,
+		Enabled:                           body.Enabled,
+		EnabledTlsCiphers:                 body.EnabledTlsCiphers,
+		IsLocal:                           true,
+		MinTlsVersion:                     body.MinTlsVersion,
+		PolicyType:                        "tls",
 		TrustedClientCertificateAuthority: body.TrustedClientCertificateAuthority,
-		VerifyClientCertificateTrust:     body.VerifyClientCertificateTrust,
+		VerifyClientCertificateTrust:      body.VerifyClientCertificateTrust,
 	}
 
 	s.policies[name] = policy
