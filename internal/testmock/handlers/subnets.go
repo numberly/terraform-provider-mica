@@ -20,7 +20,7 @@ type subnetStore struct {
 	nextID int
 }
 
-// RegisterSubnetHandlers registers CRUD handlers for /api/2.23/subnets
+// RegisterSubnetHandlers registers CRUD handlers for /api/<APIVersion>/subnets
 // against the provided ServeMux. The handlers share in-memory state and are thread-safe.
 func RegisterSubnetHandlers(mux *http.ServeMux) *subnetStore {
 	store := &subnetStore{
@@ -71,7 +71,7 @@ func (s *subnetStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/subnets with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/subnets with optional ?names= param.
 // If names is provided, returns the matching subnet or an empty list.
 // If names is absent, returns all subnets.
 func (s *subnetStore) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func (s *subnetStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/subnets?names={name}.
+// handlePost handles POST /api/<APIVersion>/subnets?names={name}.
 // The subnet name comes from the ?names= query parameter, not the request body.
 func (s *subnetStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
@@ -143,7 +143,7 @@ func (s *subnetStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Subnet{*subnet})
 }
 
-// handlePatch handles PATCH /api/2.23/subnets?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/subnets?names={name}.
 // Uses raw map decoding for true PATCH semantics — only provided fields are updated.
 func (s *subnetStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
@@ -216,7 +216,7 @@ func (s *subnetStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Subnet{*subnet})
 }
 
-// handleDelete handles DELETE /api/2.23/subnets?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/subnets?names={name}.
 func (s *subnetStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {

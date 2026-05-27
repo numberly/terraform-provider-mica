@@ -61,7 +61,7 @@ func (s *smbClientPolicyStore) handleRules(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// handlePolicyGet handles GET /api/2.23/smb-client-policies with optional ?names= param.
+// handlePolicyGet handles GET /api/<APIVersion>/smb-client-policies with optional ?names= param.
 func (s *smbClientPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -109,7 +109,7 @@ func (s *smbClientPolicyStore) policyWithRules(policy *client.SmbClientPolicy) c
 	return p
 }
 
-// handlePolicyPost handles POST /api/2.23/smb-client-policies?names={name}.
+// handlePolicyPost handles POST /api/<APIVersion>/smb-client-policies?names={name}.
 func (s *smbClientPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -157,7 +157,7 @@ func (s *smbClientPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.SmbClientPolicy{s.policyWithRules(policy)})
 }
 
-// handlePolicyPatch handles PATCH /api/2.23/smb-client-policies?names={name}.
+// handlePolicyPatch handles PATCH /api/<APIVersion>/smb-client-policies?names={name}.
 func (s *smbClientPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -225,7 +225,7 @@ func (s *smbClientPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.
 	WriteJSONListResponse(w, http.StatusOK, []client.SmbClientPolicy{s.policyWithRules(policy)})
 }
 
-// handlePolicyDelete handles DELETE /api/2.23/smb-client-policies?names={name}.
+// handlePolicyDelete handles DELETE /api/<APIVersion>/smb-client-policies?names={name}.
 func (s *smbClientPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -247,7 +247,7 @@ func (s *smbClientPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http
 	w.WriteHeader(http.StatusOK)
 }
 
-// handleRulesGet handles GET /api/2.23/smb-client-policies/rules.
+// handleRulesGet handles GET /api/<APIVersion>/smb-client-policies/rules.
 // Filters by ?policy_names= and optionally ?names=.
 func (s *smbClientPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
@@ -286,7 +286,7 @@ func (s *smbClientPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Req
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleRulesPost handles POST /api/2.23/smb-client-policies/rules?policy_names={name}.
+// handleRulesPost handles POST /api/<APIVersion>/smb-client-policies/rules?policy_names={name}.
 func (s *smbClientPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Request) {
 	policyName := r.URL.Query().Get("policy_names")
 	if policyName == "" {
@@ -334,7 +334,7 @@ func (s *smbClientPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, []client.SmbClientPolicyRule{*rule})
 }
 
-// handleRulesPatch handles PATCH /api/2.23/smb-client-policies/rules?names={name}&policy_names={policy}.
+// handleRulesPatch handles PATCH /api/<APIVersion>/smb-client-policies/rules?names={name}&policy_names={policy}.
 func (s *smbClientPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.Request) {
 	ruleName := r.URL.Query().Get("names")
 	policyName := r.URL.Query().Get("policy_names")
@@ -393,7 +393,7 @@ func (s *smbClientPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.SmbClientPolicyRule{*rule})
 }
 
-// handleRulesDelete handles DELETE /api/2.23/smb-client-policies/rules?names={name}&policy_names={policy}.
+// handleRulesDelete handles DELETE /api/<APIVersion>/smb-client-policies/rules?names={name}&policy_names={policy}.
 func (s *smbClientPolicyStore) handleRulesDelete(w http.ResponseWriter, r *http.Request) {
 	ruleName := r.URL.Query().Get("names")
 	policyName := r.URL.Query().Get("policy_names")

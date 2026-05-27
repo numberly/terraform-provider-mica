@@ -16,7 +16,7 @@ type snmpManagerStore struct {
 	nextID int
 }
 
-// RegisterSnmpManagerHandlers registers CRUD handlers for /api/2.23/snmp-managers
+// RegisterSnmpManagerHandlers registers CRUD handlers for /api/<APIVersion>/snmp-managers
 // against the provided ServeMux. The store pointer is returned for test setup.
 func RegisterSnmpManagerHandlers(mux *http.ServeMux) *snmpManagerStore {
 	store := &snmpManagerStore{
@@ -81,7 +81,7 @@ func (s *snmpManagerStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/snmp-managers with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/snmp-managers with optional ?names= param.
 // No-match returns HTTP 200 + {"items": []} to mirror real API behaviour.
 func (s *snmpManagerStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -111,7 +111,7 @@ func (s *snmpManagerStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/snmp-managers?names={name}.
+// handlePost handles POST /api/<APIVersion>/snmp-managers?names={name}.
 func (s *snmpManagerStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -163,7 +163,7 @@ func (s *snmpManagerStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.SnmpManager{*stripSensitive(m)})
 }
 
-// handlePatch handles PATCH /api/2.23/snmp-managers?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/snmp-managers?names={name}.
 func (s *snmpManagerStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -210,7 +210,7 @@ func (s *snmpManagerStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.SnmpManager{*stripSensitive(m)})
 }
 
-// handleDelete handles DELETE /api/2.23/snmp-managers?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/snmp-managers?names={name}.
 func (s *snmpManagerStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return

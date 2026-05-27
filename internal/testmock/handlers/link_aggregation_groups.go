@@ -17,7 +17,7 @@ type lagStore struct {
 }
 
 // RegisterLinkAggregationGroupHandlers registers a GET-only handler for
-// /api/2.23/link-aggregation-groups against the provided ServeMux.
+// /api/<APIVersion>/link-aggregation-groups against the provided ServeMux.
 // Non-GET methods return 405 Method Not Allowed.
 func RegisterLinkAggregationGroupHandlers(mux *http.ServeMux) *lagStore {
 	store := &lagStore{
@@ -45,7 +45,7 @@ func (s *lagStore) handle(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 }
 
-// handleGet handles GET /api/2.23/link-aggregation-groups with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/link-aggregation-groups with optional ?names= param.
 // If names is provided, returns the matching LAG or an empty list.
 // If names is absent, returns all LAGs.
 func (s *lagStore) handleGet(w http.ResponseWriter, r *http.Request) {

@@ -17,7 +17,7 @@ type fileSystemExportStore struct {
 	byID   map[string]*client.FileSystemExport
 }
 
-// RegisterFileSystemExportHandlers registers CRUD handlers for /api/2.23/file-system-exports
+// RegisterFileSystemExportHandlers registers CRUD handlers for /api/<APIVersion>/file-system-exports
 // against the provided ServeMux. The handlers share in-memory state and are thread-safe.
 func RegisterFileSystemExportHandlers(mux *http.ServeMux) *fileSystemExportStore {
 	store := &fileSystemExportStore{
@@ -66,7 +66,7 @@ func (s *fileSystemExportStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/file-system-exports with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/file-system-exports with optional ?names= param.
 func (s *fileSystemExportStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -93,7 +93,7 @@ func (s *fileSystemExportStore) handleGet(w http.ResponseWriter, r *http.Request
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/file-system-exports?member_names={fsName}&policy_names={policyName}.
+// handlePost handles POST /api/<APIVersion>/file-system-exports?member_names={fsName}&policy_names={policyName}.
 func (s *fileSystemExportStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	memberName := r.URL.Query().Get("member_names")
 	if memberName == "" {
@@ -145,7 +145,7 @@ func (s *fileSystemExportStore) handlePost(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, []client.FileSystemExport{*export})
 }
 
-// handlePatch handles PATCH /api/2.23/file-system-exports?ids={id}.
+// handlePatch handles PATCH /api/<APIVersion>/file-system-exports?ids={id}.
 func (s *fileSystemExportStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("ids")
 	if id == "" {
@@ -211,7 +211,7 @@ func (s *fileSystemExportStore) handlePatch(w http.ResponseWriter, r *http.Reque
 	WriteJSONListResponse(w, http.StatusOK, []client.FileSystemExport{*export})
 }
 
-// handleDelete handles DELETE /api/2.23/file-system-exports?member_names={fsName}&names={exportName}.
+// handleDelete handles DELETE /api/<APIVersion>/file-system-exports?member_names={fsName}&names={exportName}.
 func (s *fileSystemExportStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	memberName := r.URL.Query().Get("member_names")
 	exportName := r.URL.Query().Get("names")

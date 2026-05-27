@@ -16,7 +16,7 @@ type targetStore struct {
 	nextID int
 }
 
-// RegisterTargetHandlers registers CRUD handlers for /api/2.23/targets
+// RegisterTargetHandlers registers CRUD handlers for /api/<APIVersion>/targets
 // against the provided ServeMux. The store pointer is returned for test setup.
 func RegisterTargetHandlers(mux *http.ServeMux) *targetStore {
 	store := &targetStore{
@@ -49,7 +49,7 @@ func (s *targetStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/targets with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/targets with optional ?names= param.
 func (s *targetStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -80,7 +80,7 @@ func (s *targetStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/targets?names={name}.
+// handlePost handles POST /api/<APIVersion>/targets?names={name}.
 // Requires non-empty address in body. Returns 409 if name already exists.
 func (s *targetStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -127,7 +127,7 @@ func (s *targetStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Target{*tgt})
 }
 
-// handlePatch handles PATCH /api/2.23/targets?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/targets?names={name}.
 // Applies non-nil pointer fields. Returns 404 if not found.
 func (s *targetStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -166,7 +166,7 @@ func (s *targetStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Target{*tgt})
 }
 
-// handleDelete handles DELETE /api/2.23/targets?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/targets?names={name}.
 func (s *targetStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return

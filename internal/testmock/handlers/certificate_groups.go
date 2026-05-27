@@ -18,8 +18,8 @@ type certificateGroupStore struct {
 }
 
 // RegisterCertificateGroupHandlers registers CRUD handlers for:
-//   - /api/2.23/certificate-groups/certificates (member GET/POST/DELETE)
-//   - /api/2.23/certificate-groups (group GET/POST/DELETE — no PATCH in API)
+//   - /api/<APIVersion>/certificate-groups/certificates (member GET/POST/DELETE)
+//   - /api/<APIVersion>/certificate-groups (group GET/POST/DELETE — no PATCH in API)
 //
 // The certificates endpoint is registered before the groups endpoint to avoid
 // ServeMux prefix collision (longer path wins in Go's ServeMux).
@@ -62,7 +62,7 @@ func (s *certificateGroupStore) handleGroup(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// handleGroupGet handles GET /api/2.23/certificate-groups.
+// handleGroupGet handles GET /api/<APIVersion>/certificate-groups.
 // When ?names= filter matches nothing, returns empty list with HTTP 200 (not 404).
 func (s *certificateGroupStore) handleGroupGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names"}) {
@@ -94,7 +94,7 @@ func (s *certificateGroupStore) handleGroupGet(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleGroupPost handles POST /api/2.23/certificate-groups.
+// handleGroupPost handles POST /api/<APIVersion>/certificate-groups.
 func (s *certificateGroupStore) handleGroupPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -130,7 +130,7 @@ func (s *certificateGroupStore) handleGroupPost(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.CertificateGroup{*group})
 }
 
-// handleGroupDelete handles DELETE /api/2.23/certificate-groups.
+// handleGroupDelete handles DELETE /api/<APIVersion>/certificate-groups.
 func (s *certificateGroupStore) handleGroupDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names"}) {
 		return
@@ -169,7 +169,7 @@ func (s *certificateGroupStore) handleCertificates(w http.ResponseWriter, r *htt
 	}
 }
 
-// handleMemberGet handles GET /api/2.23/certificate-groups/certificates.
+// handleMemberGet handles GET /api/<APIVersion>/certificate-groups/certificates.
 // When certificate_group_names filter matches nothing, returns empty list with HTTP 200.
 func (s *certificateGroupStore) handleMemberGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"certificate_group_names", "certificate_names", "continuation_token"}) {
@@ -210,7 +210,7 @@ func (s *certificateGroupStore) handleMemberGet(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleMemberPost handles POST /api/2.23/certificate-groups/certificates.
+// handleMemberPost handles POST /api/<APIVersion>/certificate-groups/certificates.
 func (s *certificateGroupStore) handleMemberPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"certificate_group_names", "certificate_names"}) {
 		return
@@ -248,7 +248,7 @@ func (s *certificateGroupStore) handleMemberPost(w http.ResponseWriter, r *http.
 	WriteJSONListResponse(w, http.StatusOK, []client.CertificateGroupMember{member})
 }
 
-// handleMemberDelete handles DELETE /api/2.23/certificate-groups/certificates.
+// handleMemberDelete handles DELETE /api/<APIVersion>/certificate-groups/certificates.
 func (s *certificateGroupStore) handleMemberDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"certificate_group_names", "certificate_names"}) {
 		return

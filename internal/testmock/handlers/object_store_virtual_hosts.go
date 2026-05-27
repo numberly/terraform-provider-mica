@@ -49,7 +49,7 @@ func (s *objectStoreVirtualHostStore) handleVirtualHost(w http.ResponseWriter, r
 	}
 }
 
-// handleGet handles GET /api/2.23/object-store-virtual-hosts with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/object-store-virtual-hosts with optional ?names= param.
 func (s *objectStoreVirtualHostStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -76,7 +76,7 @@ func (s *objectStoreVirtualHostStore) handleGet(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/object-store-virtual-hosts?names={name}.
+// handlePost handles POST /api/<APIVersion>/object-store-virtual-hosts?names={name}.
 func (s *objectStoreVirtualHostStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -110,7 +110,7 @@ func (s *objectStoreVirtualHostStore) handlePost(w http.ResponseWriter, r *http.
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreVirtualHost{*host})
 }
 
-// handlePatch handles PATCH /api/2.23/object-store-virtual-hosts?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/object-store-virtual-hosts?names={name}.
 func (s *objectStoreVirtualHostStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -169,7 +169,7 @@ func (s *objectStoreVirtualHostStore) handlePatch(w http.ResponseWriter, r *http
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreVirtualHost{*host})
 }
 
-// handleDelete handles DELETE /api/2.23/object-store-virtual-hosts?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/object-store-virtual-hosts?names={name}.
 func (s *objectStoreVirtualHostStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {

@@ -16,7 +16,7 @@ type bucketAuditFilterStore struct {
 }
 
 // RegisterBucketAuditFilterHandlers registers CRUD handlers for
-// /api/2.23/buckets/audit-filters against the provided ServeMux.
+// /api/<APIVersion>/buckets/audit-filters against the provided ServeMux.
 // The returned store pointer can be used for test setup.
 func RegisterBucketAuditFilterHandlers(mux *http.ServeMux) *bucketAuditFilterStore {
 	store := &bucketAuditFilterStore{
@@ -48,7 +48,7 @@ func (s *bucketAuditFilterStore) handle(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// handleGet handles GET /api/2.23/buckets/audit-filters.
+// handleGet handles GET /api/<APIVersion>/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
@@ -87,7 +87,7 @@ func (s *bucketAuditFilterStore) handleGet(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/buckets/audit-filters.
+// handlePost handles POST /api/<APIVersion>/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
@@ -127,7 +127,7 @@ func (s *bucketAuditFilterStore) handlePost(w http.ResponseWriter, r *http.Reque
 	WriteJSONListResponse(w, http.StatusOK, []client.BucketAuditFilter{*filter})
 }
 
-// handlePatch handles PATCH /api/2.23/buckets/audit-filters.
+// handlePatch handles PATCH /api/<APIVersion>/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
@@ -167,7 +167,7 @@ func (s *bucketAuditFilterStore) handlePatch(w http.ResponseWriter, r *http.Requ
 	WriteJSONListResponse(w, http.StatusOK, []client.BucketAuditFilter{*filter})
 }
 
-// handleDelete handles DELETE /api/2.23/buckets/audit-filters.
+// handleDelete handles DELETE /api/<APIVersion>/buckets/audit-filters.
 func (s *bucketAuditFilterStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return

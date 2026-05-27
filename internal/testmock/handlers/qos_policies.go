@@ -19,7 +19,7 @@ type qosPolicyStore struct {
 }
 
 // RegisterQosPolicyHandlers registers CRUD handlers for
-// /api/2.23/qos-policies and /api/2.23/qos-policies/members
+// /api/<APIVersion>/qos-policies and /api/<APIVersion>/qos-policies/members
 // against the provided ServeMux. The returned store pointer can be used for test setup.
 func RegisterQosPolicyHandlers(mux *http.ServeMux) *qosPolicyStore {
 	store := &qosPolicyStore{
@@ -61,7 +61,7 @@ func (s *qosPolicyStore) handlePolicy(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handlePolicyGet handles GET /api/2.23/qos-policies.
+// handlePolicyGet handles GET /api/<APIVersion>/qos-policies.
 func (s *qosPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names"}) {
 		return
@@ -92,7 +92,7 @@ func (s *qosPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request)
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePolicyPost handles POST /api/2.23/qos-policies.
+// handlePolicyPost handles POST /api/<APIVersion>/qos-policies.
 func (s *qosPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -150,7 +150,7 @@ func derefInt64(p *int64) int64 {
 	return *p
 }
 
-// handlePolicyPatch handles PATCH /api/2.23/qos-policies.
+// handlePolicyPatch handles PATCH /api/<APIVersion>/qos-policies.
 func (s *qosPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names"}) {
 		return
@@ -202,7 +202,7 @@ func (s *qosPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, []client.QosPolicy{*policy})
 }
 
-// handlePolicyDelete handles DELETE /api/2.23/qos-policies.
+// handlePolicyDelete handles DELETE /api/<APIVersion>/qos-policies.
 func (s *qosPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids", "names"}) {
 		return
@@ -241,7 +241,7 @@ func (s *qosPolicyStore) handleMember(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleMemberGet handles GET /api/2.23/qos-policies/members.
+// handleMemberGet handles GET /api/<APIVersion>/qos-policies/members.
 func (s *qosPolicyStore) handleMemberGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names", "member_types"}) {
 		return
@@ -272,7 +272,7 @@ func (s *qosPolicyStore) handleMemberGet(w http.ResponseWriter, r *http.Request)
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleMemberPost handles POST /api/2.23/qos-policies/members.
+// handleMemberPost handles POST /api/<APIVersion>/qos-policies/members.
 func (s *qosPolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_types", "member_names"}) {
 		return
@@ -310,7 +310,7 @@ func (s *qosPolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request
 	WriteJSONListResponse(w, http.StatusOK, []client.QosPolicyMember{member})
 }
 
-// handleMemberDelete handles DELETE /api/2.23/qos-policies/members.
+// handleMemberDelete handles DELETE /api/<APIVersion>/qos-policies/members.
 func (s *qosPolicyStore) handleMemberDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names", "member_types"}) {
 		return

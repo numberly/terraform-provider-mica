@@ -21,7 +21,7 @@ type bucketStore struct {
 	accounts *objectStoreAccountStore
 }
 
-// RegisterBucketHandlers registers CRUD handlers for /api/2.23/buckets against the provided
+// RegisterBucketHandlers registers CRUD handlers for /api/<APIVersion>/buckets against the provided
 // ServeMux. The accounts store is used to validate account references on POST.
 // The returned store pointer can be used by other handlers that need bucket cross-reference.
 func RegisterBucketHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *bucketStore {
@@ -49,7 +49,7 @@ func (s *bucketStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/buckets with optional ?names=, ?ids=, ?destroyed=,
+// handleGet handles GET /api/<APIVersion>/buckets with optional ?names=, ?ids=, ?destroyed=,
 // and ?account_names= query parameters.
 func (s *bucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "ids", "destroyed", "account_names"}) {
@@ -121,7 +121,7 @@ func (s *bucketStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/buckets?names={name}.
+// handlePost handles POST /api/<APIVersion>/buckets?names={name}.
 // Validates the account reference against the account store before creating the bucket.
 func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -215,7 +215,7 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Bucket{*b})
 }
 
-// handlePatch handles PATCH /api/2.23/buckets?ids={id}.
+// handlePatch handles PATCH /api/<APIVersion>/buckets?ids={id}.
 // Uses raw map for true PATCH semantics — only provided fields are updated.
 func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
@@ -355,7 +355,7 @@ func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Bucket{*b})
 }
 
-// handleDelete handles DELETE /api/2.23/buckets?ids={id}.
+// handleDelete handles DELETE /api/<APIVersion>/buckets?ids={id}.
 // The bucket must already be soft-deleted (destroyed=true) before eradication.
 func (s *bucketStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
