@@ -11,13 +11,13 @@ tool=$(echo "$input" | jq -r '.tool_name // ""')
 
 if [[ "$tool" == "Bash" ]]; then
   cmd=$(echo "$input" | jq -r '.tool_input.command // ""')
-  # Match rg/grep/ag/ack invocations referencing .go or .tf (as arg, glob, or --type)
-  if [[ "$cmd" =~ (^|[^[:alnum:]_])(rg|grep|ag|ack)([[:space:]]|$) ]]; then
+  # Match raw read/search invocations referencing .go or .tf (as arg, glob, or --type)
+  if [[ "$cmd" =~ (^|[^[:alnum:]_])(rg|grep|ag|ack|cat|sed|head|tail|awk|less|view)([[:space:]]|$) ]]; then
     if [[ "$cmd" =~ \.(go|tf)([[:space:]\"\'\)]|$) ]] \
        || [[ "$cmd" =~ --type[=[:space:]]+(go|terraform|tf|hcl) ]] \
        || [[ "$cmd" =~ -t[[:space:]]+(go|terraform|tf|hcl) ]]; then
       cat >&2 <<'EOF'
-[serena-first] WARNING: rg/grep on .go/.tf detected. Prefer Serena MCP:
+[serena-first] WARNING: raw read/search on .go/.tf detected. Prefer Serena MCP:
   - mcp__serena__find_symbol
   - mcp__serena__get_symbols_overview
   - mcp__serena__search_for_pattern (with relative_path)
@@ -60,7 +60,7 @@ Use Serena MCP instead:
   - File overview       → mcp__serena__get_symbols_overview
   - Pattern in symbol   → mcp__serena__search_for_pattern (with relative_path)
 Read remains allowed (required before Edit).
-If you truly need a raw text search, use `rg` via Bash.
+Raw text search is a last resort — prefer mcp__serena__search_for_pattern scoped to a relative_path.
 EOF
   exit 2
 fi
