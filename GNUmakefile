@@ -16,7 +16,7 @@ default: build
 build:
 	go build -trimpath -o $(BINARY_NAME)
 
-TEST_BASELINE=782
+TEST_BASELINE=783
 
 test:
 	go test ./internal/... -count=1 -timeout 5m

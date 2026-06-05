@@ -1068,11 +1068,11 @@ func TestUnit_BucketResource_Read_MapsConfigBlocks(t *testing.T) {
 		t.Fatalf("PatchBucket versioning: %v", err)
 	}
 	if _, err := c.PatchBucket(context.Background(), b.ID, client.BucketPatch{
-		ObjectLockConfig: &client.ObjectLockConfig{
-			FreezeLockedObjects: true,
-			DefaultRetention:    86400,
+		ObjectLockConfig: &client.ObjectLockConfigRequest{
+			FreezeLockedObjects:  true,
+			DefaultRetention:     "86400",
 			DefaultRetentionMode: "compliance",
-			ObjectLockEnabled:   true,
+			Enabled:              true,
 		},
 	}); err != nil {
 		t.Fatalf("PatchBucket object_lock_config: %v", err)

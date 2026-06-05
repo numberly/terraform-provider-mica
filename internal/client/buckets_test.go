@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -379,5 +380,33 @@ func TestUnit_Bucket_Post_ObjectLockConfig_Rejected(t *testing.T) {
 	}
 	if !called {
 		t.Fatal("POST handler was never called")
+	}
+}
+
+// TestUnit_Bucket_Patch_ObjectLockConfig_WireFormat locks the FlashBlade request
+// contract for object lock: the enable flag is "enabled" (NOT "object_lock_enabled",
+// which the array rejects with HTTP 400) and default_retention is a string. This is
+// the regression guard for the object-lock create/update 400 bug.
+func TestUnit_Bucket_Patch_ObjectLockConfig_WireFormat(t *testing.T) {
+	body, err := json.Marshal(client.BucketPatch{
+		ObjectLockConfig: &client.ObjectLockConfigRequest{
+			Enabled:              true,
+			FreezeLockedObjects:  true,
+			DefaultRetention:     "86400",
+			DefaultRetentionMode: "compliance",
+		},
+	})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	got := string(body)
+	if !strings.Contains(got, `"enabled":true`) {
+		t.Errorf("expected request to use \"enabled\" flag, got: %s", got)
+	}
+	if !strings.Contains(got, `"default_retention":"86400"`) {
+		t.Errorf("expected default_retention as a string, got: %s", got)
+	}
+	if strings.Contains(got, "object_lock_enabled") {
+		t.Errorf("request must NOT contain object_lock_enabled (array rejects it with 400), got: %s", got)
 	}
 }
