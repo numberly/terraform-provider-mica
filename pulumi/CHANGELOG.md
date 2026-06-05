@@ -1,5 +1,24 @@
 # Changelog
 
+## [v2.22.8-pulumi.beta] — 2026-06-05
+
+Corrects the object-lock fix shipped in v2.22.7-pulumi.beta (which was insufficient).
+
+### Fixed
+
+- `mica:index:Bucket` create/update with `objectLockConfig` no longer fails with
+  `HTTP 400: Invalid body parameter: object_lock_enabled`. The FlashBlade API has no
+  `object_lock_enabled` body parameter — the enable flag is `enabled`, and
+  `default_retention` must be sent as a string. The previous fix only moved the
+  (still wrong) field from POST to PATCH. Mirrors the Terraform provider fix
+  `v2.22.8`. **Use this instead of v2.22.7-pulumi.beta.**
+
+### Added
+
+- Plugin install command: `pulumi plugin install resource mica 2.22.8-pulumi.beta --server github://api.github.com/numberly`
+- Python wheel: `pulumi_mica-2.22.8-py3-none-any.whl` published as a release asset.
+- Go SDK companion tag: `sdk/go/v0.1.0-pulumi.beta` (unchanged — schema-derived SDK is identical).
+
 ## [v2.22.7-pulumi.beta] — 2026-06-05
 
 Bucket object-lock create fix (Pulumi bridge rebuilt against the fixed provider; schema unchanged, so the typed SDKs are unchanged and the Go SDK stays at `sdk/go/v0.1.0-pulumi.beta`).
