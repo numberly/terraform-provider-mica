@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -304,12 +305,39 @@ func (s *bucketStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v, ok := rawPatch["object_lock_config"]; ok {
-		var cfg client.ObjectLockConfig
-		if err := json.Unmarshal(v, &cfg); err != nil {
+		// Mirror the real array: object_lock_enabled is NOT a valid body
+		// parameter (the enable flag is "enabled"). Reject it explicitly so
+		// the mock fails the same way the array does.
+		var probe map[string]json.RawMessage
+		if err := json.Unmarshal(v, &probe); err != nil {
 			WriteJSONError(w, http.StatusBadRequest, "invalid object_lock_config field")
 			return
 		}
-		b.ObjectLockConfig = cfg
+		if _, bad := probe["object_lock_enabled"]; bad {
+			WriteJSONError(w, http.StatusBadRequest, "Invalid body parameter: object_lock_enabled")
+			return
+		}
+		var req client.ObjectLockConfigRequest
+		if err := json.Unmarshal(v, &req); err != nil {
+			WriteJSONError(w, http.StatusBadRequest, "invalid object_lock_config field")
+			return
+		}
+		stored := client.ObjectLockConfig{
+			FreezeLockedObjects:  req.FreezeLockedObjects,
+			DefaultRetentionMode: req.DefaultRetentionMode,
+			ObjectLockEnabled:    req.Enabled,
+		}
+		// default_retention is a string (milliseconds) in request bodies but an
+		// integer in GET responses — convert for storage.
+		if req.DefaultRetention != "" {
+			n, err := strconv.ParseInt(req.DefaultRetention, 10, 64)
+			if err != nil {
+				WriteJSONError(w, http.StatusBadRequest, "Invalid body parameter: default_retention")
+				return
+			}
+			stored.DefaultRetention = n
+		}
+		b.ObjectLockConfig = stored
 	}
 
 	if v, ok := rawPatch["public_access_config"]; ok {
