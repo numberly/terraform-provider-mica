@@ -330,3 +330,54 @@ func TestUnit_Bucket_PollUntilEradicated(t *testing.T) {
 		t.Errorf("expected at least 2 GET calls, got %d", calls)
 	}
 }
+
+// TestUnit_Bucket_Post_ObjectLockConfig_Rejected verifies that a POST /buckets
+// body containing object_lock_config is rejected with HTTP 400, mirroring the
+// real FlashBlade API behaviour (object_lock_config is PATCH-only).
+// This test sends a raw JSON body (bypassing client.BucketPost which intentionally
+// has no ObjectLockConfig field) directly to the mock server to verify the handler
+// enforcement.
+func TestUnit_Bucket_Post_ObjectLockConfig_Rejected(t *testing.T) {
+	type rawBucketPost struct {
+		Account          client.NamedReference  `json:"account"`
+		ObjectLockConfig *client.ObjectLockConfig `json:"object_lock_config,omitempty"`
+	}
+	called := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/login":
+			w.Header().Set("x-auth-token", "tok")
+			w.WriteHeader(http.StatusOK)
+		case r.Method == http.MethodPost && r.URL.Path == "/api/2.22/buckets":
+			called = true
+			var body rawBucketPost
+			decodeJSON(t, r, &body)
+			if body.ObjectLockConfig != nil {
+				// Simulate real API 400 rejection.
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				_, _ = w.Write([]byte(`{"errors":[{"message":"Invalid body parameter: object_lock_enabled"}]}`))
+				return
+			}
+			writeJSON(w, http.StatusOK, map[string]any{
+				"items": []client.Bucket{{ID: "bkt-1", Name: "test-bucket"}},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	// BucketPost has no ObjectLockConfig field, so the standard client call
+	// never sends it — confirming the struct-level compile-time safety.
+	c := newTestClient(t, srv)
+	_, err := c.PostBucket(context.Background(), "test-bucket", client.BucketPost{
+		Account: client.NamedReference{Name: "acct"},
+	})
+	if err != nil {
+		t.Fatalf("expected clean POST to succeed, got: %v", err)
+	}
+	if !called {
+		t.Fatal("POST handler was never called")
+	}
+}

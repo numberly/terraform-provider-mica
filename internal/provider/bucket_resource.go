@@ -336,10 +336,8 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 	if cfg := extractEradicationConfig(data.EradicationConfig); cfg != nil {
 		post.EradicationConfig = cfg
 	}
-	if cfg := extractObjectLockConfig(data.ObjectLockConfig); cfg != nil {
-		post.ObjectLockConfig = cfg
-	}
 	// public_access_config is NOT valid on POST — skip
+	// object_lock_config is NOT valid on POST — apply via PATCH after creation (see below)
 
 	bucket, err := r.client.PostBucket(ctx, data.Name.ValueString(), post)
 	if err != nil {
@@ -355,6 +353,15 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting bucket versioning", err.Error())
+			return
+		}
+	}
+
+	// object_lock_config is not a valid POST parameter — apply via PATCH after
+	// creation, and after versioning (object lock requires versioning enabled).
+	if cfg := extractObjectLockConfig(data.ObjectLockConfig); cfg != nil {
+		if _, err := r.client.PatchBucket(ctx, bucket.ID, client.BucketPatch{ObjectLockConfig: cfg}); err != nil {
+			resp.Diagnostics.AddError("Error setting bucket object lock config", err.Error())
 			return
 		}
 	}
