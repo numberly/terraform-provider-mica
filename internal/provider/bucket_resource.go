@@ -704,25 +704,27 @@ func extractEradicationConfig(obj types.Object) *client.EradicationConfig {
 	return cfg
 }
 
-// extractObjectLockConfig extracts a client.ObjectLockConfig from a plan types.Object.
-// Returns nil if the object is null or unknown.
-func extractObjectLockConfig(obj types.Object) *client.ObjectLockConfig {
+// extractObjectLockConfig builds a client.ObjectLockConfigRequest (the writable
+// PATCH-body shape) from a plan types.Object. Returns nil if the object is null
+// or unknown. Note: default_retention must be serialized as a string in request
+// bodies, and the enable flag is "enabled" — see ObjectLockConfigRequest.
+func extractObjectLockConfig(obj types.Object) *client.ObjectLockConfigRequest {
 	if obj.IsNull() || obj.IsUnknown() {
 		return nil
 	}
 	attrs := obj.Attributes()
-	cfg := &client.ObjectLockConfig{}
+	cfg := &client.ObjectLockConfigRequest{}
 	if v, ok := attrs["freeze_locked_objects"].(types.Bool); ok && !v.IsNull() && !v.IsUnknown() {
 		cfg.FreezeLockedObjects = v.ValueBool()
 	}
 	if v, ok := attrs["default_retention"].(types.Int64); ok && !v.IsNull() && !v.IsUnknown() {
-		cfg.DefaultRetention = v.ValueInt64()
+		cfg.DefaultRetention = strconv.FormatInt(v.ValueInt64(), 10)
 	}
 	if v, ok := attrs["default_retention_mode"].(types.String); ok && !v.IsNull() && !v.IsUnknown() {
 		cfg.DefaultRetentionMode = v.ValueString()
 	}
 	if v, ok := attrs["object_lock_enabled"].(types.Bool); ok && !v.IsNull() && !v.IsUnknown() {
-		cfg.ObjectLockEnabled = v.ValueBool()
+		cfg.Enabled = v.ValueBool()
 	}
 	return cfg
 }

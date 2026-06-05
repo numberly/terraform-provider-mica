@@ -115,12 +115,26 @@ type EradicationConfig struct {
 	ManualEradication string `json:"manual_eradication,omitempty"`
 }
 
-// ObjectLockConfig represents the S3 object lock configuration for a bucket.
+// ObjectLockConfig represents the S3 object lock configuration for a bucket as
+// returned by GET. The enable flag is the API field "enabled" (there is NO
+// "object_lock_enabled" body/response parameter — sending it returns
+// HTTP 400 "Invalid body parameter: object_lock_enabled"). In GET responses
+// default_retention is an integer (milliseconds).
 type ObjectLockConfig struct {
-	FreezeLockedObjects bool   `json:"freeze_locked_objects,omitempty"`
+	FreezeLockedObjects  bool   `json:"freeze_locked_objects,omitempty"`
 	DefaultRetention     int64  `json:"default_retention,omitempty"`
 	DefaultRetentionMode string `json:"default_retention_mode,omitempty"`
-	ObjectLockEnabled    bool   `json:"object_lock_enabled,omitempty"`
+	ObjectLockEnabled    bool   `json:"enabled,omitempty"`
+}
+
+// ObjectLockConfigRequest is the writable object lock config sent in PATCH
+// bodies. It differs from the GET shape: default_retention must be a STRING
+// (milliseconds) in request bodies, and the enable flag is "enabled".
+type ObjectLockConfigRequest struct {
+	FreezeLockedObjects  bool   `json:"freeze_locked_objects,omitempty"`
+	DefaultRetention     string `json:"default_retention,omitempty"`
+	DefaultRetentionMode string `json:"default_retention_mode,omitempty"`
+	Enabled              bool   `json:"enabled,omitempty"`
 }
 
 // PublicAccessConfig represents the public access configuration for a bucket.
@@ -170,9 +184,9 @@ type BucketPatch struct {
 	QuotaLimit         *string            `json:"quota_limit,omitempty"`
 	HardLimitEnabled   *bool              `json:"hard_limit_enabled,omitempty"`
 	RetentionLock      *string            `json:"retention_lock,omitempty"`
-	EradicationConfig  *EradicationConfig `json:"eradication_config,omitempty"`
-	ObjectLockConfig   *ObjectLockConfig  `json:"object_lock_config,omitempty"`
-	PublicAccessConfig *PublicAccessConfig `json:"public_access_config,omitempty"`
+	EradicationConfig  *EradicationConfig       `json:"eradication_config,omitempty"`
+	ObjectLockConfig   *ObjectLockConfigRequest `json:"object_lock_config,omitempty"`
+	PublicAccessConfig *PublicAccessConfig      `json:"public_access_config,omitempty"`
 }
 
 // ObjectStoreAccessKey represents a FlashBlade object store access key.
