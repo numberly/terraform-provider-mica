@@ -1050,23 +1050,32 @@ func TestUnit_BucketResource_Read_MapsConfigBlocks(t *testing.T) {
 	ms, c, _ := setupBucketMockServer(t)
 	defer ms.Close()
 
-	// Create a bucket with custom eradication config via POST.
-	_, err := c.PostBucket(context.Background(), "configread-bucket", client.BucketPost{
+	// Create a bucket with custom eradication config via POST (object_lock_config is PATCH-only).
+	b, err := c.PostBucket(context.Background(), "configread-bucket", client.BucketPost{
 		Account: client.NamedReference{Name: "test-account"},
 		EradicationConfig: &client.EradicationConfig{
 			EradicationDelay:  259200000,
 			EradicationMode:   "permission-based",
 			ManualEradication: "enabled",
 		},
-		ObjectLockConfig: &client.ObjectLockConfig{
-			FreezeLockedObjects: true,
-			DefaultRetention:     86400,
-			DefaultRetentionMode: "compliance",
-			ObjectLockEnabled:    true,
-		},
 	})
 	if err != nil {
 		t.Fatalf("PostBucket: %v", err)
+	}
+	// object_lock_config requires versioning — enable it first, then apply object lock.
+	v := "enabled"
+	if _, err := c.PatchBucket(context.Background(), b.ID, client.BucketPatch{Versioning: &v}); err != nil {
+		t.Fatalf("PatchBucket versioning: %v", err)
+	}
+	if _, err := c.PatchBucket(context.Background(), b.ID, client.BucketPatch{
+		ObjectLockConfig: &client.ObjectLockConfig{
+			FreezeLockedObjects: true,
+			DefaultRetention:    86400,
+			DefaultRetentionMode: "compliance",
+			ObjectLockEnabled:   true,
+		},
+	}); err != nil {
+		t.Fatalf("PatchBucket object_lock_config: %v", err)
 	}
 
 	r := newTestBucketResource(t, ms)
@@ -1130,5 +1139,103 @@ func TestUnit_BucketResource_Read_MapsConfigBlocks(t *testing.T) {
 	// Verify public_status.
 	if model.PublicStatus.ValueString() != "not-public" {
 		t.Errorf("expected public_status=not-public, got %s", model.PublicStatus.ValueString())
+	}
+}
+
+func objectLockConfigTFValue(freezeLockedObjects bool, defaultRetention int64, defaultRetentionMode string, objectLockEnabled bool) tftypes.Value {
+	typ := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
+		"freeze_locked_objects":  tftypes.Bool,
+		"default_retention":      tftypes.Number,
+		"default_retention_mode": tftypes.String,
+		"object_lock_enabled":    tftypes.Bool,
+	}}
+	return tftypes.NewValue(typ, map[string]tftypes.Value{
+		"freeze_locked_objects":  tftypes.NewValue(tftypes.Bool, freezeLockedObjects),
+		"default_retention":      tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(defaultRetention)),
+		"default_retention_mode": tftypes.NewValue(tftypes.String, defaultRetentionMode),
+		"object_lock_enabled":    tftypes.NewValue(tftypes.Bool, objectLockEnabled),
+	})
+}
+
+// TestUnit_BucketResource_Create_WithObjectLock verifies the full POST →
+// versioning PATCH → object-lock PATCH sequence when object_lock_config is set.
+func TestUnit_BucketResource_Create_WithObjectLock(t *testing.T) {
+	ms, _, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	r := newTestBucketResource(t, ms)
+	s := bucketResourceSchema(t).Schema
+
+	cfg := nullBucketConfig()
+	cfg["name"] = tftypes.NewValue(tftypes.String, "ol-bucket")
+	cfg["account"] = tftypes.NewValue(tftypes.String, "test-account")
+	cfg["destroy_eradicate_on_delete"] = tftypes.NewValue(tftypes.Bool, false)
+	// object lock requires versioning enabled.
+	cfg["versioning"] = tftypes.NewValue(tftypes.String, "enabled")
+	cfg["object_lock_config"] = objectLockConfigTFValue(false, 3600, "compliance", true)
+
+	plan := tfsdk.Plan{Raw: tftypes.NewValue(buildBucketType(), cfg), Schema: s}
+	resp := &resource.CreateResponse{
+		State: tfsdk.State{Raw: tftypes.NewValue(buildBucketType(), nil), Schema: s},
+	}
+
+	r.Create(context.Background(), resource.CreateRequest{Plan: plan}, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Create returned error: %s", resp.Diagnostics)
+	}
+
+	var model bucketModel
+	if diags := resp.State.Get(context.Background(), &model); diags.HasError() {
+		t.Fatalf("Get state: %s", diags)
+	}
+
+	// Versioning PATCH must have been applied.
+	if model.Versioning.ValueString() != "enabled" {
+		t.Errorf("expected versioning=enabled, got %q", model.Versioning.ValueString())
+	}
+
+	// object_lock_config PATCH must have been applied.
+	olAttrs := model.ObjectLockConfig.Attributes()
+	if v, ok := olAttrs["object_lock_enabled"].(types.Bool); !ok || !v.ValueBool() {
+		t.Errorf("expected object_lock_enabled=true, got %v", olAttrs["object_lock_enabled"])
+	}
+	if v, ok := olAttrs["default_retention"].(types.Int64); !ok || v.ValueInt64() != 3600 {
+		t.Errorf("expected default_retention=3600, got %v", olAttrs["default_retention"])
+	}
+	if v, ok := olAttrs["default_retention_mode"].(types.String); !ok || v.ValueString() != "compliance" {
+		t.Errorf("expected default_retention_mode=compliance, got %v", olAttrs["default_retention_mode"])
+	}
+}
+
+// TestUnit_BucketResource_Post_ObjectLockConfig_Returns400 is a regression guard:
+// the mock handler must return HTTP 400 when a POST body contains object_lock_config,
+// mirroring the real FlashBlade API. This test bypasses client.BucketPost (which
+// intentionally omits the field) by sending a raw HTTP request.
+func TestUnit_BucketResource_Post_ObjectLockConfig_Returns400(t *testing.T) {
+	ms, _, _ := setupBucketMockServer(t)
+	defer ms.Close()
+
+	body := `{"account":{"name":"test-account"},"object_lock_config":{"object_lock_enabled":true}}`
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodPost,
+		ms.URL()+"/api/2.23/buckets?names=raw-reject-bucket",
+		strings.NewReader(body),
+	)
+	if err != nil {
+		t.Fatalf("NewRequest: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-auth-token", "test-token")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("HTTP POST: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected HTTP 400 for POST with object_lock_config, got %d", resp.StatusCode)
 	}
 }
