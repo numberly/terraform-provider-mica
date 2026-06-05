@@ -133,8 +133,22 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Two-pass decode: first check for PATCH-only fields, then decode typed body.
+	var rawBody map[string]json.RawMessage
+	if err := json.NewDecoder(r.Body).Decode(&rawBody); err != nil {
+		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
+		return
+	}
+	// object_lock_config is not a valid POST parameter (PATCH-only).
+	if _, ok := rawBody["object_lock_config"]; ok {
+		WriteJSONError(w, http.StatusBadRequest, "Invalid body parameter: object_lock_enabled")
+		return
+	}
+
+	// Re-decode into typed struct for convenience.
+	rawJSON, _ := json.Marshal(rawBody)
 	var body client.BucketPost
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.Unmarshal(rawJSON, &body); err != nil {
 		WriteJSONError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %v", err))
 		return
 	}
@@ -184,17 +198,14 @@ func (s *bucketStore) handlePost(w http.ResponseWriter, r *http.Request) {
 			EradicationMode:   "retention-based",
 			ManualEradication: "disabled",
 		},
-		ObjectLockConfig:   client.ObjectLockConfig{},
-		PublicAccessConfig:  client.PublicAccessConfig{},
-		PublicStatus:        "not-public",
+		ObjectLockConfig:  client.ObjectLockConfig{},
+		PublicAccessConfig: client.PublicAccessConfig{},
+		PublicStatus:       "not-public",
 	}
 
 	// Apply config overrides from POST body if provided.
 	if body.EradicationConfig != nil {
 		b.EradicationConfig = *body.EradicationConfig
-	}
-	if body.ObjectLockConfig != nil {
-		b.ObjectLockConfig = *body.ObjectLockConfig
 	}
 
 	s.byName[b.Name] = b

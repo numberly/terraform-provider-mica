@@ -158,13 +158,13 @@ type Bucket struct {
 // NOTE: quota_limit must be serialized as a string per FlashBlade API.
 // NOTE: versioning is NOT a valid POST parameter — use PATCH after creation.
 // NOTE: public_access_config is NOT valid on POST — PATCH only.
+// NOTE: object_lock_config is NOT valid on POST — PATCH only (and requires versioning).
 type BucketPost struct {
 	Account           NamedReference     `json:"account"`
 	QuotaLimit        string             `json:"quota_limit,omitempty"`
 	HardLimitEnabled  bool               `json:"hard_limit_enabled,omitempty"`
 	RetentionLock     string             `json:"retention_lock,omitempty"`
 	EradicationConfig *EradicationConfig `json:"eradication_config,omitempty"`
-	ObjectLockConfig  *ObjectLockConfig  `json:"object_lock_config,omitempty"`
 }
 
 // BucketPatch contains pointer fields for PATCH semantics on /buckets.
