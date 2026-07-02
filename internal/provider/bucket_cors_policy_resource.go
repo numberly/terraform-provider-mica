@@ -143,7 +143,7 @@ func (r *bucketCorsPolicyResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	mapCorsPolicyToModel(policy, &data)
+	mapCorsPolicyToModel(policy, data.BucketName.ValueString(), &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -175,7 +175,7 @@ func (r *bucketCorsPolicyResource) Read(ctx context.Context, req resource.ReadRe
 
 	logCorsDrift(ctx, name, &data, policy)
 
-	mapCorsPolicyToModel(policy, &data)
+	mapCorsPolicyToModel(policy, name, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -207,7 +207,7 @@ func (r *bucketCorsPolicyResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	mapCorsPolicyToModel(policy, &data)
+	mapCorsPolicyToModel(policy, data.BucketName.ValueString(), &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -245,7 +245,7 @@ func (r *bucketCorsPolicyResource) ImportState(ctx context.Context, req resource
 
 	var data bucketCorsPolicyModel
 	data.Timeouts = nullTimeoutsValue()
-	mapCorsPolicyToModel(policy, &data)
+	mapCorsPolicyToModel(policy, req.ID, &data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -266,9 +266,13 @@ func (r *bucketCorsPolicyResource) applyWildcardPolicy(ctx context.Context, buck
 }
 
 // mapCorsPolicyToModel maps a client.CrossOriginResourceSharingPolicy into the state model.
-func mapCorsPolicyToModel(policy *client.CrossOriginResourceSharingPolicy, data *bucketCorsPolicyModel) {
-	data.ID = types.StringValue(policy.ID)
-	data.BucketName = types.StringValue(policy.Bucket.Name)
+// The array does not return a usable policy id (the CORS policy name is auto-generated
+// and the GET response's id comes back empty), so the bucket name is used as the resource
+// id — it is unique (one CORS policy per bucket), stable, and matches import-by-bucket-name.
+// A non-empty id is also required by the Pulumi bridge (Create must return a resource ID).
+func mapCorsPolicyToModel(policy *client.CrossOriginResourceSharingPolicy, bucketName string, data *bucketCorsPolicyModel) {
+	data.ID = types.StringValue(bucketName)
+	data.BucketName = types.StringValue(bucketName)
 	data.IsLocal = types.BoolValue(policy.IsLocal)
 	data.PolicyType = types.StringValue(policy.PolicyType)
 }
