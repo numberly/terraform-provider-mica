@@ -17,7 +17,7 @@ type QosPolicyMember struct {
 
 	// The name of the file system or realm to assign. Changing this forces a new resource.
 	MemberName pulumi.StringOutput `pulumi:"memberName"`
-	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
 	MemberType pulumi.StringOutput `pulumi:"memberType"`
 	// The name of the QoS policy. Changing this forces a new resource.
 	PolicyName pulumi.StringOutput `pulumi:"policyName"`
@@ -64,7 +64,7 @@ func GetQosPolicyMember(ctx *pulumi.Context,
 type qosPolicyMemberState struct {
 	// The name of the file system or realm to assign. Changing this forces a new resource.
 	MemberName *string `pulumi:"memberName"`
-	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
 	MemberType *string `pulumi:"memberType"`
 	// The name of the QoS policy. Changing this forces a new resource.
 	PolicyName *string `pulumi:"policyName"`
@@ -73,7 +73,7 @@ type qosPolicyMemberState struct {
 type QosPolicyMemberState struct {
 	// The name of the file system or realm to assign. Changing this forces a new resource.
 	MemberName pulumi.StringPtrInput
-	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
 	MemberType pulumi.StringPtrInput
 	// The name of the QoS policy. Changing this forces a new resource.
 	PolicyName pulumi.StringPtrInput
@@ -86,7 +86,7 @@ func (QosPolicyMemberState) ElementType() reflect.Type {
 type qosPolicyMemberArgs struct {
 	// The name of the file system or realm to assign. Changing this forces a new resource.
 	MemberName string `pulumi:"memberName"`
-	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
 	MemberType string `pulumi:"memberType"`
 	// The name of the QoS policy. Changing this forces a new resource.
 	PolicyName string `pulumi:"policyName"`
@@ -96,7 +96,7 @@ type qosPolicyMemberArgs struct {
 type QosPolicyMemberArgs struct {
 	// The name of the file system or realm to assign. Changing this forces a new resource.
 	MemberName pulumi.StringInput
-	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+	// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
 	MemberType pulumi.StringInput
 	// The name of the QoS policy. Changing this forces a new resource.
 	PolicyName pulumi.StringInput
@@ -144,7 +144,7 @@ func (o QosPolicyMemberOutput) MemberName() pulumi.StringOutput {
 	return o.ApplyT(func(v *QosPolicyMember) pulumi.StringOutput { return v.MemberName }).(pulumi.StringOutput)
 }
 
-// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+// The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
 func (o QosPolicyMemberOutput) MemberType() pulumi.StringOutput {
 	return o.ApplyT(func(v *QosPolicyMember) pulumi.StringOutput { return v.MemberType }).(pulumi.StringOutput)
 }

@@ -32,6 +32,8 @@ __all__ = [
     'DirectoryServiceRoleRoleArgsDict',
     'FileSystemDefaultQuotasArgs',
     'FileSystemDefaultQuotasArgsDict',
+    'FileSystemExportWorkloadArgs',
+    'FileSystemExportWorkloadArgsDict',
     'FileSystemHttpArgs',
     'FileSystemHttpArgsDict',
     'FileSystemMultiProtocolArgs',
@@ -44,12 +46,26 @@ __all__ = [
     'FileSystemSourceArgsDict',
     'FileSystemSpaceArgs',
     'FileSystemSpaceArgsDict',
+    'FileSystemWorkloadArgs',
+    'FileSystemWorkloadArgsDict',
+    'NfsExportPolicyWorkloadArgs',
+    'NfsExportPolicyWorkloadArgsDict',
     'ObjectStoreAccountSpaceArgs',
     'ObjectStoreAccountSpaceArgsDict',
     'ProviderAuthArgs',
     'ProviderAuthArgsDict',
     'ProviderAuthOauth2Args',
     'ProviderAuthOauth2ArgsDict',
+    'QosPolicyContextArgs',
+    'QosPolicyContextArgsDict',
+    'SmbClientPolicyWorkloadArgs',
+    'SmbClientPolicyWorkloadArgsDict',
+    'SmbSharePolicyWorkloadArgs',
+    'SmbSharePolicyWorkloadArgsDict',
+    'WorkloadContextArgs',
+    'WorkloadContextArgsDict',
+    'WorkloadParameterArgs',
+    'WorkloadParameterArgsDict',
 ]
 
 MYPY = False
@@ -641,6 +657,58 @@ class FileSystemDefaultQuotasArgs:
 
 
 if not MYPY:
+    class FileSystemExportWorkloadArgsDict(TypedDict):
+        id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload unique identifier.
+        """
+        name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload name.
+        """
+elif False:
+    FileSystemExportWorkloadArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class FileSystemExportWorkloadArgs:
+    def __init__(__self__, *,
+                 id: Optional[pulumi.Input[builtins.str]] = None,
+                 name: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] id: The workload unique identifier.
+        :param pulumi.Input[builtins.str] name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @id.setter
+    def id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "id", value)
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "name", value)
+
+
+if not MYPY:
     class FileSystemHttpArgsDict(TypedDict):
         enabled: NotRequired[pulumi.Input[builtins.bool]]
         """
@@ -1113,6 +1181,110 @@ class FileSystemSpaceArgs:
 
 
 if not MYPY:
+    class FileSystemWorkloadArgsDict(TypedDict):
+        id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        Workload ID.
+        """
+        name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        Workload name.
+        """
+elif False:
+    FileSystemWorkloadArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class FileSystemWorkloadArgs:
+    def __init__(__self__, *,
+                 id: Optional[pulumi.Input[builtins.str]] = None,
+                 name: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] id: Workload ID.
+        :param pulumi.Input[builtins.str] name: Workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        Workload ID.
+        """
+        return pulumi.get(self, "id")
+
+    @id.setter
+    def id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "id", value)
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        Workload name.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "name", value)
+
+
+if not MYPY:
+    class NfsExportPolicyWorkloadArgsDict(TypedDict):
+        id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload unique identifier.
+        """
+        name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload name.
+        """
+elif False:
+    NfsExportPolicyWorkloadArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class NfsExportPolicyWorkloadArgs:
+    def __init__(__self__, *,
+                 id: Optional[pulumi.Input[builtins.str]] = None,
+                 name: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] id: The workload unique identifier.
+        :param pulumi.Input[builtins.str] name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @id.setter
+    def id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "id", value)
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "name", value)
+
+
+if not MYPY:
     class ObjectStoreAccountSpaceArgsDict(TypedDict):
         data_reduction: NotRequired[pulumi.Input[builtins.float]]
         """
@@ -1366,5 +1538,364 @@ class ProviderAuthOauth2Args:
     @key_id.setter
     def key_id(self, value: Optional[pulumi.Input[builtins.str]]):
         pulumi.set(self, "key_id", value)
+
+
+if not MYPY:
+    class QosPolicyContextArgsDict(TypedDict):
+        id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The context unique identifier.
+        """
+        name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The context name.
+        """
+elif False:
+    QosPolicyContextArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class QosPolicyContextArgs:
+    def __init__(__self__, *,
+                 id: Optional[pulumi.Input[builtins.str]] = None,
+                 name: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] id: The context unique identifier.
+        :param pulumi.Input[builtins.str] name: The context name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The context unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @id.setter
+    def id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "id", value)
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The context name.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "name", value)
+
+
+if not MYPY:
+    class SmbClientPolicyWorkloadArgsDict(TypedDict):
+        id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload unique identifier.
+        """
+        name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload name.
+        """
+elif False:
+    SmbClientPolicyWorkloadArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class SmbClientPolicyWorkloadArgs:
+    def __init__(__self__, *,
+                 id: Optional[pulumi.Input[builtins.str]] = None,
+                 name: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] id: The workload unique identifier.
+        :param pulumi.Input[builtins.str] name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @id.setter
+    def id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "id", value)
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "name", value)
+
+
+if not MYPY:
+    class SmbSharePolicyWorkloadArgsDict(TypedDict):
+        id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload unique identifier.
+        """
+        name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The workload name.
+        """
+elif False:
+    SmbSharePolicyWorkloadArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class SmbSharePolicyWorkloadArgs:
+    def __init__(__self__, *,
+                 id: Optional[pulumi.Input[builtins.str]] = None,
+                 name: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] id: The workload unique identifier.
+        :param pulumi.Input[builtins.str] name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @id.setter
+    def id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "id", value)
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "name", value)
+
+
+if not MYPY:
+    class WorkloadContextArgsDict(TypedDict):
+        id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The context unique identifier.
+        """
+        name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        The context name.
+        """
+elif False:
+    WorkloadContextArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class WorkloadContextArgs:
+    def __init__(__self__, *,
+                 id: Optional[pulumi.Input[builtins.str]] = None,
+                 name: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] id: The context unique identifier.
+        :param pulumi.Input[builtins.str] name: The context name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The context unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @id.setter
+    def id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "id", value)
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        The context name.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "name", value)
+
+
+if not MYPY:
+    class WorkloadParameterArgsDict(TypedDict):
+        name: pulumi.Input[builtins.str]
+        """
+        The name of the preset parameter.
+        """
+        value_bool: NotRequired[pulumi.Input[builtins.bool]]
+        """
+        Boolean value for this parameter.
+        """
+        value_integer: NotRequired[pulumi.Input[builtins.int]]
+        """
+        Integer value for this parameter.
+        """
+        value_resource_id: NotRequired[pulumi.Input[builtins.str]]
+        """
+        Resource reference ID for this parameter.
+        """
+        value_resource_name: NotRequired[pulumi.Input[builtins.str]]
+        """
+        Resource reference name for this parameter.
+        """
+        value_resource_type: NotRequired[pulumi.Input[builtins.str]]
+        """
+        Resource reference type for this parameter.
+        """
+        value_string: NotRequired[pulumi.Input[builtins.str]]
+        """
+        String value for this parameter.
+        """
+elif False:
+    WorkloadParameterArgsDict: TypeAlias = Mapping[str, Any]
+
+@pulumi.input_type
+class WorkloadParameterArgs:
+    def __init__(__self__, *,
+                 name: pulumi.Input[builtins.str],
+                 value_bool: Optional[pulumi.Input[builtins.bool]] = None,
+                 value_integer: Optional[pulumi.Input[builtins.int]] = None,
+                 value_resource_id: Optional[pulumi.Input[builtins.str]] = None,
+                 value_resource_name: Optional[pulumi.Input[builtins.str]] = None,
+                 value_resource_type: Optional[pulumi.Input[builtins.str]] = None,
+                 value_string: Optional[pulumi.Input[builtins.str]] = None):
+        """
+        :param pulumi.Input[builtins.str] name: The name of the preset parameter.
+        :param pulumi.Input[builtins.bool] value_bool: Boolean value for this parameter.
+        :param pulumi.Input[builtins.int] value_integer: Integer value for this parameter.
+        :param pulumi.Input[builtins.str] value_resource_id: Resource reference ID for this parameter.
+        :param pulumi.Input[builtins.str] value_resource_name: Resource reference name for this parameter.
+        :param pulumi.Input[builtins.str] value_resource_type: Resource reference type for this parameter.
+        :param pulumi.Input[builtins.str] value_string: String value for this parameter.
+        """
+        pulumi.set(__self__, "name", name)
+        if value_bool is not None:
+            pulumi.set(__self__, "value_bool", value_bool)
+        if value_integer is not None:
+            pulumi.set(__self__, "value_integer", value_integer)
+        if value_resource_id is not None:
+            pulumi.set(__self__, "value_resource_id", value_resource_id)
+        if value_resource_name is not None:
+            pulumi.set(__self__, "value_resource_name", value_resource_name)
+        if value_resource_type is not None:
+            pulumi.set(__self__, "value_resource_type", value_resource_type)
+        if value_string is not None:
+            pulumi.set(__self__, "value_string", value_string)
+
+    @property
+    @pulumi.getter
+    def name(self) -> pulumi.Input[builtins.str]:
+        """
+        The name of the preset parameter.
+        """
+        return pulumi.get(self, "name")
+
+    @name.setter
+    def name(self, value: pulumi.Input[builtins.str]):
+        pulumi.set(self, "name", value)
+
+    @property
+    @pulumi.getter(name="valueBool")
+    def value_bool(self) -> Optional[pulumi.Input[builtins.bool]]:
+        """
+        Boolean value for this parameter.
+        """
+        return pulumi.get(self, "value_bool")
+
+    @value_bool.setter
+    def value_bool(self, value: Optional[pulumi.Input[builtins.bool]]):
+        pulumi.set(self, "value_bool", value)
+
+    @property
+    @pulumi.getter(name="valueInteger")
+    def value_integer(self) -> Optional[pulumi.Input[builtins.int]]:
+        """
+        Integer value for this parameter.
+        """
+        return pulumi.get(self, "value_integer")
+
+    @value_integer.setter
+    def value_integer(self, value: Optional[pulumi.Input[builtins.int]]):
+        pulumi.set(self, "value_integer", value)
+
+    @property
+    @pulumi.getter(name="valueResourceId")
+    def value_resource_id(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        Resource reference ID for this parameter.
+        """
+        return pulumi.get(self, "value_resource_id")
+
+    @value_resource_id.setter
+    def value_resource_id(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "value_resource_id", value)
+
+    @property
+    @pulumi.getter(name="valueResourceName")
+    def value_resource_name(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        Resource reference name for this parameter.
+        """
+        return pulumi.get(self, "value_resource_name")
+
+    @value_resource_name.setter
+    def value_resource_name(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "value_resource_name", value)
+
+    @property
+    @pulumi.getter(name="valueResourceType")
+    def value_resource_type(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        Resource reference type for this parameter.
+        """
+        return pulumi.get(self, "value_resource_type")
+
+    @value_resource_type.setter
+    def value_resource_type(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "value_resource_type", value)
+
+    @property
+    @pulumi.getter(name="valueString")
+    def value_string(self) -> Optional[pulumi.Input[builtins.str]]:
+        """
+        String value for this parameter.
+        """
+        return pulumi.get(self, "value_string")
+
+    @value_string.setter
+    def value_string(self, value: Optional[pulumi.Input[builtins.str]]):
+        pulumi.set(self, "value_string", value)
 
 

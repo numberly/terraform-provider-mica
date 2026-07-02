@@ -17,6 +17,7 @@ from .bucket import *
 from .bucket_access_policy import *
 from .bucket_access_policy_rule import *
 from .bucket_audit_filter import *
+from .bucket_cors_policy import *
 from .bucket_replica_link import *
 from .certificate import *
 from .certificate_group import *
@@ -33,6 +34,7 @@ from .get_audit_object_store_policy import *
 from .get_bucket import *
 from .get_bucket_access_policy import *
 from .get_bucket_audit_filter import *
+from .get_bucket_cors_policy import *
 from .get_bucket_replica_link import *
 from .get_certificate import *
 from .get_certificate_group import *
@@ -56,6 +58,8 @@ from .get_object_store_virtual_host import *
 from .get_qos_policy import *
 from .get_quota_group import *
 from .get_quota_user import *
+from .get_resiliency_group import *
+from .get_resiliency_group_member import *
 from .get_s3_export_policy import *
 from .get_server import *
 from .get_smb_client_policy import *
@@ -65,6 +69,7 @@ from .get_subnet import *
 from .get_syslog_server import *
 from .get_target import *
 from .get_tls_policy import *
+from .get_workload import *
 from .lifecycle_rule import *
 from .log_target_object_store import *
 from .management_access_policy_directory_service_role_membership import *
@@ -101,6 +106,7 @@ from .syslog_server import *
 from .target import *
 from .tls_policy import *
 from .tls_policy_member import *
+from .workload import *
 from ._inputs import *
 from . import outputs
 
@@ -200,6 +206,14 @@ _utilities.register(
   "fqn": "pulumi_mica",
   "classes": {
    "mica:index/bucketAuditFilter:BucketAuditFilter": "BucketAuditFilter"
+  }
+ },
+ {
+  "pkg": "mica",
+  "mod": "index/bucketCorsPolicy",
+  "fqn": "pulumi_mica",
+  "classes": {
+   "mica:index/bucketCorsPolicy:BucketCorsPolicy": "BucketCorsPolicy"
   }
  },
  {
@@ -544,6 +558,14 @@ _utilities.register(
   "fqn": "pulumi_mica",
   "classes": {
    "mica:index/tlsPolicyMember:TlsPolicyMember": "TlsPolicyMember"
+  }
+ },
+ {
+  "pkg": "mica",
+  "mod": "index/workload",
+  "fqn": "pulumi_mica",
+  "classes": {
+   "mica:index/workload:Workload": "Workload"
   }
  }
 ]

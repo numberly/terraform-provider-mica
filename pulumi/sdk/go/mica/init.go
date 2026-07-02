@@ -43,6 +43,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &BucketAccessPolicyRule{}
 	case "mica:index/bucketAuditFilter:BucketAuditFilter":
 		r = &BucketAuditFilter{}
+	case "mica:index/bucketCorsPolicy:BucketCorsPolicy":
+		r = &BucketCorsPolicy{}
 	case "mica:index/bucketReplicaLink:BucketReplicaLink":
 		r = &BucketReplicaLink{}
 	case "mica:index/certificate:Certificate":
@@ -129,6 +131,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &TlsPolicy{}
 	case "mica:index/tlsPolicyMember:TlsPolicyMember":
 		r = &TlsPolicyMember{}
+	case "mica:index/workload:Workload":
+		r = &Workload{}
 	default:
 		return nil, fmt.Errorf("unknown resource type: %s", typ)
 	}
@@ -213,6 +217,11 @@ func init() {
 	pulumi.RegisterResourceModule(
 		"mica",
 		"index/bucketAuditFilter",
+		&module{version},
+	)
+	pulumi.RegisterResourceModule(
+		"mica",
+		"index/bucketCorsPolicy",
 		&module{version},
 	)
 	pulumi.RegisterResourceModule(
@@ -428,6 +437,11 @@ func init() {
 	pulumi.RegisterResourceModule(
 		"mica",
 		"index/tlsPolicyMember",
+		&module{version},
+	)
+	pulumi.RegisterResourceModule(
+		"mica",
+		"index/workload",
 		&module{version},
 	)
 	pulumi.RegisterResourcePackage(

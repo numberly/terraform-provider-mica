@@ -1368,6 +1368,162 @@ func (o FileSystemDefaultQuotasPtrOutput) UserQuota() pulumi.IntPtrOutput {
 	}).(pulumi.IntPtrOutput)
 }
 
+type FileSystemExportWorkload struct {
+	// The workload unique identifier.
+	Id *string `pulumi:"id"`
+	// The workload name.
+	Name *string `pulumi:"name"`
+}
+
+// FileSystemExportWorkloadInput is an input type that accepts FileSystemExportWorkloadArgs and FileSystemExportWorkloadOutput values.
+// You can construct a concrete instance of `FileSystemExportWorkloadInput` via:
+//
+//	FileSystemExportWorkloadArgs{...}
+type FileSystemExportWorkloadInput interface {
+	pulumi.Input
+
+	ToFileSystemExportWorkloadOutput() FileSystemExportWorkloadOutput
+	ToFileSystemExportWorkloadOutputWithContext(context.Context) FileSystemExportWorkloadOutput
+}
+
+type FileSystemExportWorkloadArgs struct {
+	// The workload unique identifier.
+	Id pulumi.StringPtrInput `pulumi:"id"`
+	// The workload name.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+}
+
+func (FileSystemExportWorkloadArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*FileSystemExportWorkload)(nil)).Elem()
+}
+
+func (i FileSystemExportWorkloadArgs) ToFileSystemExportWorkloadOutput() FileSystemExportWorkloadOutput {
+	return i.ToFileSystemExportWorkloadOutputWithContext(context.Background())
+}
+
+func (i FileSystemExportWorkloadArgs) ToFileSystemExportWorkloadOutputWithContext(ctx context.Context) FileSystemExportWorkloadOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FileSystemExportWorkloadOutput)
+}
+
+func (i FileSystemExportWorkloadArgs) ToFileSystemExportWorkloadPtrOutput() FileSystemExportWorkloadPtrOutput {
+	return i.ToFileSystemExportWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i FileSystemExportWorkloadArgs) ToFileSystemExportWorkloadPtrOutputWithContext(ctx context.Context) FileSystemExportWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FileSystemExportWorkloadOutput).ToFileSystemExportWorkloadPtrOutputWithContext(ctx)
+}
+
+// FileSystemExportWorkloadPtrInput is an input type that accepts FileSystemExportWorkloadArgs, FileSystemExportWorkloadPtr and FileSystemExportWorkloadPtrOutput values.
+// You can construct a concrete instance of `FileSystemExportWorkloadPtrInput` via:
+//
+//	        FileSystemExportWorkloadArgs{...}
+//
+//	or:
+//
+//	        nil
+type FileSystemExportWorkloadPtrInput interface {
+	pulumi.Input
+
+	ToFileSystemExportWorkloadPtrOutput() FileSystemExportWorkloadPtrOutput
+	ToFileSystemExportWorkloadPtrOutputWithContext(context.Context) FileSystemExportWorkloadPtrOutput
+}
+
+type fileSystemExportWorkloadPtrType FileSystemExportWorkloadArgs
+
+func FileSystemExportWorkloadPtr(v *FileSystemExportWorkloadArgs) FileSystemExportWorkloadPtrInput {
+	return (*fileSystemExportWorkloadPtrType)(v)
+}
+
+func (*fileSystemExportWorkloadPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**FileSystemExportWorkload)(nil)).Elem()
+}
+
+func (i *fileSystemExportWorkloadPtrType) ToFileSystemExportWorkloadPtrOutput() FileSystemExportWorkloadPtrOutput {
+	return i.ToFileSystemExportWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i *fileSystemExportWorkloadPtrType) ToFileSystemExportWorkloadPtrOutputWithContext(ctx context.Context) FileSystemExportWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FileSystemExportWorkloadPtrOutput)
+}
+
+type FileSystemExportWorkloadOutput struct{ *pulumi.OutputState }
+
+func (FileSystemExportWorkloadOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FileSystemExportWorkload)(nil)).Elem()
+}
+
+func (o FileSystemExportWorkloadOutput) ToFileSystemExportWorkloadOutput() FileSystemExportWorkloadOutput {
+	return o
+}
+
+func (o FileSystemExportWorkloadOutput) ToFileSystemExportWorkloadOutputWithContext(ctx context.Context) FileSystemExportWorkloadOutput {
+	return o
+}
+
+func (o FileSystemExportWorkloadOutput) ToFileSystemExportWorkloadPtrOutput() FileSystemExportWorkloadPtrOutput {
+	return o.ToFileSystemExportWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (o FileSystemExportWorkloadOutput) ToFileSystemExportWorkloadPtrOutputWithContext(ctx context.Context) FileSystemExportWorkloadPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v FileSystemExportWorkload) *FileSystemExportWorkload {
+		return &v
+	}).(FileSystemExportWorkloadPtrOutput)
+}
+
+// The workload unique identifier.
+func (o FileSystemExportWorkloadOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v FileSystemExportWorkload) *string { return v.Id }).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o FileSystemExportWorkloadOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v FileSystemExportWorkload) *string { return v.Name }).(pulumi.StringPtrOutput)
+}
+
+type FileSystemExportWorkloadPtrOutput struct{ *pulumi.OutputState }
+
+func (FileSystemExportWorkloadPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**FileSystemExportWorkload)(nil)).Elem()
+}
+
+func (o FileSystemExportWorkloadPtrOutput) ToFileSystemExportWorkloadPtrOutput() FileSystemExportWorkloadPtrOutput {
+	return o
+}
+
+func (o FileSystemExportWorkloadPtrOutput) ToFileSystemExportWorkloadPtrOutputWithContext(ctx context.Context) FileSystemExportWorkloadPtrOutput {
+	return o
+}
+
+func (o FileSystemExportWorkloadPtrOutput) Elem() FileSystemExportWorkloadOutput {
+	return o.ApplyT(func(v *FileSystemExportWorkload) FileSystemExportWorkload {
+		if v != nil {
+			return *v
+		}
+		var ret FileSystemExportWorkload
+		return ret
+	}).(FileSystemExportWorkloadOutput)
+}
+
+// The workload unique identifier.
+func (o FileSystemExportWorkloadPtrOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *FileSystemExportWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Id
+	}).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o FileSystemExportWorkloadPtrOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *FileSystemExportWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Name
+	}).(pulumi.StringPtrOutput)
+}
+
 type FileSystemHttp struct {
 	// Whether HTTP is enabled on this file system.
 	Enabled *bool `pulumi:"enabled"`
@@ -2456,6 +2612,318 @@ func (o FileSystemSpacePtrOutput) Virtual() pulumi.IntPtrOutput {
 	}).(pulumi.IntPtrOutput)
 }
 
+type FileSystemWorkload struct {
+	// Workload ID.
+	Id *string `pulumi:"id"`
+	// Workload name.
+	Name *string `pulumi:"name"`
+}
+
+// FileSystemWorkloadInput is an input type that accepts FileSystemWorkloadArgs and FileSystemWorkloadOutput values.
+// You can construct a concrete instance of `FileSystemWorkloadInput` via:
+//
+//	FileSystemWorkloadArgs{...}
+type FileSystemWorkloadInput interface {
+	pulumi.Input
+
+	ToFileSystemWorkloadOutput() FileSystemWorkloadOutput
+	ToFileSystemWorkloadOutputWithContext(context.Context) FileSystemWorkloadOutput
+}
+
+type FileSystemWorkloadArgs struct {
+	// Workload ID.
+	Id pulumi.StringPtrInput `pulumi:"id"`
+	// Workload name.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+}
+
+func (FileSystemWorkloadArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*FileSystemWorkload)(nil)).Elem()
+}
+
+func (i FileSystemWorkloadArgs) ToFileSystemWorkloadOutput() FileSystemWorkloadOutput {
+	return i.ToFileSystemWorkloadOutputWithContext(context.Background())
+}
+
+func (i FileSystemWorkloadArgs) ToFileSystemWorkloadOutputWithContext(ctx context.Context) FileSystemWorkloadOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FileSystemWorkloadOutput)
+}
+
+func (i FileSystemWorkloadArgs) ToFileSystemWorkloadPtrOutput() FileSystemWorkloadPtrOutput {
+	return i.ToFileSystemWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i FileSystemWorkloadArgs) ToFileSystemWorkloadPtrOutputWithContext(ctx context.Context) FileSystemWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FileSystemWorkloadOutput).ToFileSystemWorkloadPtrOutputWithContext(ctx)
+}
+
+// FileSystemWorkloadPtrInput is an input type that accepts FileSystemWorkloadArgs, FileSystemWorkloadPtr and FileSystemWorkloadPtrOutput values.
+// You can construct a concrete instance of `FileSystemWorkloadPtrInput` via:
+//
+//	        FileSystemWorkloadArgs{...}
+//
+//	or:
+//
+//	        nil
+type FileSystemWorkloadPtrInput interface {
+	pulumi.Input
+
+	ToFileSystemWorkloadPtrOutput() FileSystemWorkloadPtrOutput
+	ToFileSystemWorkloadPtrOutputWithContext(context.Context) FileSystemWorkloadPtrOutput
+}
+
+type fileSystemWorkloadPtrType FileSystemWorkloadArgs
+
+func FileSystemWorkloadPtr(v *FileSystemWorkloadArgs) FileSystemWorkloadPtrInput {
+	return (*fileSystemWorkloadPtrType)(v)
+}
+
+func (*fileSystemWorkloadPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**FileSystemWorkload)(nil)).Elem()
+}
+
+func (i *fileSystemWorkloadPtrType) ToFileSystemWorkloadPtrOutput() FileSystemWorkloadPtrOutput {
+	return i.ToFileSystemWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i *fileSystemWorkloadPtrType) ToFileSystemWorkloadPtrOutputWithContext(ctx context.Context) FileSystemWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FileSystemWorkloadPtrOutput)
+}
+
+type FileSystemWorkloadOutput struct{ *pulumi.OutputState }
+
+func (FileSystemWorkloadOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*FileSystemWorkload)(nil)).Elem()
+}
+
+func (o FileSystemWorkloadOutput) ToFileSystemWorkloadOutput() FileSystemWorkloadOutput {
+	return o
+}
+
+func (o FileSystemWorkloadOutput) ToFileSystemWorkloadOutputWithContext(ctx context.Context) FileSystemWorkloadOutput {
+	return o
+}
+
+func (o FileSystemWorkloadOutput) ToFileSystemWorkloadPtrOutput() FileSystemWorkloadPtrOutput {
+	return o.ToFileSystemWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (o FileSystemWorkloadOutput) ToFileSystemWorkloadPtrOutputWithContext(ctx context.Context) FileSystemWorkloadPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v FileSystemWorkload) *FileSystemWorkload {
+		return &v
+	}).(FileSystemWorkloadPtrOutput)
+}
+
+// Workload ID.
+func (o FileSystemWorkloadOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v FileSystemWorkload) *string { return v.Id }).(pulumi.StringPtrOutput)
+}
+
+// Workload name.
+func (o FileSystemWorkloadOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v FileSystemWorkload) *string { return v.Name }).(pulumi.StringPtrOutput)
+}
+
+type FileSystemWorkloadPtrOutput struct{ *pulumi.OutputState }
+
+func (FileSystemWorkloadPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**FileSystemWorkload)(nil)).Elem()
+}
+
+func (o FileSystemWorkloadPtrOutput) ToFileSystemWorkloadPtrOutput() FileSystemWorkloadPtrOutput {
+	return o
+}
+
+func (o FileSystemWorkloadPtrOutput) ToFileSystemWorkloadPtrOutputWithContext(ctx context.Context) FileSystemWorkloadPtrOutput {
+	return o
+}
+
+func (o FileSystemWorkloadPtrOutput) Elem() FileSystemWorkloadOutput {
+	return o.ApplyT(func(v *FileSystemWorkload) FileSystemWorkload {
+		if v != nil {
+			return *v
+		}
+		var ret FileSystemWorkload
+		return ret
+	}).(FileSystemWorkloadOutput)
+}
+
+// Workload ID.
+func (o FileSystemWorkloadPtrOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *FileSystemWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Id
+	}).(pulumi.StringPtrOutput)
+}
+
+// Workload name.
+func (o FileSystemWorkloadPtrOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *FileSystemWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Name
+	}).(pulumi.StringPtrOutput)
+}
+
+type NfsExportPolicyWorkload struct {
+	// The workload unique identifier.
+	Id *string `pulumi:"id"`
+	// The workload name.
+	Name *string `pulumi:"name"`
+}
+
+// NfsExportPolicyWorkloadInput is an input type that accepts NfsExportPolicyWorkloadArgs and NfsExportPolicyWorkloadOutput values.
+// You can construct a concrete instance of `NfsExportPolicyWorkloadInput` via:
+//
+//	NfsExportPolicyWorkloadArgs{...}
+type NfsExportPolicyWorkloadInput interface {
+	pulumi.Input
+
+	ToNfsExportPolicyWorkloadOutput() NfsExportPolicyWorkloadOutput
+	ToNfsExportPolicyWorkloadOutputWithContext(context.Context) NfsExportPolicyWorkloadOutput
+}
+
+type NfsExportPolicyWorkloadArgs struct {
+	// The workload unique identifier.
+	Id pulumi.StringPtrInput `pulumi:"id"`
+	// The workload name.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+}
+
+func (NfsExportPolicyWorkloadArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NfsExportPolicyWorkload)(nil)).Elem()
+}
+
+func (i NfsExportPolicyWorkloadArgs) ToNfsExportPolicyWorkloadOutput() NfsExportPolicyWorkloadOutput {
+	return i.ToNfsExportPolicyWorkloadOutputWithContext(context.Background())
+}
+
+func (i NfsExportPolicyWorkloadArgs) ToNfsExportPolicyWorkloadOutputWithContext(ctx context.Context) NfsExportPolicyWorkloadOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NfsExportPolicyWorkloadOutput)
+}
+
+func (i NfsExportPolicyWorkloadArgs) ToNfsExportPolicyWorkloadPtrOutput() NfsExportPolicyWorkloadPtrOutput {
+	return i.ToNfsExportPolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i NfsExportPolicyWorkloadArgs) ToNfsExportPolicyWorkloadPtrOutputWithContext(ctx context.Context) NfsExportPolicyWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NfsExportPolicyWorkloadOutput).ToNfsExportPolicyWorkloadPtrOutputWithContext(ctx)
+}
+
+// NfsExportPolicyWorkloadPtrInput is an input type that accepts NfsExportPolicyWorkloadArgs, NfsExportPolicyWorkloadPtr and NfsExportPolicyWorkloadPtrOutput values.
+// You can construct a concrete instance of `NfsExportPolicyWorkloadPtrInput` via:
+//
+//	        NfsExportPolicyWorkloadArgs{...}
+//
+//	or:
+//
+//	        nil
+type NfsExportPolicyWorkloadPtrInput interface {
+	pulumi.Input
+
+	ToNfsExportPolicyWorkloadPtrOutput() NfsExportPolicyWorkloadPtrOutput
+	ToNfsExportPolicyWorkloadPtrOutputWithContext(context.Context) NfsExportPolicyWorkloadPtrOutput
+}
+
+type nfsExportPolicyWorkloadPtrType NfsExportPolicyWorkloadArgs
+
+func NfsExportPolicyWorkloadPtr(v *NfsExportPolicyWorkloadArgs) NfsExportPolicyWorkloadPtrInput {
+	return (*nfsExportPolicyWorkloadPtrType)(v)
+}
+
+func (*nfsExportPolicyWorkloadPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NfsExportPolicyWorkload)(nil)).Elem()
+}
+
+func (i *nfsExportPolicyWorkloadPtrType) ToNfsExportPolicyWorkloadPtrOutput() NfsExportPolicyWorkloadPtrOutput {
+	return i.ToNfsExportPolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i *nfsExportPolicyWorkloadPtrType) ToNfsExportPolicyWorkloadPtrOutputWithContext(ctx context.Context) NfsExportPolicyWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NfsExportPolicyWorkloadPtrOutput)
+}
+
+type NfsExportPolicyWorkloadOutput struct{ *pulumi.OutputState }
+
+func (NfsExportPolicyWorkloadOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NfsExportPolicyWorkload)(nil)).Elem()
+}
+
+func (o NfsExportPolicyWorkloadOutput) ToNfsExportPolicyWorkloadOutput() NfsExportPolicyWorkloadOutput {
+	return o
+}
+
+func (o NfsExportPolicyWorkloadOutput) ToNfsExportPolicyWorkloadOutputWithContext(ctx context.Context) NfsExportPolicyWorkloadOutput {
+	return o
+}
+
+func (o NfsExportPolicyWorkloadOutput) ToNfsExportPolicyWorkloadPtrOutput() NfsExportPolicyWorkloadPtrOutput {
+	return o.ToNfsExportPolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (o NfsExportPolicyWorkloadOutput) ToNfsExportPolicyWorkloadPtrOutputWithContext(ctx context.Context) NfsExportPolicyWorkloadPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NfsExportPolicyWorkload) *NfsExportPolicyWorkload {
+		return &v
+	}).(NfsExportPolicyWorkloadPtrOutput)
+}
+
+// The workload unique identifier.
+func (o NfsExportPolicyWorkloadOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NfsExportPolicyWorkload) *string { return v.Id }).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o NfsExportPolicyWorkloadOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NfsExportPolicyWorkload) *string { return v.Name }).(pulumi.StringPtrOutput)
+}
+
+type NfsExportPolicyWorkloadPtrOutput struct{ *pulumi.OutputState }
+
+func (NfsExportPolicyWorkloadPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NfsExportPolicyWorkload)(nil)).Elem()
+}
+
+func (o NfsExportPolicyWorkloadPtrOutput) ToNfsExportPolicyWorkloadPtrOutput() NfsExportPolicyWorkloadPtrOutput {
+	return o
+}
+
+func (o NfsExportPolicyWorkloadPtrOutput) ToNfsExportPolicyWorkloadPtrOutputWithContext(ctx context.Context) NfsExportPolicyWorkloadPtrOutput {
+	return o
+}
+
+func (o NfsExportPolicyWorkloadPtrOutput) Elem() NfsExportPolicyWorkloadOutput {
+	return o.ApplyT(func(v *NfsExportPolicyWorkload) NfsExportPolicyWorkload {
+		if v != nil {
+			return *v
+		}
+		var ret NfsExportPolicyWorkload
+		return ret
+	}).(NfsExportPolicyWorkloadOutput)
+}
+
+// The workload unique identifier.
+func (o NfsExportPolicyWorkloadPtrOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NfsExportPolicyWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Id
+	}).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o NfsExportPolicyWorkloadPtrOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NfsExportPolicyWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Name
+	}).(pulumi.StringPtrOutput)
+}
+
 type ObjectStoreAccountSpace struct {
 	// Data reduction ratio.
 	DataReduction *float64 `pulumi:"dataReduction"`
@@ -3019,6 +3487,781 @@ func (o ProviderAuthOauth2PtrOutput) KeyId() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
+type QosPolicyContext struct {
+	// The context unique identifier.
+	Id *string `pulumi:"id"`
+	// The context name.
+	Name *string `pulumi:"name"`
+}
+
+// QosPolicyContextInput is an input type that accepts QosPolicyContextArgs and QosPolicyContextOutput values.
+// You can construct a concrete instance of `QosPolicyContextInput` via:
+//
+//	QosPolicyContextArgs{...}
+type QosPolicyContextInput interface {
+	pulumi.Input
+
+	ToQosPolicyContextOutput() QosPolicyContextOutput
+	ToQosPolicyContextOutputWithContext(context.Context) QosPolicyContextOutput
+}
+
+type QosPolicyContextArgs struct {
+	// The context unique identifier.
+	Id pulumi.StringPtrInput `pulumi:"id"`
+	// The context name.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+}
+
+func (QosPolicyContextArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*QosPolicyContext)(nil)).Elem()
+}
+
+func (i QosPolicyContextArgs) ToQosPolicyContextOutput() QosPolicyContextOutput {
+	return i.ToQosPolicyContextOutputWithContext(context.Background())
+}
+
+func (i QosPolicyContextArgs) ToQosPolicyContextOutputWithContext(ctx context.Context) QosPolicyContextOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(QosPolicyContextOutput)
+}
+
+func (i QosPolicyContextArgs) ToQosPolicyContextPtrOutput() QosPolicyContextPtrOutput {
+	return i.ToQosPolicyContextPtrOutputWithContext(context.Background())
+}
+
+func (i QosPolicyContextArgs) ToQosPolicyContextPtrOutputWithContext(ctx context.Context) QosPolicyContextPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(QosPolicyContextOutput).ToQosPolicyContextPtrOutputWithContext(ctx)
+}
+
+// QosPolicyContextPtrInput is an input type that accepts QosPolicyContextArgs, QosPolicyContextPtr and QosPolicyContextPtrOutput values.
+// You can construct a concrete instance of `QosPolicyContextPtrInput` via:
+//
+//	        QosPolicyContextArgs{...}
+//
+//	or:
+//
+//	        nil
+type QosPolicyContextPtrInput interface {
+	pulumi.Input
+
+	ToQosPolicyContextPtrOutput() QosPolicyContextPtrOutput
+	ToQosPolicyContextPtrOutputWithContext(context.Context) QosPolicyContextPtrOutput
+}
+
+type qosPolicyContextPtrType QosPolicyContextArgs
+
+func QosPolicyContextPtr(v *QosPolicyContextArgs) QosPolicyContextPtrInput {
+	return (*qosPolicyContextPtrType)(v)
+}
+
+func (*qosPolicyContextPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**QosPolicyContext)(nil)).Elem()
+}
+
+func (i *qosPolicyContextPtrType) ToQosPolicyContextPtrOutput() QosPolicyContextPtrOutput {
+	return i.ToQosPolicyContextPtrOutputWithContext(context.Background())
+}
+
+func (i *qosPolicyContextPtrType) ToQosPolicyContextPtrOutputWithContext(ctx context.Context) QosPolicyContextPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(QosPolicyContextPtrOutput)
+}
+
+type QosPolicyContextOutput struct{ *pulumi.OutputState }
+
+func (QosPolicyContextOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*QosPolicyContext)(nil)).Elem()
+}
+
+func (o QosPolicyContextOutput) ToQosPolicyContextOutput() QosPolicyContextOutput {
+	return o
+}
+
+func (o QosPolicyContextOutput) ToQosPolicyContextOutputWithContext(ctx context.Context) QosPolicyContextOutput {
+	return o
+}
+
+func (o QosPolicyContextOutput) ToQosPolicyContextPtrOutput() QosPolicyContextPtrOutput {
+	return o.ToQosPolicyContextPtrOutputWithContext(context.Background())
+}
+
+func (o QosPolicyContextOutput) ToQosPolicyContextPtrOutputWithContext(ctx context.Context) QosPolicyContextPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v QosPolicyContext) *QosPolicyContext {
+		return &v
+	}).(QosPolicyContextPtrOutput)
+}
+
+// The context unique identifier.
+func (o QosPolicyContextOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v QosPolicyContext) *string { return v.Id }).(pulumi.StringPtrOutput)
+}
+
+// The context name.
+func (o QosPolicyContextOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v QosPolicyContext) *string { return v.Name }).(pulumi.StringPtrOutput)
+}
+
+type QosPolicyContextPtrOutput struct{ *pulumi.OutputState }
+
+func (QosPolicyContextPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**QosPolicyContext)(nil)).Elem()
+}
+
+func (o QosPolicyContextPtrOutput) ToQosPolicyContextPtrOutput() QosPolicyContextPtrOutput {
+	return o
+}
+
+func (o QosPolicyContextPtrOutput) ToQosPolicyContextPtrOutputWithContext(ctx context.Context) QosPolicyContextPtrOutput {
+	return o
+}
+
+func (o QosPolicyContextPtrOutput) Elem() QosPolicyContextOutput {
+	return o.ApplyT(func(v *QosPolicyContext) QosPolicyContext {
+		if v != nil {
+			return *v
+		}
+		var ret QosPolicyContext
+		return ret
+	}).(QosPolicyContextOutput)
+}
+
+// The context unique identifier.
+func (o QosPolicyContextPtrOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *QosPolicyContext) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Id
+	}).(pulumi.StringPtrOutput)
+}
+
+// The context name.
+func (o QosPolicyContextPtrOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *QosPolicyContext) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Name
+	}).(pulumi.StringPtrOutput)
+}
+
+type SmbClientPolicyWorkload struct {
+	// The workload unique identifier.
+	Id *string `pulumi:"id"`
+	// The workload name.
+	Name *string `pulumi:"name"`
+}
+
+// SmbClientPolicyWorkloadInput is an input type that accepts SmbClientPolicyWorkloadArgs and SmbClientPolicyWorkloadOutput values.
+// You can construct a concrete instance of `SmbClientPolicyWorkloadInput` via:
+//
+//	SmbClientPolicyWorkloadArgs{...}
+type SmbClientPolicyWorkloadInput interface {
+	pulumi.Input
+
+	ToSmbClientPolicyWorkloadOutput() SmbClientPolicyWorkloadOutput
+	ToSmbClientPolicyWorkloadOutputWithContext(context.Context) SmbClientPolicyWorkloadOutput
+}
+
+type SmbClientPolicyWorkloadArgs struct {
+	// The workload unique identifier.
+	Id pulumi.StringPtrInput `pulumi:"id"`
+	// The workload name.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+}
+
+func (SmbClientPolicyWorkloadArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmbClientPolicyWorkload)(nil)).Elem()
+}
+
+func (i SmbClientPolicyWorkloadArgs) ToSmbClientPolicyWorkloadOutput() SmbClientPolicyWorkloadOutput {
+	return i.ToSmbClientPolicyWorkloadOutputWithContext(context.Background())
+}
+
+func (i SmbClientPolicyWorkloadArgs) ToSmbClientPolicyWorkloadOutputWithContext(ctx context.Context) SmbClientPolicyWorkloadOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbClientPolicyWorkloadOutput)
+}
+
+func (i SmbClientPolicyWorkloadArgs) ToSmbClientPolicyWorkloadPtrOutput() SmbClientPolicyWorkloadPtrOutput {
+	return i.ToSmbClientPolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i SmbClientPolicyWorkloadArgs) ToSmbClientPolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbClientPolicyWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbClientPolicyWorkloadOutput).ToSmbClientPolicyWorkloadPtrOutputWithContext(ctx)
+}
+
+// SmbClientPolicyWorkloadPtrInput is an input type that accepts SmbClientPolicyWorkloadArgs, SmbClientPolicyWorkloadPtr and SmbClientPolicyWorkloadPtrOutput values.
+// You can construct a concrete instance of `SmbClientPolicyWorkloadPtrInput` via:
+//
+//	        SmbClientPolicyWorkloadArgs{...}
+//
+//	or:
+//
+//	        nil
+type SmbClientPolicyWorkloadPtrInput interface {
+	pulumi.Input
+
+	ToSmbClientPolicyWorkloadPtrOutput() SmbClientPolicyWorkloadPtrOutput
+	ToSmbClientPolicyWorkloadPtrOutputWithContext(context.Context) SmbClientPolicyWorkloadPtrOutput
+}
+
+type smbClientPolicyWorkloadPtrType SmbClientPolicyWorkloadArgs
+
+func SmbClientPolicyWorkloadPtr(v *SmbClientPolicyWorkloadArgs) SmbClientPolicyWorkloadPtrInput {
+	return (*smbClientPolicyWorkloadPtrType)(v)
+}
+
+func (*smbClientPolicyWorkloadPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**SmbClientPolicyWorkload)(nil)).Elem()
+}
+
+func (i *smbClientPolicyWorkloadPtrType) ToSmbClientPolicyWorkloadPtrOutput() SmbClientPolicyWorkloadPtrOutput {
+	return i.ToSmbClientPolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i *smbClientPolicyWorkloadPtrType) ToSmbClientPolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbClientPolicyWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbClientPolicyWorkloadPtrOutput)
+}
+
+type SmbClientPolicyWorkloadOutput struct{ *pulumi.OutputState }
+
+func (SmbClientPolicyWorkloadOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmbClientPolicyWorkload)(nil)).Elem()
+}
+
+func (o SmbClientPolicyWorkloadOutput) ToSmbClientPolicyWorkloadOutput() SmbClientPolicyWorkloadOutput {
+	return o
+}
+
+func (o SmbClientPolicyWorkloadOutput) ToSmbClientPolicyWorkloadOutputWithContext(ctx context.Context) SmbClientPolicyWorkloadOutput {
+	return o
+}
+
+func (o SmbClientPolicyWorkloadOutput) ToSmbClientPolicyWorkloadPtrOutput() SmbClientPolicyWorkloadPtrOutput {
+	return o.ToSmbClientPolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (o SmbClientPolicyWorkloadOutput) ToSmbClientPolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbClientPolicyWorkloadPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v SmbClientPolicyWorkload) *SmbClientPolicyWorkload {
+		return &v
+	}).(SmbClientPolicyWorkloadPtrOutput)
+}
+
+// The workload unique identifier.
+func (o SmbClientPolicyWorkloadOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v SmbClientPolicyWorkload) *string { return v.Id }).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o SmbClientPolicyWorkloadOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v SmbClientPolicyWorkload) *string { return v.Name }).(pulumi.StringPtrOutput)
+}
+
+type SmbClientPolicyWorkloadPtrOutput struct{ *pulumi.OutputState }
+
+func (SmbClientPolicyWorkloadPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**SmbClientPolicyWorkload)(nil)).Elem()
+}
+
+func (o SmbClientPolicyWorkloadPtrOutput) ToSmbClientPolicyWorkloadPtrOutput() SmbClientPolicyWorkloadPtrOutput {
+	return o
+}
+
+func (o SmbClientPolicyWorkloadPtrOutput) ToSmbClientPolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbClientPolicyWorkloadPtrOutput {
+	return o
+}
+
+func (o SmbClientPolicyWorkloadPtrOutput) Elem() SmbClientPolicyWorkloadOutput {
+	return o.ApplyT(func(v *SmbClientPolicyWorkload) SmbClientPolicyWorkload {
+		if v != nil {
+			return *v
+		}
+		var ret SmbClientPolicyWorkload
+		return ret
+	}).(SmbClientPolicyWorkloadOutput)
+}
+
+// The workload unique identifier.
+func (o SmbClientPolicyWorkloadPtrOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *SmbClientPolicyWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Id
+	}).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o SmbClientPolicyWorkloadPtrOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *SmbClientPolicyWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Name
+	}).(pulumi.StringPtrOutput)
+}
+
+type SmbSharePolicyWorkload struct {
+	// The workload unique identifier.
+	Id *string `pulumi:"id"`
+	// The workload name.
+	Name *string `pulumi:"name"`
+}
+
+// SmbSharePolicyWorkloadInput is an input type that accepts SmbSharePolicyWorkloadArgs and SmbSharePolicyWorkloadOutput values.
+// You can construct a concrete instance of `SmbSharePolicyWorkloadInput` via:
+//
+//	SmbSharePolicyWorkloadArgs{...}
+type SmbSharePolicyWorkloadInput interface {
+	pulumi.Input
+
+	ToSmbSharePolicyWorkloadOutput() SmbSharePolicyWorkloadOutput
+	ToSmbSharePolicyWorkloadOutputWithContext(context.Context) SmbSharePolicyWorkloadOutput
+}
+
+type SmbSharePolicyWorkloadArgs struct {
+	// The workload unique identifier.
+	Id pulumi.StringPtrInput `pulumi:"id"`
+	// The workload name.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+}
+
+func (SmbSharePolicyWorkloadArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmbSharePolicyWorkload)(nil)).Elem()
+}
+
+func (i SmbSharePolicyWorkloadArgs) ToSmbSharePolicyWorkloadOutput() SmbSharePolicyWorkloadOutput {
+	return i.ToSmbSharePolicyWorkloadOutputWithContext(context.Background())
+}
+
+func (i SmbSharePolicyWorkloadArgs) ToSmbSharePolicyWorkloadOutputWithContext(ctx context.Context) SmbSharePolicyWorkloadOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbSharePolicyWorkloadOutput)
+}
+
+func (i SmbSharePolicyWorkloadArgs) ToSmbSharePolicyWorkloadPtrOutput() SmbSharePolicyWorkloadPtrOutput {
+	return i.ToSmbSharePolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i SmbSharePolicyWorkloadArgs) ToSmbSharePolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbSharePolicyWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbSharePolicyWorkloadOutput).ToSmbSharePolicyWorkloadPtrOutputWithContext(ctx)
+}
+
+// SmbSharePolicyWorkloadPtrInput is an input type that accepts SmbSharePolicyWorkloadArgs, SmbSharePolicyWorkloadPtr and SmbSharePolicyWorkloadPtrOutput values.
+// You can construct a concrete instance of `SmbSharePolicyWorkloadPtrInput` via:
+//
+//	        SmbSharePolicyWorkloadArgs{...}
+//
+//	or:
+//
+//	        nil
+type SmbSharePolicyWorkloadPtrInput interface {
+	pulumi.Input
+
+	ToSmbSharePolicyWorkloadPtrOutput() SmbSharePolicyWorkloadPtrOutput
+	ToSmbSharePolicyWorkloadPtrOutputWithContext(context.Context) SmbSharePolicyWorkloadPtrOutput
+}
+
+type smbSharePolicyWorkloadPtrType SmbSharePolicyWorkloadArgs
+
+func SmbSharePolicyWorkloadPtr(v *SmbSharePolicyWorkloadArgs) SmbSharePolicyWorkloadPtrInput {
+	return (*smbSharePolicyWorkloadPtrType)(v)
+}
+
+func (*smbSharePolicyWorkloadPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**SmbSharePolicyWorkload)(nil)).Elem()
+}
+
+func (i *smbSharePolicyWorkloadPtrType) ToSmbSharePolicyWorkloadPtrOutput() SmbSharePolicyWorkloadPtrOutput {
+	return i.ToSmbSharePolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (i *smbSharePolicyWorkloadPtrType) ToSmbSharePolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbSharePolicyWorkloadPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(SmbSharePolicyWorkloadPtrOutput)
+}
+
+type SmbSharePolicyWorkloadOutput struct{ *pulumi.OutputState }
+
+func (SmbSharePolicyWorkloadOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*SmbSharePolicyWorkload)(nil)).Elem()
+}
+
+func (o SmbSharePolicyWorkloadOutput) ToSmbSharePolicyWorkloadOutput() SmbSharePolicyWorkloadOutput {
+	return o
+}
+
+func (o SmbSharePolicyWorkloadOutput) ToSmbSharePolicyWorkloadOutputWithContext(ctx context.Context) SmbSharePolicyWorkloadOutput {
+	return o
+}
+
+func (o SmbSharePolicyWorkloadOutput) ToSmbSharePolicyWorkloadPtrOutput() SmbSharePolicyWorkloadPtrOutput {
+	return o.ToSmbSharePolicyWorkloadPtrOutputWithContext(context.Background())
+}
+
+func (o SmbSharePolicyWorkloadOutput) ToSmbSharePolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbSharePolicyWorkloadPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v SmbSharePolicyWorkload) *SmbSharePolicyWorkload {
+		return &v
+	}).(SmbSharePolicyWorkloadPtrOutput)
+}
+
+// The workload unique identifier.
+func (o SmbSharePolicyWorkloadOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v SmbSharePolicyWorkload) *string { return v.Id }).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o SmbSharePolicyWorkloadOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v SmbSharePolicyWorkload) *string { return v.Name }).(pulumi.StringPtrOutput)
+}
+
+type SmbSharePolicyWorkloadPtrOutput struct{ *pulumi.OutputState }
+
+func (SmbSharePolicyWorkloadPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**SmbSharePolicyWorkload)(nil)).Elem()
+}
+
+func (o SmbSharePolicyWorkloadPtrOutput) ToSmbSharePolicyWorkloadPtrOutput() SmbSharePolicyWorkloadPtrOutput {
+	return o
+}
+
+func (o SmbSharePolicyWorkloadPtrOutput) ToSmbSharePolicyWorkloadPtrOutputWithContext(ctx context.Context) SmbSharePolicyWorkloadPtrOutput {
+	return o
+}
+
+func (o SmbSharePolicyWorkloadPtrOutput) Elem() SmbSharePolicyWorkloadOutput {
+	return o.ApplyT(func(v *SmbSharePolicyWorkload) SmbSharePolicyWorkload {
+		if v != nil {
+			return *v
+		}
+		var ret SmbSharePolicyWorkload
+		return ret
+	}).(SmbSharePolicyWorkloadOutput)
+}
+
+// The workload unique identifier.
+func (o SmbSharePolicyWorkloadPtrOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *SmbSharePolicyWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Id
+	}).(pulumi.StringPtrOutput)
+}
+
+// The workload name.
+func (o SmbSharePolicyWorkloadPtrOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *SmbSharePolicyWorkload) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Name
+	}).(pulumi.StringPtrOutput)
+}
+
+type WorkloadContext struct {
+	// The context unique identifier.
+	Id *string `pulumi:"id"`
+	// The context name.
+	Name *string `pulumi:"name"`
+}
+
+// WorkloadContextInput is an input type that accepts WorkloadContextArgs and WorkloadContextOutput values.
+// You can construct a concrete instance of `WorkloadContextInput` via:
+//
+//	WorkloadContextArgs{...}
+type WorkloadContextInput interface {
+	pulumi.Input
+
+	ToWorkloadContextOutput() WorkloadContextOutput
+	ToWorkloadContextOutputWithContext(context.Context) WorkloadContextOutput
+}
+
+type WorkloadContextArgs struct {
+	// The context unique identifier.
+	Id pulumi.StringPtrInput `pulumi:"id"`
+	// The context name.
+	Name pulumi.StringPtrInput `pulumi:"name"`
+}
+
+func (WorkloadContextArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkloadContext)(nil)).Elem()
+}
+
+func (i WorkloadContextArgs) ToWorkloadContextOutput() WorkloadContextOutput {
+	return i.ToWorkloadContextOutputWithContext(context.Background())
+}
+
+func (i WorkloadContextArgs) ToWorkloadContextOutputWithContext(ctx context.Context) WorkloadContextOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkloadContextOutput)
+}
+
+func (i WorkloadContextArgs) ToWorkloadContextPtrOutput() WorkloadContextPtrOutput {
+	return i.ToWorkloadContextPtrOutputWithContext(context.Background())
+}
+
+func (i WorkloadContextArgs) ToWorkloadContextPtrOutputWithContext(ctx context.Context) WorkloadContextPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkloadContextOutput).ToWorkloadContextPtrOutputWithContext(ctx)
+}
+
+// WorkloadContextPtrInput is an input type that accepts WorkloadContextArgs, WorkloadContextPtr and WorkloadContextPtrOutput values.
+// You can construct a concrete instance of `WorkloadContextPtrInput` via:
+//
+//	        WorkloadContextArgs{...}
+//
+//	or:
+//
+//	        nil
+type WorkloadContextPtrInput interface {
+	pulumi.Input
+
+	ToWorkloadContextPtrOutput() WorkloadContextPtrOutput
+	ToWorkloadContextPtrOutputWithContext(context.Context) WorkloadContextPtrOutput
+}
+
+type workloadContextPtrType WorkloadContextArgs
+
+func WorkloadContextPtr(v *WorkloadContextArgs) WorkloadContextPtrInput {
+	return (*workloadContextPtrType)(v)
+}
+
+func (*workloadContextPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**WorkloadContext)(nil)).Elem()
+}
+
+func (i *workloadContextPtrType) ToWorkloadContextPtrOutput() WorkloadContextPtrOutput {
+	return i.ToWorkloadContextPtrOutputWithContext(context.Background())
+}
+
+func (i *workloadContextPtrType) ToWorkloadContextPtrOutputWithContext(ctx context.Context) WorkloadContextPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkloadContextPtrOutput)
+}
+
+type WorkloadContextOutput struct{ *pulumi.OutputState }
+
+func (WorkloadContextOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkloadContext)(nil)).Elem()
+}
+
+func (o WorkloadContextOutput) ToWorkloadContextOutput() WorkloadContextOutput {
+	return o
+}
+
+func (o WorkloadContextOutput) ToWorkloadContextOutputWithContext(ctx context.Context) WorkloadContextOutput {
+	return o
+}
+
+func (o WorkloadContextOutput) ToWorkloadContextPtrOutput() WorkloadContextPtrOutput {
+	return o.ToWorkloadContextPtrOutputWithContext(context.Background())
+}
+
+func (o WorkloadContextOutput) ToWorkloadContextPtrOutputWithContext(ctx context.Context) WorkloadContextPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v WorkloadContext) *WorkloadContext {
+		return &v
+	}).(WorkloadContextPtrOutput)
+}
+
+// The context unique identifier.
+func (o WorkloadContextOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v WorkloadContext) *string { return v.Id }).(pulumi.StringPtrOutput)
+}
+
+// The context name.
+func (o WorkloadContextOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v WorkloadContext) *string { return v.Name }).(pulumi.StringPtrOutput)
+}
+
+type WorkloadContextPtrOutput struct{ *pulumi.OutputState }
+
+func (WorkloadContextPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**WorkloadContext)(nil)).Elem()
+}
+
+func (o WorkloadContextPtrOutput) ToWorkloadContextPtrOutput() WorkloadContextPtrOutput {
+	return o
+}
+
+func (o WorkloadContextPtrOutput) ToWorkloadContextPtrOutputWithContext(ctx context.Context) WorkloadContextPtrOutput {
+	return o
+}
+
+func (o WorkloadContextPtrOutput) Elem() WorkloadContextOutput {
+	return o.ApplyT(func(v *WorkloadContext) WorkloadContext {
+		if v != nil {
+			return *v
+		}
+		var ret WorkloadContext
+		return ret
+	}).(WorkloadContextOutput)
+}
+
+// The context unique identifier.
+func (o WorkloadContextPtrOutput) Id() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *WorkloadContext) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Id
+	}).(pulumi.StringPtrOutput)
+}
+
+// The context name.
+func (o WorkloadContextPtrOutput) Name() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *WorkloadContext) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Name
+	}).(pulumi.StringPtrOutput)
+}
+
+type WorkloadParameter struct {
+	// The name of the preset parameter.
+	Name string `pulumi:"name"`
+	// Boolean value for this parameter.
+	ValueBool *bool `pulumi:"valueBool"`
+	// Integer value for this parameter.
+	ValueInteger *int `pulumi:"valueInteger"`
+	// Resource reference ID for this parameter.
+	ValueResourceId *string `pulumi:"valueResourceId"`
+	// Resource reference name for this parameter.
+	ValueResourceName *string `pulumi:"valueResourceName"`
+	// Resource reference type for this parameter.
+	ValueResourceType *string `pulumi:"valueResourceType"`
+	// String value for this parameter.
+	ValueString *string `pulumi:"valueString"`
+}
+
+// WorkloadParameterInput is an input type that accepts WorkloadParameterArgs and WorkloadParameterOutput values.
+// You can construct a concrete instance of `WorkloadParameterInput` via:
+//
+//	WorkloadParameterArgs{...}
+type WorkloadParameterInput interface {
+	pulumi.Input
+
+	ToWorkloadParameterOutput() WorkloadParameterOutput
+	ToWorkloadParameterOutputWithContext(context.Context) WorkloadParameterOutput
+}
+
+type WorkloadParameterArgs struct {
+	// The name of the preset parameter.
+	Name pulumi.StringInput `pulumi:"name"`
+	// Boolean value for this parameter.
+	ValueBool pulumi.BoolPtrInput `pulumi:"valueBool"`
+	// Integer value for this parameter.
+	ValueInteger pulumi.IntPtrInput `pulumi:"valueInteger"`
+	// Resource reference ID for this parameter.
+	ValueResourceId pulumi.StringPtrInput `pulumi:"valueResourceId"`
+	// Resource reference name for this parameter.
+	ValueResourceName pulumi.StringPtrInput `pulumi:"valueResourceName"`
+	// Resource reference type for this parameter.
+	ValueResourceType pulumi.StringPtrInput `pulumi:"valueResourceType"`
+	// String value for this parameter.
+	ValueString pulumi.StringPtrInput `pulumi:"valueString"`
+}
+
+func (WorkloadParameterArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkloadParameter)(nil)).Elem()
+}
+
+func (i WorkloadParameterArgs) ToWorkloadParameterOutput() WorkloadParameterOutput {
+	return i.ToWorkloadParameterOutputWithContext(context.Background())
+}
+
+func (i WorkloadParameterArgs) ToWorkloadParameterOutputWithContext(ctx context.Context) WorkloadParameterOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkloadParameterOutput)
+}
+
+// WorkloadParameterArrayInput is an input type that accepts WorkloadParameterArray and WorkloadParameterArrayOutput values.
+// You can construct a concrete instance of `WorkloadParameterArrayInput` via:
+//
+//	WorkloadParameterArray{ WorkloadParameterArgs{...} }
+type WorkloadParameterArrayInput interface {
+	pulumi.Input
+
+	ToWorkloadParameterArrayOutput() WorkloadParameterArrayOutput
+	ToWorkloadParameterArrayOutputWithContext(context.Context) WorkloadParameterArrayOutput
+}
+
+type WorkloadParameterArray []WorkloadParameterInput
+
+func (WorkloadParameterArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]WorkloadParameter)(nil)).Elem()
+}
+
+func (i WorkloadParameterArray) ToWorkloadParameterArrayOutput() WorkloadParameterArrayOutput {
+	return i.ToWorkloadParameterArrayOutputWithContext(context.Background())
+}
+
+func (i WorkloadParameterArray) ToWorkloadParameterArrayOutputWithContext(ctx context.Context) WorkloadParameterArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(WorkloadParameterArrayOutput)
+}
+
+type WorkloadParameterOutput struct{ *pulumi.OutputState }
+
+func (WorkloadParameterOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*WorkloadParameter)(nil)).Elem()
+}
+
+func (o WorkloadParameterOutput) ToWorkloadParameterOutput() WorkloadParameterOutput {
+	return o
+}
+
+func (o WorkloadParameterOutput) ToWorkloadParameterOutputWithContext(ctx context.Context) WorkloadParameterOutput {
+	return o
+}
+
+// The name of the preset parameter.
+func (o WorkloadParameterOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v WorkloadParameter) string { return v.Name }).(pulumi.StringOutput)
+}
+
+// Boolean value for this parameter.
+func (o WorkloadParameterOutput) ValueBool() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v WorkloadParameter) *bool { return v.ValueBool }).(pulumi.BoolPtrOutput)
+}
+
+// Integer value for this parameter.
+func (o WorkloadParameterOutput) ValueInteger() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v WorkloadParameter) *int { return v.ValueInteger }).(pulumi.IntPtrOutput)
+}
+
+// Resource reference ID for this parameter.
+func (o WorkloadParameterOutput) ValueResourceId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v WorkloadParameter) *string { return v.ValueResourceId }).(pulumi.StringPtrOutput)
+}
+
+// Resource reference name for this parameter.
+func (o WorkloadParameterOutput) ValueResourceName() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v WorkloadParameter) *string { return v.ValueResourceName }).(pulumi.StringPtrOutput)
+}
+
+// Resource reference type for this parameter.
+func (o WorkloadParameterOutput) ValueResourceType() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v WorkloadParameter) *string { return v.ValueResourceType }).(pulumi.StringPtrOutput)
+}
+
+// String value for this parameter.
+func (o WorkloadParameterOutput) ValueString() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v WorkloadParameter) *string { return v.ValueString }).(pulumi.StringPtrOutput)
+}
+
+type WorkloadParameterArrayOutput struct{ *pulumi.OutputState }
+
+func (WorkloadParameterArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]WorkloadParameter)(nil)).Elem()
+}
+
+func (o WorkloadParameterArrayOutput) ToWorkloadParameterArrayOutput() WorkloadParameterArrayOutput {
+	return o
+}
+
+func (o WorkloadParameterArrayOutput) ToWorkloadParameterArrayOutputWithContext(ctx context.Context) WorkloadParameterArrayOutput {
+	return o
+}
+
+func (o WorkloadParameterArrayOutput) Index(i pulumi.IntInput) WorkloadParameterOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) WorkloadParameter {
+		return vs[0].([]WorkloadParameter)[vs[1].(int)]
+	}).(WorkloadParameterOutput)
+}
+
 type GetArraySmtpAlertWatcher struct {
 	// Email address of the alert recipient.
 	Email string `pulumi:"email"`
@@ -3538,6 +4781,37 @@ func (o GetObjectStoreAccountSpaceOutput) Virtual() pulumi.IntOutput {
 	return o.ApplyT(func(v GetObjectStoreAccountSpace) int { return v.Virtual }).(pulumi.IntOutput)
 }
 
+type GetWorkloadContext struct {
+	// The context unique identifier.
+	Id string `pulumi:"id"`
+	// The context name.
+	Name string `pulumi:"name"`
+}
+
+type GetWorkloadContextOutput struct{ *pulumi.OutputState }
+
+func (GetWorkloadContextOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GetWorkloadContext)(nil)).Elem()
+}
+
+func (o GetWorkloadContextOutput) ToGetWorkloadContextOutput() GetWorkloadContextOutput {
+	return o
+}
+
+func (o GetWorkloadContextOutput) ToGetWorkloadContextOutputWithContext(ctx context.Context) GetWorkloadContextOutput {
+	return o
+}
+
+// The context unique identifier.
+func (o GetWorkloadContextOutput) Id() pulumi.StringOutput {
+	return o.ApplyT(func(v GetWorkloadContext) string { return v.Id }).(pulumi.StringOutput)
+}
+
+// The context name.
+func (o GetWorkloadContextOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v GetWorkloadContext) string { return v.Name }).(pulumi.StringOutput)
+}
+
 func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*ArrayConnectionThrottleInput)(nil)).Elem(), ArrayConnectionThrottleArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*ArrayConnectionThrottlePtrInput)(nil)).Elem(), ArrayConnectionThrottleArgs{})
@@ -3555,6 +4829,8 @@ func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*DirectoryServiceRoleRolePtrInput)(nil)).Elem(), DirectoryServiceRoleRoleArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemDefaultQuotasInput)(nil)).Elem(), FileSystemDefaultQuotasArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemDefaultQuotasPtrInput)(nil)).Elem(), FileSystemDefaultQuotasArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemExportWorkloadInput)(nil)).Elem(), FileSystemExportWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemExportWorkloadPtrInput)(nil)).Elem(), FileSystemExportWorkloadArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemHttpInput)(nil)).Elem(), FileSystemHttpArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemHttpPtrInput)(nil)).Elem(), FileSystemHttpArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemMultiProtocolInput)(nil)).Elem(), FileSystemMultiProtocolArgs{})
@@ -3567,12 +4843,26 @@ func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemSourcePtrInput)(nil)).Elem(), FileSystemSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemSpaceInput)(nil)).Elem(), FileSystemSpaceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemSpacePtrInput)(nil)).Elem(), FileSystemSpaceArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemWorkloadInput)(nil)).Elem(), FileSystemWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*FileSystemWorkloadPtrInput)(nil)).Elem(), FileSystemWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NfsExportPolicyWorkloadInput)(nil)).Elem(), NfsExportPolicyWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NfsExportPolicyWorkloadPtrInput)(nil)).Elem(), NfsExportPolicyWorkloadArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*ObjectStoreAccountSpaceInput)(nil)).Elem(), ObjectStoreAccountSpaceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*ObjectStoreAccountSpacePtrInput)(nil)).Elem(), ObjectStoreAccountSpaceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*ProviderAuthInput)(nil)).Elem(), ProviderAuthArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*ProviderAuthPtrInput)(nil)).Elem(), ProviderAuthArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*ProviderAuthOauth2Input)(nil)).Elem(), ProviderAuthOauth2Args{})
 	pulumi.RegisterInputType(reflect.TypeOf((*ProviderAuthOauth2PtrInput)(nil)).Elem(), ProviderAuthOauth2Args{})
+	pulumi.RegisterInputType(reflect.TypeOf((*QosPolicyContextInput)(nil)).Elem(), QosPolicyContextArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*QosPolicyContextPtrInput)(nil)).Elem(), QosPolicyContextArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*SmbClientPolicyWorkloadInput)(nil)).Elem(), SmbClientPolicyWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*SmbClientPolicyWorkloadPtrInput)(nil)).Elem(), SmbClientPolicyWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*SmbSharePolicyWorkloadInput)(nil)).Elem(), SmbSharePolicyWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*SmbSharePolicyWorkloadPtrInput)(nil)).Elem(), SmbSharePolicyWorkloadArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*WorkloadContextInput)(nil)).Elem(), WorkloadContextArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*WorkloadContextPtrInput)(nil)).Elem(), WorkloadContextArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*WorkloadParameterInput)(nil)).Elem(), WorkloadParameterArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*WorkloadParameterArrayInput)(nil)).Elem(), WorkloadParameterArray{})
 	pulumi.RegisterOutputType(ArrayConnectionThrottleOutput{})
 	pulumi.RegisterOutputType(ArrayConnectionThrottlePtrOutput{})
 	pulumi.RegisterOutputType(ArraySmtpAlertWatcherOutput{})
@@ -3589,6 +4879,8 @@ func init() {
 	pulumi.RegisterOutputType(DirectoryServiceRoleRolePtrOutput{})
 	pulumi.RegisterOutputType(FileSystemDefaultQuotasOutput{})
 	pulumi.RegisterOutputType(FileSystemDefaultQuotasPtrOutput{})
+	pulumi.RegisterOutputType(FileSystemExportWorkloadOutput{})
+	pulumi.RegisterOutputType(FileSystemExportWorkloadPtrOutput{})
 	pulumi.RegisterOutputType(FileSystemHttpOutput{})
 	pulumi.RegisterOutputType(FileSystemHttpPtrOutput{})
 	pulumi.RegisterOutputType(FileSystemMultiProtocolOutput{})
@@ -3601,12 +4893,26 @@ func init() {
 	pulumi.RegisterOutputType(FileSystemSourcePtrOutput{})
 	pulumi.RegisterOutputType(FileSystemSpaceOutput{})
 	pulumi.RegisterOutputType(FileSystemSpacePtrOutput{})
+	pulumi.RegisterOutputType(FileSystemWorkloadOutput{})
+	pulumi.RegisterOutputType(FileSystemWorkloadPtrOutput{})
+	pulumi.RegisterOutputType(NfsExportPolicyWorkloadOutput{})
+	pulumi.RegisterOutputType(NfsExportPolicyWorkloadPtrOutput{})
 	pulumi.RegisterOutputType(ObjectStoreAccountSpaceOutput{})
 	pulumi.RegisterOutputType(ObjectStoreAccountSpacePtrOutput{})
 	pulumi.RegisterOutputType(ProviderAuthOutput{})
 	pulumi.RegisterOutputType(ProviderAuthPtrOutput{})
 	pulumi.RegisterOutputType(ProviderAuthOauth2Output{})
 	pulumi.RegisterOutputType(ProviderAuthOauth2PtrOutput{})
+	pulumi.RegisterOutputType(QosPolicyContextOutput{})
+	pulumi.RegisterOutputType(QosPolicyContextPtrOutput{})
+	pulumi.RegisterOutputType(SmbClientPolicyWorkloadOutput{})
+	pulumi.RegisterOutputType(SmbClientPolicyWorkloadPtrOutput{})
+	pulumi.RegisterOutputType(SmbSharePolicyWorkloadOutput{})
+	pulumi.RegisterOutputType(SmbSharePolicyWorkloadPtrOutput{})
+	pulumi.RegisterOutputType(WorkloadContextOutput{})
+	pulumi.RegisterOutputType(WorkloadContextPtrOutput{})
+	pulumi.RegisterOutputType(WorkloadParameterOutput{})
+	pulumi.RegisterOutputType(WorkloadParameterArrayOutput{})
 	pulumi.RegisterOutputType(GetArraySmtpAlertWatcherOutput{})
 	pulumi.RegisterOutputType(GetArraySmtpAlertWatcherArrayOutput{})
 	pulumi.RegisterOutputType(GetBucketSpaceOutput{})
@@ -3621,4 +4927,5 @@ func init() {
 	pulumi.RegisterOutputType(GetFileSystemSourceOutput{})
 	pulumi.RegisterOutputType(GetFileSystemSpaceOutput{})
 	pulumi.RegisterOutputType(GetObjectStoreAccountSpaceOutput{})
+	pulumi.RegisterOutputType(GetWorkloadContextOutput{})
 }

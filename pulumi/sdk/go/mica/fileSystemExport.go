@@ -33,6 +33,8 @@ type FileSystemExport struct {
 	SharePolicyName pulumi.StringOutput `pulumi:"sharePolicyName"`
 	// The status of the export.
 	Status pulumi.StringOutput `pulumi:"status"`
+	// The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
+	Workload FileSystemExportWorkloadOutput `pulumi:"workload"`
 }
 
 // NewFileSystemExport registers a new resource with the given unique name, arguments, and options.
@@ -92,6 +94,8 @@ type fileSystemExportState struct {
 	SharePolicyName *string `pulumi:"sharePolicyName"`
 	// The status of the export.
 	Status *string `pulumi:"status"`
+	// The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
+	Workload *FileSystemExportWorkload `pulumi:"workload"`
 }
 
 type FileSystemExportState struct {
@@ -113,6 +117,8 @@ type FileSystemExportState struct {
 	SharePolicyName pulumi.StringPtrInput
 	// The status of the export.
 	Status pulumi.StringPtrInput
+	// The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
+	Workload FileSystemExportWorkloadPtrInput
 }
 
 func (FileSystemExportState) ElementType() reflect.Type {
@@ -226,6 +232,11 @@ func (o FileSystemExportOutput) SharePolicyName() pulumi.StringOutput {
 // The status of the export.
 func (o FileSystemExportOutput) Status() pulumi.StringOutput {
 	return o.ApplyT(func(v *FileSystemExport) pulumi.StringOutput { return v.Status }).(pulumi.StringOutput)
+}
+
+// The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
+func (o FileSystemExportOutput) Workload() FileSystemExportWorkloadOutput {
+	return o.ApplyT(func(v *FileSystemExport) FileSystemExportWorkloadOutput { return v.Workload }).(FileSystemExportWorkloadOutput)
 }
 
 func init() {

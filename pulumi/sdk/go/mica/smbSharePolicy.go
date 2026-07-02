@@ -23,6 +23,8 @@ type SmbSharePolicy struct {
 	Name pulumi.StringOutput `pulumi:"name"`
 	// The type of the policy (e.g. 'smb').
 	PolicyType pulumi.StringOutput `pulumi:"policyType"`
+	// The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload SmbSharePolicyWorkloadOutput `pulumi:"workload"`
 }
 
 // NewSmbSharePolicy registers a new resource with the given unique name, arguments, and options.
@@ -66,6 +68,8 @@ type smbSharePolicyState struct {
 	Name *string `pulumi:"name"`
 	// The type of the policy (e.g. 'smb').
 	PolicyType *string `pulumi:"policyType"`
+	// The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload *SmbSharePolicyWorkload `pulumi:"workload"`
 }
 
 type SmbSharePolicyState struct {
@@ -77,6 +81,8 @@ type SmbSharePolicyState struct {
 	Name pulumi.StringPtrInput
 	// The type of the policy (e.g. 'smb').
 	PolicyType pulumi.StringPtrInput
+	// The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload SmbSharePolicyWorkloadPtrInput
 }
 
 func (SmbSharePolicyState) ElementType() reflect.Type {
@@ -153,6 +159,11 @@ func (o SmbSharePolicyOutput) Name() pulumi.StringOutput {
 // The type of the policy (e.g. 'smb').
 func (o SmbSharePolicyOutput) PolicyType() pulumi.StringOutput {
 	return o.ApplyT(func(v *SmbSharePolicy) pulumi.StringOutput { return v.PolicyType }).(pulumi.StringOutput)
+}
+
+// The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+func (o SmbSharePolicyOutput) Workload() SmbSharePolicyWorkloadOutput {
+	return o.ApplyT(func(v *SmbSharePolicy) SmbSharePolicyWorkloadOutput { return v.Workload }).(SmbSharePolicyWorkloadOutput)
 }
 
 func init() {

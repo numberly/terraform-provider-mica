@@ -14,6 +14,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import NotRequired, TypedDict, TypeAlias
 from . import _utilities
+from . import outputs
+from ._inputs import *
 
 __all__ = ['QosPolicyArgs', 'QosPolicy']
 
@@ -91,6 +93,7 @@ class QosPolicyArgs:
 @pulumi.input_type
 class _QosPolicyState:
     def __init__(__self__, *,
+                 context: Optional[pulumi.Input['QosPolicyContextArgs']] = None,
                  enabled: Optional[pulumi.Input[builtins.bool]] = None,
                  is_local: Optional[pulumi.Input[builtins.bool]] = None,
                  max_total_bytes_per_sec: Optional[pulumi.Input[builtins.int]] = None,
@@ -99,6 +102,7 @@ class _QosPolicyState:
                  policy_type: Optional[pulumi.Input[builtins.str]] = None):
         """
         Input properties used for looking up and filtering QosPolicy resources.
+        :param pulumi.Input['QosPolicyContextArgs'] context: The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
         :param pulumi.Input[builtins.bool] enabled: Whether the QoS policy is enabled. Defaults to true.
         :param pulumi.Input[builtins.bool] is_local: Whether the QoS policy is local to this array. Read-only.
         :param pulumi.Input[builtins.int] max_total_bytes_per_sec: Maximum total bandwidth in bytes per second.
@@ -106,6 +110,8 @@ class _QosPolicyState:
         :param pulumi.Input[builtins.str] name: The name of the QoS policy. Changing this forces a new resource.
         :param pulumi.Input[builtins.str] policy_type: The type of the QoS policy (e.g. bandwidth-limit). Read-only.
         """
+        if context is not None:
+            pulumi.set(__self__, "context", context)
         if enabled is not None:
             pulumi.set(__self__, "enabled", enabled)
         if is_local is not None:
@@ -118,6 +124,18 @@ class _QosPolicyState:
             pulumi.set(__self__, "name", name)
         if policy_type is not None:
             pulumi.set(__self__, "policy_type", policy_type)
+
+    @property
+    @pulumi.getter
+    def context(self) -> Optional[pulumi.Input['QosPolicyContextArgs']]:
+        """
+        The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
+        """
+        return pulumi.get(self, "context")
+
+    @context.setter
+    def context(self, value: Optional[pulumi.Input['QosPolicyContextArgs']]):
+        pulumi.set(self, "context", value)
 
     @property
     @pulumi.getter
@@ -253,6 +271,7 @@ class QosPolicy(pulumi.CustomResource):
             if name is None and not opts.urn:
                 raise TypeError("Missing required property 'name'")
             __props__.__dict__["name"] = name
+            __props__.__dict__["context"] = None
             __props__.__dict__["is_local"] = None
             __props__.__dict__["policy_type"] = None
         super(QosPolicy, __self__).__init__(
@@ -265,6 +284,7 @@ class QosPolicy(pulumi.CustomResource):
     def get(resource_name: str,
             id: pulumi.Input[str],
             opts: Optional[pulumi.ResourceOptions] = None,
+            context: Optional[pulumi.Input[Union['QosPolicyContextArgs', 'QosPolicyContextArgsDict']]] = None,
             enabled: Optional[pulumi.Input[builtins.bool]] = None,
             is_local: Optional[pulumi.Input[builtins.bool]] = None,
             max_total_bytes_per_sec: Optional[pulumi.Input[builtins.int]] = None,
@@ -278,6 +298,7 @@ class QosPolicy(pulumi.CustomResource):
         :param str resource_name: The unique name of the resulting resource.
         :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
+        :param pulumi.Input[Union['QosPolicyContextArgs', 'QosPolicyContextArgsDict']] context: The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
         :param pulumi.Input[builtins.bool] enabled: Whether the QoS policy is enabled. Defaults to true.
         :param pulumi.Input[builtins.bool] is_local: Whether the QoS policy is local to this array. Read-only.
         :param pulumi.Input[builtins.int] max_total_bytes_per_sec: Maximum total bandwidth in bytes per second.
@@ -289,6 +310,7 @@ class QosPolicy(pulumi.CustomResource):
 
         __props__ = _QosPolicyState.__new__(_QosPolicyState)
 
+        __props__.__dict__["context"] = context
         __props__.__dict__["enabled"] = enabled
         __props__.__dict__["is_local"] = is_local
         __props__.__dict__["max_total_bytes_per_sec"] = max_total_bytes_per_sec
@@ -296,6 +318,14 @@ class QosPolicy(pulumi.CustomResource):
         __props__.__dict__["name"] = name
         __props__.__dict__["policy_type"] = policy_type
         return QosPolicy(resource_name, opts=opts, __props__=__props__)
+
+    @property
+    @pulumi.getter
+    def context(self) -> pulumi.Output['outputs.QosPolicyContext']:
+        """
+        The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
+        """
+        return pulumi.get(self, "context")
 
     @property
     @pulumi.getter

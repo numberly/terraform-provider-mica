@@ -14,6 +14,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import NotRequired, TypedDict, TypeAlias
 from . import _utilities
+from . import outputs
+from ._inputs import *
 
 __all__ = ['SmbSharePolicyArgs', 'SmbSharePolicy']
 
@@ -62,13 +64,15 @@ class _SmbSharePolicyState:
                  enabled: Optional[pulumi.Input[builtins.bool]] = None,
                  is_local: Optional[pulumi.Input[builtins.bool]] = None,
                  name: Optional[pulumi.Input[builtins.str]] = None,
-                 policy_type: Optional[pulumi.Input[builtins.str]] = None):
+                 policy_type: Optional[pulumi.Input[builtins.str]] = None,
+                 workload: Optional[pulumi.Input['SmbSharePolicyWorkloadArgs']] = None):
         """
         Input properties used for looking up and filtering SmbSharePolicy resources.
         :param pulumi.Input[builtins.bool] enabled: If true, the policy is enabled and its rules are enforced.
         :param pulumi.Input[builtins.bool] is_local: If true, the policy is local to this array (not replicated).
         :param pulumi.Input[builtins.str] name: The name of the SMB share policy. Can be changed in-place via PATCH (rename).
         :param pulumi.Input[builtins.str] policy_type: The type of the policy (e.g. 'smb').
+        :param pulumi.Input['SmbSharePolicyWorkloadArgs'] workload: The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
         """
         if enabled is not None:
             pulumi.set(__self__, "enabled", enabled)
@@ -78,6 +82,8 @@ class _SmbSharePolicyState:
             pulumi.set(__self__, "name", name)
         if policy_type is not None:
             pulumi.set(__self__, "policy_type", policy_type)
+        if workload is not None:
+            pulumi.set(__self__, "workload", workload)
 
     @property
     @pulumi.getter
@@ -126,6 +132,18 @@ class _SmbSharePolicyState:
     @policy_type.setter
     def policy_type(self, value: Optional[pulumi.Input[builtins.str]]):
         pulumi.set(self, "policy_type", value)
+
+    @property
+    @pulumi.getter
+    def workload(self) -> Optional[pulumi.Input['SmbSharePolicyWorkloadArgs']]:
+        """
+        The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
+
+    @workload.setter
+    def workload(self, value: Optional[pulumi.Input['SmbSharePolicyWorkloadArgs']]):
+        pulumi.set(self, "workload", value)
 
 
 class SmbSharePolicy(pulumi.CustomResource):
@@ -183,6 +201,7 @@ class SmbSharePolicy(pulumi.CustomResource):
             __props__.__dict__["name"] = name
             __props__.__dict__["is_local"] = None
             __props__.__dict__["policy_type"] = None
+            __props__.__dict__["workload"] = None
         super(SmbSharePolicy, __self__).__init__(
             'mica:index/smbSharePolicy:SmbSharePolicy',
             resource_name,
@@ -196,7 +215,8 @@ class SmbSharePolicy(pulumi.CustomResource):
             enabled: Optional[pulumi.Input[builtins.bool]] = None,
             is_local: Optional[pulumi.Input[builtins.bool]] = None,
             name: Optional[pulumi.Input[builtins.str]] = None,
-            policy_type: Optional[pulumi.Input[builtins.str]] = None) -> 'SmbSharePolicy':
+            policy_type: Optional[pulumi.Input[builtins.str]] = None,
+            workload: Optional[pulumi.Input[Union['SmbSharePolicyWorkloadArgs', 'SmbSharePolicyWorkloadArgsDict']]] = None) -> 'SmbSharePolicy':
         """
         Get an existing SmbSharePolicy resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
@@ -208,6 +228,7 @@ class SmbSharePolicy(pulumi.CustomResource):
         :param pulumi.Input[builtins.bool] is_local: If true, the policy is local to this array (not replicated).
         :param pulumi.Input[builtins.str] name: The name of the SMB share policy. Can be changed in-place via PATCH (rename).
         :param pulumi.Input[builtins.str] policy_type: The type of the policy (e.g. 'smb').
+        :param pulumi.Input[Union['SmbSharePolicyWorkloadArgs', 'SmbSharePolicyWorkloadArgsDict']] workload: The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -217,6 +238,7 @@ class SmbSharePolicy(pulumi.CustomResource):
         __props__.__dict__["is_local"] = is_local
         __props__.__dict__["name"] = name
         __props__.__dict__["policy_type"] = policy_type
+        __props__.__dict__["workload"] = workload
         return SmbSharePolicy(resource_name, opts=opts, __props__=__props__)
 
     @property
@@ -250,4 +272,12 @@ class SmbSharePolicy(pulumi.CustomResource):
         The type of the policy (e.g. 'smb').
         """
         return pulumi.get(self, "policy_type")
+
+    @property
+    @pulumi.getter
+    def workload(self) -> pulumi.Output['outputs.SmbSharePolicyWorkload']:
+        """
+        The workload that owns this SMB share policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
 

@@ -14,6 +14,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import NotRequired, TypedDict, TypeAlias
 from . import _utilities
+from . import outputs
+from ._inputs import *
 
 __all__ = ['FileSystemExportArgs', 'FileSystemExport']
 
@@ -113,7 +115,8 @@ class _FileSystemExportState:
                  policy_type: Optional[pulumi.Input[builtins.str]] = None,
                  server_name: Optional[pulumi.Input[builtins.str]] = None,
                  share_policy_name: Optional[pulumi.Input[builtins.str]] = None,
-                 status: Optional[pulumi.Input[builtins.str]] = None):
+                 status: Optional[pulumi.Input[builtins.str]] = None,
+                 workload: Optional[pulumi.Input['FileSystemExportWorkloadArgs']] = None):
         """
         Input properties used for looking up and filtering FileSystemExport resources.
         :param pulumi.Input[builtins.bool] enabled: Whether the export is enabled.
@@ -125,6 +128,7 @@ class _FileSystemExportState:
         :param pulumi.Input[builtins.str] server_name: The name of the server to export to. Changing this forces a new resource.
         :param pulumi.Input[builtins.str] share_policy_name: The name of the SMB share policy to apply to the export.
         :param pulumi.Input[builtins.str] status: The status of the export.
+        :param pulumi.Input['FileSystemExportWorkloadArgs'] workload: The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
         """
         if enabled is not None:
             pulumi.set(__self__, "enabled", enabled)
@@ -144,6 +148,8 @@ class _FileSystemExportState:
             pulumi.set(__self__, "share_policy_name", share_policy_name)
         if status is not None:
             pulumi.set(__self__, "status", status)
+        if workload is not None:
+            pulumi.set(__self__, "workload", workload)
 
     @property
     @pulumi.getter
@@ -253,6 +259,18 @@ class _FileSystemExportState:
     def status(self, value: Optional[pulumi.Input[builtins.str]]):
         pulumi.set(self, "status", value)
 
+    @property
+    @pulumi.getter
+    def workload(self) -> Optional[pulumi.Input['FileSystemExportWorkloadArgs']]:
+        """
+        The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
+
+    @workload.setter
+    def workload(self, value: Optional[pulumi.Input['FileSystemExportWorkloadArgs']]):
+        pulumi.set(self, "workload", value)
+
 
 class FileSystemExport(pulumi.CustomResource):
     @overload
@@ -327,6 +345,7 @@ class FileSystemExport(pulumi.CustomResource):
             __props__.__dict__["name"] = None
             __props__.__dict__["policy_type"] = None
             __props__.__dict__["status"] = None
+            __props__.__dict__["workload"] = None
         super(FileSystemExport, __self__).__init__(
             'mica:index/fileSystemExport:FileSystemExport',
             resource_name,
@@ -345,7 +364,8 @@ class FileSystemExport(pulumi.CustomResource):
             policy_type: Optional[pulumi.Input[builtins.str]] = None,
             server_name: Optional[pulumi.Input[builtins.str]] = None,
             share_policy_name: Optional[pulumi.Input[builtins.str]] = None,
-            status: Optional[pulumi.Input[builtins.str]] = None) -> 'FileSystemExport':
+            status: Optional[pulumi.Input[builtins.str]] = None,
+            workload: Optional[pulumi.Input[Union['FileSystemExportWorkloadArgs', 'FileSystemExportWorkloadArgsDict']]] = None) -> 'FileSystemExport':
         """
         Get an existing FileSystemExport resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
@@ -362,6 +382,7 @@ class FileSystemExport(pulumi.CustomResource):
         :param pulumi.Input[builtins.str] server_name: The name of the server to export to. Changing this forces a new resource.
         :param pulumi.Input[builtins.str] share_policy_name: The name of the SMB share policy to apply to the export.
         :param pulumi.Input[builtins.str] status: The status of the export.
+        :param pulumi.Input[Union['FileSystemExportWorkloadArgs', 'FileSystemExportWorkloadArgsDict']] workload: The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -376,6 +397,7 @@ class FileSystemExport(pulumi.CustomResource):
         __props__.__dict__["server_name"] = server_name
         __props__.__dict__["share_policy_name"] = share_policy_name
         __props__.__dict__["status"] = status
+        __props__.__dict__["workload"] = workload
         return FileSystemExport(resource_name, opts=opts, __props__=__props__)
 
     @property
@@ -449,4 +471,12 @@ class FileSystemExport(pulumi.CustomResource):
         The status of the export.
         """
         return pulumi.get(self, "status")
+
+    @property
+    @pulumi.getter
+    def workload(self) -> pulumi.Output['outputs.FileSystemExportWorkload']:
+        """
+        The workload that owns this export (read-only, API-managed). Populated by the API when the export is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
 

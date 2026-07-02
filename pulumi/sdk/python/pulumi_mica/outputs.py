@@ -24,13 +24,21 @@ __all__ = [
     'BucketSpace',
     'DirectoryServiceRoleRole',
     'FileSystemDefaultQuotas',
+    'FileSystemExportWorkload',
     'FileSystemHttp',
     'FileSystemMultiProtocol',
     'FileSystemNfs',
     'FileSystemSmb',
     'FileSystemSource',
     'FileSystemSpace',
+    'FileSystemWorkload',
+    'NfsExportPolicyWorkload',
     'ObjectStoreAccountSpace',
+    'QosPolicyContext',
+    'SmbClientPolicyWorkload',
+    'SmbSharePolicyWorkload',
+    'WorkloadContext',
+    'WorkloadParameter',
     'GetArraySmtpAlertWatcherResult',
     'GetBucketSpaceResult',
     'GetDirectoryServiceManagementCaCertificateResult',
@@ -44,6 +52,7 @@ __all__ = [
     'GetFileSystemSourceResult',
     'GetFileSystemSpaceResult',
     'GetObjectStoreAccountSpaceResult',
+    'GetWorkloadContextResult',
 ]
 
 @pulumi.output_type
@@ -539,6 +548,37 @@ class FileSystemDefaultQuotas(dict):
 
 
 @pulumi.output_type
+class FileSystemExportWorkload(dict):
+    def __init__(__self__, *,
+                 id: Optional[builtins.str] = None,
+                 name: Optional[builtins.str] = None):
+        """
+        :param builtins.str id: The workload unique identifier.
+        :param builtins.str name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[builtins.str]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[builtins.str]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+
+@pulumi.output_type
 class FileSystemHttp(dict):
     def __init__(__self__, *,
                  enabled: Optional[builtins.bool] = None):
@@ -901,6 +941,68 @@ class FileSystemSpace(dict):
 
 
 @pulumi.output_type
+class FileSystemWorkload(dict):
+    def __init__(__self__, *,
+                 id: Optional[builtins.str] = None,
+                 name: Optional[builtins.str] = None):
+        """
+        :param builtins.str id: Workload ID.
+        :param builtins.str name: Workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[builtins.str]:
+        """
+        Workload ID.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[builtins.str]:
+        """
+        Workload name.
+        """
+        return pulumi.get(self, "name")
+
+
+@pulumi.output_type
+class NfsExportPolicyWorkload(dict):
+    def __init__(__self__, *,
+                 id: Optional[builtins.str] = None,
+                 name: Optional[builtins.str] = None):
+        """
+        :param builtins.str id: The workload unique identifier.
+        :param builtins.str name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[builtins.str]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[builtins.str]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+
+@pulumi.output_type
 class ObjectStoreAccountSpace(dict):
     @staticmethod
     def __key_warning(key: str):
@@ -998,6 +1100,247 @@ class ObjectStoreAccountSpace(dict):
         Virtual (logical) space used in bytes.
         """
         return pulumi.get(self, "virtual")
+
+
+@pulumi.output_type
+class QosPolicyContext(dict):
+    def __init__(__self__, *,
+                 id: Optional[builtins.str] = None,
+                 name: Optional[builtins.str] = None):
+        """
+        :param builtins.str id: The context unique identifier.
+        :param builtins.str name: The context name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[builtins.str]:
+        """
+        The context unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[builtins.str]:
+        """
+        The context name.
+        """
+        return pulumi.get(self, "name")
+
+
+@pulumi.output_type
+class SmbClientPolicyWorkload(dict):
+    def __init__(__self__, *,
+                 id: Optional[builtins.str] = None,
+                 name: Optional[builtins.str] = None):
+        """
+        :param builtins.str id: The workload unique identifier.
+        :param builtins.str name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[builtins.str]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[builtins.str]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+
+@pulumi.output_type
+class SmbSharePolicyWorkload(dict):
+    def __init__(__self__, *,
+                 id: Optional[builtins.str] = None,
+                 name: Optional[builtins.str] = None):
+        """
+        :param builtins.str id: The workload unique identifier.
+        :param builtins.str name: The workload name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[builtins.str]:
+        """
+        The workload unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[builtins.str]:
+        """
+        The workload name.
+        """
+        return pulumi.get(self, "name")
+
+
+@pulumi.output_type
+class WorkloadContext(dict):
+    def __init__(__self__, *,
+                 id: Optional[builtins.str] = None,
+                 name: Optional[builtins.str] = None):
+        """
+        :param builtins.str id: The context unique identifier.
+        :param builtins.str name: The context name.
+        """
+        if id is not None:
+            pulumi.set(__self__, "id", id)
+        if name is not None:
+            pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> Optional[builtins.str]:
+        """
+        The context unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> Optional[builtins.str]:
+        """
+        The context name.
+        """
+        return pulumi.get(self, "name")
+
+
+@pulumi.output_type
+class WorkloadParameter(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "valueBool":
+            suggest = "value_bool"
+        elif key == "valueInteger":
+            suggest = "value_integer"
+        elif key == "valueResourceId":
+            suggest = "value_resource_id"
+        elif key == "valueResourceName":
+            suggest = "value_resource_name"
+        elif key == "valueResourceType":
+            suggest = "value_resource_type"
+        elif key == "valueString":
+            suggest = "value_string"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in WorkloadParameter. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        WorkloadParameter.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        WorkloadParameter.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 name: builtins.str,
+                 value_bool: Optional[builtins.bool] = None,
+                 value_integer: Optional[builtins.int] = None,
+                 value_resource_id: Optional[builtins.str] = None,
+                 value_resource_name: Optional[builtins.str] = None,
+                 value_resource_type: Optional[builtins.str] = None,
+                 value_string: Optional[builtins.str] = None):
+        """
+        :param builtins.str name: The name of the preset parameter.
+        :param builtins.bool value_bool: Boolean value for this parameter.
+        :param builtins.int value_integer: Integer value for this parameter.
+        :param builtins.str value_resource_id: Resource reference ID for this parameter.
+        :param builtins.str value_resource_name: Resource reference name for this parameter.
+        :param builtins.str value_resource_type: Resource reference type for this parameter.
+        :param builtins.str value_string: String value for this parameter.
+        """
+        pulumi.set(__self__, "name", name)
+        if value_bool is not None:
+            pulumi.set(__self__, "value_bool", value_bool)
+        if value_integer is not None:
+            pulumi.set(__self__, "value_integer", value_integer)
+        if value_resource_id is not None:
+            pulumi.set(__self__, "value_resource_id", value_resource_id)
+        if value_resource_name is not None:
+            pulumi.set(__self__, "value_resource_name", value_resource_name)
+        if value_resource_type is not None:
+            pulumi.set(__self__, "value_resource_type", value_resource_type)
+        if value_string is not None:
+            pulumi.set(__self__, "value_string", value_string)
+
+    @property
+    @pulumi.getter
+    def name(self) -> builtins.str:
+        """
+        The name of the preset parameter.
+        """
+        return pulumi.get(self, "name")
+
+    @property
+    @pulumi.getter(name="valueBool")
+    def value_bool(self) -> Optional[builtins.bool]:
+        """
+        Boolean value for this parameter.
+        """
+        return pulumi.get(self, "value_bool")
+
+    @property
+    @pulumi.getter(name="valueInteger")
+    def value_integer(self) -> Optional[builtins.int]:
+        """
+        Integer value for this parameter.
+        """
+        return pulumi.get(self, "value_integer")
+
+    @property
+    @pulumi.getter(name="valueResourceId")
+    def value_resource_id(self) -> Optional[builtins.str]:
+        """
+        Resource reference ID for this parameter.
+        """
+        return pulumi.get(self, "value_resource_id")
+
+    @property
+    @pulumi.getter(name="valueResourceName")
+    def value_resource_name(self) -> Optional[builtins.str]:
+        """
+        Resource reference name for this parameter.
+        """
+        return pulumi.get(self, "value_resource_name")
+
+    @property
+    @pulumi.getter(name="valueResourceType")
+    def value_resource_type(self) -> Optional[builtins.str]:
+        """
+        Resource reference type for this parameter.
+        """
+        return pulumi.get(self, "value_resource_type")
+
+    @property
+    @pulumi.getter(name="valueString")
+    def value_string(self) -> Optional[builtins.str]:
+        """
+        String value for this parameter.
+        """
+        return pulumi.get(self, "value_string")
 
 
 @pulumi.output_type
@@ -1523,5 +1866,34 @@ class GetObjectStoreAccountSpaceResult(dict):
         Virtual (logical) space used in bytes.
         """
         return pulumi.get(self, "virtual")
+
+
+@pulumi.output_type
+class GetWorkloadContextResult(dict):
+    def __init__(__self__, *,
+                 id: builtins.str,
+                 name: builtins.str):
+        """
+        :param builtins.str id: The context unique identifier.
+        :param builtins.str name: The context name.
+        """
+        pulumi.set(__self__, "id", id)
+        pulumi.set(__self__, "name", name)
+
+    @property
+    @pulumi.getter
+    def id(self) -> builtins.str:
+        """
+        The context unique identifier.
+        """
+        return pulumi.get(self, "id")
+
+    @property
+    @pulumi.getter
+    def name(self) -> builtins.str:
+        """
+        The context name.
+        """
+        return pulumi.get(self, "name")
 
 

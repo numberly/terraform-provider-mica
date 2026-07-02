@@ -28,7 +28,8 @@ class FileSystemArgs:
                  destroy_eradicate_on_delete: Optional[pulumi.Input[builtins.bool]] = None,
                  multi_protocol: Optional[pulumi.Input['FileSystemMultiProtocolArgs']] = None,
                  nfs: Optional[pulumi.Input['FileSystemNfsArgs']] = None,
-                 smb: Optional[pulumi.Input['FileSystemSmbArgs']] = None):
+                 smb: Optional[pulumi.Input['FileSystemSmbArgs']] = None,
+                 workload: Optional[pulumi.Input['FileSystemWorkloadArgs']] = None):
         """
         The set of arguments for constructing a FileSystem resource.
         :param pulumi.Input[builtins.str] name: The name of the file system. Supports in-place rename.
@@ -38,6 +39,7 @@ class FileSystemArgs:
         :param pulumi.Input['FileSystemMultiProtocolArgs'] multi_protocol: Multi-protocol access configuration.
         :param pulumi.Input['FileSystemNfsArgs'] nfs: NFS protocol configuration.
         :param pulumi.Input['FileSystemSmbArgs'] smb: SMB protocol configuration.
+        :param pulumi.Input['FileSystemWorkloadArgs'] workload: Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
         """
         pulumi.set(__self__, "name", name)
         pulumi.set(__self__, "provisioned", provisioned)
@@ -51,6 +53,8 @@ class FileSystemArgs:
             pulumi.set(__self__, "nfs", nfs)
         if smb is not None:
             pulumi.set(__self__, "smb", smb)
+        if workload is not None:
+            pulumi.set(__self__, "workload", workload)
 
     @property
     @pulumi.getter
@@ -136,6 +140,18 @@ class FileSystemArgs:
     def smb(self, value: Optional[pulumi.Input['FileSystemSmbArgs']]):
         pulumi.set(self, "smb", value)
 
+    @property
+    @pulumi.getter
+    def workload(self) -> Optional[pulumi.Input['FileSystemWorkloadArgs']]:
+        """
+        Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+        """
+        return pulumi.get(self, "workload")
+
+    @workload.setter
+    def workload(self, value: Optional[pulumi.Input['FileSystemWorkloadArgs']]):
+        pulumi.set(self, "workload", value)
+
 
 @pulumi.input_type
 class _FileSystemState:
@@ -154,6 +170,7 @@ class _FileSystemState:
                  source: Optional[pulumi.Input['FileSystemSourceArgs']] = None,
                  space: Optional[pulumi.Input['FileSystemSpaceArgs']] = None,
                  time_remaining: Optional[pulumi.Input[builtins.int]] = None,
+                 workload: Optional[pulumi.Input['FileSystemWorkloadArgs']] = None,
                  writable: Optional[pulumi.Input[builtins.bool]] = None):
         """
         Input properties used for looking up and filtering FileSystem resources.
@@ -171,6 +188,7 @@ class _FileSystemState:
         :param pulumi.Input['FileSystemSourceArgs'] source: Source file system reference (for clones/replicas, read-only).
         :param pulumi.Input['FileSystemSpaceArgs'] space: Storage space breakdown (read-only, API-managed).
         :param pulumi.Input[builtins.int] time_remaining: Milliseconds remaining until auto-eradication of a soft-deleted file system.
+        :param pulumi.Input['FileSystemWorkloadArgs'] workload: Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
         :param pulumi.Input[builtins.bool] writable: Whether the file system is writable.
         """
         if created is not None:
@@ -201,6 +219,8 @@ class _FileSystemState:
             pulumi.set(__self__, "space", space)
         if time_remaining is not None:
             pulumi.set(__self__, "time_remaining", time_remaining)
+        if workload is not None:
+            pulumi.set(__self__, "workload", workload)
         if writable is not None:
             pulumi.set(__self__, "writable", writable)
 
@@ -374,6 +394,18 @@ class _FileSystemState:
 
     @property
     @pulumi.getter
+    def workload(self) -> Optional[pulumi.Input['FileSystemWorkloadArgs']]:
+        """
+        Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+        """
+        return pulumi.get(self, "workload")
+
+    @workload.setter
+    def workload(self, value: Optional[pulumi.Input['FileSystemWorkloadArgs']]):
+        pulumi.set(self, "workload", value)
+
+    @property
+    @pulumi.getter
     def writable(self) -> Optional[pulumi.Input[builtins.bool]]:
         """
         Whether the file system is writable.
@@ -397,6 +429,7 @@ class FileSystem(pulumi.CustomResource):
                  nfs: Optional[pulumi.Input[Union['FileSystemNfsArgs', 'FileSystemNfsArgsDict']]] = None,
                  provisioned: Optional[pulumi.Input[builtins.int]] = None,
                  smb: Optional[pulumi.Input[Union['FileSystemSmbArgs', 'FileSystemSmbArgsDict']]] = None,
+                 workload: Optional[pulumi.Input[Union['FileSystemWorkloadArgs', 'FileSystemWorkloadArgsDict']]] = None,
                  __props__=None):
         """
         Create a FileSystem resource with the given unique name, props, and options.
@@ -409,6 +442,7 @@ class FileSystem(pulumi.CustomResource):
         :param pulumi.Input[Union['FileSystemNfsArgs', 'FileSystemNfsArgsDict']] nfs: NFS protocol configuration.
         :param pulumi.Input[builtins.int] provisioned: Provisioned size of the file system in bytes.
         :param pulumi.Input[Union['FileSystemSmbArgs', 'FileSystemSmbArgsDict']] smb: SMB protocol configuration.
+        :param pulumi.Input[Union['FileSystemWorkloadArgs', 'FileSystemWorkloadArgsDict']] workload: Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
         """
         ...
     @overload
@@ -440,6 +474,7 @@ class FileSystem(pulumi.CustomResource):
                  nfs: Optional[pulumi.Input[Union['FileSystemNfsArgs', 'FileSystemNfsArgsDict']]] = None,
                  provisioned: Optional[pulumi.Input[builtins.int]] = None,
                  smb: Optional[pulumi.Input[Union['FileSystemSmbArgs', 'FileSystemSmbArgsDict']]] = None,
+                 workload: Optional[pulumi.Input[Union['FileSystemWorkloadArgs', 'FileSystemWorkloadArgsDict']]] = None,
                  __props__=None):
         opts = pulumi.ResourceOptions.merge(_utilities.get_resource_opts_defaults(), opts)
         if not isinstance(opts, pulumi.ResourceOptions):
@@ -460,6 +495,7 @@ class FileSystem(pulumi.CustomResource):
                 raise TypeError("Missing required property 'provisioned'")
             __props__.__dict__["provisioned"] = provisioned
             __props__.__dict__["smb"] = smb
+            __props__.__dict__["workload"] = workload
             __props__.__dict__["created"] = None
             __props__.__dict__["destroyed"] = None
             __props__.__dict__["http"] = None
@@ -492,6 +528,7 @@ class FileSystem(pulumi.CustomResource):
             source: Optional[pulumi.Input[Union['FileSystemSourceArgs', 'FileSystemSourceArgsDict']]] = None,
             space: Optional[pulumi.Input[Union['FileSystemSpaceArgs', 'FileSystemSpaceArgsDict']]] = None,
             time_remaining: Optional[pulumi.Input[builtins.int]] = None,
+            workload: Optional[pulumi.Input[Union['FileSystemWorkloadArgs', 'FileSystemWorkloadArgsDict']]] = None,
             writable: Optional[pulumi.Input[builtins.bool]] = None) -> 'FileSystem':
         """
         Get an existing FileSystem resource's state with the given name, id, and optional extra
@@ -514,6 +551,7 @@ class FileSystem(pulumi.CustomResource):
         :param pulumi.Input[Union['FileSystemSourceArgs', 'FileSystemSourceArgsDict']] source: Source file system reference (for clones/replicas, read-only).
         :param pulumi.Input[Union['FileSystemSpaceArgs', 'FileSystemSpaceArgsDict']] space: Storage space breakdown (read-only, API-managed).
         :param pulumi.Input[builtins.int] time_remaining: Milliseconds remaining until auto-eradication of a soft-deleted file system.
+        :param pulumi.Input[Union['FileSystemWorkloadArgs', 'FileSystemWorkloadArgsDict']] workload: Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
         :param pulumi.Input[builtins.bool] writable: Whether the file system is writable.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
@@ -534,6 +572,7 @@ class FileSystem(pulumi.CustomResource):
         __props__.__dict__["source"] = source
         __props__.__dict__["space"] = space
         __props__.__dict__["time_remaining"] = time_remaining
+        __props__.__dict__["workload"] = workload
         __props__.__dict__["writable"] = writable
         return FileSystem(resource_name, opts=opts, __props__=__props__)
 
@@ -648,6 +687,14 @@ class FileSystem(pulumi.CustomResource):
         Milliseconds remaining until auto-eradication of a soft-deleted file system.
         """
         return pulumi.get(self, "time_remaining")
+
+    @property
+    @pulumi.getter
+    def workload(self) -> pulumi.Output['outputs.FileSystemWorkload']:
+        """
+        Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+        """
+        return pulumi.get(self, "workload")
 
     @property
     @pulumi.getter

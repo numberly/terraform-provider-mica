@@ -27,6 +27,8 @@ type SmbClientPolicy struct {
 	PolicyType pulumi.StringOutput `pulumi:"policyType"`
 	// The version of the SMB client policy (read-only, server-assigned).
 	Version pulumi.StringOutput `pulumi:"version"`
+	// The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload SmbClientPolicyWorkloadOutput `pulumi:"workload"`
 }
 
 // NewSmbClientPolicy registers a new resource with the given unique name, arguments, and options.
@@ -74,6 +76,8 @@ type smbClientPolicyState struct {
 	PolicyType *string `pulumi:"policyType"`
 	// The version of the SMB client policy (read-only, server-assigned).
 	Version *string `pulumi:"version"`
+	// The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload *SmbClientPolicyWorkload `pulumi:"workload"`
 }
 
 type SmbClientPolicyState struct {
@@ -89,6 +93,8 @@ type SmbClientPolicyState struct {
 	PolicyType pulumi.StringPtrInput
 	// The version of the SMB client policy (read-only, server-assigned).
 	Version pulumi.StringPtrInput
+	// The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload SmbClientPolicyWorkloadPtrInput
 }
 
 func (SmbClientPolicyState) ElementType() reflect.Type {
@@ -179,6 +185,11 @@ func (o SmbClientPolicyOutput) PolicyType() pulumi.StringOutput {
 // The version of the SMB client policy (read-only, server-assigned).
 func (o SmbClientPolicyOutput) Version() pulumi.StringOutput {
 	return o.ApplyT(func(v *SmbClientPolicy) pulumi.StringOutput { return v.Version }).(pulumi.StringOutput)
+}
+
+// The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+func (o SmbClientPolicyOutput) Workload() SmbClientPolicyWorkloadOutput {
+	return o.ApplyT(func(v *SmbClientPolicy) SmbClientPolicyWorkloadOutput { return v.Workload }).(SmbClientPolicyWorkloadOutput)
 }
 
 func init() {
