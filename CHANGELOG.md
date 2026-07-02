@@ -1,3 +1,9 @@
+## [2.23.5] — 2026-07-02
+
+### Fixed
+
+- **`flashblade_bucket_cors_policy`** and **`flashblade_s3_export_policy_rule`**: make rule creation idempotent. The array rejects re-POSTing an existing rule with HTTP 400 `Rule already exists.`, which broke apply/retry when a rule was left on the array by an earlier partial apply. CORS now deletes the wildcard rule before recreating it (ensure policy → delete rule → post rule); S3 export policy rule now adopts the existing rule on already-exists instead of erroring.
+
 ## [2.23.4] — 2026-07-02
 
 ### Fixed
