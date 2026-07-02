@@ -400,7 +400,15 @@ func (r *s3ExportPolicyRuleResource) readIntoState(ctx context.Context, policyNa
 func mapS3RuleToModel(ctx context.Context, rule *client.S3ExportPolicyRule, data *s3ExportPolicyRuleModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	data.ID = types.StringValue(rule.ID)
+	// The array returns an empty id for some rules (e.g. those created by an older
+	// provider build). Fall back to the composite policy_name/rule_index — the same
+	// form used by ImportState — so the resource id is never empty (the Pulumi bridge
+	// rejects an empty resource.ID on create).
+	id := rule.ID
+	if id == "" {
+		id = fmt.Sprintf("%s/%d", rule.Policy.Name, rule.Index)
+	}
+	data.ID = types.StringValue(id)
 	data.Name = types.StringValue(rule.Name)
 	data.Index = types.Int64Value(int64(rule.Index))
 	data.PolicyName = types.StringValue(rule.Policy.Name)
