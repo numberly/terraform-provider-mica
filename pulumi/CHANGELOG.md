@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.22.12-pulumi.beta — 2026-07-02
+
+### Fixed
+
+- **`mica:index:S3ExportPolicyRule`**: fall back to a composite `policy_name/rule_index` id when the array returns an empty rule id, so `pulumi up` no longer fails with `returned empty resource.ID from create` when adopting rules created by older provider builds. Schema/SDKs unchanged from `v2.22.11-pulumi.beta`; only the provider plugin binary changed.
+
 ## [2.22.4] — 2026-04-28
 
 ### Project rebrand
