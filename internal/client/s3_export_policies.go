@@ -62,8 +62,18 @@ func (c *FlashBladeClient) GetS3ExportPolicyRuleByName(ctx context.Context, poli
 
 // PostS3ExportPolicyRule creates a new rule in an S3 export policy.
 // The policy is identified via the policy_names query parameter only.
+// If the rule already exists on the array (e.g. it was created by an earlier apply that
+// then failed before Pulumi/Terraform persisted its state), the existing rule is adopted
+// instead of returning the array's non-idempotent "Rule already exists." (HTTP 400) error.
 func (c *FlashBladeClient) PostS3ExportPolicyRule(ctx context.Context, policyName, ruleName string, body S3ExportPolicyRulePost) (*S3ExportPolicyRule, error) {
-	return postOne[S3ExportPolicyRulePost, S3ExportPolicyRule](c, ctx, "/s3-export-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), body, "PostS3ExportPolicyRule")
+	created, err := postOne[S3ExportPolicyRulePost, S3ExportPolicyRule](c, ctx, "/s3-export-policies/rules?policy_names="+url.QueryEscape(policyName)+"&names="+url.QueryEscape(ruleName), body, "PostS3ExportPolicyRule")
+	if err != nil {
+		if isAlreadyExists(err) {
+			return c.GetS3ExportPolicyRuleByName(ctx, policyName, ruleName)
+		}
+		return nil, err
+	}
+	return created, nil
 }
 
 // PatchS3ExportPolicyRule updates an existing S3 export policy rule.
