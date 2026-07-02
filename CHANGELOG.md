@@ -1,3 +1,9 @@
+## [2.23.6] — 2026-07-02
+
+### Fixed
+
+- **`flashblade_s3_export_policy_rule`**: fall back to the composite `policy_name/rule_index` id when the array returns an empty rule id (some rules created by older provider builds), so the Pulumi bridge no longer fails with `returned empty resource.ID from create`. The real id is kept when present.
+
 ## [2.23.5] — 2026-07-02
 
 ### Fixed
