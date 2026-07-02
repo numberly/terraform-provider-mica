@@ -43,6 +43,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &BucketAccessPolicyRule{}
 	case "mica:index/bucketAuditFilter:BucketAuditFilter":
 		r = &BucketAuditFilter{}
+	case "mica:index/bucketCorsPolicy:BucketCorsPolicy":
+		r = &BucketCorsPolicy{}
 	case "mica:index/bucketReplicaLink:BucketReplicaLink":
 		r = &BucketReplicaLink{}
 	case "mica:index/certificate:Certificate":
@@ -213,6 +215,11 @@ func init() {
 	pulumi.RegisterResourceModule(
 		"mica",
 		"index/bucketAuditFilter",
+		&module{version},
+	)
+	pulumi.RegisterResourceModule(
+		"mica",
+		"index/bucketCorsPolicy",
 		&module{version},
 	)
 	pulumi.RegisterResourceModule(

@@ -84,6 +84,9 @@
                     }
                 }
             },
+            "flashblade_bucket_cors_policy": {
+                "current": "mica:index/bucketCorsPolicy:BucketCorsPolicy"
+            },
             "flashblade_bucket_replica_link": {
                 "current": "mica:index/bucketReplicaLink:BucketReplicaLink"
             },
@@ -377,6 +380,9 @@
                         "maxItemsOne": false
                     }
                 }
+            },
+            "flashblade_bucket_cors_policy": {
+                "current": "mica:index/getBucketCorsPolicy:getBucketCorsPolicy"
             },
             "flashblade_bucket_replica_link": {
                 "current": "mica:index/getBucketReplicaLink:getBucketReplicaLink"

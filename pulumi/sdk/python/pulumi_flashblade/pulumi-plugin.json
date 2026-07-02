@@ -1,5 +1,0 @@
-{
-  "resource": true,
-  "name": "flashblade",
-  "server": "github://api.github.com/numberly"
-}

@@ -15,24 +15,24 @@ def readme():
         with open('README.md', encoding='utf-8') as f:
             return f.read()
     except FileNotFoundError:
-        return "flashblade Pulumi Package - Development Version"
+        return "mica Pulumi Package - Development Version"
 
 
-setup(name='pulumi_flashblade',
+setup(name='pulumi_mica',
       python_requires='>=3.9',
       version=VERSION,
       description="A Pulumi package for managing Pure Storage FlashBlade resources.",
       long_description=readme(),
       long_description_content_type='text/markdown',
-      keywords='pulumi flashblade pure-storage category/infrastructure',
+      keywords='pulumi mica flashblade pure-storage category/infrastructure',
       url='https://github.com/numberly/terraform-provider-mica',
       project_urls={
           'Repository': 'https://github.com/numberly/terraform-provider-mica'
       },
-      license='Apache-2.0',
+      license='GPL-3.0-only',
       packages=find_packages(),
       package_data={
-          'pulumi_flashblade': [
+          'pulumi_mica': [
               'py.typed',
               'pulumi-plugin.json',
           ]
