@@ -256,10 +256,16 @@ func (r *bucketCorsPolicyResource) UpgradeState(_ context.Context) map[int64]res
 // ---------- helpers ---------------------------------------------------------
 
 // applyWildcardPolicy ensures the bucket's CORS policy exists and carries the single
-// permissive wildcard rule. It is idempotent: EnsureCorsPolicy tolerates an existing
-// policy and PostCorsRule replaces the rule content.
+// permissive wildcard rule. It is idempotent and self-healing: the policy POST tolerates
+// an existing policy, and the rule is deleted before being (re)created so a retry — or a
+// rule left over on the array by an earlier partial apply — does not fail with the array's
+// non-idempotent "Rule already exists." (HTTP 400). This mirrors the proven dbauth flow
+// (ensure policy -> delete rule -> post rule).
 func (r *bucketCorsPolicyResource) applyWildcardPolicy(ctx context.Context, bucket string) error {
 	if err := r.client.EnsureCorsPolicy(ctx, bucket); err != nil {
+		return err
+	}
+	if err := r.client.DeleteCorsRule(ctx, bucket, corsWildcardRuleName); err != nil {
 		return err
 	}
 	return r.client.PostCorsRule(ctx, bucket, corsWildcardRuleName, corsWildcardRule())
