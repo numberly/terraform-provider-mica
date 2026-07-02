@@ -449,3 +449,36 @@ type S3ExportPolicyRulePatch struct {
 	Actions   *[]string `json:"actions,omitempty"`
 	Resources *[]string `json:"resources,omitempty"`
 }
+
+// CorsRule is a single named CORS rule embedded in a CrossOriginResourceSharingPolicy
+// GET response. Rules are managed individually via the /rules sub-endpoint; the rule
+// name is server-assigned or client-supplied through the ?names= query parameter.
+// FlashBlade rule names must be alphanumeric (begin and end with a letter or digit,
+// no hyphens or underscores).
+type CorsRule struct {
+	Name           string   `json:"name,omitempty"`
+	AllowedHeaders []string `json:"allowed_headers,omitempty"`
+	AllowedMethods []string `json:"allowed_methods,omitempty"`
+	AllowedOrigins []string `json:"allowed_origins,omitempty"`
+}
+
+// CrossOriginResourceSharingPolicy represents a bucket CORS policy from GET responses.
+// The policy is created with an EMPTY body (auto-named by the array); its rules are
+// embedded in the GET response and managed via the /rules sub-endpoint.
+type CrossOriginResourceSharingPolicy struct {
+	ID         string         `json:"id,omitempty"`
+	Name       string         `json:"name,omitempty"`
+	Bucket     NamedReference `json:"bucket"`
+	IsLocal    bool           `json:"is_local,omitempty"`
+	PolicyType string         `json:"policy_type,omitempty"`
+	Rules      []CorsRule     `json:"rules,omitempty"`
+}
+
+// CorsRulePost is the POST body for a single CORS rule on the /rules sub-endpoint.
+// The rule name is supplied via the ?names= query parameter, not the body. There is
+// no PATCH: to change a rule, DELETE it then POST it again (delete + recreate).
+type CorsRulePost struct {
+	AllowedHeaders []string `json:"allowed_headers,omitempty"`
+	AllowedMethods []string `json:"allowed_methods,omitempty"`
+	AllowedOrigins []string `json:"allowed_origins,omitempty"`
+}

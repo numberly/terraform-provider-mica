@@ -2,9 +2,9 @@
 
 FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-04-17
-**Provider version:** v2.22.2
-**Total API sections:** 84 | **Covered:** ~44 | **Coverage of IaC-relevant CRUD:** ~75%
+**Last updated:** 2026-07-02 (bucket CORS policy resource + data source; wildcard-only per-bucket toggle)
+**Provider version:** v2.22.9
+**Total API sections:** 84 | **Covered:** ~45 | **Coverage of IaC-relevant CRUD:** ~76%
 
 ## Coverage Legend
 
@@ -41,6 +41,7 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Bucket Audit Filters | `flashblade_bucket_audit_filter` | Yes | Done | Actions + prefix filtering |
 | QoS Policies | `flashblade_qos_policy` | Yes | Done | Bandwidth + IOPS limits |
 | QoS Policy Members | `flashblade_qos_policy_member` | No | Done | FS assignment (buckets not supported on v2.22) |
+| CORS Policies | `flashblade_bucket_cors_policy` | Yes | Done | Per-bucket wildcard-only toggle (FlashBlade supports only fully permissive CORS today); presence applies the wildcard rule via empty-body policy POST + /rules sub-endpoint (no PATCH) |
 
 ### Policies
 
@@ -145,7 +146,6 @@ FlashBlade® REST API v2.22 (Purity//FB 4.6.7) coverage status for terraform-pro
 | Password Policies | Resource | GET, PATCH | Admin password policy enforcement | Candidate |
 | Keytabs | Resource | GET, POST, DELETE + upload | Kerberos keytab management | Candidate |
 | Legal Holds | Resource | Full CRUD + held entities | Compliance / legal data retention | Candidate |
-| CORS Policies | Resource | Full CRUD (bucket sub-resource) | S3 CORS header configuration | Candidate |
 | Syslog Settings | Resource | GET, PATCH | Global syslog settings (separate from syslog servers) | Candidate |
 
 ### Low Priority -- Niche or rarely IaC-managed
