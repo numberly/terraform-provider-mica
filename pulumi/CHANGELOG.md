@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.22.11-pulumi.beta — 2026-07-02
+
+### Fixed
+
+- **`mica:index:BucketCorsPolicy`** and **`mica:index:S3ExportPolicyRule`**: rule creation is now idempotent. The array rejects re-POSTing an existing rule (`Rule already exists.`), which made `pulumi up` fail when a rule was left on the array by an earlier partial apply. Schema/SDKs are unchanged from `v2.22.10-pulumi.beta`; only the provider plugin binary changed.
+
 ## [2.22.4] — 2026-04-28
 
 ### Project rebrand
