@@ -1,3 +1,9 @@
+## [2.22.10] — 2026-07-02
+
+### Fixed
+
+- **`flashblade_bucket_cors_policy`**: use the bucket name as the resource id. The FlashBlade CORS policy GET returns an empty id, which made resource creation fail under the Pulumi bridge (`returned empty resource.ID from create`). The bucket name is unique per CORS policy, stable, and matches import-by-bucket-name.
+
 ## [2.22.9] — 2026-07-02
 
 ### Added
