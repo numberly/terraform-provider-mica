@@ -21,8 +21,8 @@ import (
 // entry is "pulumi:providers:flashblade/terraformConfig", a provider-level function
 // injected by the bridge, not a data source.
 const (
-	expectedResources   = 55
-	expectedDataSources = 43
+	expectedResources   = 56
+	expectedDataSources = 44
 )
 
 // POC resources under test (D-05).
