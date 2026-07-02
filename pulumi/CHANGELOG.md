@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.22.10-pulumi.beta — 2026-07-02
+
+### Fixed
+
+- **`mica:index:BucketCorsPolicy`**: the provider now returns the bucket name as the resource id (the FlashBlade CORS policy GET returns an empty id, which made `pulumi up` fail with `returned empty resource.ID from create`). Schema and SDKs are unchanged from `v2.22.9-pulumi.beta`; only the provider plugin binary changed.
+
+## v2.22.9-pulumi.beta — 2026-07-02
+
+### Added
+
+- **`mica:index:BucketCorsPolicy`** resource + `mica:index:getBucketCorsPolicy` data source — per-bucket wildcard CORS toggle (see the Terraform provider CHANGELOG `2.22.9`).
+
+### Changed
+
+- Rebranded the Pulumi SDK from the legacy `pulumi_flashblade` package to `pulumi_mica`; regenerated schema, bridge-metadata and Go/Python SDKs for the 2.22 line.
+
 ## [2.22.4] — 2026-04-28
 
 ### Project rebrand
