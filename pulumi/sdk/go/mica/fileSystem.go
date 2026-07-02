@@ -43,6 +43,8 @@ type FileSystem struct {
 	Space FileSystemSpaceOutput `pulumi:"space"`
 	// Milliseconds remaining until auto-eradication of a soft-deleted file system.
 	TimeRemaining pulumi.IntOutput `pulumi:"timeRemaining"`
+	// Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+	Workload FileSystemWorkloadOutput `pulumi:"workload"`
 	// Whether the file system is writable.
 	Writable pulumi.BoolOutput `pulumi:"writable"`
 }
@@ -111,6 +113,8 @@ type fileSystemState struct {
 	Space *FileSystemSpace `pulumi:"space"`
 	// Milliseconds remaining until auto-eradication of a soft-deleted file system.
 	TimeRemaining *int `pulumi:"timeRemaining"`
+	// Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+	Workload *FileSystemWorkload `pulumi:"workload"`
 	// Whether the file system is writable.
 	Writable *bool `pulumi:"writable"`
 }
@@ -144,6 +148,8 @@ type FileSystemState struct {
 	Space FileSystemSpacePtrInput
 	// Milliseconds remaining until auto-eradication of a soft-deleted file system.
 	TimeRemaining pulumi.IntPtrInput
+	// Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+	Workload FileSystemWorkloadPtrInput
 	// Whether the file system is writable.
 	Writable pulumi.BoolPtrInput
 }
@@ -167,6 +173,8 @@ type fileSystemArgs struct {
 	Provisioned int `pulumi:"provisioned"`
 	// SMB protocol configuration.
 	Smb *FileSystemSmb `pulumi:"smb"`
+	// Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+	Workload *FileSystemWorkload `pulumi:"workload"`
 }
 
 // The set of arguments for constructing a FileSystem resource.
@@ -185,6 +193,8 @@ type FileSystemArgs struct {
 	Provisioned pulumi.IntInput
 	// SMB protocol configuration.
 	Smb FileSystemSmbPtrInput
+	// Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+	Workload FileSystemWorkloadPtrInput
 }
 
 func (FileSystemArgs) ElementType() reflect.Type {
@@ -292,6 +302,11 @@ func (o FileSystemOutput) Space() FileSystemSpaceOutput {
 // Milliseconds remaining until auto-eradication of a soft-deleted file system.
 func (o FileSystemOutput) TimeRemaining() pulumi.IntOutput {
 	return o.ApplyT(func(v *FileSystem) pulumi.IntOutput { return v.TimeRemaining }).(pulumi.IntOutput)
+}
+
+// Workload reference for this file system. Set to attach to an existing workload; clear (set id and name to empty string) to detach.
+func (o FileSystemOutput) Workload() FileSystemWorkloadOutput {
+	return o.ApplyT(func(v *FileSystem) FileSystemWorkloadOutput { return v.Workload }).(FileSystemWorkloadOutput)
 }
 
 // Whether the file system is writable.

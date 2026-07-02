@@ -14,6 +14,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import NotRequired, TypedDict, TypeAlias
 from . import _utilities
+from . import outputs
+from ._inputs import *
 
 __all__ = ['NfsExportPolicyArgs', 'NfsExportPolicy']
 
@@ -63,7 +65,8 @@ class _NfsExportPolicyState:
                  is_local: Optional[pulumi.Input[builtins.bool]] = None,
                  name: Optional[pulumi.Input[builtins.str]] = None,
                  policy_type: Optional[pulumi.Input[builtins.str]] = None,
-                 version: Optional[pulumi.Input[builtins.str]] = None):
+                 version: Optional[pulumi.Input[builtins.str]] = None,
+                 workload: Optional[pulumi.Input['NfsExportPolicyWorkloadArgs']] = None):
         """
         Input properties used for looking up and filtering NfsExportPolicy resources.
         :param pulumi.Input[builtins.bool] enabled: If true, the policy is enabled and its rules are enforced.
@@ -71,6 +74,7 @@ class _NfsExportPolicyState:
         :param pulumi.Input[builtins.str] name: The name of the NFS export policy. Can be changed in-place via PATCH (rename).
         :param pulumi.Input[builtins.str] policy_type: The type of the policy (e.g. 'nfs').
         :param pulumi.Input[builtins.str] version: The version token that changes on each policy update.
+        :param pulumi.Input['NfsExportPolicyWorkloadArgs'] workload: The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
         """
         if enabled is not None:
             pulumi.set(__self__, "enabled", enabled)
@@ -82,6 +86,8 @@ class _NfsExportPolicyState:
             pulumi.set(__self__, "policy_type", policy_type)
         if version is not None:
             pulumi.set(__self__, "version", version)
+        if workload is not None:
+            pulumi.set(__self__, "workload", workload)
 
     @property
     @pulumi.getter
@@ -143,6 +149,18 @@ class _NfsExportPolicyState:
     def version(self, value: Optional[pulumi.Input[builtins.str]]):
         pulumi.set(self, "version", value)
 
+    @property
+    @pulumi.getter
+    def workload(self) -> Optional[pulumi.Input['NfsExportPolicyWorkloadArgs']]:
+        """
+        The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
+
+    @workload.setter
+    def workload(self, value: Optional[pulumi.Input['NfsExportPolicyWorkloadArgs']]):
+        pulumi.set(self, "workload", value)
+
 
 class NfsExportPolicy(pulumi.CustomResource):
     @overload
@@ -200,6 +218,7 @@ class NfsExportPolicy(pulumi.CustomResource):
             __props__.__dict__["is_local"] = None
             __props__.__dict__["policy_type"] = None
             __props__.__dict__["version"] = None
+            __props__.__dict__["workload"] = None
         super(NfsExportPolicy, __self__).__init__(
             'mica:index/nfsExportPolicy:NfsExportPolicy',
             resource_name,
@@ -214,7 +233,8 @@ class NfsExportPolicy(pulumi.CustomResource):
             is_local: Optional[pulumi.Input[builtins.bool]] = None,
             name: Optional[pulumi.Input[builtins.str]] = None,
             policy_type: Optional[pulumi.Input[builtins.str]] = None,
-            version: Optional[pulumi.Input[builtins.str]] = None) -> 'NfsExportPolicy':
+            version: Optional[pulumi.Input[builtins.str]] = None,
+            workload: Optional[pulumi.Input[Union['NfsExportPolicyWorkloadArgs', 'NfsExportPolicyWorkloadArgsDict']]] = None) -> 'NfsExportPolicy':
         """
         Get an existing NfsExportPolicy resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
@@ -227,6 +247,7 @@ class NfsExportPolicy(pulumi.CustomResource):
         :param pulumi.Input[builtins.str] name: The name of the NFS export policy. Can be changed in-place via PATCH (rename).
         :param pulumi.Input[builtins.str] policy_type: The type of the policy (e.g. 'nfs').
         :param pulumi.Input[builtins.str] version: The version token that changes on each policy update.
+        :param pulumi.Input[Union['NfsExportPolicyWorkloadArgs', 'NfsExportPolicyWorkloadArgsDict']] workload: The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -237,6 +258,7 @@ class NfsExportPolicy(pulumi.CustomResource):
         __props__.__dict__["name"] = name
         __props__.__dict__["policy_type"] = policy_type
         __props__.__dict__["version"] = version
+        __props__.__dict__["workload"] = workload
         return NfsExportPolicy(resource_name, opts=opts, __props__=__props__)
 
     @property
@@ -278,4 +300,12 @@ class NfsExportPolicy(pulumi.CustomResource):
         The version token that changes on each policy update.
         """
         return pulumi.get(self, "version")
+
+    @property
+    @pulumi.getter
+    def workload(self) -> pulumi.Output['outputs.NfsExportPolicyWorkload']:
+        """
+        The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
 

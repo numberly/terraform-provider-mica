@@ -14,6 +14,8 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import NotRequired, TypedDict, TypeAlias
 from . import _utilities
+from . import outputs
+from ._inputs import *
 
 __all__ = ['SmbClientPolicyArgs', 'SmbClientPolicy']
 
@@ -80,7 +82,8 @@ class _SmbClientPolicyState:
                  is_local: Optional[pulumi.Input[builtins.bool]] = None,
                  name: Optional[pulumi.Input[builtins.str]] = None,
                  policy_type: Optional[pulumi.Input[builtins.str]] = None,
-                 version: Optional[pulumi.Input[builtins.str]] = None):
+                 version: Optional[pulumi.Input[builtins.str]] = None,
+                 workload: Optional[pulumi.Input['SmbClientPolicyWorkloadArgs']] = None):
         """
         Input properties used for looking up and filtering SmbClientPolicy resources.
         :param pulumi.Input[builtins.bool] access_based_enumeration_enabled: If true, access-based enumeration is enabled for this policy.
@@ -89,6 +92,7 @@ class _SmbClientPolicyState:
         :param pulumi.Input[builtins.str] name: The name of the SMB client policy. Can be changed in-place via PATCH (rename).
         :param pulumi.Input[builtins.str] policy_type: The type of the policy (e.g. 'smb').
         :param pulumi.Input[builtins.str] version: The version of the SMB client policy (read-only, server-assigned).
+        :param pulumi.Input['SmbClientPolicyWorkloadArgs'] workload: The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
         """
         if access_based_enumeration_enabled is not None:
             pulumi.set(__self__, "access_based_enumeration_enabled", access_based_enumeration_enabled)
@@ -102,6 +106,8 @@ class _SmbClientPolicyState:
             pulumi.set(__self__, "policy_type", policy_type)
         if version is not None:
             pulumi.set(__self__, "version", version)
+        if workload is not None:
+            pulumi.set(__self__, "workload", workload)
 
     @property
     @pulumi.getter(name="accessBasedEnumerationEnabled")
@@ -175,6 +181,18 @@ class _SmbClientPolicyState:
     def version(self, value: Optional[pulumi.Input[builtins.str]]):
         pulumi.set(self, "version", value)
 
+    @property
+    @pulumi.getter
+    def workload(self) -> Optional[pulumi.Input['SmbClientPolicyWorkloadArgs']]:
+        """
+        The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
+
+    @workload.setter
+    def workload(self, value: Optional[pulumi.Input['SmbClientPolicyWorkloadArgs']]):
+        pulumi.set(self, "workload", value)
+
 
 class SmbClientPolicy(pulumi.CustomResource):
     @overload
@@ -236,6 +254,7 @@ class SmbClientPolicy(pulumi.CustomResource):
             __props__.__dict__["is_local"] = None
             __props__.__dict__["policy_type"] = None
             __props__.__dict__["version"] = None
+            __props__.__dict__["workload"] = None
         super(SmbClientPolicy, __self__).__init__(
             'mica:index/smbClientPolicy:SmbClientPolicy',
             resource_name,
@@ -251,7 +270,8 @@ class SmbClientPolicy(pulumi.CustomResource):
             is_local: Optional[pulumi.Input[builtins.bool]] = None,
             name: Optional[pulumi.Input[builtins.str]] = None,
             policy_type: Optional[pulumi.Input[builtins.str]] = None,
-            version: Optional[pulumi.Input[builtins.str]] = None) -> 'SmbClientPolicy':
+            version: Optional[pulumi.Input[builtins.str]] = None,
+            workload: Optional[pulumi.Input[Union['SmbClientPolicyWorkloadArgs', 'SmbClientPolicyWorkloadArgsDict']]] = None) -> 'SmbClientPolicy':
         """
         Get an existing SmbClientPolicy resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
@@ -265,6 +285,7 @@ class SmbClientPolicy(pulumi.CustomResource):
         :param pulumi.Input[builtins.str] name: The name of the SMB client policy. Can be changed in-place via PATCH (rename).
         :param pulumi.Input[builtins.str] policy_type: The type of the policy (e.g. 'smb').
         :param pulumi.Input[builtins.str] version: The version of the SMB client policy (read-only, server-assigned).
+        :param pulumi.Input[Union['SmbClientPolicyWorkloadArgs', 'SmbClientPolicyWorkloadArgsDict']] workload: The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
@@ -276,6 +297,7 @@ class SmbClientPolicy(pulumi.CustomResource):
         __props__.__dict__["name"] = name
         __props__.__dict__["policy_type"] = policy_type
         __props__.__dict__["version"] = version
+        __props__.__dict__["workload"] = workload
         return SmbClientPolicy(resource_name, opts=opts, __props__=__props__)
 
     @property
@@ -325,4 +347,12 @@ class SmbClientPolicy(pulumi.CustomResource):
         The version of the SMB client policy (read-only, server-assigned).
         """
         return pulumi.get(self, "version")
+
+    @property
+    @pulumi.getter
+    def workload(self) -> pulumi.Output['outputs.SmbClientPolicyWorkload']:
+        """
+        The workload that owns this SMB client policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+        """
+        return pulumi.get(self, "workload")
 

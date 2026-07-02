@@ -2151,6 +2151,54 @@
                 "type": "object"
             }
         },
+        "mica:index/bucketCorsPolicy:BucketCorsPolicy": {
+            "properties": {
+                "bucketName": {
+                    "type": "string",
+                    "description": "The name of the bucket this CORS policy belongs to. Changing this forces a new resource."
+                },
+                "isLocal": {
+                    "type": "boolean",
+                    "description": "Whether the CORS policy is local to this array. Read-only."
+                },
+                "policyType": {
+                    "type": "string",
+                    "description": "The policy type. Read-only, managed by the array."
+                }
+            },
+            "required": [
+                "bucketName",
+                "isLocal",
+                "policyType"
+            ],
+            "inputProperties": {
+                "bucketName": {
+                    "type": "string",
+                    "description": "The name of the bucket this CORS policy belongs to. Changing this forces a new resource."
+                }
+            },
+            "requiredInputs": [
+                "bucketName"
+            ],
+            "stateInputs": {
+                "description": "Input properties used for looking up and filtering BucketCorsPolicy resources.\n",
+                "properties": {
+                    "bucketName": {
+                        "type": "string",
+                        "description": "The name of the bucket this CORS policy belongs to. Changing this forces a new resource."
+                    },
+                    "isLocal": {
+                        "type": "boolean",
+                        "description": "Whether the CORS policy is local to this array. Read-only."
+                    },
+                    "policyType": {
+                        "type": "string",
+                        "description": "The policy type. Read-only, managed by the array."
+                    }
+                },
+                "type": "object"
+            }
+        },
         "mica:index/bucketReplicaLink:BucketReplicaLink": {
             "properties": {
                 "cascadingEnabled": {
@@ -6880,6 +6928,44 @@
                     "bucketName",
                     "s3Prefixes",
                     "id"
+                ],
+                "type": "object"
+            }
+        },
+        "mica:index/getBucketCorsPolicy:getBucketCorsPolicy": {
+            "inputs": {
+                "description": "A collection of arguments for invoking getBucketCorsPolicy.\n",
+                "properties": {
+                    "bucketName": {
+                        "type": "string"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "bucketName"
+                ]
+            },
+            "outputs": {
+                "description": "A collection of values returned by getBucketCorsPolicy.\n",
+                "properties": {
+                    "bucketName": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "isLocal": {
+                        "type": "boolean"
+                    },
+                    "policyType": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "bucketName",
+                    "id",
+                    "isLocal",
+                    "policyType"
                 ],
                 "type": "object"
             }

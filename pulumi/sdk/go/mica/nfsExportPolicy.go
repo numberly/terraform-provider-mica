@@ -25,6 +25,8 @@ type NfsExportPolicy struct {
 	PolicyType pulumi.StringOutput `pulumi:"policyType"`
 	// The version token that changes on each policy update.
 	Version pulumi.StringOutput `pulumi:"version"`
+	// The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload NfsExportPolicyWorkloadOutput `pulumi:"workload"`
 }
 
 // NewNfsExportPolicy registers a new resource with the given unique name, arguments, and options.
@@ -70,6 +72,8 @@ type nfsExportPolicyState struct {
 	PolicyType *string `pulumi:"policyType"`
 	// The version token that changes on each policy update.
 	Version *string `pulumi:"version"`
+	// The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload *NfsExportPolicyWorkload `pulumi:"workload"`
 }
 
 type NfsExportPolicyState struct {
@@ -83,6 +87,8 @@ type NfsExportPolicyState struct {
 	PolicyType pulumi.StringPtrInput
 	// The version token that changes on each policy update.
 	Version pulumi.StringPtrInput
+	// The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+	Workload NfsExportPolicyWorkloadPtrInput
 }
 
 func (NfsExportPolicyState) ElementType() reflect.Type {
@@ -164,6 +170,11 @@ func (o NfsExportPolicyOutput) PolicyType() pulumi.StringOutput {
 // The version token that changes on each policy update.
 func (o NfsExportPolicyOutput) Version() pulumi.StringOutput {
 	return o.ApplyT(func(v *NfsExportPolicy) pulumi.StringOutput { return v.Version }).(pulumi.StringOutput)
+}
+
+// The workload that owns this NFS export policy (read-only, API-managed). Populated by the API when the policy is associated with a workload.
+func (o NfsExportPolicyOutput) Workload() NfsExportPolicyWorkloadOutput {
+	return o.ApplyT(func(v *NfsExportPolicy) NfsExportPolicyWorkloadOutput { return v.Workload }).(NfsExportPolicyWorkloadOutput)
 }
 
 func init() {

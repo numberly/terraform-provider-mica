@@ -15,6 +15,8 @@ import (
 type QosPolicy struct {
 	pulumi.CustomResourceState
 
+	// The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
+	Context QosPolicyContextOutput `pulumi:"context"`
 	// Whether the QoS policy is enabled. Defaults to true.
 	Enabled pulumi.BoolOutput `pulumi:"enabled"`
 	// Whether the QoS policy is local to this array. Read-only.
@@ -62,6 +64,8 @@ func GetQosPolicy(ctx *pulumi.Context,
 
 // Input properties used for looking up and filtering QosPolicy resources.
 type qosPolicyState struct {
+	// The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
+	Context *QosPolicyContext `pulumi:"context"`
 	// Whether the QoS policy is enabled. Defaults to true.
 	Enabled *bool `pulumi:"enabled"`
 	// Whether the QoS policy is local to this array. Read-only.
@@ -77,6 +81,8 @@ type qosPolicyState struct {
 }
 
 type QosPolicyState struct {
+	// The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
+	Context QosPolicyContextPtrInput
 	// Whether the QoS policy is enabled. Defaults to true.
 	Enabled pulumi.BoolPtrInput
 	// Whether the QoS policy is local to this array. Read-only.
@@ -153,6 +159,11 @@ func (o QosPolicyOutput) ToQosPolicyOutput() QosPolicyOutput {
 
 func (o QosPolicyOutput) ToQosPolicyOutputWithContext(ctx context.Context) QosPolicyOutput {
 	return o
+}
+
+// The workload context that owns this QoS policy (read-only, API-managed). Populated by the API when the policy is associated with a workload context.
+func (o QosPolicyOutput) Context() QosPolicyContextOutput {
+	return o.ApplyT(func(v *QosPolicy) QosPolicyContextOutput { return v.Context }).(QosPolicyContextOutput)
 }
 
 // Whether the QoS policy is enabled. Defaults to true.

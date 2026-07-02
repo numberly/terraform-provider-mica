@@ -26,7 +26,7 @@ class QosPolicyMemberArgs:
         """
         The set of arguments for constructing a QosPolicyMember resource.
         :param pulumi.Input[builtins.str] member_name: The name of the file system or realm to assign. Changing this forces a new resource.
-        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
         :param pulumi.Input[builtins.str] policy_name: The name of the QoS policy. Changing this forces a new resource.
         """
         pulumi.set(__self__, "member_name", member_name)
@@ -49,7 +49,7 @@ class QosPolicyMemberArgs:
     @pulumi.getter(name="memberType")
     def member_type(self) -> pulumi.Input[builtins.str]:
         """
-        The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+        The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
         """
         return pulumi.get(self, "member_type")
 
@@ -79,7 +79,7 @@ class _QosPolicyMemberState:
         """
         Input properties used for looking up and filtering QosPolicyMember resources.
         :param pulumi.Input[builtins.str] member_name: The name of the file system or realm to assign. Changing this forces a new resource.
-        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
         :param pulumi.Input[builtins.str] policy_name: The name of the QoS policy. Changing this forces a new resource.
         """
         if member_name is not None:
@@ -105,7 +105,7 @@ class _QosPolicyMemberState:
     @pulumi.getter(name="memberType")
     def member_type(self) -> Optional[pulumi.Input[builtins.str]]:
         """
-        The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+        The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
         """
         return pulumi.get(self, "member_type")
 
@@ -140,7 +140,7 @@ class QosPolicyMember(pulumi.CustomResource):
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[builtins.str] member_name: The name of the file system or realm to assign. Changing this forces a new resource.
-        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
         :param pulumi.Input[builtins.str] policy_name: The name of the QoS policy. Changing this forces a new resource.
         """
         ...
@@ -208,7 +208,7 @@ class QosPolicyMember(pulumi.CustomResource):
         :param pulumi.Input[str] id: The unique provider ID of the resource to lookup.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[builtins.str] member_name: The name of the file system or realm to assign. Changing this forces a new resource.
-        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+        :param pulumi.Input[builtins.str] member_type: The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
         :param pulumi.Input[builtins.str] policy_name: The name of the QoS policy. Changing this forces a new resource.
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
@@ -232,7 +232,7 @@ class QosPolicyMember(pulumi.CustomResource):
     @pulumi.getter(name="memberType")
     def member_type(self) -> pulumi.Output[builtins.str]:
         """
-        The type of the member. Valid values: file-systems, realms. Note: buckets are not supported on API v2.22.
+        The type of the member. Valid values: file-systems, realms. Note: buckets are not supported by the FlashBlade API.
         """
         return pulumi.get(self, "member_type")
 
