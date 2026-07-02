@@ -1,3 +1,13 @@
+## [2.23.3] — 2026-07-02
+
+### Added
+
+- **`flashblade_bucket_cors_policy` resource + data source** — per-bucket wildcard CORS toggle. FlashBlade only supports fully permissive CORS today (origins/headers `*`, all methods), so the resource takes just a `bucket_name`: its presence ensures the bucket's CORS policy (empty-body POST, auto-named) and applies the single wildcard rule via the `/rules` sub-endpoint (no PATCH); destroy removes the policy.
+
+### Changed
+
+- Pulumi bridge: regenerated schema + Go/Python SDKs to expose `mica:index:BucketCorsPolicy`, and synced pre-existing 2.23 SDK drift (workload, resiliency groups, and 2.23 field additions on file_system/exports/policies).
+
 ## [2.23.0] — 2026-05-20
 
 ### Added
