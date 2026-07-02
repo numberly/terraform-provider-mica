@@ -2,9 +2,9 @@
 
 FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-provider-mica.
 
-**Last updated:** 2026-05-20 (API 2.23 upgrade: workload resource + resiliency_group/member data sources, schema v1/v2 migrations on file_system, file_system_export, nfs/smb/qos policies)
+**Last updated:** 2026-07-02 (bucket CORS policy resource + data source; empty-body policy create, named rules reconciled via /rules sub-endpoint, delete+recreate on change)
 **Provider version:** v2.23.0
-**Total API sections:** 84 | **Covered:** ~48 (55 resources + 43 data sources) | **Coverage of IaC-relevant CRUD:** ~78%
+**Total API sections:** 84 | **Covered:** ~49 (56 resources + 44 data sources) | **Coverage of IaC-relevant CRUD:** ~78%
 
 ## Coverage Legend
 
@@ -42,6 +42,7 @@ FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-pr
 | Bucket Audit Filters | `flashblade_bucket_audit_filter` | Yes | Done | Actions + prefix filtering |
 | QoS Policies | `flashblade_qos_policy` | Yes | Done | Bandwidth + IOPS limits; schema v2 adds computed context field (API 2.23) |
 | QoS Policy Members | `flashblade_qos_policy_member` | No | Done | FS assignment (buckets not supported on v2.22) |
+| CORS Policies | `flashblade_bucket_cors_policy` | Yes | Done | Per-bucket wildcard-only toggle (FlashBlade supports only fully permissive CORS today); presence applies the wildcard rule via empty-body policy POST + /rules sub-endpoint (no PATCH) |
 
 ### Policies
 
@@ -149,7 +150,6 @@ FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-pr
 | Password Policies | Resource | GET, PATCH | Admin password policy enforcement | Candidate |
 | Keytabs | Resource | GET, POST, DELETE + upload | Kerberos keytab management | Candidate |
 | Legal Holds | Resource | Full CRUD + held entities | Compliance / legal data retention | Candidate |
-| CORS Policies | Resource | Full CRUD (bucket sub-resource) | S3 CORS header configuration | Candidate |
 | Syslog Settings | Resource | GET, PATCH | Global syslog settings (separate from syslog servers) | Candidate |
 
 ### Low Priority -- Niche or rarely IaC-managed
