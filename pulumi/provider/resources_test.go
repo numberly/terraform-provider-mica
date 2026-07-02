@@ -19,8 +19,8 @@ import (
 // "pulumi:providers:flashblade/terraformConfig", a provider-level function
 // injected by the bridge, not a data source. prov.DataSources = 40 is correct.
 const (
-	expectedResources   = 54
-	expectedDataSources = 40
+	expectedResources   = 55
+	expectedDataSources = 41
 )
 
 // POC resources under test (D-05).
