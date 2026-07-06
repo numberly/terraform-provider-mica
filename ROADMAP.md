@@ -4,7 +4,7 @@ FlashBlade® REST API v2.23 (Purity//FB 4.6.7+) coverage status for terraform-pr
 
 **Last updated:** 2026-05-20 (v2.23.1: `flashblade_snmp_manager` resource + data source, sensitive write-once community/passphrases, in-place v2c<->v3 switch)
 **Provider version:** v2.23.1
-**Total API sections:** 84 | **Covered:** ~49 (56 resources + 44 data sources) | **Coverage of IaC-relevant CRUD:** ~78%
+**Total API sections:** 84 | **Covered:** ~49 (57 resources + 45 data sources) | **Coverage of IaC-relevant CRUD:** ~78%
 
 ## Coverage Legend
 
