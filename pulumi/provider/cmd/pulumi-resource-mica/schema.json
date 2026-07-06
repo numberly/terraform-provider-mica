@@ -538,6 +538,61 @@
             },
             "type": "object"
         },
+        "mica:index/SnmpManagerV2c:SnmpManagerV2c": {
+            "properties": {
+                "community": {
+                    "type": "string",
+                    "description": "Community string. Write-once: never returned by the API on GET; state preserves the user-supplied value.\n",
+                    "secret": true
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "community"
+                    ]
+                }
+            }
+        },
+        "mica:index/SnmpManagerV3:SnmpManagerV3": {
+            "properties": {
+                "authPassphrase": {
+                    "type": "string",
+                    "description": "Authentication passphrase (max 32 chars). Write-once: never returned by the API on GET; state preserves the user-supplied value.\n",
+                    "secret": true
+                },
+                "authProtocol": {
+                    "type": "string",
+                    "description": "Authentication protocol: `MD5` or `SHA`.\n"
+                },
+                "privacyPassphrase": {
+                    "type": "string",
+                    "description": "Privacy passphrase (8..63 chars). Write-once: never returned by the API on GET; state preserves the user-supplied value.\n",
+                    "secret": true
+                },
+                "privacyProtocol": {
+                    "type": "string",
+                    "description": "Privacy protocol: `AES` or `DES`.\n"
+                },
+                "user": {
+                    "type": "string",
+                    "description": "SNMPv3 username.\n"
+                }
+            },
+            "type": "object",
+            "language": {
+                "nodejs": {
+                    "requiredOutputs": [
+                        "authPassphrase",
+                        "authProtocol",
+                        "privacyPassphrase",
+                        "privacyProtocol",
+                        "user"
+                    ]
+                }
+            }
+        },
         "mica:index/getArraySmtpAlertWatcher:getArraySmtpAlertWatcher": {
             "properties": {
                 "email": {
@@ -886,6 +941,63 @@
                 "totalPhysical",
                 "unique",
                 "virtual"
+            ],
+            "language": {
+                "nodejs": {
+                    "requiredInputs": []
+                }
+            }
+        },
+        "mica:index/getSnmpManagerV2c:getSnmpManagerV2c": {
+            "properties": {
+                "community": {
+                    "type": "string",
+                    "description": "Community string. Always null on read (never returned by the API).\n",
+                    "secret": true
+                }
+            },
+            "type": "object",
+            "required": [
+                "community"
+            ],
+            "language": {
+                "nodejs": {
+                    "requiredInputs": []
+                }
+            }
+        },
+        "mica:index/getSnmpManagerV3:getSnmpManagerV3": {
+            "properties": {
+                "authPassphrase": {
+                    "type": "string",
+                    "description": "Authentication passphrase. Always null on read (never returned by the API).\n",
+                    "secret": true
+                },
+                "authProtocol": {
+                    "type": "string",
+                    "description": "Authentication protocol (MD5 or SHA).\n"
+                },
+                "privacyPassphrase": {
+                    "type": "string",
+                    "description": "Privacy passphrase. Always null on read (never returned by the API).\n",
+                    "secret": true
+                },
+                "privacyProtocol": {
+                    "type": "string",
+                    "description": "Privacy protocol (AES or DES).\n"
+                },
+                "user": {
+                    "type": "string",
+                    "description": "SNMPv3 username.\n"
+                }
+            },
+            "type": "object",
+            "required": [
+                "authPassphrase",
+                "authProtocol",
+                "privacyPassphrase",
+                "privacyProtocol",
+                "user"
             ],
             "language": {
                 "nodejs": {
@@ -5638,6 +5750,104 @@
                 "type": "object"
             }
         },
+        "mica:index/snmpManager:SnmpManager": {
+            "properties": {
+                "host": {
+                    "type": "string",
+                    "description": "DNS name or IP address (with optional :port) of the SNMP receiver."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name of the SNMP manager. Changing this forces a new resource."
+                },
+                "notification": {
+                    "type": "string",
+                    "description": "Notification delivery mode: \u003cspan pulumi-lang-nodejs=\"`inform`\" pulumi-lang-dotnet=\"`Inform`\" pulumi-lang-go=\"`inform`\" pulumi-lang-python=\"`inform`\" pulumi-lang-yaml=\"`inform`\" pulumi-lang-java=\"`inform`\"\u003e`inform`\u003c/span\u003e (acknowledged) or \u003cspan pulumi-lang-nodejs=\"`trap`\" pulumi-lang-dotnet=\"`Trap`\" pulumi-lang-go=\"`trap`\" pulumi-lang-python=\"`trap`\" pulumi-lang-yaml=\"`trap`\" pulumi-lang-java=\"`trap`\"\u003e`trap`\u003c/span\u003e (fire-and-forget)."
+                },
+                "v2c": {
+                    "$ref": "#/types/mica:index/SnmpManagerV2c:SnmpManagerV2c",
+                    "description": "SNMPv2c configuration. Required when `version = \"v2c\"`."
+                },
+                "v3": {
+                    "$ref": "#/types/mica:index/SnmpManagerV3:SnmpManagerV3",
+                    "description": "SNMPv3 configuration. Required when `version = \"v3\"`."
+                },
+                "version": {
+                    "type": "string",
+                    "description": "SNMP protocol version: \u003cspan pulumi-lang-nodejs=\"`v2c`\" pulumi-lang-dotnet=\"`V2c`\" pulumi-lang-go=\"`v2c`\" pulumi-lang-python=\"`v2c`\" pulumi-lang-yaml=\"`v2c`\" pulumi-lang-java=\"`v2c`\"\u003e`v2c`\u003c/span\u003e or \u003cspan pulumi-lang-nodejs=\"`v3`\" pulumi-lang-dotnet=\"`V3`\" pulumi-lang-go=\"`v3`\" pulumi-lang-python=\"`v3`\" pulumi-lang-yaml=\"`v3`\" pulumi-lang-java=\"`v3`\"\u003e`v3`\u003c/span\u003e. Switching in place is permitted (no resource replacement)."
+                }
+            },
+            "required": [
+                "host",
+                "name",
+                "notification",
+                "v2c",
+                "v3",
+                "version"
+            ],
+            "inputProperties": {
+                "host": {
+                    "type": "string",
+                    "description": "DNS name or IP address (with optional :port) of the SNMP receiver."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name of the SNMP manager. Changing this forces a new resource."
+                },
+                "notification": {
+                    "type": "string",
+                    "description": "Notification delivery mode: \u003cspan pulumi-lang-nodejs=\"`inform`\" pulumi-lang-dotnet=\"`Inform`\" pulumi-lang-go=\"`inform`\" pulumi-lang-python=\"`inform`\" pulumi-lang-yaml=\"`inform`\" pulumi-lang-java=\"`inform`\"\u003e`inform`\u003c/span\u003e (acknowledged) or \u003cspan pulumi-lang-nodejs=\"`trap`\" pulumi-lang-dotnet=\"`Trap`\" pulumi-lang-go=\"`trap`\" pulumi-lang-python=\"`trap`\" pulumi-lang-yaml=\"`trap`\" pulumi-lang-java=\"`trap`\"\u003e`trap`\u003c/span\u003e (fire-and-forget)."
+                },
+                "v2c": {
+                    "$ref": "#/types/mica:index/SnmpManagerV2c:SnmpManagerV2c",
+                    "description": "SNMPv2c configuration. Required when `version = \"v2c\"`."
+                },
+                "v3": {
+                    "$ref": "#/types/mica:index/SnmpManagerV3:SnmpManagerV3",
+                    "description": "SNMPv3 configuration. Required when `version = \"v3\"`."
+                },
+                "version": {
+                    "type": "string",
+                    "description": "SNMP protocol version: \u003cspan pulumi-lang-nodejs=\"`v2c`\" pulumi-lang-dotnet=\"`V2c`\" pulumi-lang-go=\"`v2c`\" pulumi-lang-python=\"`v2c`\" pulumi-lang-yaml=\"`v2c`\" pulumi-lang-java=\"`v2c`\"\u003e`v2c`\u003c/span\u003e or \u003cspan pulumi-lang-nodejs=\"`v3`\" pulumi-lang-dotnet=\"`V3`\" pulumi-lang-go=\"`v3`\" pulumi-lang-python=\"`v3`\" pulumi-lang-yaml=\"`v3`\" pulumi-lang-java=\"`v3`\"\u003e`v3`\u003c/span\u003e. Switching in place is permitted (no resource replacement)."
+                }
+            },
+            "requiredInputs": [
+                "host",
+                "name",
+                "notification",
+                "version"
+            ],
+            "stateInputs": {
+                "description": "Input properties used for looking up and filtering SnmpManager resources.\n",
+                "properties": {
+                    "host": {
+                        "type": "string",
+                        "description": "DNS name or IP address (with optional :port) of the SNMP receiver."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the SNMP manager. Changing this forces a new resource."
+                    },
+                    "notification": {
+                        "type": "string",
+                        "description": "Notification delivery mode: \u003cspan pulumi-lang-nodejs=\"`inform`\" pulumi-lang-dotnet=\"`Inform`\" pulumi-lang-go=\"`inform`\" pulumi-lang-python=\"`inform`\" pulumi-lang-yaml=\"`inform`\" pulumi-lang-java=\"`inform`\"\u003e`inform`\u003c/span\u003e (acknowledged) or \u003cspan pulumi-lang-nodejs=\"`trap`\" pulumi-lang-dotnet=\"`Trap`\" pulumi-lang-go=\"`trap`\" pulumi-lang-python=\"`trap`\" pulumi-lang-yaml=\"`trap`\" pulumi-lang-java=\"`trap`\"\u003e`trap`\u003c/span\u003e (fire-and-forget)."
+                    },
+                    "v2c": {
+                        "$ref": "#/types/mica:index/SnmpManagerV2c:SnmpManagerV2c",
+                        "description": "SNMPv2c configuration. Required when `version = \"v2c\"`."
+                    },
+                    "v3": {
+                        "$ref": "#/types/mica:index/SnmpManagerV3:SnmpManagerV3",
+                        "description": "SNMPv3 configuration. Required when `version = \"v3\"`."
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "SNMP protocol version: \u003cspan pulumi-lang-nodejs=\"`v2c`\" pulumi-lang-dotnet=\"`V2c`\" pulumi-lang-go=\"`v2c`\" pulumi-lang-python=\"`v2c`\" pulumi-lang-yaml=\"`v2c`\" pulumi-lang-java=\"`v2c`\"\u003e`v2c`\u003c/span\u003e or \u003cspan pulumi-lang-nodejs=\"`v3`\" pulumi-lang-dotnet=\"`V3`\" pulumi-lang-go=\"`v3`\" pulumi-lang-python=\"`v3`\" pulumi-lang-yaml=\"`v3`\" pulumi-lang-java=\"`v3`\"\u003e`v3`\u003c/span\u003e. Switching in place is permitted (no resource replacement)."
+                    }
+                },
+                "type": "object"
+            }
+        },
         "mica:index/subnet:Subnet": {
             "properties": {
                 "enabled": {
@@ -8067,6 +8277,56 @@
                     "name",
                     "policyType",
                     "retentionLock"
+                ],
+                "type": "object"
+            }
+        },
+        "mica:index/getSnmpManager:getSnmpManager": {
+            "inputs": {
+                "description": "A collection of arguments for invoking getSnmpManager.\n",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name"
+                ]
+            },
+            "outputs": {
+                "description": "A collection of values returned by getSnmpManager.\n",
+                "properties": {
+                    "host": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "notification": {
+                        "type": "string"
+                    },
+                    "v2c": {
+                        "$ref": "#/types/mica:index/getSnmpManagerV2c:getSnmpManagerV2c"
+                    },
+                    "v3": {
+                        "$ref": "#/types/mica:index/getSnmpManagerV3:getSnmpManagerV3"
+                    },
+                    "version": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "host",
+                    "id",
+                    "name",
+                    "notification",
+                    "v2c",
+                    "v3",
+                    "version"
                 ],
                 "type": "object"
             }

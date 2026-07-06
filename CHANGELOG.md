@@ -1,3 +1,9 @@
+## [2.22.13] — 2026-07-06
+
+### Added
+
+- **`flashblade_snmp_manager` resource + data source** — manage SNMP notification managers (trap/inform) with v2c or v3 auth. Sensitive write-once community string / v3 passphrases; supports in-place `v2c`↔`v3` version switch. Import by name. Backport of the 2.23-line feature to the 2.22 API line.
+
 ## [2.22.12] — 2026-07-02
 
 ### Fixed

@@ -241,3 +241,61 @@ type ManagementAccessPolicyDirectoryServiceRoleMembership struct {
 	Policy NamedReference `json:"policy"`
 	Role   NamedReference `json:"role"`
 }
+
+// SnmpV2c holds the v2c configuration of an SNMP manager.
+// Returned on GET (community omitted by the API).
+// Sent atomically on POST and PATCH.
+type SnmpV2c struct {
+	Community string `json:"community,omitempty"`
+}
+
+// SnmpV3 holds the v3 configuration of an SNMP manager on GET and PATCH.
+// Passphrases are never returned on GET.
+type SnmpV3 struct {
+	User              string `json:"user,omitempty"`
+	AuthProtocol      string `json:"auth_protocol,omitempty"`
+	AuthPassphrase    string `json:"auth_passphrase,omitempty"`
+	PrivacyProtocol   string `json:"privacy_protocol,omitempty"`
+	PrivacyPassphrase string `json:"privacy_passphrase,omitempty"`
+}
+
+// SnmpV3Post mirrors SnmpV3 but encodes the stricter POST-time constraints
+// (auth_passphrase <= 32, privacy_passphrase 8..63). Used only in SnmpManagerPost.
+type SnmpV3Post struct {
+	User              string `json:"user,omitempty"`
+	AuthProtocol      string `json:"auth_protocol,omitempty"`
+	AuthPassphrase    string `json:"auth_passphrase,omitempty"`
+	PrivacyProtocol   string `json:"privacy_protocol,omitempty"`
+	PrivacyPassphrase string `json:"privacy_passphrase,omitempty"`
+}
+
+// SnmpManager represents the GET /snmp-managers response.
+type SnmpManager struct {
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Host         string   `json:"host,omitempty"`
+	Notification string   `json:"notification,omitempty"`
+	Version      string   `json:"version,omitempty"`
+	V2c          *SnmpV2c `json:"v2c,omitempty"`
+	V3           *SnmpV3  `json:"v3,omitempty"`
+}
+
+// SnmpManagerPost is the POST body. Name is supplied via ?names= and excluded.
+// V3 uses the stricter SnmpV3Post constraint set.
+type SnmpManagerPost struct {
+	Host         string      `json:"host,omitempty"`
+	Notification string      `json:"notification,omitempty"`
+	Version      string      `json:"version,omitempty"`
+	V2c          *SnmpV2c    `json:"v2c,omitempty"`
+	V3           *SnmpV3Post `json:"v3,omitempty"`
+}
+
+// SnmpManagerPatch is the PATCH body. Every field is a pointer.
+// V2c/V3 are atomic nested blocks (template: ArrayConnectionPatch.Throttle).
+type SnmpManagerPatch struct {
+	Host         *string  `json:"host,omitempty"`
+	Notification *string  `json:"notification,omitempty"`
+	Version      *string  `json:"version,omitempty"`
+	V2c          *SnmpV2c `json:"v2c,omitempty"`
+	V3           *SnmpV3  `json:"v3,omitempty"`
+}
