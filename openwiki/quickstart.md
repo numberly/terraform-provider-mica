@@ -98,3 +98,4 @@ The root build file is `GNUmakefile`. `make install-hooks` wires the
 | Upgrade to a new API version | [api-versioning.md](api-versioning.md) (`api-upgrade` skill, 6 phases) |
 | Touch client HTTP/auth | [architecture.md](architecture.md) → `internal/client/{client,auth,transport,errors}.go` |
 | Update the Pulumi surface | [pulumi-bridge.md](pulumi-bridge.md) → `pulumi/provider/resources.go` |
+| Cut a release (2.22.X / 2.23.X / Pulumi) | [workflow-and-release.md](workflow-and-release.md#cutting-a-release-222x-223x-pulumi) |
