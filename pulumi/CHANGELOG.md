@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.22.13-pulumi.beta — 2026-07-06
+
+### Added
+
+- **`mica:index:SnmpManager`** resource and **`mica:index:getSnmpManager`** data source — manage SNMP notification managers (trap/inform) with v2c or v3 auth. Community string and v3 auth/privacy passphrases are exposed as Pulumi secrets. Schema and Go/Python SDKs regenerated to include the new type.
+
+## v2.22.12-pulumi.beta — 2026-07-02
+
+### Fixed
+
+- **`mica:index:S3ExportPolicyRule`**: fall back to a composite `policy_name/rule_index` id when the array returns an empty rule id, so `pulumi up` no longer fails with `returned empty resource.ID from create` when adopting rules created by older provider builds. Schema/SDKs unchanged from `v2.22.11-pulumi.beta`; only the provider plugin binary changed.
+
 ## [2.22.4] — 2026-04-28
 
 ### Project rebrand
