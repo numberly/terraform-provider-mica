@@ -103,5 +103,8 @@ modifiers. `name` Required, rest Computed. Not-found → `AddError`.
 Models → client CRUD (`getOneByName`) → mock handler (empty-list GET, `Seed`) →
 client tests ≥4 → resource (4 interfaces, drift, ImportState) → resource tests ≥3
 → data source + test → register in `provider.go` → HCL examples → `make docs` →
-`make test` (≥ baseline) → `make lint` → update `ROADMAP.md` **in the same
-commit**. Full checklist: [`CONVENTIONS.md`](../CONVENTIONS.md).
+**Pulumi bridge**: `make -C pulumi tfgen` (regenerate schema — CI fails on drift)
++ bump `expectedResources`/`expectedDataSources` in
+`pulumi/provider/resources_test.go` → `make test` (≥ baseline) → `make lint` →
+update `ROADMAP.md` **in the same commit**. Full checklist:
+[`CONVENTIONS.md`](../CONVENTIONS.md). See [pulumi-bridge.md](pulumi-bridge.md).
