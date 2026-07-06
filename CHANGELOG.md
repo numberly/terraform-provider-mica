@@ -1,3 +1,41 @@
+## [2.23.7] — 2026-07-06
+
+### Added
+
+- **`flashblade_snmp_manager` resource + data source** — manage SNMP notification managers (trap/inform) with v2c or v3 auth. Sensitive write-once community string / v3 passphrases; supports in-place `v2c`↔`v3` version switch. Import by name.
+
+### Changed
+
+- **Mock test infrastructure de-hardcoded from the API version** — the `/api/<version>/` path prefix and the mock `api_version` payload now derive from `client.APIVersion` (single source of truth), and the Pulumi bridge resource/data-source counts derive from the TF provider registration instead of hand-maintained magic numbers. No user-facing behavior change.
+
+## [2.23.6] — 2026-07-02
+
+### Fixed
+
+- **`flashblade_s3_export_policy_rule`**: fall back to the composite `policy_name/rule_index` id when the array returns an empty rule id (some rules created by older provider builds), so the Pulumi bridge no longer fails with `returned empty resource.ID from create`. The real id is kept when present.
+
+## [2.23.5] — 2026-07-02
+
+### Fixed
+
+- **`flashblade_bucket_cors_policy`** and **`flashblade_s3_export_policy_rule`**: make rule creation idempotent. The array rejects re-POSTing an existing rule with HTTP 400 `Rule already exists.`, which broke apply/retry when a rule was left on the array by an earlier partial apply. CORS now deletes the wildcard rule before recreating it (ensure policy → delete rule → post rule); S3 export policy rule now adopts the existing rule on already-exists instead of erroring.
+
+## [2.23.4] — 2026-07-02
+
+### Fixed
+
+- **`flashblade_bucket_cors_policy`**: use the bucket name as the resource id. The FlashBlade CORS policy GET returns an empty id, which made resource creation fail under the Pulumi bridge (`returned empty resource.ID from create`). The bucket name is unique per CORS policy, stable, and matches import-by-bucket-name.
+
+## [2.23.3] — 2026-07-02
+
+### Added
+
+- **`flashblade_bucket_cors_policy` resource + data source** — per-bucket wildcard CORS toggle. FlashBlade only supports fully permissive CORS today (origins/headers `*`, all methods), so the resource takes just a `bucket_name`: its presence ensures the bucket's CORS policy (empty-body POST, auto-named) and applies the single wildcard rule via the `/rules` sub-endpoint (no PATCH); destroy removes the policy.
+
+### Changed
+
+- Pulumi bridge: regenerated schema + Go/Python SDKs to expose `mica:index:BucketCorsPolicy`, and synced pre-existing 2.23 SDK drift (workload, resiliency groups, and 2.23 field additions on file_system/exports/policies).
+
 ## [2.23.0] — 2026-05-20
 
 ### Added
