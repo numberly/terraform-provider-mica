@@ -18,7 +18,7 @@ type objectStoreAccountStore struct {
 	byID   map[string]*client.ObjectStoreAccount
 }
 
-// RegisterObjectStoreAccountHandlers registers CRUD handlers for /api/2.23/object-store-accounts
+// RegisterObjectStoreAccountHandlers registers CRUD handlers for /api/<APIVersion>/object-store-accounts
 // against the provided ServeMux. The handlers share in-memory state and are thread-safe.
 // The store pointer is returned so bucket handlers can cross-reference accounts.
 func RegisterObjectStoreAccountHandlers(mux *http.ServeMux) *objectStoreAccountStore {
@@ -26,7 +26,7 @@ func RegisterObjectStoreAccountHandlers(mux *http.ServeMux) *objectStoreAccountS
 		byName: make(map[string]*client.ObjectStoreAccount),
 		byID:   make(map[string]*client.ObjectStoreAccount),
 	}
-	mux.HandleFunc("/api/2.23/object-store-accounts", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-accounts", store.handle)
 	return store
 }
 
@@ -45,7 +45,7 @@ func (s *objectStoreAccountStore) handle(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// handleGet handles GET /api/2.23/object-store-accounts with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/object-store-accounts with optional ?names= param.
 func (s *objectStoreAccountStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "ids"}) {
 		return
@@ -76,7 +76,7 @@ func (s *objectStoreAccountStore) handleGet(w http.ResponseWriter, r *http.Reque
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/object-store-accounts?names={name}.
+// handlePost handles POST /api/<APIVersion>/object-store-accounts?names={name}.
 // The account name comes from the ?names= query parameter.
 func (s *objectStoreAccountStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -118,7 +118,7 @@ func (s *objectStoreAccountStore) handlePost(w http.ResponseWriter, r *http.Requ
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccount{*acct})
 }
 
-// handlePatch handles PATCH /api/2.23/object-store-accounts?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/object-store-accounts?names={name}.
 func (s *objectStoreAccountStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -167,7 +167,7 @@ func (s *objectStoreAccountStore) handlePatch(w http.ResponseWriter, r *http.Req
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccount{*acct})
 }
 
-// handleDelete handles DELETE /api/2.23/object-store-accounts?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/object-store-accounts?names={name}.
 // Single-phase delete (no soft-delete for object store accounts).
 func (s *objectStoreAccountStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {

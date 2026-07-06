@@ -1,5 +1,15 @@
 # Milestones: Terraform Provider FlashBlade
 
+## v2.23.1 flashblade_snmp_manager Resource & Data Source (Shipped: 2026-05-20)
+
+**Phases completed:** 1 phases, 1 plans, 13 tasks
+
+**Key accomplishments:**
+
+- flashblade_snmp_manager resource + data source (full CRUD on /api/2.23/snmp-managers) with atomic v2c/v3 nested blocks, sensitive write-once secrets (community + 2 passphrases), per-leaf drift detection across 6 leaves, and in-place v2c<->v3 switch support.
+
+---
+
 ## Completed Milestones
 
 ### v1.0 — Core Provider (completed 2026-03-28)
@@ -261,6 +271,7 @@
 **Last phase number:** 58
 
 **Known gaps (tech debt):**
+
 - `pulumi import` round-trip tests on composite-ID resources: validated statically but not tested live against array (deferred to post-alpha)
 - ProgramTest coverage limited to 6 examples; full 54-resource coverage deferred to post-alpha
 - TEST-02 examples delivered but live execution on array not run (deferred per VERIFICATION.md)
@@ -289,6 +300,7 @@
 **Last phase number:** 60
 
 **Known gaps (tech debt):**
+
 - HCL acceptance fixtures under `examples/acceptance/api-2-23/` not authored by GSD planner — acceptance was run from existing operator workflow
 - CI does not yet run acceptance against par5/pa7 — manual operator-driven sign-off
 - Pulumi SDK regen + private release for `pulumi-2.23.0` deferred to a dedicated milestone

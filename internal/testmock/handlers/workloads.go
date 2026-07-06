@@ -16,14 +16,14 @@ type workloadStore struct {
 	nextID int
 }
 
-// RegisterWorkloadHandlers registers CRUD handlers for /api/2.23/workloads
+// RegisterWorkloadHandlers registers CRUD handlers for /api/<APIVersion>/workloads
 // against the provided ServeMux. The store pointer is returned for test setup.
 func RegisterWorkloadHandlers(mux *http.ServeMux) *workloadStore {
 	store := &workloadStore{
 		byName: make(map[string]*client.Workload),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/workloads", store.handle)
+	mux.HandleFunc(APIPrefix+"/workloads", store.handle)
 	return store
 }
 
@@ -49,7 +49,7 @@ func (s *workloadStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/workloads with optional ?names= and ?destroyed= params.
+// handleGet handles GET /api/<APIVersion>/workloads with optional ?names= and ?destroyed= params.
 // Returns an empty list (HTTP 200) when no match is found — never 404.
 func (s *workloadStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "destroyed"}) {
@@ -99,7 +99,7 @@ func (s *workloadStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/workloads?names={name}&preset_names={preset}.
+// handlePost handles POST /api/<APIVersion>/workloads?names={name}&preset_names={preset}.
 // Returns 409 if name already exists.
 func (s *workloadStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names", "preset_names", "preset_ids"}) {
@@ -154,7 +154,7 @@ func (s *workloadStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Workload{*wl})
 }
 
-// handlePatch handles PATCH /api/2.23/workloads?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/workloads?names={name}.
 // Applies non-nil pointer fields. Returns 404 if not found.
 func (s *workloadStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -200,7 +200,7 @@ func (s *workloadStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.Workload{*wl})
 }
 
-// handleDelete handles DELETE /api/2.23/workloads?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/workloads?names={name}.
 func (s *workloadStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return

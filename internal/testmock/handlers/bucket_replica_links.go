@@ -18,13 +18,13 @@ type bucketReplicaLinkStore struct {
 	nextID int
 }
 
-// RegisterBucketReplicaLinkHandlers registers CRUD handlers for /api/2.23/bucket-replica-links
+// RegisterBucketReplicaLinkHandlers registers CRUD handlers for /api/<APIVersion>/bucket-replica-links
 // against the provided ServeMux. The returned store pointer can be used for cross-reference.
 func RegisterBucketReplicaLinkHandlers(mux *http.ServeMux) *bucketReplicaLinkStore {
 	store := &bucketReplicaLinkStore{
 		byID: make(map[string]*client.BucketReplicaLink),
 	}
-	mux.HandleFunc("/api/2.23/bucket-replica-links", store.handle)
+	mux.HandleFunc(APIPrefix+"/bucket-replica-links", store.handle)
 	return store
 }
 
@@ -50,7 +50,7 @@ func (s *bucketReplicaLinkStore) handle(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// handleGet handles GET /api/2.23/bucket-replica-links with optional query parameters:
+// handleGet handles GET /api/<APIVersion>/bucket-replica-links with optional query parameters:
 // ?local_bucket_names=, ?remote_bucket_names=, ?ids=.
 func (s *bucketReplicaLinkStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"local_bucket_names", "remote_bucket_names", "ids"}) {
@@ -90,7 +90,7 @@ func (s *bucketReplicaLinkStore) handleGet(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/bucket-replica-links.
+// handlePost handles POST /api/<APIVersion>/bucket-replica-links.
 // Query params: local_bucket_names, remote_bucket_names, remote_credentials_names (optional).
 // Body: paused, cascading_enabled.
 func (s *bucketReplicaLinkStore) handlePost(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +154,7 @@ func (s *bucketReplicaLinkStore) handlePost(w http.ResponseWriter, r *http.Reque
 	WriteJSONListResponse(w, http.StatusOK, []client.BucketReplicaLink{*link})
 }
 
-// handlePatch handles PATCH /api/2.23/bucket-replica-links.
+// handlePatch handles PATCH /api/<APIVersion>/bucket-replica-links.
 // Identification by ?ids= only (unambiguous).
 func (s *bucketReplicaLinkStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {
@@ -194,7 +194,7 @@ func (s *bucketReplicaLinkStore) handlePatch(w http.ResponseWriter, r *http.Requ
 	WriteJSONListResponse(w, http.StatusOK, []client.BucketReplicaLink{*link})
 }
 
-// handleDelete handles DELETE /api/2.23/bucket-replica-links.
+// handleDelete handles DELETE /api/<APIVersion>/bucket-replica-links.
 // Identification by ?ids= only (unambiguous).
 func (s *bucketReplicaLinkStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"ids"}) {

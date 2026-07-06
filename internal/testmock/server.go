@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
 
 // MockServer wraps an httptest.Server with a configurable ServeMux and
@@ -55,11 +57,11 @@ func (ms *MockServer) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleAPIVersion handles GET /api/api_version by returning a versions list
-// that includes the target API version "2.23".
+// that includes the client's target API version (client.APIVersion).
 func (ms *MockServer) handleAPIVersion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"versions": []string{"2.12", "2.15", "2.23"},
+		"versions": []string{"2.12", "2.15", client.APIVersion},
 	})
 }

@@ -92,7 +92,7 @@ error-prone part of the codebase — see [conventions.md](conventions.md#model-s
   method, builds the client, calls `NegotiateVersion`, and injects the client
   into **both** `resp.ResourceData` and `resp.DataSourceData`. Every resource
   re-casts it: `req.ProviderData.(*client.FlashBladeClient)`.
-- **`Resources()`** returns 56 constructors; **`DataSources()`** returns 44,
+- **`Resources()`** returns 57 constructors; **`DataSources()`** returns 45,
   grouped by domain. Registering a new resource = appending its constructor here.
 
 ## Resource pattern

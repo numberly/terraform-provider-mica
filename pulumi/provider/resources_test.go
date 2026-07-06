@@ -12,19 +12,6 @@ import (
 	"github.com/numberly/terraform-provider-mica/pulumi/provider/pkg/version"
 )
 
-// Expected counts. Matches TF provider registrations (55 resources, 43 data sources
-// after the API 2.23 upgrade — adds flashblade_workload resource + data source,
-// plus flashblade_resiliency_group and flashblade_resiliency_group_member DSs).
-// Update when TF provider resource set changes.
-//
-// Note: schema.json contains DataSources+1 entries under "functions" — the extra
-// entry is "pulumi:providers:flashblade/terraformConfig", a provider-level function
-// injected by the bridge, not a data source.
-const (
-	expectedResources   = 56
-	expectedDataSources = 44
-)
-
 // POC resources under test (D-05).
 var pocResources = []string{
 	"flashblade_target",
@@ -33,13 +20,24 @@ var pocResources = []string{
 	"flashblade_object_store_access_policy_rule",
 }
 
+// TestProviderInfo_ResourceAndDataSourceCounts verifies the bridge exposes exactly
+// one Pulumi resource/data source per TF provider registration — no entry dropped or
+// duplicated by MustComputeTokens. The expected count is DERIVED from the TF provider
+// registration (the single source of truth), not a hand-maintained magic number, so
+// adding a TF resource requires zero edits here.
 func TestProviderInfo_ResourceAndDataSourceCounts(t *testing.T) {
 	prov := Provider()
-	if got := len(prov.Resources); got != expectedResources {
-		t.Errorf("Resources count = %d, want %d", got, expectedResources)
+
+	tfProv := fb.New(version.Version)()
+	ctx := context.Background()
+	wantResources := len(tfProv.Resources(ctx))
+	wantDataSources := len(tfProv.DataSources(ctx))
+
+	if got := len(prov.Resources); got != wantResources {
+		t.Errorf("bridge Resources count = %d, want %d (TF provider registration)", got, wantResources)
 	}
-	if got := len(prov.DataSources); got != expectedDataSources {
-		t.Errorf("DataSources count = %d, want %d", got, expectedDataSources)
+	if got := len(prov.DataSources); got != wantDataSources {
+		t.Errorf("bridge DataSources count = %d, want %d (TF provider registration)", got, wantDataSources)
 	}
 }
 

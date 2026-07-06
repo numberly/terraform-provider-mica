@@ -28,8 +28,8 @@ func RegisterS3ExportPolicyHandlers(mux *http.ServeMux) *s3ExportPolicyStore {
 		rules:         make(map[string]map[string]*client.S3ExportPolicyRule),
 		nextRuleIndex: make(map[string]int),
 	}
-	mux.HandleFunc("/api/2.23/s3-export-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/s3-export-policies/rules", store.handleRules)
+	mux.HandleFunc(APIPrefix+"/s3-export-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/s3-export-policies/rules", store.handleRules)
 	return store
 }
 
@@ -65,7 +65,7 @@ func (s *s3ExportPolicyStore) handleRules(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// handlePolicyGet handles GET /api/2.23/s3-export-policies with optional ?names= param.
+// handlePolicyGet handles GET /api/<APIVersion>/s3-export-policies with optional ?names= param.
 func (s *s3ExportPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -92,7 +92,7 @@ func (s *s3ExportPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Req
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePolicyPost handles POST /api/2.23/s3-export-policies?names={name}.
+// handlePolicyPost handles POST /api/<APIVersion>/s3-export-policies?names={name}.
 func (s *s3ExportPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -135,7 +135,7 @@ func (s *s3ExportPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, []client.S3ExportPolicy{*policy})
 }
 
-// handlePolicyPatch handles PATCH /api/2.23/s3-export-policies?names={name}.
+// handlePolicyPatch handles PATCH /api/<APIVersion>/s3-export-policies?names={name}.
 func (s *s3ExportPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -199,7 +199,7 @@ func (s *s3ExportPolicyStore) handlePolicyPatch(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.S3ExportPolicy{*policy})
 }
 
-// handlePolicyDelete handles DELETE /api/2.23/s3-export-policies?names={name}.
+// handlePolicyDelete handles DELETE /api/<APIVersion>/s3-export-policies?names={name}.
 func (s *s3ExportPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -222,7 +222,7 @@ func (s *s3ExportPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.
 	w.WriteHeader(http.StatusOK)
 }
 
-// handleRulesGet handles GET /api/2.23/s3-export-policies/rules.
+// handleRulesGet handles GET /api/<APIVersion>/s3-export-policies/rules.
 // Filters by ?policy_names= and optionally ?names=.
 func (s *s3ExportPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
@@ -266,7 +266,7 @@ func (s *s3ExportPolicyStore) handleRulesGet(w http.ResponseWriter, r *http.Requ
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleRulesPost handles POST /api/2.23/s3-export-policies/rules?policy_names={name}.
+// handleRulesPost handles POST /api/<APIVersion>/s3-export-policies/rules?policy_names={name}.
 func (s *s3ExportPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Request) {
 	policyName := r.URL.Query().Get("policy_names")
 	if policyName == "" {
@@ -312,7 +312,7 @@ func (s *s3ExportPolicyStore) handleRulesPost(w http.ResponseWriter, r *http.Req
 	WriteJSONListResponse(w, http.StatusOK, []client.S3ExportPolicyRule{*rule})
 }
 
-// handleRulesPatch handles PATCH /api/2.23/s3-export-policies/rules?names={name}&policy_names={policy}.
+// handleRulesPatch handles PATCH /api/<APIVersion>/s3-export-policies/rules?names={name}&policy_names={policy}.
 func (s *s3ExportPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.Request) {
 	ruleName := r.URL.Query().Get("names")
 	policyName := r.URL.Query().Get("policy_names")
@@ -365,7 +365,7 @@ func (s *s3ExportPolicyStore) handleRulesPatch(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, []client.S3ExportPolicyRule{*rule})
 }
 
-// handleRulesDelete handles DELETE /api/2.23/s3-export-policies/rules?names={name}&policy_names={policy}.
+// handleRulesDelete handles DELETE /api/<APIVersion>/s3-export-policies/rules?names={name}&policy_names={policy}.
 func (s *s3ExportPolicyStore) handleRulesDelete(w http.ResponseWriter, r *http.Request) {
 	ruleName := r.URL.Query().Get("names")
 	policyName := r.URL.Query().Get("policy_names")

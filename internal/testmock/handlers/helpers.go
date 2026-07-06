@@ -5,7 +5,13 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+
+	"github.com/numberly/terraform-provider-mica/internal/client"
 )
+
+// APIPrefix is the versioned API path prefix, derived from the client's single
+// source of truth so an API version bump touches only client.APIVersion.
+const APIPrefix = "/api/" + client.APIVersion
 
 // WriteJSONListResponse writes a JSON list response envelope with the given items.
 // statusCode is used as the HTTP status code. items must be a slice value.

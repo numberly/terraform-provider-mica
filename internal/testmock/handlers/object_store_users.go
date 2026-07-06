@@ -18,8 +18,8 @@ type objectStoreUserStore struct {
 }
 
 // RegisterObjectStoreUserHandlers registers GET/POST/DELETE handlers for
-// /api/2.23/object-store-users and its sub-path
-// /api/2.23/object-store-users/object-store-access-policies.
+// /api/<APIVersion>/object-store-users and its sub-path
+// /api/<APIVersion>/object-store-users/object-store-access-policies.
 // Returns the store for cross-reference or test setup.
 func RegisterObjectStoreUserHandlers(mux *http.ServeMux, accounts *objectStoreAccountStore) *objectStoreUserStore {
 	store := &objectStoreUserStore{
@@ -27,8 +27,8 @@ func RegisterObjectStoreUserHandlers(mux *http.ServeMux, accounts *objectStoreAc
 		policies: make(map[string][]string),
 		accounts: accounts,
 	}
-	mux.HandleFunc("/api/2.23/object-store-users", store.handle)
-	mux.HandleFunc("/api/2.23/object-store-users/object-store-access-policies", store.handlePolicies)
+	mux.HandleFunc(APIPrefix+"/object-store-users", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-users/object-store-access-policies", store.handlePolicies)
 	return store
 }
 

@@ -16,14 +16,14 @@ type logTargetObjectStoreStore struct {
 	nextID int
 }
 
-// RegisterLogTargetObjectStoreHandlers registers CRUD handlers for /api/2.23/log-targets/object-store
+// RegisterLogTargetObjectStoreHandlers registers CRUD handlers for /api/<APIVersion>/log-targets/object-store
 // against the provided ServeMux. The store pointer is returned for seeding in tests.
 func RegisterLogTargetObjectStoreHandlers(mux *http.ServeMux) *logTargetObjectStoreStore {
 	store := &logTargetObjectStoreStore{
 		byName: make(map[string]*client.LogTargetObjectStore),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/log-targets/object-store", store.handle)
+	mux.HandleFunc(APIPrefix+"/log-targets/object-store", store.handle)
 	return store
 }
 
@@ -49,7 +49,7 @@ func (s *logTargetObjectStoreStore) handle(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// handleGet handles GET /api/2.23/log-targets/object-store with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/log-targets/object-store with optional ?names= param.
 // Returns empty list with HTTP 200 when not found (matches real FlashBlade API behavior).
 func (s *logTargetObjectStoreStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -81,7 +81,7 @@ func (s *logTargetObjectStoreStore) handleGet(w http.ResponseWriter, r *http.Req
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/log-targets/object-store.
+// handlePost handles POST /api/<APIVersion>/log-targets/object-store.
 // Requires ?names= query param. Returns 409 on name conflict.
 func (s *logTargetObjectStoreStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -123,7 +123,7 @@ func (s *logTargetObjectStoreStore) handlePost(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, []client.LogTargetObjectStore{*item})
 }
 
-// handlePatch handles PATCH /api/2.23/log-targets/object-store?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/log-targets/object-store?names={name}.
 // Applies non-nil fields from the body. Returns 404 if the item does not exist.
 func (s *logTargetObjectStoreStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -163,7 +163,7 @@ func (s *logTargetObjectStoreStore) handlePatch(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.LogTargetObjectStore{*item})
 }
 
-// handleDelete handles DELETE /api/2.23/log-targets/object-store?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/log-targets/object-store?names={name}.
 // Returns 404 if the item does not exist.
 func (s *logTargetObjectStoreStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {

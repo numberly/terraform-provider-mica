@@ -18,14 +18,14 @@ type bucketAccessPolicyStore struct {
 }
 
 // RegisterBucketAccessPolicyHandlers registers CRUD handlers for
-// /api/2.23/buckets/bucket-access-policies and /api/2.23/buckets/bucket-access-policies/rules
+// /api/<APIVersion>/buckets/bucket-access-policies and /api/<APIVersion>/buckets/bucket-access-policies/rules
 // against the provided ServeMux. The returned store pointer can be used for test setup.
 func RegisterBucketAccessPolicyHandlers(mux *http.ServeMux) *bucketAccessPolicyStore {
 	store := &bucketAccessPolicyStore{
 		policies: make(map[string]*client.BucketAccessPolicy),
 	}
-	mux.HandleFunc("/api/2.23/buckets/bucket-access-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/buckets/bucket-access-policies/rules", store.handleRule)
+	mux.HandleFunc(APIPrefix+"/buckets/bucket-access-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/buckets/bucket-access-policies/rules", store.handleRule)
 	return store
 }
 
@@ -50,7 +50,7 @@ func (s *bucketAccessPolicyStore) handlePolicy(w http.ResponseWriter, r *http.Re
 	}
 }
 
-// handlePolicyGet handles GET /api/2.23/buckets/bucket-access-policies.
+// handlePolicyGet handles GET /api/<APIVersion>/buckets/bucket-access-policies.
 func (s *bucketAccessPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
 		return
@@ -81,7 +81,7 @@ func (s *bucketAccessPolicyStore) handlePolicyGet(w http.ResponseWriter, r *http
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePolicyPost handles POST /api/2.23/buckets/bucket-access-policies.
+// handlePolicyPost handles POST /api/<APIVersion>/buckets/bucket-access-policies.
 func (s *bucketAccessPolicyStore) handlePolicyPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
 		return
@@ -139,7 +139,7 @@ func (s *bucketAccessPolicyStore) handlePolicyPost(w http.ResponseWriter, r *htt
 	WriteJSONListResponse(w, http.StatusOK, []client.BucketAccessPolicy{*policy})
 }
 
-// handlePolicyDelete handles DELETE /api/2.23/buckets/bucket-access-policies.
+// handlePolicyDelete handles DELETE /api/<APIVersion>/buckets/bucket-access-policies.
 func (s *bucketAccessPolicyStore) handlePolicyDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names"}) {
 		return
@@ -177,7 +177,7 @@ func (s *bucketAccessPolicyStore) handleRule(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// handleRuleGet handles GET /api/2.23/buckets/bucket-access-policies/rules.
+// handleRuleGet handles GET /api/<APIVersion>/buckets/bucket-access-policies/rules.
 func (s *bucketAccessPolicyStore) handleRuleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
@@ -220,7 +220,7 @@ func (s *bucketAccessPolicyStore) handleRuleGet(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleRulePost handles POST /api/2.23/buckets/bucket-access-policies/rules.
+// handleRulePost handles POST /api/<APIVersion>/buckets/bucket-access-policies/rules.
 func (s *bucketAccessPolicyStore) handleRulePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return
@@ -266,7 +266,7 @@ func (s *bucketAccessPolicyStore) handleRulePost(w http.ResponseWriter, r *http.
 	WriteJSONListResponse(w, http.StatusOK, []client.BucketAccessPolicyRule{rule})
 }
 
-// handleRuleDelete handles DELETE /api/2.23/buckets/bucket-access-policies/rules.
+// handleRuleDelete handles DELETE /api/<APIVersion>/buckets/bucket-access-policies/rules.
 func (s *bucketAccessPolicyStore) handleRuleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"bucket_ids", "bucket_names", "names"}) {
 		return

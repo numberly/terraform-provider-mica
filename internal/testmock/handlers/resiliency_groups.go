@@ -18,13 +18,13 @@ type resiliencyGroupStore struct {
 }
 
 // RegisterResiliencyGroupHandlers registers a GET-only handler for
-// /api/2.23/resiliency-groups against the provided ServeMux.
+// /api/<APIVersion>/resiliency-groups against the provided ServeMux.
 // Non-GET methods return 405 Method Not Allowed.
 func RegisterResiliencyGroupHandlers(mux *http.ServeMux) *resiliencyGroupStore {
 	store := &resiliencyGroupStore{
 		groups: make(map[string]*client.ResiliencyGroup),
 	}
-	mux.HandleFunc("/api/2.23/resiliency-groups", store.handle)
+	mux.HandleFunc(APIPrefix+"/resiliency-groups", store.handle)
 	return store
 }
 
@@ -46,7 +46,7 @@ func (s *resiliencyGroupStore) handle(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 }
 
-// handleGet handles GET /api/2.23/resiliency-groups with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/resiliency-groups with optional ?names= param.
 // If names is provided, returns the matching group or an empty list (HTTP 200,
 // never 404 — matches real API and lets getOneByName[T] detect not-found).
 // If names is absent, returns all groups.

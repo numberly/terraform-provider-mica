@@ -18,7 +18,7 @@ type auditObjectStorePolicyStore struct {
 }
 
 // RegisterAuditObjectStorePolicyHandlers registers CRUD handlers for
-// /api/2.23/audit-object-store-policies against the provided ServeMux.
+// /api/<APIVersion>/audit-object-store-policies against the provided ServeMux.
 // The returned store pointer can be used for test setup via Seed.
 func RegisterAuditObjectStorePolicyHandlers(mux *http.ServeMux) *auditObjectStorePolicyStore {
 	store := &auditObjectStorePolicyStore{
@@ -26,8 +26,8 @@ func RegisterAuditObjectStorePolicyHandlers(mux *http.ServeMux) *auditObjectStor
 		members: make(map[string][]client.AuditObjectStorePolicyMember),
 		nextID:  1,
 	}
-	mux.HandleFunc("/api/2.23/audit-object-store-policies/members", store.handleMember)
-	mux.HandleFunc("/api/2.23/audit-object-store-policies", store.handle)
+	mux.HandleFunc(APIPrefix+"/audit-object-store-policies/members", store.handleMember)
+	mux.HandleFunc(APIPrefix+"/audit-object-store-policies", store.handle)
 	return store
 }
 
@@ -73,7 +73,7 @@ func (s *auditObjectStorePolicyStore) handle(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// handleGet handles GET /api/2.23/audit-object-store-policies.
+// handleGet handles GET /api/<APIVersion>/audit-object-store-policies.
 // Returns empty list (HTTP 200) when not found — matches real FlashBlade API behavior.
 func (s *auditObjectStorePolicyStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -105,7 +105,7 @@ func (s *auditObjectStorePolicyStore) handleGet(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/audit-object-store-policies?names={name}.
+// handlePost handles POST /api/<APIVersion>/audit-object-store-policies?names={name}.
 func (s *auditObjectStorePolicyStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -155,7 +155,7 @@ func (s *auditObjectStorePolicyStore) handlePost(w http.ResponseWriter, r *http.
 	WriteJSONListResponse(w, http.StatusOK, []client.AuditObjectStorePolicy{*policy})
 }
 
-// handlePatch handles PATCH /api/2.23/audit-object-store-policies?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/audit-object-store-policies?names={name}.
 func (s *auditObjectStorePolicyStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -205,7 +205,7 @@ func (s *auditObjectStorePolicyStore) handlePatch(w http.ResponseWriter, r *http
 	WriteJSONListResponse(w, http.StatusOK, []client.AuditObjectStorePolicy{*policy})
 }
 
-// handleDelete handles DELETE /api/2.23/audit-object-store-policies?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/audit-object-store-policies?names={name}.
 func (s *auditObjectStorePolicyStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
 		return
@@ -246,7 +246,7 @@ func (s *auditObjectStorePolicyStore) handleMember(w http.ResponseWriter, r *htt
 	}
 }
 
-// handleMemberGet handles GET /api/2.23/audit-object-store-policies/members.
+// handleMemberGet handles GET /api/<APIVersion>/audit-object-store-policies/members.
 func (s *auditObjectStorePolicyStore) handleMemberGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names", "member_ids"}) {
 		return
@@ -276,7 +276,7 @@ func (s *auditObjectStorePolicyStore) handleMemberGet(w http.ResponseWriter, r *
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handleMemberPost handles POST /api/2.23/audit-object-store-policies/members.
+// handleMemberPost handles POST /api/<APIVersion>/audit-object-store-policies/members.
 func (s *auditObjectStorePolicyStore) handleMemberPost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names", "member_ids"}) {
 		return
@@ -314,7 +314,7 @@ func (s *auditObjectStorePolicyStore) handleMemberPost(w http.ResponseWriter, r 
 	WriteJSONListResponse(w, http.StatusOK, []client.AuditObjectStorePolicyMember{member})
 }
 
-// handleMemberDelete handles DELETE /api/2.23/audit-object-store-policies/members.
+// handleMemberDelete handles DELETE /api/<APIVersion>/audit-object-store-policies/members.
 func (s *auditObjectStorePolicyStore) handleMemberDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"policy_names", "policy_ids", "member_names", "member_ids"}) {
 		return

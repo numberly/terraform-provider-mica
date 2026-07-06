@@ -16,11 +16,11 @@ type mapDsrMembershipsStore struct {
 }
 
 // RegisterManagementAccessPolicyDirectoryServiceRoleMembershipsHandlers registers
-// GET/POST/DELETE handlers for /api/2.23/management-access-policies/directory-services/roles.
+// GET/POST/DELETE handlers for /api/<APIVersion>/management-access-policies/directory-services/roles.
 // Returns the store so tests can Seed pre-existing associations.
 func RegisterManagementAccessPolicyDirectoryServiceRoleMembershipsHandlers(mux *http.ServeMux) *mapDsrMembershipsStore {
 	s := &mapDsrMembershipsStore{set: make(map[string]struct{})}
-	mux.HandleFunc("/api/2.23/management-access-policies/directory-services/roles", s.handle)
+	mux.HandleFunc(APIPrefix+"/management-access-policies/directory-services/roles", s.handle)
 	return s
 }
 

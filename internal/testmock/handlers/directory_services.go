@@ -16,7 +16,7 @@ type directoryServicesStore struct {
 	nextID int
 }
 
-// RegisterDirectoryServicesHandlers registers handlers for /api/2.23/directory-services
+// RegisterDirectoryServicesHandlers registers handlers for /api/<APIVersion>/directory-services
 // against the provided ServeMux. The store pointer is returned for test setup.
 // Endpoint supports GET + PATCH only (confirmed against api_references/2.23.md line 449 —
 // no POST, no DELETE on the directory-services collection).
@@ -25,7 +25,7 @@ func RegisterDirectoryServicesHandlers(mux *http.ServeMux) *directoryServicesSto
 		byName: make(map[string]*client.DirectoryService),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/directory-services", store.handle)
+	mux.HandleFunc(APIPrefix+"/directory-services", store.handle)
 	return store
 }
 
@@ -52,7 +52,7 @@ func (s *directoryServicesStore) handle(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// handleGet handles GET /api/2.23/directory-services with optional ?names= filter.
+// handleGet handles GET /api/<APIVersion>/directory-services with optional ?names= filter.
 // Returns HTTP 200 with empty list when name not found (matches real API behaviour;
 // lets getOneByName[T] detect not-found via list length).
 func (s *directoryServicesStore) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +80,7 @@ func (s *directoryServicesStore) handleGet(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePatch handles PATCH /api/2.23/directory-services?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/directory-services?names={name}.
 // Applies non-nil pointer fields; returns 404 when name missing from store.
 // Supports **NamedReference clear-or-set semantics for ca_certificate and ca_certificate_group:
 //   - outer nil ptr = field omitted (not sent in PATCH body)

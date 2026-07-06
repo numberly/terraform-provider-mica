@@ -2,44 +2,29 @@
 
 ## Current State
 
-**Latest shipped:** v2.23.0 (FlashBlade API 2.23 Upgrade) — 2026-05-20
-**Active milestone:** None — awaiting next milestone planning
+**Latest shipped:** v2.23.1 (`flashblade_snmp_manager` resource + data source) — 2026-05-20
+**Active milestone:** _(planning next — run `/gsd:new-milestone`)_
 
-**Shipped to date:** 16 milestones, 60 phases
-**TF Provider:** v2.23.0 (55 resources + 43 data sources, 807 tests, [GitHub Release](https://github.com/numberly/terraform-provider-mica/releases/tag/v2.23.0))
+**Shipped to date:** 17 milestones, 61 phases
+**TF Provider:** v2.23.1 (56 resources + 44 data sources, 816 tests on branch `implem-snmp-managers`, pending tag + merge to `main`)
 **Pulumi Bridge:** pulumi-2.22.3 alpha (private distribution via GitHub Releases, Python + Go SDKs) — bridge schema regen'd for API 2.23 but no new Pulumi release yet
 
-Next steps: plan the next milestone via `/gsd:new-milestone` — typical candidates:
-- `pulumi-2.23.0` (publish the regen'd bridge schema, generate Python + Go SDKs for API 2.23)
-- API 2.24+ when swagger lands
-- Hardening: integrate par5/pa7 acceptance into CI, author HCL fixtures under `examples/acceptance/`
-- Other feature additions
+## Last Completed Milestone: v2.23.1 — `flashblade_snmp_manager` (shipped 2026-05-20)
 
-## Last Completed Milestone: v2.23.0 — FlashBlade API 2.23 Upgrade (shipped 2026-05-20)
+**Delivered:**
+- `flashblade_snmp_manager` resource + data source with full CRUD on `/api/2.23/snmp-managers`
+- Atomic `v2c` and `v3` `SingleNestedAttribute` blocks with enum validators (`notification`, `version`, `auth_protocol`, `privacy_protocol`); in-place v2c↔v3 switch supported
+- Write-once sensitive secrets (`community`, `auth_passphrase`, `privacy_passphrase`): `Sensitive: true`, never logged, nulled on Import, mock handler strips them on response
+- Per-leaf drift detection on 6 non-sensitive leaves; 3 explicit skip markers on sensitive fields
+- 9 new `TestUnit_` tests (5 client + 3 resource + 1 DS); total 816 (baseline 807, unchanged)
+- All 13 SNMP-01..SNMP-13 requirements satisfied; verification `passed` (9/9 must-haves)
 
-**Goal:** Aligner le provider sur l'API FlashBlade 2.23, ajouter le support des Workloads et Resiliency Groups, puis livrer la release (validation, docs, tag, merge).
+**Phases:** 61 (1 phase, 1 monolithic plan, 13 tasks)
+**Last phase number:** 61
+**Branch:** `implem-snmp-managers` (pending squash-merge to `main` + tag `v2.23.1`)
+**Archives:** [milestones/v2.23.1-ROADMAP.md](milestones/v2.23.1-ROADMAP.md) · [milestones/v2.23.1-REQUIREMENTS.md](milestones/v2.23.1-REQUIREMENTS.md)
 
-**Target features (déjà implémentés sur `test/api-upgrade-2.23`):**
-- API version bump 2.22 → 2.23 (provider, client, mock, examples, references)
-- `flashblade_workload` resource + data source
-- `flashblade_resiliency_group` data source (DS-only)
-- `flashblade_resiliency_group_member` data source (DS-only)
-- Schéma v1 (workload field) sur 6 ressources : file_system, file_system_export, nfs_export_policy, smb_client_policy, smb_share_policy, qos_policy
-- qos_policy : computed `context` field
-- Pulumi bridge regen (schema.json, bridge-metadata.json, schema-embed.json)
-- api-diff / api-upgrade skills enhancements (per-field variants, codebase scan, BLOCKING method detection)
-
-**Target features (à livrer dans la finalisation):**
-- Validation `make test` + `make lint` + `make docs` clean sur la branche
-- Acceptance tests live FlashBlade (par5, pa7) sur les nouvelles ressources et les schémas migrés
-- CHANGELOG + release notes v2.23.0
-- ROADMAP.md fix-up (coverage counters, version footer)
-- Tag `v2.23.0` + merge `test/api-upgrade-2.23` → `main`
-
-**Key context:**
-- Travail rétro : ~167 fichiers / ~7000 insertions déjà sur la branche, piloté par les skills `api-diff` et `api-upgrade`
-- 2 phases prévues : Phase 59 (consolidation rétro + validation), Phase 60 (release & merge)
-- TEST_BASELINE actuel (GNUmakefile) : 807 — à mettre à jour quand v2.23.0 ship
+**Previous milestones:** v2.23.0 (FlashBlade API 2.23 Upgrade, [archive](milestones/v2.23.0-ROADMAP.md)) · pulumi-2.22.3 (Pulumi Bridge Alpha, [archive](milestones/pulumi-2.22.3-ROADMAP.md))
 
 ## What This Is
 
@@ -48,22 +33,6 @@ A Terraform provider for Pure Storage FlashBlade that enables operational teams 
 ## Core Value
 
 Operational teams can reliably create, update, delete, and reconcile drift on FlashBlade storage resources (buckets, file systems, policies) through Terraform with zero surprises — every plan reflects reality, every apply converges.
-
-## Last Completed Milestone: pulumi-2.22.3 — Pulumi Bridge Alpha (shipped 2026-04-24)
-
-**Goal:** Expose the FlashBlade Terraform provider to Pulumi users (Python + Go) via the official `pulumi/pulumi-terraform-bridge` (`pkg/pf/*` for terraform-plugin-framework), in a new `./pulumi/` sub-directory with its own `go.mod`, distributed privately through GitHub releases.
-
-**Target features:**
-- Pulumi bridge scaffold in `./pulumi/` (tfgen + runtime binaries, ProviderInfo, embedded schema)
-- Mapping of all 28 resources + 21 data sources (auto-tokenization + targeted overrides for composite IDs, secrets, timeouts)
-- Python and Go SDK generation (embedded `schema.json` + `bridge-metadata.json`)
-- ProgramTest coverage on 3 representative resources (target, remote_credentials, bucket)
-- Private release pipeline: GitHub Actions build + goreleaser + cosign, tag `pulumi-2.22.3`
-- Auto-converted HCL examples (`PULUMI_CONVERT=1`) + 2 hand-written examples (bucket-py, bucket-go)
-
-**Key context:** Research already consolidated in `pulumi-bridge.md` (12 sections, 8 pitfalls, 6-step POC plan). Bridges the existing v2.22.3 provider (28 resources, 21 DS, 779 tests) without rewriting anything.
-
-**Last shipped:** v2.22.3 — Convention Compliance (2026-04-20, 779 tests, 0 lint issues, 12/12 requirements satisfied) — [archive](milestones/v2.22.3-ROADMAP.md)
 
 ## Requirements
 
@@ -88,10 +57,12 @@ Operational teams can reliably create, update, delete, and reconcile drift on Fl
 - ✓ 814 unit tests, role_name/policy_name composite ID (role FIRST per policy-contains-colon constraint) — v2.22.2
 - ✓ Directory Service Role POST `?names=` bug fix + schema v1 (`name` Required + RequiresReplace) + upgrader — Phase 50.1
 - ✓ 818 unit tests, end-to-end validated against real FlashBlades (par5, pa7) — Phase 50.1
+- ✓ FlashBlade API 2.23 upgrade — workload + resiliency-group + 6 schema v1 migrations — v2.23.0
+- ✓ `flashblade_snmp_manager` resource + data source (v2c/v3 nested blocks, write-once secrets, per-leaf drift, 9 new tests) — v2.23.1 (SNMP-01..SNMP-13)
 
 ### Active
 
-_No active milestone — start the next one via `/gsd:new-milestone`._
+_(planning next milestone — run `/gsd:new-milestone`)_
 
 ### Known Follow-up Defects
 
@@ -153,4 +124,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-20 — milestone v2.23.0 shipped (tag `v2.23.0`, squash `3fd485d`, GitHub Release published). Archived to `.planning/milestones/v2.23.0-*`.*
+*Last updated: 2026-05-20 — after v2.23.1 milestone (`flashblade_snmp_manager` resource + data source archived; ready for next milestone).*

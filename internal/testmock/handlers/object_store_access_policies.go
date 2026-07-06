@@ -13,7 +13,7 @@ import (
 // objectStoreAccessPolicyStore is the thread-safe in-memory state for OAP handlers.
 type objectStoreAccessPolicyStore struct {
 	mu       sync.Mutex
-	policies map[string]*client.ObjectStoreAccessPolicy           // policyName -> policy
+	policies map[string]*client.ObjectStoreAccessPolicy                // policyName -> policy
 	rules    map[string]map[string]*client.ObjectStoreAccessPolicyRule // policyName/ruleName -> rule
 }
 
@@ -23,10 +23,10 @@ func RegisterObjectStoreAccessPolicyHandlers(mux *http.ServeMux) *objectStoreAcc
 		policies: make(map[string]*client.ObjectStoreAccessPolicy),
 		rules:    make(map[string]map[string]*client.ObjectStoreAccessPolicyRule),
 	}
-	mux.HandleFunc("/api/2.23/object-store-access-policies", store.handlePolicy)
-	mux.HandleFunc("/api/2.23/object-store-access-policies/rules", store.handleRules)
+	mux.HandleFunc(APIPrefix+"/object-store-access-policies", store.handlePolicy)
+	mux.HandleFunc(APIPrefix+"/object-store-access-policies/rules", store.handleRules)
 	// Stub for policy-user membership checks (delete guard). Always returns empty list.
-	mux.HandleFunc("/api/2.23/object-store-access-policies/object-store-users", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc(APIPrefix+"/object-store-access-policies/object-store-users", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSONListResponse(w, http.StatusOK, []any{})
 	})
 	return store

@@ -16,14 +16,14 @@ type arrayConnectionStore struct {
 	nextID int
 }
 
-// RegisterArrayConnectionHandlers registers CRUD handlers for /api/2.23/array-connections
+// RegisterArrayConnectionHandlers registers CRUD handlers for /api/<APIVersion>/array-connections
 // against the provided ServeMux. The store pointer is returned for test setup.
 func RegisterArrayConnectionHandlers(mux *http.ServeMux) *arrayConnectionStore {
 	store := &arrayConnectionStore{
 		byName: make(map[string]*client.ArrayConnection),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/array-connections", store.handle)
+	mux.HandleFunc(APIPrefix+"/array-connections", store.handle)
 	return store
 }
 
@@ -50,7 +50,7 @@ func (s *arrayConnectionStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/array-connections with optional ?remote_names= filter.
+// handleGet handles GET /api/<APIVersion>/array-connections with optional ?remote_names= filter.
 // When the filter finds no match, returns an empty list with HTTP 200 (not 404).
 func (s *arrayConnectionStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"remote_names"}) {
@@ -80,7 +80,7 @@ func (s *arrayConnectionStore) handleGet(w http.ResponseWriter, r *http.Request)
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/array-connections?remote_names={remoteName}.
+// handlePost handles POST /api/<APIVersion>/array-connections?remote_names={remoteName}.
 // Returns 409 if a connection for that remote already exists.
 func (s *arrayConnectionStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"remote_names"}) {
@@ -124,7 +124,7 @@ func (s *arrayConnectionStore) handlePost(w http.ResponseWriter, r *http.Request
 	WriteJSONListResponse(w, http.StatusOK, []client.ArrayConnection{*conn})
 }
 
-// handlePatch handles PATCH /api/2.23/array-connections?remote_names={remoteName}.
+// handlePatch handles PATCH /api/<APIVersion>/array-connections?remote_names={remoteName}.
 // Applies non-nil pointer fields. Returns 404 if the connection is not found.
 func (s *arrayConnectionStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"remote_names"}) {
@@ -167,7 +167,7 @@ func (s *arrayConnectionStore) handlePatch(w http.ResponseWriter, r *http.Reques
 	WriteJSONListResponse(w, http.StatusOK, []client.ArrayConnection{*conn})
 }
 
-// handleDelete handles DELETE /api/2.23/array-connections?remote_names={remoteName}.
+// handleDelete handles DELETE /api/<APIVersion>/array-connections?remote_names={remoteName}.
 func (s *arrayConnectionStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"remote_names"}) {
 		return

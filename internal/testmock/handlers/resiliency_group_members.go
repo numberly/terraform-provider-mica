@@ -1,6 +1,6 @@
 // Package handlers — resiliency group members mock.
 //
-// The endpoint GET /api/2.23/resiliency-groups/members is read-only and
+// The endpoint GET /api/<APIVersion>/resiliency-groups/members is read-only and
 // requires filtering by parent (`resiliency_group_names` query param). The
 // mock store therefore keys rows by (groupName, memberName).
 package handlers
@@ -26,13 +26,13 @@ type resiliencyGroupMemberStore struct {
 }
 
 // RegisterResiliencyGroupMemberHandlers registers a GET-only handler for
-// /api/2.23/resiliency-groups/members against the provided ServeMux.
+// /api/<APIVersion>/resiliency-groups/members against the provided ServeMux.
 // Non-GET methods return 405 Method Not Allowed.
 func RegisterResiliencyGroupMemberHandlers(mux *http.ServeMux) *resiliencyGroupMemberStore {
 	store := &resiliencyGroupMemberStore{
 		members: make(map[memberKey]*client.ResiliencyGroupMember),
 	}
-	mux.HandleFunc("/api/2.23/resiliency-groups/members", store.handle)
+	mux.HandleFunc(APIPrefix+"/resiliency-groups/members", store.handle)
 	return store
 }
 

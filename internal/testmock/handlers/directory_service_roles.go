@@ -16,14 +16,14 @@ type directoryServiceRolesStore struct {
 	nextID int
 }
 
-// RegisterDirectoryServiceRolesHandlers registers CRUD handlers for /api/2.23/directory-services/roles
+// RegisterDirectoryServiceRolesHandlers registers CRUD handlers for /api/<APIVersion>/directory-services/roles
 // against the provided ServeMux. The store pointer is returned for test setup.
 func RegisterDirectoryServiceRolesHandlers(mux *http.ServeMux) *directoryServiceRolesStore {
 	s := &directoryServiceRolesStore{
 		byName: make(map[string]*client.DirectoryServiceRole),
 		nextID: 1,
 	}
-	mux.HandleFunc("/api/2.23/directory-services/roles", s.handle)
+	mux.HandleFunc(APIPrefix+"/directory-services/roles", s.handle)
 	return s
 }
 
@@ -54,7 +54,7 @@ func (s *directoryServiceRolesStore) handle(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// handleGet handles GET /api/2.23/directory-services/roles with optional ?names= filter.
+// handleGet handles GET /api/<APIVersion>/directory-services/roles with optional ?names= filter.
 // Returns HTTP 200 with empty list when name not found (matches real API behaviour;
 // lets getOneByName[T] detect not-found via list length).
 func (s *directoryServiceRolesStore) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +80,7 @@ func (s *directoryServiceRolesStore) handleGet(w http.ResponseWriter, r *http.Re
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/directory-services/roles?names={name}.
+// handlePost handles POST /api/<APIVersion>/directory-services/roles?names={name}.
 // Requires ?names= query param. Returns 409 when name already exists.
 func (s *directoryServiceRolesStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {
@@ -119,7 +119,7 @@ func (s *directoryServiceRolesStore) handlePost(w http.ResponseWriter, r *http.R
 	WriteJSONListResponse(w, http.StatusOK, []client.DirectoryServiceRole{*role})
 }
 
-// handlePatch handles PATCH /api/2.23/directory-services/roles?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/directory-services/roles?names={name}.
 // Rejects management_access_policies in body with 400 (readonly per swagger — mutations go
 // through /management-access-policies/directory-services/roles endpoint instead).
 // Applies group and group_base when non-nil.
@@ -176,7 +176,7 @@ func (s *directoryServiceRolesStore) handlePatch(w http.ResponseWriter, r *http.
 	WriteJSONListResponse(w, http.StatusOK, []client.DirectoryServiceRole{*role})
 }
 
-// handleDelete handles DELETE /api/2.23/directory-services/roles?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/directory-services/roles?names={name}.
 // Returns 404 if the role does not exist.
 func (s *directoryServiceRolesStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	if !ValidateQueryParams(w, r, []string{"names"}) {

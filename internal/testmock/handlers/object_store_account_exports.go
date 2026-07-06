@@ -17,14 +17,14 @@ type objectStoreAccountExportStore struct {
 	byID   map[string]*client.ObjectStoreAccountExport
 }
 
-// RegisterObjectStoreAccountExportHandlers registers CRUD handlers for /api/2.23/object-store-account-exports
+// RegisterObjectStoreAccountExportHandlers registers CRUD handlers for /api/<APIVersion>/object-store-account-exports
 // against the provided ServeMux. The handlers share in-memory state and are thread-safe.
 func RegisterObjectStoreAccountExportHandlers(mux *http.ServeMux) *objectStoreAccountExportStore {
 	store := &objectStoreAccountExportStore{
 		byName: make(map[string]*client.ObjectStoreAccountExport),
 		byID:   make(map[string]*client.ObjectStoreAccountExport),
 	}
-	mux.HandleFunc("/api/2.23/object-store-account-exports", store.handle)
+	mux.HandleFunc(APIPrefix+"/object-store-account-exports", store.handle)
 	return store
 }
 
@@ -83,7 +83,7 @@ func (s *objectStoreAccountExportStore) handle(w http.ResponseWriter, r *http.Re
 	}
 }
 
-// handleGet handles GET /api/2.23/object-store-account-exports with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/object-store-account-exports with optional ?names= param.
 func (s *objectStoreAccountExportStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -110,7 +110,7 @@ func (s *objectStoreAccountExportStore) handleGet(w http.ResponseWriter, r *http
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/object-store-account-exports?member_names={accountName}&policy_names={policyName}.
+// handlePost handles POST /api/<APIVersion>/object-store-account-exports?member_names={accountName}&policy_names={policyName}.
 func (s *objectStoreAccountExportStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	memberName := r.URL.Query().Get("member_names")
 	if memberName == "" {
@@ -152,7 +152,7 @@ func (s *objectStoreAccountExportStore) handlePost(w http.ResponseWriter, r *htt
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccountExport{*export})
 }
 
-// handlePatch handles PATCH /api/2.23/object-store-account-exports?ids={id}.
+// handlePatch handles PATCH /api/<APIVersion>/object-store-account-exports?ids={id}.
 func (s *objectStoreAccountExportStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("ids")
 	if id == "" {
@@ -200,7 +200,7 @@ func (s *objectStoreAccountExportStore) handlePatch(w http.ResponseWriter, r *ht
 	WriteJSONListResponse(w, http.StatusOK, []client.ObjectStoreAccountExport{*export})
 }
 
-// handleDelete handles DELETE /api/2.23/object-store-account-exports?member_names={accountName}&names={exportName}.
+// handleDelete handles DELETE /api/<APIVersion>/object-store-account-exports?member_names={accountName}&names={exportName}.
 // The real FlashBlade API expects names= to contain the short export name (not the combined "account/export" format).
 // This mock enforces strict lookup: memberName + "/" + exportName must match an existing combined key.
 func (s *objectStoreAccountExportStore) handleDelete(w http.ResponseWriter, r *http.Request) {

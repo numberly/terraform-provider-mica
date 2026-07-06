@@ -191,6 +191,8 @@ Register in `internal/provider/provider.go`: append `NewXxxResource` to `Resourc
 14. [ ] `make test` passes, total count ≥ `TEST_BASELINE` in `GNUmakefile` (delta +9 minimum for a new resource)
 15. [ ] `make lint` clean
 16. [ ] ROADMAP.md updated
+17. [ ] Pulumi bridge: `make -C pulumi tfgen` to regenerate `schema.json` + `schema-embed.json` + `bridge-metadata.json` (CI fails on drift)
+18. [ ] Pulumi bridge: bump `expectedResources`/`expectedDataSources` in `pulumi/provider/resources_test.go` (+1 each for a resource with a data source)
 
 ## Checklist — Modify Existing Resource
 
@@ -204,3 +206,4 @@ Register in `internal/provider/provider.go`: append `NewXxxResource` to `Resourc
 8. [ ] `make test` passes, count ≥ previous baseline
 9. [ ] `make lint` clean
 10. [ ] `make docs` regenerated if schema changed
+11. [ ] Pulumi bridge: `make -C pulumi tfgen` if schema changed (CI fails on drift)

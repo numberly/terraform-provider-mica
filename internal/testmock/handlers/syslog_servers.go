@@ -21,7 +21,7 @@ func RegisterSyslogServerHandlers(mux *http.ServeMux) *syslogServerStore {
 	store := &syslogServerStore{
 		servers: make(map[string]*client.SyslogServer),
 	}
-	mux.HandleFunc("/api/2.23/syslog-servers", store.handle)
+	mux.HandleFunc(APIPrefix+"/syslog-servers", store.handle)
 	return store
 }
 
@@ -40,7 +40,7 @@ func (s *syslogServerStore) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleGet handles GET /api/2.23/syslog-servers with optional ?names= param.
+// handleGet handles GET /api/<APIVersion>/syslog-servers with optional ?names= param.
 func (s *syslogServerStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -67,7 +67,7 @@ func (s *syslogServerStore) handleGet(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, items)
 }
 
-// handlePost handles POST /api/2.23/syslog-servers?names={name}.
+// handlePost handles POST /api/<APIVersion>/syslog-servers?names={name}.
 func (s *syslogServerStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -112,7 +112,7 @@ func (s *syslogServerStore) handlePost(w http.ResponseWriter, r *http.Request) {
 	WriteJSONListResponse(w, http.StatusOK, []client.SyslogServer{*srv})
 }
 
-// handlePatch handles PATCH /api/2.23/syslog-servers?names={name}.
+// handlePatch handles PATCH /api/<APIVersion>/syslog-servers?names={name}.
 func (s *syslogServerStore) handlePatch(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {
@@ -166,7 +166,7 @@ func (s *syslogServerStore) handlePatch(w http.ResponseWriter, r *http.Request) 
 	WriteJSONListResponse(w, http.StatusOK, []client.SyslogServer{*srv})
 }
 
-// handleDelete handles DELETE /api/2.23/syslog-servers?names={name}.
+// handleDelete handles DELETE /api/<APIVersion>/syslog-servers?names={name}.
 func (s *syslogServerStore) handleDelete(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("names")
 	if name == "" {

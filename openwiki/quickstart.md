@@ -13,8 +13,8 @@ the FlashBlade REST API.
 - **Framework**: `terraform-plugin-framework` (never SDK v2) served over gRPC
 - **Target API**: FlashBlade REST **v2.23** (Purity//FB 4.6.7+); a **v2.22**
   maintenance line ships in parallel — see [API versioning](api-versioning.md)
-- **Surface** (current, per `internal/provider/provider.go`): **56 resources**,
-  **44 data sources**. The `README.md` catalog (40/32) reflects an older release.
+- **Surface** (current, per `internal/provider/provider.go`): **57 resources**,
+  **45 data sources**. The `README.md` catalog (40/32) reflects an older release.
 - **Also ships as a Pulumi package** (`mica:` namespace) via a Terraform bridge —
   see [Pulumi bridge](pulumi-bridge.md).
 
