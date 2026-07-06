@@ -220,8 +220,8 @@ func TestUnit_BucketCorsPolicyResource_Import(t *testing.T) {
 	if diags := importResp.State.Get(context.Background(), &model); diags.HasError() {
 		t.Fatalf("Get state: %s", diags)
 	}
-	if model.ID.ValueString() != "cors-imp-1" {
-		t.Errorf("expected id=cors-imp-1, got %s", model.ID.ValueString())
+	if model.ID.ValueString() != "imp-bucket" {
+		t.Errorf("expected id=imp-bucket (bucket name), got %s", model.ID.ValueString())
 	}
 	if model.BucketName.ValueString() != "imp-bucket" {
 		t.Errorf("expected bucket_name=imp-bucket, got %s", model.BucketName.ValueString())
